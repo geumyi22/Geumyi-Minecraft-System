@@ -1,0 +1,90 @@
+name: Build GSCM iOS unsigned IPA
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'gscm-ios-source.b64'
+      - '.github/workflows/ios-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gscm-ios-build
+  cancel-in-progress: true
+
+jobs:
+  build-ios:
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Flutter stable
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Show toolchain
+        run: |
+          flutter --version
+          xcodebuild -version
+          ruby --version
+
+      - name: Restore GSCM source
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode gscm-ios-source.b64 > gscm-ios-source.zip
+          mkdir app
+          ditto -x -k gscm-ios-source.zip app
+          cd app
+          test -f pubspec.yaml
+          test -f tool/ios/patch_ios.sh
+
+      - name: Prepare iOS Runner
+        shell: bash
+        working-directory: app
+        run: |
+          set -euo pipefail
+          chmod +x tool/ios/patch_ios.sh
+          ./tool/ios/patch_ios.sh
+
+      - name: Resolve Flutter packages
+        working-directory: app
+        run: flutter pub get
+
+      - name: Build iOS release without signing
+        working-directory: app
+        run: flutter build ios --release --no-codesign
+
+      - name: Package unsigned IPA
+        shell: bash
+        working-directory: app
+        run: |
+          set -euo pipefail
+          test -d build/ios/iphoneos/Runner.app
+          rm -rf dist
+          mkdir -p dist/Payload
+          ditto build/ios/iphoneos/Runner.app dist/Payload/Runner.app
+          (
+            cd dist
+            /usr/bin/zip -qry GSCM-v1.1.0-unsigned.ipa Payload
+            /usr/bin/shasum -a 256 GSCM-v1.1.0-unsigned.ipa > GSCM-v1.1.0-unsigned.ipa.sha256
+          )
+          ls -lh dist
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSCM-iOS-unsigned
+          path: |
+            app/dist/GSCM-v1.1.0-unsigned.ipa
+            app/dist/GSCM-v1.1.0-unsigned.ipa.sha256
+          if-no-files-found: error
+          retention-days: 14
