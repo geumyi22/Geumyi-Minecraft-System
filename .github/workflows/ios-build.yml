@@ -40,7 +40,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          base64 --decode gscm-ios-source.b64 > gscm-ios-source.zip
+          base64 -D -i gscm-ios-source.b64 -o gscm-ios-source.zip
           mkdir app
           ditto -x -k gscm-ios-source.zip app
           cd app
