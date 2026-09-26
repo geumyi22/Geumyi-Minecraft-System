@@ -2,6 +2,19 @@ name: Publish Geumyi System Release
 
 on:
   workflow_dispatch:
+    inputs:
+      source_url:
+        description: Direct HTTPS URL to the current master bundle
+        required: true
+        type: string
+      tag:
+        description: Release tag (leave blank to use release-tag.txt)
+        required: false
+        type: string
+      sha256:
+        description: Expected SHA-256 (leave blank to use release-sha256.txt)
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -16,14 +29,27 @@ jobs:
       - name: Read release metadata
         id: meta
         shell: bash
+        env:
+          INPUT_SOURCE: ${{ inputs.source_url }}
+          INPUT_TAG: ${{ inputs.tag }}
+          INPUT_SHA: ${{ inputs.sha256 }}
         run: |
           set -euo pipefail
-          SOURCE="$(tr -d '\r\n' < release-source.txt)"
-          TAG="$(tr -d '\r\n' < release-tag.txt)"
-          SHA="$(tr -d '\r\n' < release-sha256.txt)"
+          SOURCE="$INPUT_SOURCE"
+          TAG="$INPUT_TAG"
+          SHA="$INPUT_SHA"
+
+          if [ -z "$TAG" ]; then
+            TAG="$(tr -d '\r\n' < release-tag.txt)"
+          fi
+          if [ -z "$SHA" ]; then
+            SHA="$(tr -d '\r\n' < release-sha256.txt)"
+          fi
+
           test -n "$SOURCE"
           test -n "$TAG"
           test -n "$SHA"
+
           echo "source=$SOURCE" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
@@ -94,5 +120,7 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber
           else
-            gh release create "$TAG" dist/*               --title "MC Latest 2026-09-26 v3"               --notes-file RELEASE_NOTES.md
+            gh release create "$TAG" dist/* \
+              --title "MC Latest 2026-09-26 v3" \
+              --notes-file RELEASE_NOTES.md
           fi
