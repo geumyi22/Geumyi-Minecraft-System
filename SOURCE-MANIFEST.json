@@ -16,8 +16,8 @@
     },
     {
       "path": ".github/workflows/publish-system-release.yml",
-      "bytes": 3238,
-      "sha256": "d4486652316cfab412c35172823cf1be1450b802268101013a2546d5cfdbed5b",
+      "bytes": 3140,
+      "sha256": "acce230a4e39796909f8b3f6f93b3d9183ccfc06bdfcb16024eccb1da53ef276",
       "source": "Existing repository workflow (source path migrated for GSCM)"
     },
     {
@@ -559,7 +559,8 @@
       "path": "GSCM/.metadata",
       "bytes": 127,
       "sha256": "4d5e7b710e5b17c85966fd7d8896e52ee189e08e51dd91fb9943a9d684ab392f",
-      "source": "Repository documentation or import housekeeping"
+      "source": "gscm-original/.metadata",
+      "modifiedFromRecovered": false
     },
     {
       "path": "GSCM/analysis_options.yaml",
@@ -1219,26 +1220,26 @@
     },
     {
       "path": "RECOVERY-REPORT.md",
-      "bytes": 3882,
-      "sha256": "9a74299293a548b2a628e963eb0c1edaa8c742d75a0c666dba3a64a840fb3f2f",
+      "bytes": 4580,
+      "sha256": "9cf265e61d0644bca37278e7f844307ad16aaf8b6f5c3ee2eb26a9daaab2ad90",
       "source": "Repository documentation or import housekeeping"
     },
     {
       "path": "release-sha256.txt",
-      "bytes": 66,
-      "sha256": "27e3c35946cb410a4ad707870e46061be257d29a5ac60d2520780f6b94cd1976",
+      "bytes": 65,
+      "sha256": "fb3ac69986a691c62249d2a894c19637444a5f51bd968aaf4e7250f3270019b4",
       "source": "Repository documentation or import housekeeping"
     },
     {
       "path": "release-source.example.txt",
-      "bytes": 68,
-      "sha256": "91787e0546a57def7f34011b4883067a1a81a1cdea920507da6bf869568bc236",
+      "bytes": 67,
+      "sha256": "254cd475514d5fa01e5f3395c742966f6e5f6aaf8d1cca74b611145bde2cac66",
       "source": "Repository documentation or import housekeeping"
     },
     {
       "path": "release-tag.txt",
-      "bytes": 18,
-      "sha256": "12cebf1b13d241c5f7761fb298b4c9dbc1e9f40ab3e6b7dc52d08c012cf41220",
+      "bytes": 17,
+      "sha256": "d38cc8dfc164699c0c50e716e38ead297bf6dbf7c86ea389bd6bc910276a550b",
       "source": "Repository documentation or import housekeeping"
     },
     {
@@ -8385,8 +8386,8 @@
     },
     {
       "path": "tools/release/README.md",
-      "bytes": 732,
-      "sha256": "313c4e751ecfa87f9ffe59fb5b88de1bd912caf78a449c2635919946739c07f7",
+      "bytes": 715,
+      "sha256": "39394b2252d9135f502edb6d045ba779c1ab10ea04aa415ab8354efd3e50dc91",
       "source": "Repository documentation or import housekeeping"
     },
     {

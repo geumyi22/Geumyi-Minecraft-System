@@ -33,9 +33,13 @@ GSC installer compilation requires release JAR payloads. The source importer doe
 - GSC: recovered Go unit tests passed on Windows (host, setup and Java runtime packages).
 - GDS: compilation on JDK with --release 21 and all 28 existing core tests passed.
 - Source security review: see SECURITY-NOTES.md; two Gitleaks findings are reviewed synthetic fixtures, no real credentials detected.
-- GSCM: workflow changes preserve build stages and use the checked-in source; fresh Actions results are reported with completion of this import.
+- GSCM Android: [run 36233789439](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/36233789439) succeeded, including analyze, tests and APK artifact generation.
+- GSCM iOS: [run 36233789513](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/36233789513) succeeded, including unsigned IPA artifact generation.
+- Both CI runs tested source-import commit 6424982e9c290d439a35207112dd7fd4a868ee36. Subsequent verification updates affect documentation/manifest and restore unrelated release files byte-for-byte; mobile source/workflow blobs stay unchanged.
 - Resource pack JSON and asset integrity are checked before upload.
 
 SOURCE-MANIFEST.json lists final paths, hashes and provenance. Release assets remain unchanged.
 
 Language JSON normalization: 31 BACAP language files contained hash comments; comments and author credits are preserved in ResourcePacks/Wild/LANGUAGE-COMMENTS.md. Raw string control characters were escaped and one misplaced quote pair in zh_tw was corrected. Translation text was not rewritten. All 488 JSON/pack metadata files then parsed successfully.
+
+Final tracked tree: 1,211 files, including 1,016 resource-pack files; SOURCE-MANIFEST.json covers every other tracked path. All staged Git blobs were matched to the validated local files. The existing 15 release assets retain the same IDs, sizes and digests.
