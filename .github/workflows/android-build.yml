@@ -39,13 +39,14 @@ jobs:
           unzip -q gscm-source.zip -d app
           test -f app/pubspec.yaml
 
-      - name: Migrate Android build to AGP 9 built-in Kotlin
+      - name: Configure Android Gradle compatibility
         shell: bash
         run: |
           set -euo pipefail
           cat > app/android/app/build.gradle.kts <<'EOF'
           plugins {
               id("com.android.application")
+              id("kotlin-android")
               id("dev.flutter.flutter-gradle-plugin")
           }
 
@@ -71,6 +72,12 @@ jobs:
                   release {
                       signingConfig = signingConfigs.getByName("debug")
                   }
+              }
+          }
+
+          kotlin {
+              compilerOptions {
+                  jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
               }
           }
 
@@ -101,10 +108,16 @@ jobs:
           plugins {
               id("dev.flutter.flutter-plugin-loader") version "1.0.0"
               id("com.android.application") version "9.1.0" apply false
+              id("org.jetbrains.kotlin.android") version "2.2.20" apply false
           }
 
           include(":app")
           EOF
+
+          {
+            echo "android.newDsl=false"
+            echo "android.builtInKotlin=false"
+          } >> app/android/gradle.properties
 
       - name: Resolve Flutter packages
         working-directory: app
