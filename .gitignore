@@ -1,0 +1,40 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.pem
+*.key
+agent.properties
+secrets.*
+credentials.*
+
+# Runtime/private state
+*.log
+*.pid
+*.token
+*.secret
+config.local.*
+*.local.json
+
+# Build output
+build/
+.dart_tool/
+.gradle/
+.idea/
+.vscode/
+*.iml
+
+# OS/editor
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Large distribution binaries are published via Releases
+*.exe
+*.apk
+*.ipa
+MC_LATEST_*.zip
