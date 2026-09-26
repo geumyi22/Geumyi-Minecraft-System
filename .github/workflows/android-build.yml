@@ -1,4 +1,4 @@
-name: Build GSCM 1.1.1 Android APK
+name: Build GSCM 1.1.2 Android APK
 
 on:
   push:
@@ -39,6 +39,22 @@ jobs:
           unzip -q gscm-source.zip -d app
           test -f app/pubspec.yaml
 
+      - name: Migrate Android build to AGP 9 built-in Kotlin
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("app/android/app/build.gradle.kts")
+          s=p.read_text()
+          s=s.replace('    id("kotlin-android")\\n','')
+          s=s.replace('\\n    kotlinOptions {\\n        jvmTarget = JavaVersion.VERSION_17.toString()\\n    }\\n','\\n')
+          p.write_text(s)
+          p=Path("app/android/settings.gradle.kts")
+          s=p.read_text().replace('    id("org.jetbrains.kotlin.android") version "2.4.0" apply false\\n','')
+          p.write_text(s)
+          PY
+
       - name: Resolve Flutter packages
         working-directory: app
         run: flutter pub get
@@ -60,16 +76,16 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          cp app/build/app/outputs/flutter-apk/app-release.apk dist/GSCM-v1.1.1-Android.apk
-          sha256sum dist/GSCM-v1.1.1-Android.apk > dist/GSCM-v1.1.1-Android.apk.sha256
+          cp app/build/app/outputs/flutter-apk/app-release.apk dist/GSCM-v1.1.2-Android.apk
+          sha256sum dist/GSCM-v1.1.2-Android.apk > dist/GSCM-v1.1.2-Android.apk.sha256
           ls -lh dist
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GSCM-1.1.1-Android
+          name: GSCM-1.1.2-Android
           path: |
-            dist/GSCM-v1.1.1-Android.apk
-            dist/GSCM-v1.1.1-Android.apk.sha256
+            dist/GSCM-v1.1.2-Android.apk
+            dist/GSCM-v1.1.2-Android.apk.sha256
           if-no-files-found: error
           retention-days: 14
