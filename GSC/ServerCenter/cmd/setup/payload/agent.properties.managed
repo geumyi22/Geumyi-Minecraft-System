@@ -1,0 +1,57 @@
+# GeumyiStatusAgent 0.5.4 - Geumyi Server Center managed template
+# 기존 Agent 설정이 있으면 설치기가 자동 마이그레이션하며, 없으면 아래 템플릿으로 시작합니다.
+listen.bind=127.0.0.1
+listen.port=8877
+secret=CHANGE_THIS_SAME_SECRET
+state_api_secret=CHANGE_THIS_SAME_SECRET
+allow_unauthenticated_loopback_state=true
+allow_loopback_ingest_without_matching_secret=false
+allow_legacy_secret_only_ingest=true
+allow_loopback_shutdown=true
+timezone=Asia/Seoul
+
+# Discord Bot
+discord.bot_token=PUT_YOUR_BOT_TOKEN_HERE
+discord.guild_id=
+discord.status_channel_id=
+discord.events_channel_id=
+discord.status_message_id=
+discord.gateway_enabled=true
+discord.slash_commands=true
+discord.event_dedupe_seconds=30
+
+# Minecraft servers
+servers=playground,survival
+server.playground.name=금이 놀이터
+server.playground.host=127.0.0.1
+server.playground.java_port=25566
+server.playground.gds_api_port=8765
+server.survival.name=금이 야생
+server.survival.host=127.0.0.1
+server.survival.java_port=25565
+server.survival.gds_api_port=8766
+
+update_interval_seconds=15
+offline_after_seconds=35
+startup_grace_seconds=30
+ping_timeout_ms=1500
+planned_shutdown_memory_minutes=180
+
+daily_summary.enabled=true
+daily_summary.hour=0
+daily_summary.minute=5
+# ===== GSC Control API (Agent 0.5.3) =====
+gsc.enabled=true
+gsc.base_url=http://127.0.0.1:8787/api/v1
+# Leave blank when GSC allow_loopback_no_auth=true. Otherwise set a local API/device token.
+gsc.token=
+gsc.timeout_ms=2500
+gsc.server_id.playground=playground
+gsc.server_id.survival=wild
+
+# Discord management authorization. Built-in Discord Administrator permission is always accepted.
+# Comma-separated snowflake IDs; optional.
+discord.owner_user_ids=
+discord.admin_role_ids=
+discord.moderator_role_ids=
+

@@ -1,0 +1,167 @@
+{
+  "custom.test": {
+    "sounds": [
+      "custom/test"
+    ]
+  },
+  "custom.case": {
+    "sounds": [
+      "custom/case"
+    ]
+  },
+  "custom.happy": {
+    "sounds": [
+      "custom/happy"
+    ]
+  },
+  "custom.jump": {
+    "sounds": [
+      "custom/jump"
+    ]
+  },
+  "custom.what": {
+    "sounds": [
+      "custom/what"
+    ]
+  },
+  "custom.gotong": {
+    "sounds": [
+      "custom/gotong"
+    ]
+  },
+  "custom.stopbutton": {
+    "sounds": [
+      "custom/stopbutton"
+    ]
+  },
+  "custom.onetick": {
+    "sounds": [
+      "custom/onetick"
+    ]
+  },
+  "custom.twotick": {
+    "sounds": [
+      "custom/twoticks"
+    ]
+  },
+  "custom.stinger": {
+    "sounds": [
+      "custom/stinger"
+    ]
+  },
+  "custom.roundover": {
+    "sounds": [
+      "custom/roundover"
+    ]
+  },
+  "custom.huh": {
+    "sounds": [
+      "custom/huh"
+    ]
+  },
+  "custom.whattv": {
+    "sounds": [
+      "custom/whattv"
+    ]
+  },
+  "custom.cc": {
+    "sounds": [
+      "custom/cc"
+    ]
+  },
+  "funny.amazon1": {
+    "sounds": [
+      "funny/amazon1"
+    ]
+  },
+  "funny.amazon2": {
+    "sounds": [
+      "funny/amazon2"
+    ]
+  },
+  "geumyitv.bollollo": {
+    "sounds": [
+      "geumyitv/bollollo"
+    ]
+  },
+  "geumyitv.gcum": {
+    "sounds": [
+      "geumyitv/gcum"
+    ]
+  },
+  "geumyitv.gellelle": {
+    "sounds": [
+      "geumyitv/gellelle"
+    ]
+  },
+  "geumyitv.ollollo": {
+    "sounds": [
+      "geumyitv/ollollo"
+    ]
+  },
+  "geumyitv.star": {
+    "sounds": [
+      "geumyitv/star"
+    ]
+  },
+  "geumyitv.bananachacha": {
+    "sounds": [
+      "geumyitv/bananachacha"
+    ]
+  },
+  "geumyitv.test1": {
+    "sounds": [
+      "geumyitv/test1"
+    ]
+  },
+  "custom.kbs": {
+    "sounds": [
+      "custom/kbs"
+    ]
+  },
+  "geumyitv.bang": {
+    "sounds": [
+      "geumyitv/bang"
+    ]
+  },
+  "custom.off": {
+    "sounds": [
+      "custom/off"
+    ]
+  },
+  "custom.on": {
+    "sounds": [
+      "custom/on"
+    ]
+  },
+  "custom.doff": {
+    "sounds": [
+      "custom/doff"
+    ]
+  },
+  "custom.don": {
+    "sounds": [
+      "custom/don"
+    ]
+  },
+  "geumsong.goldvania": {
+    "sounds": [
+      "geumsong/goldvania"
+    ]
+  },
+  "geumsong.triple_bananachacha": {
+    "sounds": [
+      "geumsong/triple_bananachacha"
+    ]
+  },
+  "geumyitv.geumyiinhi": {
+    "sounds": [
+      "geumyitv/geumyiinhi"
+    ]
+  },
+  "geumyitv.gsans": {
+    "sounds": [
+      "geumyitv/gsans"
+    ]
+  }
+}

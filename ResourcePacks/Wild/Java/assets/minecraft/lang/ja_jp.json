@@ -1,0 +1,5911 @@
+{
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"Adventuring Time": "冒険の時間",
+"Discover every biome": "全てのバイオームを踏破する",
+
+"Boaty McBoatface": "あれは...、噂の海洋研究船！？",
+"Craft a boat for sailing on the high seas": "ボートを作り、漕ぐ",
+
+"Hired Help": "お手伝いさん",
+"Summon an Iron Golem to help defend a village": "村を守ってもらうためにアイアンゴーレムを召喚する",
+
+"Cold Feet": "冷え性",
+"Discover every cold biome": "全ての寒いバイオームを発見する",
+
+"Disc Jockey": "DJ",
+"Collect all 12 music discs": "12種類全ての音楽ディスクを手に入れる",
+
+"Do You Want to Trade?": "交換するかい？",
+"Find an NPC village": "村を見つける",
+
+"Dry Spell": "乾燥魔法",
+"Dry a sponge in a furnace": "かまどでスポンジを乾かす",
+
+"Filthy Rich": "大金持ち",
+"Make 64 emeralds": "エメラルドを64個手に入れる",
+
+"Filthy Stinkin' Rich": "金に汚い億万長者",
+"Make 64 emerald blocks": "エメラルドブロックを64個手に入れる",
+
+"Flower Power": "お花の力",
+"Collect all types of flowers": "全ての種類の花を手に入れる",
+
+"Ghostbuster!": "ゴーストバスター！",
+"Bust a Vex summoned by an Evoker": "エヴォーカーが召喚したヴェックスを倒す",
+
+"Grave Robber": "砂漠の墓荒らし",
+"Enter a pyramid in a desert": "砂漠のピラミッドを見つける",
+
+"Heeere's Johnny!": "こいつは...、Johnny！",
+"Kill a Vindicator": "ヴィンディケーターを倒す",
+
+"House of Psychos": "サイコパスの館",
+"Find a Woodland Mansion": "森の洋館を見つける",
+
+"I hereby dub thee...": "私は、汝をこう称す...",
+"Obtain a name tag": "名札を手に入れる",
+
+"Just Keep Swimming": "泳ぎ続けるのだ",
+"Go for a swim": "泳ぎに行く",
+
+"Kilometre Walk": "1kmの道程",
+"It's not that far in real life": "現実ではそんなに遠くありません",
+
+"Laser Sharks!": "目からビーム",
+"Defeat a Guardian": "ガーディアンを倒す",
+
+"Magic Book": "魔法書",
+"Trade for an Enchanted Book": "エンチャントされた本を取引する",
+
+"Mapmaker": "測量者",
+"Craft or trade an empty map": "クラフトか、取引で白紙の地図を手に入れる",
+
+"Monumental": "海の遺跡",
+"Find an Ocean Monument": "海底神殿を見つける",
+
+"Music To My Ears": "心地よい音",
+"Find a music disc": "音楽ディスクを手に入れる",
+
+"One with the forest": "森と共に",
+"Discover every forest biome": "全ての森林バイオームを発見する",
+
+"Overgrown!": "成長し過ぎ！",
+"Discover every overgrown biome": "全ての覆い茂ったバイオームを発見する",
+
+"Overpowered": "圧倒的な力",
+"Obtain a Notch Apple": "ノッチリンゴを手に入れる",
+
+"Postmortal": "死を超えて",
+"Use a Totem of Undying to cheat death": "不死のトーテムを使用して死を免れる",
+
+"Adventure": "冒険",
+"Adventure and exploration": "冒険と探索",
+
+"Snow Feet": "雪の足跡",
+"Discover every snowy biome": "全ての雪バイオームを発見する",
+
+"Spear Fishing": "槍漁業",
+"Kill a Guardian with arrows": "ガーディアンを弓で倒す",
+
+"Tarzan": "ターザン",
+"Swing (or climb) on some vines": "ツタを振る（か登る）",
+
+"Ten Thousand Blocks": "1万ブロック先",
+"A journey that long begins with a single step": "千里の道も一歩から",
+
+"The Deep End": "海の深淵",
+"Defeat an Elder Guardian": "エルダーガーディアンを倒す",
+
+"The Shielding": "遮蔽",
+"A shield does no better than a locked door": "いくら盾でもロックされたドアには敵わない",
+
+"This is Mine Now!": "もう私の鉱山だ！",
+"Find an abandoned mineshaft that was not dug out by you": "捨てられた廃坑を見つける",
+
+"Tomb Raider": "ジャングルの墓荒らし",
+"Enter a jungle temple": "ジャングルの寺院をを見つける",
+
+"Treasure Map": "宝の地図",
+"Trade for an Explorer Map": "取引で探検家の地図を手に入れる",
+
+"Voyage": "旅",
+"A hundred kilometres!": "100km！",
+
+"Warm Feet": "足が暖かい",
+"Discover every dry biome": "全ての乾いたバイオームを発見する",
+
+"Wet Feet": "足がビショビショ",
+"Discover every water biome": "全ての川、海のバイオームを発見する",
+
+"What a Deal!": "良い取引だ！",
+"Successfully trade with a Villager": "村人と取引をする",
+
+"Witchcraft": "妖術",
+"Find a witch hut in a swamp": "湿地で魔女の家を見つける",
+
+"Wololo!": "司祭による服従魔法",
+"Defeat an Evoker": "エヴォーカーを倒す",
+
+
+
+
+
+
+"A Masterpiece!": "傑作だ！",
+"Put up a painting": "絵画を飾る",
+
+"Ah, My Old Enemy...": "あぁ、俺の古い敵",
+"Craft every type of stairs": "全ての種類の階段を作る",
+
+"Benchmarking": "土台作り",
+"Construct a crafting bench with four wooden planks": "4つの木材で作業台をクラフトする",
+
+"Bricks!": "レンガ！",
+"Fire up that clay!": "粘土を焼き上げる",
+
+"Change of Sheets": "シーツの色替え",
+"Dye your bed a different color than white": "白色のベットを染色する",
+
+"Classy Glassy": "上品なガラス",
+"Smelt sand in a furnace to get glass": "砂を焼いてガラスを手に入れる",
+
+"Clay-Dough!": "粘土生地！",
+"Dig up some clay from a lake": "川から粘土を手に入れる",
+
+"Concrete Evidence": "コンクリの形跡",
+"Create concrete from concrete powder by dropping it into water": "コンクリートパウダーに水を流し、コンクリートを作る",
+
+"Creepers and Withers": "芸術は爆発だ！",
+"Engrave sandstone with creeper and wither patterns": "砂岩にクリーパーとウィザーの模様を彫る",
+
+"Display your items for all to see...": "あなたのアイテムを私に見せて...",
+"Craft an item frame for displaying your items": "額縁を作り、アイテムを飾る",
+
+"Electric!": "エレクトリック！",
+"Light up the area with some redstone lamps": "レッドストーンランプで周囲を照らす",
+
+"En Garde": "構えろ",
+"Erect some fencing": "フェンスを立てる",
+
+"Expensive!": "上品な光",
+"Light up the area with some sea lanterns": "シーランタンで周囲を照らす",
+
+"Fake fortress": "ネザー要塞の模造品",
+"Craft or collect all forms of nether brick, red nether brick, and nether wart blocks": "ネザーレンガ、赤いネザーレンガ、ネザーウォートブロックから作れる全てのブロックを手に入れる",
+
+"Fake monument": "海底神殿の模造品",
+"Craft or collect all forms of prismarine blocks": "プリズマリンブロックから作れる全てのブロックを手に入れる",
+
+"Fake stronghold": "エンド要塞の模造品",
+"Craft or collect normal, cracked, mossy and chiseled stone bricks": "石レンガ、ひび割れた石レンガ、苔むした石レンガ、模様入り石レンガから作れる全てのブロックを手に入れる",
+
+"Fluorescent!": "蛍光灯！",
+"Light up the area with some end rods": "エンドロッドで周囲を照らす",
+
+"Getting Wood": "木を手に入れる",
+"Attack a tree until a block of wood pops out": "アイテムになるまで木を叩く",
+
+"Glowing!": "発光剤",
+"Light up the area with glowstone": "グロウストーンで周囲を照らす",
+
+"Greek Art Decor": "ギリシャの美術装飾",
+"Craft quartz blocks, stairs, slabs, pillars and chiseled": "クォーツブロックから作れる全てのブロックを作る",
+
+"Halloween!": "今日はハロウィン",
+"Light up the area with jack o'lanterns!": "ジャック・オ・ランタンで周囲を照らす",
+
+"It's a Sign!": "看板！",
+"Craft and place a sign": "看板を作って置く",
+
+"It's a Trap!": "粉バナナ！（これは罠だ！）",
+"Craft and place down a trapdoor": "トラップドアを作って置く",
+
+"Jailhouse Block": "監獄ブロック",
+"Craft or find iron bars": "鉄格子を手に入れる",
+
+"Ladder Climbers Inc.": "梯子登山株式会社",
+"Climb the ladder!": "はしごを登る",
+
+"Mannequin": "マネキン",
+"Craft an armor stand for displaying your armor": "防具立てを作り防具を飾る",
+
+"Master Logger": "木こりマスター",
+"Cut down a full stack of logs of all types": "1スタックの全種類の木を切り落とす",
+
+"Pathways": "おくのほそ道",
+"Use a shovel to create grass paths": "シャベルを使って草の道を作る",
+
+"Pot Planter": "花瓶職人",
+"Craft and place a flower pot": "花瓶を作って置く",
+
+"Rainbow Sand": "虹色の砂",
+"Craft concrete powder using sand, gravel and dye": "染料と砂を使ってコンクリートパウダーを作る",
+
+"Raise the flag!": "旗を掲げよ！",
+"Craft and place a banner": "旗を作って置く",
+
+"Rock Collection": "石集め",
+"Collect all the types of rocks": "全ての種類の石を手に入れる",
+
+"Building": "建築",
+"Your only limit is your imagination... and resources": "唯一の制限は、あなたの想像力です... あと資源",
+
+"Slabs For Days": "何十日分もの半ブロック",
+"Craft every type of slab": "全ての種類の半ブロックを作る",
+
+"Stationary Storage": "据え付け倉庫",
+"Craft and place down a chest for storing your items": "チェストを作って収納する",
+
+"Sweet dreams": "良い夢見てね",
+"Change your respawn point": "リスポーン地点を設定する",
+
+"The Glazed Terracotta Army": "彩釉テラコッタ軍",
+"Craft all 16 colors of glazed terracotta": "16色全ての彩釉テラコッタを作る",
+
+"The Rainbow You Always Wanted": "あなたが望んでいた虹",
+"Craft all 16 colors of concrete": "16色全てのコンクリートを作る",
+
+"The Terracotta Army": "テラコッタ軍",
+"Craft all 16 colors of terracotta (stained clay)": "16色全てのテラコッタ（堅焼き粘土）を作る",
+
+"The Walls": "ザ・ウォール",
+"Build some cobblestone walls": "丸石の壁を建てる",
+
+"Torched!": "まつあき！",
+"Light up the area with some torches": "松明で周囲を照らす",
+
+"Translucence": "半透明",
+"Craft all 16 colors of stained glass": "16色全てのガラスを作る",
+
+"What a pane": "なんて素晴らしい硝子なんだ",
+"Craft some glass panes": "板ガラスを作る",
+
+"Yay! I got my wood!": "イェーイ！木をゲットだぜ！",
+"Collect all six types of wood": "6種類全ての木を手に入れる",
+
+"Your Door Was Locked": "ドアはもう閉まっている",
+"Craft a door to stop monsters from entering your house": "モンスターから家を守るためにドアを作る",
+
+
+
+
+"Blast Shield": "シールド爆散",
+"Survive a creeper's blast with your shield": "盾でクリーパーを爆発に耐える",
+
+"Bombs Away!": "取扱注意！",
+"Use gunpowder and sand to craft TNT": "火薬と砂を使ってTNTを作る",
+
+"Bow Spammer": "ボウ・スパマー",
+"Attack a mob by bow-spamming": "少しもチャージしていない弓矢を連発して攻撃する",
+
+"Creepy Heads": "悍ましい生首",
+"Blow up a creeper with a charged creeper to get a creeper head": "帯電クリーパーの爆発にクリーパーを巻き込み、頭を手に入れる",
+
+"Dead Don't Die": "死ぬことはない",
+"Kill a zombie": "ゾンビを倒す",
+
+"Desert Nomad": "砂漠遊牧民",
+"Kill a husk": "ハスクを倒す",
+
+"Dungeon Crawler": "ダンジョン探検家",
+"Defeat all kinds of mobs from special structures": "ダンジョンにいる全種類のモンスターを倒す",
+
+"Egging, Dude!": "あいつには卵がお似合いだ！",
+"Vandalise something with eggs": "卵で何かを攻撃する",
+
+"Ender Worm": "エンダーワーム",
+"Prevent an endermite from maturing": "エンダーマイトが成長するのを拒む（知ってました？エンダーマイトが成長するとエンダードラゴンになるんですよ？笑）",
+
+"Eskimo": "エスキモー",
+"It may be illegal to hunt polar bears in real life, but not in Minecraft": "実生活でシロクマを狩ることは違法ですが、Minecraftでは違います（前翻訳者はこの進捗を解除して欲しくないらしいですが、Minecraftでは合法なので解除して魚を美味しく食べましょう。）",
+
+"Ew Ew Ew!": "エゥ エゥ エゥ！",
+"Kill a spider": "クモを倒す",
+
+"Fireworks Display": "花火大会",
+"Use gunpowder and paper to craft fireworks": "火薬と紙を使って花火を作る",
+
+"Frosty": "冷淡",
+"Kill a stray": "ストレイを倒す",
+
+"Gelatinous Cube": "ゼラチナス・キューブ",
+"Kill a slime": "スライムを倒す",
+
+"Hell Hunter": "地獄の狩人",
+"Defeat all kinds of Nether mobs": "ネザーの全種類のモブを倒す",
+
+"Iron Belly": "鉄の胃",
+"Stop starvation using rotten flesh": "腐った肉を食べて餓死を食い止める",
+
+"Leader of the Pack": "群れのリーダー",
+"Befriend a wolf": "オオカミと永遠の親友になる",
+
+"Keep Your Distance": "距離を保て",
+"Kill a Creeper with arrows": "クリーパーを弓矢で倒す",
+
+"Monster Hunter": "モンスターハンター",
+"Kill any hostile monster": "敵対モンスターを倒す",
+
+"Monsters Hunted": "モンスター狩りの達人",
+"Kill one of every hostile monster": "全ての敵対モンスターを倒す",
+
+"Night Runner": "夜の旅人",
+"Defeat all kinds of Overworld night mobs":  "夜間にスポーンする全種類のモブを倒す",
+
+"Not Today, Thank You": "今日はやめておきます",
+"Deflect an arrow with a shield": "盾で矢を跳ね返す",
+
+"Plane Walker": "空間旅行家",
+"Kill endermen in all three dimensions": "全3つの次元でエンダーマンを倒す",
+
+"Point Blank": "至近距離",
+"Shoot a mob from point-blank range": "モブの目の前で弓矢を当てる",
+
+"Poisonous Ew": "有毒な エゥ",
+"Kill a cave spider": "洞窟グモを倒す",
+
+"Combat": "戦闘",
+"Battle against the monsters of this world": "この世界のモンスターとの戦い",
+
+"Sniper Duel": "スナイパー対決",
+"Kill a skeleton with an arrow from more than 50 meters": "50m以上離れた場所からスケルトンを弓矢で倒す",
+
+"Snowball Fight": "雪合戦",
+"The spirit of Christmas... quickly drowned out by a battle": "クリスマスか...、リア充爆発しろ",
+
+"Spooky Skeleton": "不気味なスケルトン",
+"Kill a skeleton": "スケルトンを倒す",
+
+"Spooky Skulls": "不気味な頭蓋骨",
+"Blow up a skeleton with a charged creeper to get a skeleton skull": "帯電クリーパーの爆発にスケルトンを巻き込み、頭を手に入れる",
+
+"Still Talking!": "まだお話し中！",
+"Blow up a zombie with a charged creeper to get a zombie head": "帯電クリーパーの爆発にゾンビを巻き込み、頭を手に入れる",
+
+"Take Aim": "狙いを定めて",
+"Shoot something with a bow and arrow": "弓と矢で何かを撃つ",
+
+"Taste of your own medicine": "自業自得",
+"Kill a witch with a splash potion": "スプラッシュポーションでウィッチを倒す",
+
+"Tele-Morph": "瞬間-変身",
+"Damage a mob by teleporting into it": "エンダーパールをモブに投げて攻撃する",
+
+"Termite Control": "シロアリの支配",
+"Kill a silverfish": "シルバーフィッシュを倒す",
+
+"The ender of ender": "果ての果て",
+"Kill an enderman": "エンダーマンを倒す",
+
+"The Ghastly Eyes": "ゾッとする目",
+"Kill an invisible spider": "透明のクモを倒す",
+
+"The Mighty Hunter": "強大な狩人",
+"Hunt all types of animals with your bow": "全ての種類の動物を弓矢で狩る",
+
+"The Undead Cavalry": "不死の騎兵隊",
+"Encounter and defeat a skeleton horse in a thunderstorm": "雷雨に遭遇したスケルトンホースを倒す",
+
+"There has to be another way...": "他に手段は無いのか...？",
+"Kill a zombie villager": "村人ゾンビを倒す",
+
+"Trampoline": "トランポリン",
+"Craft a slime block using slimeballs": "スライムボールを使ってスライムブロックを作る",
+
+"Void Ender": "奈落の猟師",
+"Defeat all kinds of End mobs": "エンドの全種類のモブを倒す",
+
+"What a creep!": "怖っ！",
+"Kill a creeper": "クリーパーを倒す",
+
+"Witch!": "魔女！",
+"Kill a witch": "ウィッチを倒す",
+
+
+
+
+"Armor for the masses": "大量の敵もこれならば",
+"Obtain every protection related enchantment": "全てのダメージ軽減関連のエンチャントを付与する",
+
+"Bane of one-shotting spiders": "一撃でクモを破滅に導け",
+"Obtain Bane of Arthropods V": "虫特効Vのエンチャントを付与する",
+
+"Bow down to me!": "俺にひれ伏せ！",
+"Obtain Power V": "射撃ダメージ増加Vのエンチャントを付与する",
+
+"Complete Enchanter": "完璧なエンチャンター",
+"Obtain every enchantment throughout your enchanting career": "エンチャントの経験を生かして全てのエンチャントを付与する",
+
+"Curses!": "呪縛",
+"Obtain both types of curses": "全2つの呪いのエンチャントを付与する",
+
+"Fiery": "全てを燃やし尽くせ",
+"Obtain every fire related enchantment": "全ての火関連のエンチャントを付与する",
+
+"Fortunate Son": "幸せを呼ぶ",
+"Obtain Fortune III": "幸運IIIのエンチャントを付与する",
+
+"Knocking Your Socks Off": "ブーツを脱ぎ捨てて！",
+"Obtain Knockback and Punch enchantments": "剣にノックバック、弓にパンチのエンチャントを付与する",
+
+"Let It Go!": "ありのままに！",
+"Obtain boots enchanted with Frost Walker": "ブーツに氷渡りのエンチャントを付与する",
+
+"Librarian": "司書",
+"Build some bookshelves for your enchanting table": "エンチャントのために本棚を置く",
+
+"Like a Cat": "猫のように",
+"Obtain boots enchanted with Feather Falling": "ブーツに落下耐性のエンチャントを付与する",
+
+"Master Armorer": "完璧な防具鍛冶師",
+"Create a full suit of armor with all possible enchantments at max level": "エンチャント可能な全てのエンチャントを防具に付与し、完全な防具を作る",
+
+"Master Enchanter": "マスターエンチャンター",
+"Obtain every enchantment at their max level throughout your enchanting career": "エンチャントの経験を生かして全ての最大レベルのエンチャントを付与する",
+
+"Master Fisher": "完璧な釣り人",
+"Create a fishing rod with all possible enchantments at max level": "エンチャント可能な全てのエンチャントを釣り竿に付与し、完全な釣り竿を作る",
+
+"Master Knight": "完璧な騎士",
+"Create a sword with all possible enchantments at max level": "エンチャント可能な全てのエンチャントを剣に付与し、完全な剣を作る",
+
+"Master Miner": "完璧な鉱夫",
+"Create a pickaxe with all possible enchantments at max level": "エンチャント可能な全てのエンチャントをツルハシに付与し、完全なツルハシを作る",
+
+"Master Sniper": "完璧な弓兵",
+"Create a bow with all possible enchantments at max level": "エンチャント可能な全てのエンチャントを弓に付与し、完全な弓を作る",
+
+"Needle Sharp": "鋭い針",
+"Obtain Sharpness V": "ダメージ増加Vのエンチャントを付与する",
+
+"Heavy Metal": "ヘビーメタル",
+"Craft an anvil": "金床を作る",
+
+"Overkill": "やり過ぎ",
+"Deal eight hearts of damage in a single blow": "一撃でハート8個分のダメージを与える",
+
+"Pick Like Silk": "絹のようなツルハシ",
+"Use a Silk Touch enchanted pickaxe to obtain diamond ore as a block": "シルクタッチのエンチャントを付与する",
+
+"Enchanting": "エンチャント",
+"Enchant items to give them magical abilities": "エンチャントはアイテムに魔法の様な力をもたらします",
+
+"Scuba Gear": "スキューバ・ギア",
+"Obtain every water related enchantment": "全ての水関連のエンチャントを付与する",
+
+"Super Efficient": "圧倒的効率",
+"Obtain Efficiency V": "効率強化Vのエンチャントを付与する",
+
+"Unbreakable": "不可壊",
+"Obtain Mending on an item": "修繕のエンチャントを付与する（ちなみに不壊は「ふえ」と読みます）",
+
+"Undead Slayer": "不死狩り",
+"Obtain Smite V": "アンデット特効Vのエンチャントを付与する",
+
+
+
+
+"Anti-Gravity Generator": "半重力発生機",
+"Bring a shulker into the overworld and let it give you anti-gravity": "シュルカーをオーバーワールドに連れていき、浮遊の効果を得る",
+
+"Cow Jumped Over The Moon": "牛、月へ飛ぶ",
+"Bring a cow from the Overworld to the End and then kill it": "牛をエンドに連れていき、倒す",
+
+"Dragon Shield": "ドラゴンシールド",
+"Attempt to block the dragon's attacks": "エンダードラゴンの攻撃を跳ね返す",
+
+"End Bricks!": "エンドのレンガ！",
+"Craft end bricks from end stone": "エンドストーンからエンドストーンレンガを作る",
+
+"For Mother, Clarence": "母のために、クラレンス",
+"Kill a shulker": "シュルカーを倒す",
+
+"Free the End": "エンドの開放",
+"Good luck": "幸運を祈る",
+
+"Getting Chorus": "コーラスを得る",
+"Attack a chorus tree until it collapses": "アイテムになるまでコーラスプラントを叩く",
+
+"Great View From Up Here": "ここからの素晴らしい眺め",
+"Levitate up a distance of 50 metres": "シュルカーの攻撃で50ブロック以上浮遊する",
+
+"I'm Coming Back, Murph!": "ただいま、マーフィ！",
+"Travel far into the End dimension": "エンドの果てへ旅をする",
+
+"No! Don't let me leave, Murph!": "私にさよならと言わせないで、マーフィ！",
+"Travel so far into the End dimension you might as well be on another planet": "エンドで他の惑星があるくらい遠くまで旅をする",
+
+"Noxious Fumes": "不快な臭気",
+"Use dragon's breath to brew a lingering potion": "ドラゴンブレスを使い残留ポーションを作る",
+
+"Off With His Head!": "彼の頭を取ってやれ！",
+"Collect a dragon's head from the bow of an end ship": "エンドシップの船首からドラゴンの頭を手に入れる",
+
+"Poison Dart": "毒ダーツ",
+"Craft tipped arrows of poison": "毒の効果付き矢を作る",
+
+"Portable Storage": "ポータブルストレージ",
+"Use shulker shells to craft a shulker box": "シュルカーの殻を使ってシュルカーボックスを作る",
+
+"Purpurfect!": "プルパーフェクト",
+"Craft or collect purpur blocks, slabs, pillars and stairs": "プルファブロックから作れる全てのブロックを作る",
+
+"Remote Getaway": "遠方への逃走",
+"Escape the island": "島を脱出する",
+
+"The End": "おしまい",
+"Or the beginning?": "それとも始まり？",
+
+"Shouldn't my shield levitate too?": "盾が浮いちゃダメなの？",
+"Block a Shulker's bullet with your shield": "シュルカーの弾を跳ね返す",
+
+"Sky High": "空まで高く",
+"Fly up beyond the world height limit": "高度制限を超えて飛び上がる",
+
+"Sky's the Limit": "空はどこまでも高く",
+"Find an Elytra": "エリトラを見つける",
+
+"Some Breakthrough": "突破口の一つ",
+"Exhaust your elytra": "エリトラを使い果たす",
+
+"The City at the End of the Game": "ゲームの果ての都市",
+"Go on in, what could happen?": "入れ、何が起こるのだろうか？",
+
+"The End... Again": "おしまい...再び...",
+"Respawn the Ender Dragon": "エンダードラゴンを復活させる",
+
+"The Next Generation": "ザ・ネクストジェネレーション",
+"Hold the Dragon Egg": "ドラゴンの卵を手に入れる",
+
+"The Start of Something": "何かのはじまり？",
+"Craft your first ender crystal": "エンドクリスタルを作る",
+
+"Uh, Houston? We have a problem":"あー、ヒューストン？問題です",
+"Fly up to a ridiculous height": "馬鹿みたいな高さまで飛び上がる",
+
+"You Need a Mint": "口臭に気をつけよう",
+"Collect dragon's breath in a glass bottle": "ガラス瓶にドラゴンの息を詰める",
+
+
+
+
+"24 Carrot Gold": "24キャロットの金",
+"Eat a golden carrot": "金の人参を食べる",
+
+"A Balanced Diet": "バランスの取れた食事",
+"Eat everything that is edible, even if it's not good for you": "身体にどんな影響があろうと、食べられるものは全て食べる",
+
+"A Horse in Shining Armor": "輝く馬鎧",
+"Find diamond horse armor": "ダイヤモンドの馬鎧を手に入れる",
+
+"A Seedy Place": "種だらけの場所",
+"Plant a seed and watch it grow": "種を植え、成長を観察する",
+
+"Artificial Selection": "人工的選択",
+"Breed a horse and a donkey to get a mule": "ウマとロバを交配させラバを手に入れる",
+
+"Bake Bread": "パンを焼く",
+"Grow wheat and use it to bake bread": "小麦からパンを作る",
+
+"Bapple!": "Bapple！",
+"Crunch into an apple": "リンゴを食べる",
+
+"Blistering Barnacles!": "近寄らないで！",
+"Get spat at by a llama": "ラマに唾を吐かれる",
+
+"Breaking the Law of Conservation of Matter": "質量保存則の崩壊",
+"Craft 9 melon slices back into a block that, when broken, will probably not give you all 9 slices back": "スイカを壊し、スイカの薄切りを9枚集めてスイカブロックを作る",
+
+"Care For the Environment": "環境保全",
+"Plant down a sapling": "苗木を植える",
+
+"Catching Nemo": "ニモを捕まえろ！",
+"Catch a clownfish": "クマノミを釣る",
+
+"Chatterbox": "おしゃべり",
+"Tame a Parrot using seeds. WARNING: Do not use a cookie!": "オウムを種を使ってなつかせる 注意:クッキーはあげないで！",
+
+"Cow Tipper": "牛転がし",
+"Harvest some leather": "皮を手に入れる",
+
+"Cowboy": "カウボーイ",
+"Tame a horse by jumping on it over and over again": "ウマと何度も跳び、懐かせる",
+
+"Fishy Business": "生臭い仕事",
+"Catch a fish": "魚を釣る",
+
+"Die, Potato!": "終わりだ！ポテト！",
+"Squash and eat a potato": "ジャガイモを潰して食べる",
+
+"Do you want to build a snowman?": "雪だるま作ろう",
+"Use a pumpkin and snow blocks to build a snow golem": "カボチャと雪ブロックでスノーゴーレムを作る",
+
+"Ecologist": "生態学者",
+"Plant down all six types of sapling": "全6種の苗木を植える",
+
+"Feeling Sheepish": "ジンギスカン",
+"You'll get over it": "羊切りを決めてやれ",
+
+"Getting Into a Stew": "やめられないシチュー",
+"Make and eat some rabbit stew": "ウサギシチューを作って食べる",
+
+"Have a Shearful Day": "毛刈りデー",
+"Use two iron ingots to craft shears": "鉄インゴット2つでハサミを作る",
+
+"High Steaks": "三ツ星ビーフ",
+"The steaks are high for this advancement!": "ステーキは美味い",
+
+"Hot Topic": "ホットトピック",
+"Construct a furnace out of eight stone blocks": "8つの丸石でかまどを作る",
+
+"Lion Tamer": "ライオン使い",
+"Tame an Ocelot using fish": "魚でヤマネコを懐かせる",
+
+"Me Love Cookie": "ワタクシはクッキーを愛してますザンス",
+"Bake some cookies... and then scoff them all yourself": "クッキーを焼く...そいでそいつをあざけりな！",
+
+"Meat Lovers": "肉愛好家",
+"Eat every type of meat, even if uncooked or rotten": "全ての種類の肉を食べる、たとえ生でも腐っていても",
+
+"Milk does your body good": "牛乳は身体に良い",
+"Take a swig swig swig swig": "ゴクゴクゴクゴク",
+
+"Mushroom, Mushroom, Mushroom, Mushroom!": "キノコ、キノコ、キノコ、キノコ！",
+"Slurp some mushroom stew": "キノコシチューを啜る",
+
+"Naturally Carved": "彫刻は自然に",
+"Harvest some spooky pumpkins": "不気味なカボチャを手に入れる",
+
+"Not Today!": "なんて日だ！",
+"Eat a poisonous potato": "青くなったジャガイモを食べる",
+
+"Overpopulation": "人口過剰",
+"Breed every type of animal": "全ての種類の動物を繁殖させる",
+
+"Pork Chop": "ポークチョップ",
+"You know kung fu, how about pork chop?": "おめぇ豚れたいか？",
+
+"Rabbit Season": "ウサギの季節",
+"Killing bunnies is cruel. Period.": "ウサギを殺すことは残酷だ",
+
+"Rainbow Collection": "虹色コレクション",
+"Gather all 16 colors of wool": "16色全種類の羊毛を手に入れる",
+
+"Renewable Energy": "再生可能エネルギー",
+"Smelt wood trunks using charcoal to make more charcoal": "木炭を使って原木を精錬し、さらに多くの木炭を作る",
+
+"Repopulation": "種の繁栄",
+"Breed two cows with wheat": "小麦で牛を繁殖させる",
+
+"Farming": "農業",
+"The world is full of friends and food": "この世界は友達と食べ物でいっぱいです",
+
+"Salmonella Poisoning": "サルモネラ食中毒",
+"Eat some raw salmon... and not get poisoned after all": "生鮭を食べたね...大丈夫、無害だから",
+
+"Serious Dedication": "真面目な献身",
+"Completely use up a diamond hoe, and then reevaluate your life choices": "ダイヤのクワを使い切り、自分について考え直す",
+
+"So Good": "鳥貴族",
+"Can't beat it, can't beat it": "焼き鳥は最高だ！",
+
+"Souperman": "スープァーマン",
+"Beetroot soup gives you souperpowers!": "ビートルートスープはあなたにスープァな力を与えるでしょう！",
+
+"Sugar, Sugar": "シュガー、シュガー",
+"Harvest some sugar cane from a river or ocean": "川や海からサトウキビを手に入れる",
+
+"Sushi": "寿司",
+"Eat some raw fish": "生鱈を食べる",
+
+"The Lie": "The Cake Is a Lie",
+"Wheat, sugar, milk and eggs!": "小麦、砂糖、牛乳、卵を使ってケーキを焼く",
+
+"The Melon! The Melon! The Melon!": "スイカ！",
+"Eat a melon. Be careful not to drop it over a cliff": "スイカの切れ端を食べる",
+
+"The Pie": "ザ・パイ",
+"Bake a pumpkin pie": "パンプキンパイを食べる",
+
+"Trimming the Treetops": "いざ盆栽",
+"Use shears to obtain leaf blocks": "ハサミを使って葉ブロックを手に入れる",
+
+"Ultra Hardcore": "ウルトラハードコア",
+"Craft and eat a normal golden apple": "金のリンゴを作って食べる",
+
+"Vegetarian": "菜食主義",
+"Eat every type of fruit, vegetables, and any sort of plant matter": "全種類の果物、野菜、植物を食べる",
+
+"When Pigs Used to Fly": "ブタさんの飛ぶ頃に",
+"Craft a carrot on a stick so you can ride a pig off a cliff": "ブタに乗って崖から落ちる",
+
+"You Lead, I'll Follow": "あなたが導け",
+"Craft a lead for forming a llama caravan": "リードを作り、ラマを連れて行く",
+
+
+
+
+"Acquire Hardware": "金属を手に入れる",
+"Smelt an iron ingot": "鉄インゴットを精錬する",
+
+"Bling Bling Gone": "宝石は消えた",
+"Completely use up a golden pickaxe, and then seriously reevaluate your life choices": "金のツルハシを使い果たし、これからの生き方を考え直す",
+
+"Coal Miner": "炭鉱夫",
+"Mine a stack of coal": "1スタックの石炭を掘る",
+
+"Fuel Engine": "薪炭機関",
+"Craft a powered minecart": "かまど付きトロッコを作る",
+
+"Cover Me With Diamonds": "ダイヤモンドで私を覆って",
+"Diamond armor saves lives": "ダイヤモンドの防具は命を救います",
+
+"Diamond Clad": "ダイヤモンドで着飾って",
+"A full suit of diamond armor saves even more lives": "ダイヤモンドの防具一式を作り、装着する",
+
+"Diamond Miner": "金剛鉱夫",
+"Mine a stack of diamonds. Good luck!": "1スタックのダイヤモンドを掘る。グッドラック！",
+
+"Diamonds!": "ダイヤモンド！",
+"Acquire diamonds": "ダイヤモンドを手に入れる",
+
+"Electric Rails": "電気を帯びたレール",
+"Making furnace minecarts completely useless": "かまど付きトロッコを粗大ゴミにする(翻訳者はかまど付きトロッコをクラフトしたことがありません)",
+
+"Enchanter": "エンチャントの使い手",
+"Craft an enchanting table": "エンチャントテーブルを作る",
+
+"Even MOAR Tools": "良質なツールスミス",
+"Craft a full diamond tools set": "全てのダイヤモンドの道具を手に入れる",
+
+"Fossil Fuel": "化石燃料",
+"Coal! As in dead dinosaurs!": "恐竜由来の化石！？",
+
+"Getting an Upgrade": "アップグレード",
+"Construct a better pickaxe": "より良いツルハシを作る",
+
+"Gold Miner": "金鉱夫",
+"Mine a stack of gold ore": "1スタックの金鉱石を掘る",
+
+"Gold Rush": "ゴールドラッシュ",
+"Strike gold and smelt it into a gold ingot": "金鉱石を見つけて精錬し、金インゴットを作る",
+
+"Hot Stuff": "ホットスタッフ",
+"Fill a bucket with lava": "バケツを溶岩で満たす",
+
+"Ice Bucket Challenge": "アイス・バケツ・チャレンジ",
+"Form and mine a block of Obsidian": "黒曜石を掘る",
+
+"Iron Man": "アイアンマン",
+"Craft a full suit of iron armor": "鉄の防具一式を作る",
+
+"Iron Miner": "鉄鉱夫",
+"Mine a stack of iron ore": "1スタックの鉄鉱石を掘る",
+
+"Isn't It Iron Pick": "鉄のツルハシで決まり",
+"Upgrade your pickaxe": "ツルハシを強化する",
+
+"Lapis Lazuli Miner": "青金鉱夫",
+"Mine enough lapis lazuli to craft a stack of lapis lazuli blocks": "1スタックのラピスラズリブロックを手に入れる",
+
+"Mineral Collection": "ミネラルコレクション",
+"Craft every type of mineral block": "全ての鉱石のブロックを作る",
+
+"MOAR Tools": "ツールスミス",
+"Craft a stone pickaxe, axe, shovel and hoe": "石のツルハシ、斧、シャベル、クワを作る",
+
+"Aww it broke!": "やっちまった！",
+"Break your first tool": "道具を壊してしまおう",
+
+
+"Craft a minecart using five iron ingots": "トロッコを作る",
+
+"Redstone Miner": "赤石鉱夫",
+"Mine enough redstone to craft a stack of redstone blocks": "1スタックのレッドストーンブロックを手に入れる",
+
+"Mining": "採掘",
+"Dig underground, gather resources": "地下を掘り、資源を集める",
+
+"Seeing Red": "朱を注ぐ",
+"Mine some redstone from the deepest caves": "洞窟の奥深くから赤く光る石を採掘する",
+
+"Suit Up": "装備せよ",
+"Protect yourself with a piece of iron armor": "鉄の防具で身を守る",
+
+"The way to spawn": "生まれた故郷へ",
+"Craft a compass in case you forgot where spawn is": "万一に備えて初期スポーン地点を忘れないためにコンパスを作る",
+
+"DIAM- oh, wait, no.": "ダイｙ じゃない！？",
+"It's still useful for enchanting": "エンチャントに便利",
+
+"We Need to Go Deeper": "さらなる深みへ",
+"Build, light and enter a Nether Portal": "ネザーポータルを作り、入る",
+
+"We've broken our last shovel": "最後のシャベルを壊してしまった",
+"Break all five types of shovels": "全素材のシャベルを破壊する",
+
+"What's the time, Mr Wolf?": "今何時だ！Mr.Wolf？",
+"Time to clean your clocks! (Or, craft them!)": "時計を洗う時間だ！(はよ作れ)",
+
+
+
+
+"A Terrible Fortress": "恐ろしい要塞",
+"Break your way into a Nether Fortress": "ネザー要塞に侵入する",
+
+"Basis of Brewing": "醸造の基本",
+"Harvest some nether wart from a nether fortress": "ネザー要塞からネザーウォートを回収する",
+
+"Beaconator": "ビーコネーター",
+"Bring a beacon to full power": "最大パワーのビーコンを作る",
+
+"Bring Home the Beacon": "生活のビーコン",
+"Construct and place a Beacon": "ビーコンを起動する",
+
+"Don't Step on it!": "それに乗るな！",
+"Mine some magma blocks": "マグマブロックを掘る",
+
+"Ender's Chest": "エンダーのチェスト",
+"Craft an ender chest for some extra inventory space": "アイテムをたくさん持つためにエンダーチェストを作る",
+
+"Eye Spy": "アイ・スパイ",
+"Follow an Ender Eye": "エンダーアイを追いかける",
+
+"Fire Blast Shield": "炎爆盾",
+"Block the explosion of a ghast's fireball": "ガストの火の玉を盾で防ぐ",
+
+"Giant Floating Jellyfish": "浮いている巨大なクラゲ",
+"Shoot down a ghast": "ガストを撃ち倒す",
+
+"Glows in the Dark": "闇に光る",
+"Craft spectral arrows using glowstone dust": "グロウストーンを使って光の矢を作る",
+
+"High Temperature Fluid Monster": "高温流体モンスター",
+"Kill a magma cube": "マグマキューブを倒す",
+
+"Into Fire": "炎の中へ",
+"Relieve a Blaze of its rod": "ブレイズロッドを手に入れる",
+
+"Limbo Walker": "リンボ・ウォーカー",
+"Get above the roof in the nether": "ネザーの天井に行く",
+
+"Local Brewery": "町のお薬屋さん",
+"Craft a Brewing Stand for brewing potions": "ポーションを作るために醸造台を作る",
+
+"Quicksand": "流砂",
+"You sink like quicksand and move slow like mud": "ソウルサンドの上でゆっくり歩く",
+
+"Return to Sender": "差出人に返送",
+"Destroy a Ghast with its fireball": "ガストの火の玉を打ち返す",
+
+"Nether": "ネザー",
+"Bring summer clothes": "夏服が必要です",
+
+"Spooky Scary Skeleton": "不気味で怖いスケルトン",
+"Obtain a wither skeleton's skull": "ウィザースケルトンの頭を手に入れる",
+
+"Subspace Bubble": "亜空間バブル",
+"Use the Nether to travel 7km in the Overworld": "ネザーを利用してオーバーワールドでの7kmを移動する",
+
+"The End?": "おしまい？",
+"Enter the End Portal": "エンドポータルに入る",
+
+"The Hunt Begins": "狩りを始めようか",
+"Kill a wither skeleton": "ウィザースケルトンを倒す",
+
+"The Nether's Shield": "ネザーシールド",
+"Block some blaze fireballs": "ブレイズの火の玉を盾で防ぐ",
+
+"The Tribal Snouts": "ああ、懐かしき友よ",
+"Kill a zombie pigman": "ゾンビピッグマンを倒す",
+
+"Uneasy Alliance": "不安な同盟",
+"Rescue a Ghast from the Nether, bring it safely home to the Overworld... and then kill it": "ガストをネザーから救出し、安全にオーバーワールドへ持ち帰り...そして倒す",
+
+"Withering Heights": "荒が丘",
+"Summon the Wither": "ウィザーを呼び出す",
+
+
+
+
+"A Furious Cocktail": "猛烈なカクテル",
+"Have every potion effect applied at the same time": "全ての種類のポーション効果の付与を同時に受ける",
+
+"A Much More Doable Challenge": "挑戦はいつまでも続く",
+"Get all the effects possible during your life (not all at the same time)": "生きている間に全ての種類の効果の付与を受ける(同時でなくて良い)",
+
+"A Weak Brew": "弱くなるジュース",
+"Brew up a potion of Weakness": "弱化のポーションを作る",
+
+"Death by Magic": "魔法de死",
+"Kill a mob with a splash potion": "スプラッシュポーションでモブを倒す",
+
+"Hopping Mad": "腹立たしい跳ね方",
+"Get jump boost from a beacon or a potion": "ビーコンの力を使い高く飛ぶ",
+
+"How did We Get Here?": "どうやってここまで？",
+"Have every effect applied at the same time": "全ての種類の効果の付与を同時に受ける",
+
+"Hyper-Healing": "ハイパーヒーリング",
+"Brew and drink a regeneration potion": "再生のポーションを作る",
+
+"Medic!": "メディック！",
+"Brew a healing potion": "回復のポーションを作る",
+
+"Marine Marauder": "海の略奪者",
+"Catch a pufferfish and use it to brew a water breathing potion": "フグを捕まえ、水中呼吸のポーションを作る",
+
+"Nocturnal": "夜行性",
+"Brew and drink a night vision potion": "暗視のポーションを作る",
+
+"Performance-Enhancing Drugs": "ドーピング",
+"Brew a Speed Potion for cheating on athletics": "俊敏のポーションを作る",
+
+"Potions": "ポーション",
+"Brewing potions with helpful and hindering effects": "便利で効果的なポーションの醸造",
+
+"Stayin' Frosty": "熱に負けない",
+"Drink a fire resistance potion so you can go swimming in lava": "耐火のポーションを飲み、マグマに入る",
+
+"Super Strength": "超最強",
+"Brew a Strength Potion for cheating on weightlifting": "重量上げで不正をするために力のポーションを作る",
+
+"The Invisible Player": "不可視化",
+"Brew and drink an invisibility potion": "透明化のポーションを作り、飲む",
+
+"Zombie Doctor": "ゾンビドクター",
+"Cure a zombie villager": "村人ゾンビを治療する",
+
+
+
+
+"Bling Plate": "金板",
+"Dine in style! (No, not really)": "流行のディナーだ！",
+
+"Comparing Comparator": "コンパイング・コンパレーター",
+"Craft a redstone comparator": "レッドストーンコンパレーターを作る",
+
+"Dispense With This": "発射はこれで",
+"Construct a dispenser": "ディスペンサーを作る",
+
+"Metal Plate": "鉄板",
+"Dinner time!": "夕食だ！",
+
+"Moving Parts": "稼動部",
+"Craft a piston so you can push things": "ピストンを作る",
+
+"Mozart": "モーツァルト",
+"Craft a note block": "音符ブロックを作る",
+
+"Observer Buddy": "オブザーバー・バディー",
+"Craft an observer": "オブザーバーを作る",
+
+"Pressure Detector": "圧力形受振機",
+"Use a pressure plate to craft a detector rail": "感圧板を使ってディレクターレールを作る",
+
+"Quartz Miner": "水晶鉱夫",
+"Mine enough nether quartz to craft a stack of quartz blocks": "1スタックの水晶ブロックを手に入れる",
+
+"Quirky Quartz": "奇妙な水晶",
+"Mine Nether Quartz from the Nether": "ネザーからネザー水晶を掘る",
+
+"Repeating Repeater": "リピーティング・コンパレーター",
+"Craft a redstone repeater for delaying signals": "レッドストーンリピーターを作る",
+
+"Redstone": "レッドストーン",
+"Cracking contraptions": "素敵な仕掛け",
+
+"Solar Power": "太陽光発電",
+"Craft a daylight sensor": "日照センサーを作る",
+
+"Space Dropper": "空き場にドロップ！",
+"Craft a dropper for item transportation": "アイテムを輸送するためにドロッパーを作る",
+
+"Space Hopper": "空き場にホップ！",
+"Craft a hopper for item transportation": "アイテムを輸送するためにホッパーを作る",
+
+"Sticky Parts": "ねばねば",
+"Craft a sticky piston so you can pull things": "粘着ピストンを作り、何かを押す",
+
+"Tripping Over": "つまずいた！",
+"Craft a tripwire hook for your traps": "トラップのためにトリップワイヤーフックを作る",
+
+"Troll Chest": "トロールチェスト",
+"Craft a trapped chest to troll your friends": "トラップのためにトラップチェストを作る",
+
+"Under Pressure": "圧力をかけられて",
+"Craft a pressure plate": "感圧板を作る",
+
+
+
+
+
+"Beginning": "新たなはじまり",
+"A brave new world": "勇ましき新たな世界",
+
+"Time to Chop!": "いざ伐採！",
+"Use planks and sticks to make a axe": "木材と棒を使って、木の斧を作る",
+
+"Time to Farm!": "いざ農業！",
+"Use planks and sticks to make a hoe": "木材と棒を使って、木のクワを作る",
+
+"Time to Mine!": "いざ採掘！",
+"Use planks and sticks to make a pickaxe": "木材と棒を使って、木のツルハシを作る",
+
+"Time to Strike!": "いざ突撃！",
+"Use planks and sticks to make a sword": "木材と棒を使って、木の剣を作る",
+
+
+
+"Stripper":  "樹皮剥ぎ",
+"Strip the bark off of all six types of logs then pick them up": "全6種類の原木の樹皮を剥ぐ",
+
+
+
+"Flint Miner": "火打石鉱夫",
+"Mine a stack of flint": "1スタックの火打石を手に入れる",
+
+"My work here is done": "仕事は終わった",
+"Get caught in a cave-in of gravel": "洞窟で砂利を手に入れる",
+
+"Nananananananana...": "ﾅﾅﾅﾅﾅﾅﾅﾅﾅ...(超音波)",
+"Accidentally hit a bat underground": "地下にいるコウモリを攻撃する",
+
+"Obsidian Miner": "黒曜石鉱夫",
+"Mine a stack of obsidian. (This might take a while...)": "1スタックの黒曜石を掘る(頑張れ)",
+
+"Rock Bottom": "岩の奥底",
+"Dig down to the bottom of the world": "世界の底を掘る",
+
+"Spelunker": "スペランカー",
+"Enter a cave": "洞窟に入る",
+
+"Stone Age": "石器時代",
+"Mine stone with your new pickaxe": "新しいツルハシで石を掘る",
+
+
+
+
+"An amazing story!": "素晴らしい物語だ！",
+"Finish writing in your book or get a book from another player": "自ら本を書くか、他のプレイヤーから書き終えた本を貰う",
+
+"Aquatic Biofuel": "水生バイオ",
+"Craft a dried kelp block for use as a great fuel source": "燃料のために乾燥した昆布ブロックを作る",
+
+"Hay there!": "やあ！干し草の俵！",
+"Craft a stack of hay blocks": "1スタックの干し草の俵を作る",
+
+"It's full of ink": "スプラトゥーン",
+"Obtain some ink from hunting a squid": "イカを倒しイカスミを手に入れる",
+
+"It's where nutella comes from": "チョコはここから",
+"Obtain some cocoa beans from a jungle": "ジャングルでカカオ豆を手に入れる",
+
+"Kelp me!": "昆布、若芽、鹿尾菜どれだ？",
+"Collect some kelp from an ocean": "海で昆布を手に入れる",
+
+"Pumpa kungen!": "カボチャの王様！",
+"Carve a stack of pumpkins": "1スタックのカボチャを手に入れる",
+
+"The Meloncholy Dane": "スイカなデンマーク人",
+"Craft a stack of melon blocks": "1スタックのスイカブロックを作る",
+
+"Undersea Gardener": "海中庭師",
+"Craft a stack of dried kelp blocks": "1スタックの乾燥した昆布ブロックを作る",
+
+"Write your thoughts": "考えを記す",
+"Use a book, ink and a feather to craft a book and quill": "本、イカスミ、羽を使って、本と羽ペンを作る",
+
+
+
+"Animals": "動物",
+
+"Hoe hoe hoe!": "クワッ クワッ クワッ！",
+
+"Aquarium": "水族館",
+"Catch all four types of fish and set them free in an aquarium": "全4種類の魚を捕まえ、水族館にする",
+
+"Are we there yet?": "まだそこに？",
+"Tame a donkey": "ロバを手懐ける",
+
+"Bacon!": "ベーコン！",
+"Gotta kill this pig pig pig pig": "豚狩りを始めようか",
+
+"Chicken Cooper": "KFC",
+"Collect a stack of raw chicken and feathers": "1スタックの生の鶏肉と羽を手に入れる",
+
+"Farrier": "装蹄師",
+"Breed a horse in an effort to get a better one": "馬を選別するために馬を繁殖させる",
+
+"Feeding the §mDucks§r Chickens": "§mアヒル§r鶏の繁殖",
+"Breed chickens by feeding them seeds": "種で鶏を繁殖させる",
+
+"Hey, look, Mom!": "ねえ、見て、ママ！",
+"Use sea grass to make a turtle lay some eggs": "海草を与えてカメに卵を産ませる",
+
+"If only cats grew into kittens": "ネコが子ネコになったらなぁ",
+"Breed two cats together to get a kitty!": "2匹のネコを繁殖させて、子ネコを飼う",
+
+"In a hole there lived a Rabbit": "穴の中にはウサギが住んでいた",
+"Collect a stack of raw rabbit and rabbit hide": "1スタックの生のウサギ肉とウサギの革を手に入れる",
+
+"Mary Had a Little Lamb...": "メアリーは小さな子羊を飼っていた...",
+"Breed two sheep to get a lamb": "2匹の羊を繁殖させる",
+
+"Mooshroom Kingdom": "ムーシュルーム王国",
+"Find mooshrooms on a mushroom island": "きのこ島でムーシュルームを見つける",
+
+"Pig Slaughterer": "豚を虐殺する者",
+"Collect a stack of raw porkchops": "1スタックの生の豚肉を手に入れる",
+
+"Poacher": "密猟",
+"Kill a turtle for their shells only to find they don't actually drop any when killed": "カメを殺してもウロコは落ちませんよ",
+
+"Puppies! Yipe!": "子犬ちゃん！",
+"Breed two wolves together to get a puppy!": "2匹のオオカミを繁殖させて、子供オオカミを飼う",
+
+"Scuttler": "自立",
+"Get a scute from a baby turtle when it grows up": "子カメを成長させカメのウロコを手に入れる",
+
+"Sheariously?": "ハサミ挟み？",
+"Collect a stack of white wool": "1スタックの羊毛を手に入れる",
+
+"So I got that going for me": "やりたいことをやった",
+"Breed two llamas with hay": "干し草の俵で2匹のラマを繁殖させる",
+
+"Someone's been here before...": "誰のやねん",
+"Fish out a ratty old pair of boots": "釣りで革の靴を手に入れる",
+
+"Stay Calmer": "ラマったりと落ち着いて",
+"Tame a llama": "ラマを手懐ける",
+
+"Super Mooshroom": "スーパームーシュルーム",
+"Breed two stubborn mooshrooms together": "2匹のムーシュルームを繁殖させる",
+
+"Tactical Fishing": "戦術的漁業",
+"Catch a fish... without a fishing rod!": "魚を捕る... 釣竿なしで！",
+
+"They're breeding like rabbits!": "シルバニアファミリー",
+"Breed two bunnies together": "2匹のウサギを繁殖させる",
+
+"Tickle Time!": "くすぐる時間だ！",
+"Pluck some feathers from a chicken": "ニワトリから羽を手に入れる（毟る）",
+
+"Totally not an AFK fisher!": "自動釣り機構ではない！",
+"Fish out all types of items": "全種類のアイテムを釣り上げる",
+
+"Treasure Hunter": "トレジャーハンター",
+"Fish out a piece of treasure": "宝物を釣り上げる",
+
+"True Cow Tipper": "真の牛転がし",
+"Collect a stack of raw beef and leather": "1スタックの生の牛肉、革を手に入れる",
+
+"Turtle Army": "海亀軍",
+"Collect a stack of scutes": "1スタックのカメのウロコを手に入れる",
+
+"Turtle Soldier": "亀兵",
+"Craft a full turtle shell": "カメの甲羅を作る",
+
+"What a piece of junk!": "何じゃこりゃ！？",
+"Fish out a junk item": "ゴミを釣り上げる",
+
+"Wooly!": "ウーリィ！",
+"Obtain wool from a sheep by killing it": "羊を殺すことで羊毛を手に入れる",
+
+"Yay! Deadbush!": "枯れ木った枯れ木",
+"Get a deadbush cause you're a noob": "NOOBなら手に入れるべきだ！",
+
+
+
+
+"A Throwaway Joke": "もったいぶった一言",
+"Throw a trident at something. Note: Throwing away your only weapon is not a good idea": "トライデントを投げつける。注意:唯一の武器を捨てることは良い考えではありません。",
+
+"A Watery Grave": "湿っぽい墓",
+"Defeat a drowned in the briny depths. ": "深い海でドラウンドを倒す",
+"Gurgle": "ぐるぐる",
+
+"Anti-Air": "空中特効",
+"Shoot down a phantom with a bow from 30 blocks away": "30ブロック以上先から弓矢でファントムを打ち落とす",
+
+"Because I'm Aquaman!": "俺は海の覇者だぞ！",
+"Obtain a trident from a Drowned": "ドラウンドからトライデントを手に入れる",
+
+"Boned": "骨の折れない作業",
+"Grind up some bones into bonemeal": "骨を骨粉にする",
+
+"Creeper Killer": "クリーパーキラー",
+"Collect a stack of gunpowder": "1スタックの火薬を手に入れる",
+
+"Enderman Destroyer": "エンダーデストロイヤー",
+"Collect a stack of ender pearls": "1スタックのエンダーパールを手に入れる",
+
+"Freezing": "凍結",
+"Bring a husk to a tundra biome and then kill it": "ツンドラにハスクを連れていき、倒す",
+
+"Melting": "溶融",
+"Bring a stray to a desert biome and then kill it": "砂漠にストレイを連れていき、倒す",
+
+"Phantom Slayer": "ファントムスレイヤー",
+"Collect a stack of phantom membranes": "1スタックのファントムの皮膜を手に入れる",
+
+"Poseidon vs. Hades": "ポセイドンVSハーデス",
+"Hunt all types of nether creatures with your trident": "トライデントを用いて全てのネザーのモブを倒す",
+
+"Ricochet Swoop": "突進攻撃を跳ね返せ",
+"Deflect a Phantom's swoop with your shield": "ファントムの攻撃を盾で防ぐ",
+
+"Skeleton Smiter": "スケルトンスミター",
+"Collect a stack of bones": "1スタックの骨を手に入れる",
+
+"Slime Squisher": "スライムスクイッシャー",
+"Collect a stack of slimeballs": "1スタックのスライムボールを手に入れる",
+
+"Spider Smasher": "スパイダースマッシャー",
+"Collect a stack of string from spiders or cobwebs": "1スタックの糸を手に入れる",
+
+"The Aquatic Hunter": "水神",
+"Hunt all types of aquatic creatures with your trident": "トライデントを用いて水生生物を倒す",
+
+"The Phantom Menace": "幻影の脅威",
+"Get attacked by phantoms": "ファントムに攻撃を与える",
+
+"Tridented Shield": "三又の盾",
+"Block a trident thrown by a Drowned": "ドラウンドによるトライデントの攻撃を盾で防ぐ",
+
+"Underwater Duel": "深海の槍投げ対決",
+"Kill a drowned using a trident from at least 30 metres": "30m以上離れた場所からドラウンドをトライデントで倒す",
+
+"We'll handle this": "処理開始",
+"Lure a Phantom into the Nether and then kill it": "ファントムをネザーへ連れていき、倒す",
+
+"Zombie Slayer": "ゾンビスレイヤー",
+"Collect a stack of rotten flesh": "1スタックの腐肉を手に入れる",
+
+
+
+
+
+"Atlantis": "アトランティス？",
+"Explore some Underwater Ruins": "海底遺跡を見つける",
+
+"Dolphin Dasher": "イルカ式海中走法",
+"Get a speed boost from your friendly underwater companions": "水中に生息する生物から速度上昇をしてもらう",
+
+"Eeuuwww!": "エゥゥゥゥゥ！",
+"Get stuck in a cobweb": "1スタックのクモの巣を手に入れる",
+
+"Enchanted Forest": "エンチャントされた森",
+"Find a flower forest": "花の森を見つける",
+
+"Explorer of Worlds": "世界旅行",
+"Discover every biome including special biomes": "特別なバイオームを含む全てのバイオームを見つける",
+
+"Get Ship-rekt!": "船を荒らせ",
+"Come across a sunken ship": "沈没船を見つける",
+
+"Gold Mine!": "金鉱",
+"Find a mineshaft on the surface of a mesa biome": "生物の住みようのない土地では面白い廃坑があるようです",
+
+"Guardian Destroyer": "ガーディアンデストロイヤー",
+"Collect a stack of prismarine shards and crystals": "1スタックのプリズマリンシャードとプリズマリンクリスタルを手に入れる",
+
+"In a Pickle": "ピクルスの中に",
+"Collect some sea pickles from a coral reef": "サンゴ礁からシーピクルスを手に入れる",
+
+"Just a sample": "研究資料",
+"Collect some coral from a coral reef": "サンゴ礁からサンゴを手に入れる",
+
+"No Reefing!": "珊国史",
+"Collect all colors of coral blocks, plants and fans (including dead ones)": "全ての色のサンゴ、サンゴブロック、ウチワサンゴを採取する(枯れたものも含む)",
+
+"Power of the Ocean": "大洋の力",
+"Construct a Conduit in the ocean": "海にコンジットを置く",
+
+"Secret of the Igloo": "イグルーの秘密",
+"Find an igloo in a snowy tundra": "雪原内でイグルーを見つける",
+
+"Spike Ice!": "棘氷",
+"Break down an ice spike using a silk touch pickaxe": "シルクタッチのツルハシを使って氷塊を手に入れる",
+
+"Spikey!": "とげとげ！",
+"Run into a cactus": "サボテンに突っ込む",
+
+"Sponge Miner": "スポンジ鉱夫",
+"Collect a stack of sponges from ocean monuments": "1スタックのスポンジを手に入れる",
+
+"The Great Blocky Reef": "グレート・ブロックリー・リーフ",
+"Come across a coral reef in the ocean": "海にあるサンゴ礁を観光する",
+
+"There's a zombie on the lawn": "あのゾンビが芝生の上に",
+"Find a sunflower plains": "ひまわり草原を見つける",
+
+"Thick Ice!": "厚氷！",
+"Craft or mine a blue ice block from an iceberg": "氷山から青い氷を手に入れる",
+
+"Thin Ice!": "薄氷！",
+"Use a silk touch pickaxe to pick up some ice blocks": "シルクタッチのツルハシを使って氷を手に入れる",
+
+"Titanic": "タイタニック",
+"Find a shipwreck in an iceberg biome": "氷山バイオームで難破船を発見する",
+
+"X Marks the Spot": "Xマークスポット",
+"Use a treasure map to find a Heart of the Sea in Buried Treasure": "宝の地図を使い埋められた宝を探し出し海洋の心を手に入れる",
+
+
+
+
+"Engineer": "エンジニア",
+"Craft all types of redstone component": "全ての種類のレッドストーンの関連品をクラフトする",
+
+"Master Engineer": "完璧な技師",
+"Craft a stack of all types of redstone component": "全ての種類のレッドストーンの関連品を1スタッククラフトする",
+
+
+
+
+"Boomerang": "ブーメラン",
+"Turn your trident into a boomerang by getting Loyalty on it": "トライデントに忠誠をエンチャントすることでブーメランのようにする",
+
+"Very Very Frightening": "とてもとても恐ろしい",
+"Strike a Villager with lightning": "雷で村人を打つ",
+
+"Master Tridenteer": "完璧な槍術士",
+"Create a trident with all possible enchantments at max level": "エンチャント可能な全てのエンチャントを弓に付与し、完全なトライデントを作る",
+
+"Zeus": "ゼウス",
+"Obtain Channeling on a trident": "トライデントに召雷のエンチャントを付与する",
+
+
+
+
+"Blaze Extinguisher": "ブレイズ消防士",
+"Collect a stack of blaze rods": "1スタックのブレイズロッドを手に入れる",
+
+"Ghast Slayer": "ガストスレイヤー",
+"Collect a stack of ghast tears": "1スタックのガストの涙を手に入れる",
+
+"Glowstone Miner": "光石鉱夫",
+"Mine or craft a stack of glowstone blocks": "1スタックのグロウストーンブロックを手に入れる",
+
+"Magma Cube Squisher": "マグマキューブスクイッシャー",
+"Collect a stack of magma cream": "1スタックのマグマクリームを手に入れる",
+
+"Seeing Stars": "星を見る",
+"Mine some glowstone dust from the nether": "グロウストーンダストをネザーから掘り手に入れる",
+
+
+
+
+"Tank": "タンク",
+"Become nearly invincible to all damage using a Turtle Master Potion": "タートルマスターのポーションを醸造し無敵になる",
+
+"True Feather Falling": "羽の落ちるように",
+"Brew and drink a slow falling potion": "低速落下のポーションを醸造し飲む",
+
+
+
+
+"Extrabiologist": "生物学者の進歩",
+"Plant a chorus plant in the overworld for study": "研究のためにコーラスの木をオーバーワールドに植える",
+
+"Shulker Breaker": "シュルカーブレイカー",
+"Collect a stack of shulker shells": "1スタックのシュルカーの殻を手に入れる",
+
+"Void Walker": "虚無の旅人",
+"Explore every end biome": "全てのエンドのバイオームを見つける",
+
+
+
+
+
+"Iconic Merchandising Prop": "商売道具",
+"Create a pickaxe of the highest calibre": "最高レベルのツルハシを作る",
+
+"Living Like Kings": "王のように佇む",
+"Make yourself shiny with golden armor": "輝く金の防具をクラフトする",
+
+"Master Coal Miner": "真の石炭鉱夫",
+"Mine enough coal to make a stack of coal blocks": "1スタックの石炭ブロックを手に入れる",
+
+"Master Diamond Miner": "真の金剛鉱夫",
+"Mine enough diamond to make a stack of diamond blocks": "1スタックのダイヤモンドブロックを手に入れる",
+
+"Master Gold Miner": "真の金鉱夫",
+"Mine enough gold to make a stack of gold blocks": "1スタックの金ブロックを手に入れる",
+
+"Master Iron Miner": "真の鉄鉱夫",
+"Mine enough iron to make a stack of iron blocks": "1スタックの鉄ブロックを手に入れる",
+
+"Meet The Flintstones": "火打石との出会い",
+"Dig up some flint from a patch of gravel": "砂利から火打石を掘り当てる",
+
+"Stabcraft": "創痕",
+"Do you like my sword sword": "私の剣は良いでしょう？",
+
+"The Mistake!": "やらかした！",
+"Put Mending on a piece of golden armor and realise what you are doing in life": "金の防具に修繕エンチャントを付与し、人生を再確認する",
+
+
+
+
+"Barking Mad": "皮ってしまった",
+"Craft a bark block": "樹皮ブロックを作る",
+
+"Lost Its Bark": "もう皮れない",
+"Strip a bark block of its bark": "樹皮ブロックの皮を剥ぐ",
+
+"No Banner, Only Color!": "カラフルな旗",
+"Craft all 16 banner colors": "16色全ての旗を作る",
+
+"Professor Birch": "白樺教授",
+"Craft every item made out of birch wood": "全ての白樺の木関連のアイテムを作る",
+
+"Professor Dark Oak": "ダークオーク教授",
+"Craft every item made out of dark oak wood": "全てのダークオークの木関連のアイテムを作る",
+
+"Professor Oak": "オーク教授",
+"Craft every item made out of oak wood": "全てのオークの木関連のアイテムを作る",
+
+"Rainbow Dreams": "虹色の夢",
+"Craft every color of bed": "全ての色のベッドを作る",
+
+"Spruce Lee": "松の風下",
+"Craft every item made out of spruce wood": "全てのトウヒの木関連のアイテムを作る",
+
+"The Acacia King": "アカシアの王",
+"Craft every item made out of acacia wood": "全てのアカシアの木関連のアイテムを作る",
+
+"The Jungler": "ジャングル教授",
+"Craft every item made out of jungle wood": "全てのジャングルの木関連のアイテムを作る",
+
+
+
+
+"It's a cactus!": "サボテンだ！",
+"Break down a cactus in a desert": "砂漠でサボテンを切り落とす",
+
+"Mega Mushroom": "メガマッシュ",
+"Grow a giant mushroom and then harvest it with silk touch": "巨大なキノコを育てシルクタッチを使い切り落とす",
+
+"Shrooms": "茸",
+"Gather both types of mushroom": "2種類のキノコを手に入れる",
+
+
+
+
+"Direct Fishing": "直接的漁業",
+"Catch a fish by directly skewering it with a sword": "魚を剣で串刺しにし捕まえる",
+
+"Fuzzy Feet": "けばだち",
+"Craft all 16 colors of carpet": "16色全てのカーペットを作る",
+
+"Grinding Nemo": "ニモの粉砕",
+"Skewer a tropical fish": "熱帯魚を串刺しにする",
+
+"Lucky Charm": "幸運のお守り",
+"Get a rabbit's foot": "ウサギの足を手に入れる",
+
+"Master Angler": "鮟鱇仙人",
+"Collect a stack of all four types of fish": "1スタックの全ての種類の魚を手に入れる",
+
+"Tropical Collection": "トロピカルコレクション",
+"Collect all 22 of the common types of tropical fish": "22種類全ての熱帯魚を捕まえる",
+
+
+
+
+"Camouflage": "カモフラージュ",
+"Kill a mob while wearing the same type of mob head": "そのMobと同じ頭を被りながらそのMobを倒す",
+
+
+
+
+"Businessman": "ビジネスマン",
+"Trade with every type of villager career": "全ての種類の職業の村人と取引する",
+
+"MURDERER!": "殺人鬼！",
+"Kill a villager": "村人を殺す",
+
+"Pushed Around": "振り回せ",
+"Enter a bubble column": "気泡に入る",
+
+"Raidin' Master": "真の冒険者",
+"Discover every structure type": "全ての構造物を発見する",
+
+"Rekt!": "フルボッコ！",
+"Get killed by a natural iron golem defending its village": "村にいるアイアンゴーレムに殺される",
+
+"The sea calls you...": "海があなたを呼んでいる...",
+"Find an ocean": "海を見つける",
+
+"Travelling Merchant": "旅する商人",
+"Travel to every type of village": "全ての村を見つける",
+
+
+
+
+"Mobile Explosion": "可動爆弾",
+"Put TNT in a minecart": "TNT付きトロッコを置く",
+
+"Moving Moving Storage": "動動貯蔵",
+"Put a hopper in a minecart": "ホッパー付きトロッコを置く",
+
+"Moving Storage": "動貯蔵",
+"Put a chest in a minecart": "チェスト付きトロッコを置く",
+
+"Powerful Light": "逞しい光",
+"Craft and place a redstone torch": "レッドストーントーチを作って置く",
+
+"Railwayman": "鉄道士",
+"Craft a stack of all the different types of rails": "1スタックの全ての種類の線路を作る",
+
+
+
+
+"Do A Barrel Roll!": "バレルロール！",
+"Get Riptide on a trident so you can shoot yourself through the water": "トライデントに激流を付与し水中で身を投げる",
+
+"Newton's Flaming Laser Sword": "ニュートンの燃えるようなレーザー剣",
+"Have a diamond sword with Fire Aspect II": "ダイヤの剣に火属性IIを付与する",
+
+"To Infinity And Beyond!": "無限の彼方へ！",
+"Obtain Infinity on a bow": "弓に無限を付与する",
+
+"Ultimate Enchanter": "全知全能エンチャンター",
+"Obtain every enchantment at every level throughout your enchanting career": "全てのレベルの全てのエンチャントを付与する",
+
+
+
+"Shoot a mob with a spectral arrow": "発光の矢でMobを撃つ",
+
+"Bring Down The Beast": "獣降ろし",
+"Bring down a ghast with a sword": "ガストを引きずり下ろし剣で倒す",
+
+
+
+
+"The Point of No Return": "帰還不可",
+"Fall into the void": "奈落に落ちる",
+
+"Furious Ammunition": "猛烈な弾薬",
+"Craft every type of tipped arrow": "全ての種類の効果付きの矢を作る",
+
+"Somewhere Over The Rainbow...": "どこかに虹の彼方に...",
+"Craft all 16 shulker box types": "16色全てのシュルカーボックスを作る",
+
+
+
+
+
+
+"Beethoven": "ベートーヴェン",
+"Craft a jukebox with planks and a diamond": "木材とダイヤモンドでジュークボックスを作る",
+
+"Blast it!": "溶鉱炉で爆速精錬！",
+"Upgrade your furnace to a blast furnace using iron and smooth stone for smelting ores quicker": "鉄と滑らかな石でかまどを溶鉱炉にアップグレードし、鉱石を素早く精錬する",
+
+"Camping Out": "キャンプ気分",
+"Craft and place a campfire using some logs, sticks and coal": "原木、棒、石炭でたき火を作って設置する",
+
+"Classic Pocket Edition Block": "懐かしのブロック",
+"Craft a stonecutter using stone and an iron ingot": "石と鉄インゴットで石切台を作る",
+
+"Its original form": "元の姿に戻して",
+"Use your furnace to smelt cobblestone back into stone": "かまどで丸石を焼いて石に戻す",
+
+"MOAR Broken Tools": "道具クラッシャー",
+"Break every single tool and weapon in the game": "全ての道具と武器を壊す",
+
+"Not Chicken McNuggets?": "チキンナゲットじゃないの？",
+"Craft or find iron nuggets": "鉄塊を作る",
+
+"Not for creating copies of yourself": "自分のコピーは作れません",
+"Craft a smithing table": "鍛冶台を作る",
+
+"Rest in Pickaxes": "ピッケルよ安らかに",
+"Break your first diamond pickaxe": "ダイヤモンドのツルハシを壊す",
+
+"Sharpening Station": "研ぎ場",
+"Craft a grindstone using a stone slab, planks and sticks for repairing tools": "石のハーフブロック、板材、棒で砥石を作って道具を修理する",
+
+"Spawn Camping": "スポーンキャンプ",
+"Travel close to 0,0 coordinates and place down a campfire": "座標0,0付近まで行き、たき火を設置する",
+
+"Smokin' Hot": "スモークの達人",
+"Upgrade your furnace to a smoker using some logs": "原木でかまどを燻製器にアップグレードする",
+
+"Smooth, dude!": "スムーズだぜ！",
+"Smelt normal stone further into smooth stone": "石をさらに焼いて滑らかな石にする",
+
+"Where are all your clothes?": "服はどこいった？",
+"Break every type of armor piece in the game": "全ての種類の防具を壊す",
+
+
+
+
+"Barrel Rider": "樽乗り冒険者",
+"Craft and place a barrel. Totally not for riding in": "樽を作って設置する。決して乗るためじゃないよ！",
+
+"Crazy Walls": "壁マニア",
+"Craft every type of wall": "全ての種類の壁を作ろう",
+
+"Festival of Lights": "光の祭典",
+"Light up the area using a lantern": "ランタンで周囲を照らす",
+
+"Logos": "紋章コレクター",
+"Craft all the special banner patterns": "特別な旗の模様を全て作る",
+
+"Fruit of the Looms": "機織りの果実",
+
+"Prepare to meet your Loom!": "機織りの準備を！",
+"Craft a loom with string and planks for creating your own banners": "糸と板材で機織り機を作り、自分だけの旗を作る",
+
+"Speech! Speech! Speech!": "スピーチ！スピーチ！スピーチ！",
+"Craft a lectern using wooden slabs and a bookshelf then place it": "木材のハーフブロックと本棚で書見台を作って設置する",
+
+
+
+
+"Berry Nice!": "ベリーナイス！",
+"Pick and eat some sweet berries": "スイートベリーを摘んで食べる",
+
+"Disen Berry Berry Bad!": "ベリーベリーバッド！",
+"Get stuck in a sweet berry bush. Oh, icky yucky goo!": "スイートベリーの茂みに引っかかる。うわ、チクチク！",
+
+"I'm gonna be sick!": "気分が悪い！",
+"Slurp every kind of suspicious stew": "怪しげなシチューを全種類飲み干す",
+
+"Suspicious Looking Stew": "怪しげな見た目のシチュー",
+"Slurp some suspicious stew and pray you don't suddenly see giant flying eyeballs in the sky": "怪しげなシチューを飲み干し、空に巨大な目玉が現れないよう祈る",
+
+"The garbage will do!": "ゴミでもいい！",
+"Craft a composter using planks and wooden fences then place it": "板材と木の柵でコンポスターを作り設置する",
+
+
+
+
+"Birdkeeper": "バードキーパー",
+"Tame all parrot variants": "全種類のオウムを手懐ける",
+
+"Bunny Lover": "ウサギ好き",
+"Breed a baby bunny of every variant": "全種類のウサギの子供を繁殖させる",
+
+"Colorful Cavalry": "カラフル騎兵隊",
+"Dye 16 sets of leather horse armor each with one of the individual colors": "16色全てで革の馬鎧を染める",
+
+"Cool Kids": "クールキッズ",
+"Craft a leather jacket": "革の上着を作る",
+
+"Fashion Statement": "ファッションの主張",
+"Dye some leather pants with one color": "革のズボンを染める",
+
+"Horse Armorer": "馬鎧職人",
+"Make horse armor out of dead horses (No, joking, any leather will do)": "馬の革（冗談だよ、どんな革でもOK）で馬鎧を作る",
+
+"Llama Llama Duck King": "ラマラマダックキング",
+"Tame all llama variants": "全種類のラマを手懐ける",
+
+"Master Farrier": "馬の蹄鉄職人",
+"Tame all horse variants": "全種類の馬を手懐ける",
+
+"Mushroom Scientist": "キノコ科学者",
+"Strike a mooshroom with lightning and see what happens": "ムーシュルームに雷を落として何が起こるか調査する",
+
+"Shoe Shed": "靴小屋",
+"Dye 16 pairs of leather boots each with one of the individual colors": "16色全てで革のブーツを染める",
+
+"Snow Fox 64": "スノーフォックス64",
+"Breed two snow foxes with sweet berries": "スイートベリーで雪ギツネを繁殖させる",
+
+"What Does The Fox Say?": "キツネは何て鳴く？",
+"Breed two red foxes with sweet berries": "スイートベリーで赤ギツネを繁殖させる",
+
+"Which came first?": "どっちが先？",
+"The chicken... or the egg??": "ニワトリが先か...卵が先か？？",
+
+
+
+
+"Monsters": "モンスター",
+
+"Baby, baby, baby noo!!": "ベイビー、ベイビー、ベイビー、ノー!!",
+"Kill one of each of a baby zombie, zombie villager, husk, drowned and zombie pigman": "ゾンビ、ゾンビ村人、ハスク、ドラウンド、ゾンビピッグマンの子供をそれぞれ1体ずつ倒す",
+
+"Captain Etho": "キャプテン・エトー",
+"Defeat a Drowned holding both a nautilus shell and a trident": "オウムガイの殻とトライデントを持ったドラウンドを倒す",
+
+"Custom Boss Fight!": "自由自在なボス戦",
+"Give a zombie full diamond armor and a diamond sword... then kill it": "ゾンビにダイヤモンドの装備一式とダイヤモンドの剣を持たせてから倒す",
+
+"Handsome Jack": "ハンサム・ジャック",
+"Defeat a mob wearing a Jack o' Lantern on Halloween": "ハロウィンにジャック・オ・ランタンをかぶったモブを倒す",
+
+"Legend of the Hell Chicken Rider": "地獄のチキンライダー伝説",
+"Kill a chicken jockey in the nether": "ネザーでチキンジョッキーを倒す",
+
+"Mollusc Man": "貝男",
+"Defeat a Drowned holding a nautilus shell": "オウムガイの殻を持ったドラウンドを倒す",
+
+"Ooh, Baby!": "おお、ベイビー！",
+"Kill a baby zombie": "子供ゾンビを倒す",
+
+"Trick or Treat!": "トリック・オア・トリート！",
+"Defeat a mob wearing a pumpkin": "カボチャをかぶったモブを倒す",
+
+"Two Birds, One Arrow": "一石二鳥",
+"Kill two Phantoms with a piercing arrow": "貫通の矢でファントムを2体同時に倒す",
+
+
+
+
+"A snowball's chance in hell": "地獄の雪玉の望み",
+"Defeat a Blaze using snowballs": "ブレイズを雪玉で倒す",
+
+"Axeman": "斧使い",
+"Attack a mob using all five types of axes": "5種類全ての斧でモブを攻撃する",
+
+"Demolitions Expert": "爆破の達人",
+"Blow up every hostile mob with TNT": "TNTで全ての敵対モブを爆破する",
+
+"Diamonds to you!": "ダイヤモンドをあなたに！",
+"Hit a mob with diamonds": "ダイヤモンドでモブを攻撃する",
+
+"Expelliarmus!": "エクスペリアームス！",
+"Hit a mob with a stick": "棒でモブを攻撃し、相手の武器を取り上げる",
+
+"Explosive Fire": "爆発する炎",
+"Load your crossbow with a firework": "クロスボウに花火を装填する",
+
+"Flying Colors": "見事な模様無し",
+"Apply a banner (with no patterns) to your shield": "模様なしのバナーを盾に付ける",
+
+"Indiana Jones": "インディ・ジョーンズ",
+"Pull a monster using a fishing rod": "釣り竿でモンスターを引き寄せる",
+
+"Master Shieldsman": "盾の達人",
+"Deflect an attack from every hostile monster": "全ての敵対モンスターの攻撃を盾で防ぐ",
+
+"Ol' Betsy": "おてんば",
+"Shoot a crossbow": "クロスボウを撃つ",
+
+"Pig Fishing Tournament": "ブタ釣り大会",
+"Pull a pig using a fishing rod": "釣り竿でブタを引き寄せる",
+
+"Revenge!": "リベンジ！",
+"Blow up a creeper with TNT": "TNTでクリーパーを爆破する",
+
+"Shield Luck": "盾運",
+"Protect yourself from an enemy's attack with your shield": "盾で敵の攻撃から身を守る",
+
+"Shovel Knight": "喋る騎士",
+"Hit a mob using all five types of shovels": "5種類全てのシャベルでモブを攻撃する",
+
+"Sir Knight": "サー・ナイト",
+"Use planks and iron to craft a shield": "板材と鉄で盾を作る",
+
+"Slapfish": "まぐろのたたき",
+"Slap a mob across the face with a fish": "魚でモブの顔を叩く",
+
+"That is so fletch!": "それはまさにフレッチ！",
+"Craft a fletching table": "矢細工台を作る",
+
+"There's yolk on my head": "頭に黄身が...",
+"Catapult an egg onto a zombie's head": "卵を投げてゾンビの頭に当てる",
+
+"Viking": "バイキング",
+"Attack a mob using an axe": "斧でモブを攻撃する",
+
+"Weaponry": "武器",
+"Weapons of choice for combat": "戦闘用の好みの武器",
+
+"When Pigs Finally Fly": "ブタさんの飛ぶ末に",
+"Pull a pig from 25 blocks below you and watch it go": "25ブロック下からブタを引き上げて落ちる",
+
+"Who's the Pillager Now?": "どっちが略奪者？",
+"Give a Pillager a taste of their own medicine": "ピリジャーに自業自得を味わわせる",
+
+"X-Bow": "X-Bow",
+"Craft a crossbow using stick, spider string, iron and a hook": "棒・糸・鉄インゴット・トリップワイヤーフックでクロスボウを作る",
+
+"King of the Sea": "海の覇者",
+
+
+
+
+"Bamboom!": "バンブーン！",
+"Break down some bamboo": "竹を壊す",
+
+"Biomes": "バイオーム",
+"All around the world!": "世界中を巡ろう！",
+
+"Construction Worker": "建設作業員",
+"Craft and use some scaffolding": "足場を作って使う",
+
+"For you, my sweet": "君に花束を",
+"Pick a flower for someone special": "特別な誰かのために花を摘む",
+
+"Kung Fu Panda!": "カンフーパンダ！",
+"Get beaten up by an angry panda": "怒ったパンダに倒される",
+
+"Simba": "シンバ",
+"Breed a baby ocelot": "ヤマネコの子供を繁殖させる",
+
+"The Mighty Jungle": "偉大なるジャングル",
+"Go for a safari in the jungle": "ジャングルでサファリを楽しむ",
+
+"Top of the World": "世界の頂点",
+"Place scaffolding to the world limit": "足場を高度限界まで設置する",
+
+"Zoologist": "動物学者",
+"Breed two pandas to get a baby panda": "パンダを繁殖させる",
+
+
+
+"Village, Pillage and Dungeons!": "村、略奪、ダンジョン！",
+
+"Kill a Vindicator in a Woodland Mansion": "森の洋館でヴィンディケーターを倒す",
+
+"Defeat an Evoker in a Woodland Mansion": "森の洋館でエヴォーカーを倒す",
+
+"All chained up": "鎖でガッチリ",
+"Trade for a piece of chain armor from an armorer villager": "防具鍛冶の村人からチェーン装備を取引で入手する",
+
+"A Complete Catalogue": "猫大全集",
+"Tame all cat variants!": "全種類のネコを手懐ける",
+
+"Crazy Cat Lady": "ネコおばさん",
+"Tame a stray cat in a village": "村でネコを手懐ける",
+
+"Deal's Off!": "取引中止！",
+"Get spat at by one of the Trader Llamas": "行商人のラマに唾を吐きかけられる",
+
+"Feeling Ill": "イリジャー全制覇",
+"Defeat every type of Illager as part of a raid": "襲撃で全ての邪悪な村人を倒す",
+
+"Florist": "花屋",
+"Trade for a flower from the Wandering Trader": "行商人から花を取引で入手する",
+
+"Hero of the Village": "村の英雄",
+"Triumph over a full raid for the first time": "初めて襲撃に勝利する",
+
+"How to stop a rhino from charging": "突進を止める方法",
+"Have a Ravager slam into your shield": "ラヴェジャーの突進を盾で受け止める",
+
+"Illagers on Patrol": "巡回イリジャー",
+"Defeat the leader of an Illager Patrol": "巡回中の邪悪な村人のリーダーを倒す",
+
+"Voluntary Exile": "自主的な亡命",
+"Kill a raid captain. Maybe consider staying away from villages for the time being...": "旗持ちのピリジャーを倒す。しばらく村には近づかない方がいいかも...",
+
+"It's So Beast-Like!": "まるで獣！",
+"Slay a Ravager in a raid": "襲撃でラヴェジャーを倒す",
+
+"Lilypad Hatter": "スイレン帽子屋",
+"Breed and trade with a swamp villager": "沼地の村人を繁殖させて取引する",
+
+"Mapmaker's Table": "地図職人の机",
+"Craft a cartography table with paper and planks": "紙と板材で製図台を作る",
+
+"Master Trader": "達人トレーダー",
+"Trade with every type of villager career at master level": "全ての職業の村人と達人レベルで取引する",
+
+"Oh, look, it dings!": "お、鳴った！",
+"Pick up a bell from a village": "村で鐘を拾う",
+
+"Out of Posts": "前哨基地へ",
+"Enter a Pillager Outpost": "前哨基地を見つける",
+
+"Picador": "ピカドール",
+"Hit a Ravager with a thrown trident": "投げたトライデントをラヴェジャーに当てる",
+
+"Rebuilding the Oceans": "海の再建",
+"Trade for a coral block from the Wandering Trader": "行商人からサンゴブロックを取引で入手する",
+
+"Retro Future Knight": "古き未来の騎士",
+"Trade for full suit of chain armor from an armorer villager": "防具鍛冶の村人からチェーン装備一式を取引で入手する",
+
+"Riot Shield": "ライオットシールド",
+"Deflect a Pillager's crossbow bolt": "ピリジャーのクロスボウの矢を弾く",
+
+"Shady Deals": "怪しい取引",
+"Trade with a Wandering Trader while he is invisible": "行商人が透明な時に取引する",
+
+"Stockbroker": "株式仲買人",
+"Trade with every profession from every biome type": "全てのバイオーム・全ての職業の村人と取引する",
+
+"The Tribal Villagers": "部族の村人たち",
+"Breed and trade with a jungle villager": "ジャングルの村人を繁殖させて取引する",
+
+"The Haggler": "値切り名人",
+"Trade with a villager at master level": "村人と達人レベルで取引する",
+
+"Town Planner": "都市計画家",
+"Craft and place every type of villager workstation": "全ての職業ブロックを作って設置する",
+
+"Traveller": "旅人",
+"Travel to every type of village and trade with a villager in each": "全ての村を巡り、それぞれで村人と取引する",
+
+"Trade with a Wandering Trader": "行商人と取引する",
+
+"Veteran of the Village": "村のベテラン",
+"Attain the highest level of Hero of the Village": "最大レベルの村の英雄の効果を得る",
+
+"Village Settler": "村の開拓者",
+"Trade for a new bell to establish a new village": "新しい村を作るために新しい鐘を取引で入手する",
+
+"War is Coming": "戦争の予兆",
+"Defeat enough Illager Patrol leaders to attain the highest level of Bad Omen": "巡回中の邪悪な村人のリーダーを倒して最大レベルの不吉な予感の効果を得る",
+
+"You are the Pillager": "君こそ略奪者",
+"Murder one of every villager profession with a crossbow": "全ての職業の村人をクロスボウで倒す",
+
+
+
+
+"Arbalistic": "クロスボウの達人",
+"Kill five unique mobs with one crossbow shot": "クロスボウの一撃で5種類のモブを倒す",
+
+"Emerald Miner": "エメラルド鉱夫",
+"Mine a stack of raw emerald ore": "原石のエメラルド鉱石を1スタック採掘する",
+
+"Machine Bow": "マシンガンボウ",
+"Fire a crossbow as rapidly as possible": "クロスボウをできるだけ速く連射する",
+
+"Master Arbalist": "完璧な弩師",
+"Create a crossbow with all possible enchantments at max level": "エンチャント可能な全てのエンチャントをクロスボウに付与し、完全なクロスボウを作る",
+
+"Shotbow": "ショットボウ",
+"Shoot three arrows at once with a crossbow": "クロスボウで一度に3本の矢を放つ",
+
+
+
+
+"Hell's Bells": "地獄の鐘",
+"Place a bell in the nether": "ネザーに鐘を設置する",
+
+"Decaying Beauty": "朽ちゆく美",
+"Pick up some Wither Roses from the damage the Wither wrought on your world": "ウィザーがもたらした被害からウィザーローズを拾う",
+
+
+
+
+"Gas!": "ガス！",
+"Kill a mob using a lingering potion": "残留ポーションでモブを倒す",
+
+
+
+
+"The Actual End": "本当のおしまい。",
+"Get killed by an Enderman in The End": "エンドでエンダーマンに倒される",
+
+"The Beginning": "はじまり。",
+"Say goodbye to the Wither...": "ウィザーに別れを告げる...",
+
+
+
+
+"I don't like sand": "砂は嫌いだ",
+"It's coarse, and rough, and irritating, and it gets everywhere": "ザラザラしてて、粗くて、イライラするし、どこにでも入り込むんだ",
+
+"Insomniac": "不眠症",
+"Go 30 days without sleep": "30日間寝ずに過ごす",
+
+"Art Gallery": "アートギャラリー",
+"Place every type of painting": "全ての種類の絵画を設置する",
+
+"Writer's Block": "著者のブロック",
+
+
+
+
+"Chestful of Cobblestone": "丸石がいっぱい",
+"Mine 1728 cobblestone, place it in a chest, then stand on it in victory": "丸石を1728個採掘しチェストに入れ、その上に立って勝利を味わう",
+
+"Bubble, Bubble, Toil and Trouble!": "バブルバブル、苦労とトラブル！",
+"Fill a cauldron using a bucket": "バケツで大釜を満たす",
+
+"Washing Machine": "洗濯機",
+"Use a cauldron to clean leather armor, a banner and a shulker box": "大釜で革の防具・旗・シュルカーボックスを洗う",
+
+
+
+
+"Must be your birthday": "今日はお前の誕生日だ",
+"Eat 100 slices of cake": "ケーキを100切れ食べる",
+
+"Castaway": "漂流者",
+"Eat nothing but dried kelp for three in-game days": "3日間乾燥昆布だけを食べて過ごす",
+
+
+
+
+"Free Diver": "スキンダイバー",
+"Stay underwater for 2 minutes": "2分間水中にいる",
+
+"Sleep with the Fishes": "海の藻屑",
+"Spend a day underwater": "1日中水中で過ごす",
+
+"Qinling": "チンリン",
+"Breed a rare brown panda": "珍しい茶色のパンダを繁殖させる",
+
+
+
+
+"We're being attacked!": "襲撃だ！",
+"Trigger a Pillager Raid": "襲撃を発生させる",
+
+"Superhero of the Village": "村のスーパーヒーロー",
+"Defeat enough raid captains to obtain a stack of Ominous Banners": "旗持ちのピリジャーを倒して不吉な旗を1スタック集める",
+
+"I've got a bad feeling about this": "嫌な予感がする...",
+
+
+
+
+"Aww man!": "ああ、まじか！",
+"That was a nice life you had. Shame it had to end at this time time time": "いい人生だったのに...今この時に終わるなんて残念だ",
+
+"Iskallium Collector": "イスカリウムコレクター",
+"Collect enough slimeballs to craft a stack of slime blocks": "1スタックのスライムブロックを手に入れる",
+
+"Spider-skeleton": "スパイダー・スケルトン",
+"Does whatever a spider can": "スパイダーにできることは何でもできる",
+
+
+
+
+
+"Artillery": "火砲隊",
+"Have nine loaded crossbows in your hotbar. All set!": "ホットバーに装填済みのクロスボウを9本揃える。準備万端！",
+
+
+
+
+
+"Magical Stockpile": "魔法の備蓄",
+"Obtain a full stack of bottles of enchanting": "1スタックのエンチャントされた瓶を手に入れる",
+
+
+
+
+"Ancient Kung Fu Master": "古のカンフー達人",
+"Sneak 10km": "しゃがみ歩きで10km移動する",
+
+"Black Belt Ninja": "黒帯忍者（アイエエエ!?ニンジャ!?ニンジャナンデ!?）",
+"Sneak 1km": "しゃがみ歩きで1km移動する",
+
+"Boing, Boing": "ボヨンボヨン",
+"Jump 10,000 times": "1万回ジャンプする",
+
+"Cupid": "キューピッド",
+"Breed 500 animals": "動物を500回繁殖させる",
+
+"Did you just run across earth?": "地球を走り抜けた？",
+"Sprint 1000km": "ダッシュで1000km移動する",
+
+"Elderly Enchanter": "老練なエンチャンター",
+"Enchant 250 items": "250個のアイテムにエンチャントする",
+
+"Frequent Flyer": "常連フライヤー",
+"Fly 100km with elytra": "エリトラで100km飛ぶ",
+
+"Global Railway Network": "世界鉄道網",
+"Ride 100km in a minecart": "トロッコで100km移動する",
+
+"Happy Birthday!": "ハッピーバースデー！",
+"Play for a whole year!": "ゲーム内時間で1年間プレイする",
+
+"Horse Training": "馬の訓練",
+"Ride 1km on a horse": "馬で1km移動する",
+
+"I enjoy long walks & playing MC": "長い散歩とマイクラが好き",
+"Walk 1000km": "歩きで1000km移動する",
+
+"I Like Trains": "電車が好き",
+"Ride 10km in a minecart": "トロッコで10km移動する",
+
+"Journeyman Enchanter": "熟練エンチャンター",
+"Enchant 50 items": "50個のアイテムにエンチャントする",
+
+"Jumping Jacks": "ジャンピングジャック",
+"Jump 100,000 times": "10万回ジャンプする",
+
+"Laps in the pool": "プールで周回",
+"Swim 1km": "1km泳ぐ",
+
+"Level Up": "レベルアップ",
+"Reach 30 experience levels": "経験値レベル30に到達する",
+
+"Lightning McPig": "ライトニング・マイクラピッグ",
+"Ride 10km on a pig": "ブタで10km移動する",
+
+"Luxury Cruise": "豪華な船旅",
+"Sail 1km in a boat": "ボートで1km航行する",
+
+"Marathon": "マラソン",
+"Sprint 42km": "ダッシュで42km移動する",
+
+"Minecart Rider": "トロッコライダー",
+"Ride 1km in a minecart": "トロッコで1km移動する",
+
+"Novice Enchanter": "初心者エンチャンター",
+"Enchant 10 items": "10個のアイテムにエンチャントする",
+
+"Olympic Athlete": "オリンピック選手",
+"Swim 10km": "10km泳ぐ",
+
+"Olympic Gold Medallist": "オリンピック金メダリスト",
+"Swim 100km": "100km泳ぐ",
+
+"Out for a stroll": "お散歩中",
+"Walk 10km": "歩きで10km移動する",
+
+"Overlevelling": "レベル上げすぎ",
+"Reach 100 experience levels": "経験値レベル100に到達する",
+
+"Passing the Time": "時を過ごして",
+"Play for 100 days": "100日間プレイする",
+
+"Pig Training": "ブタの訓練",
+"Ride 100m on a pig": "ブタで100m移動する",
+
+"Pirate Captain": "海賊船長",
+"Sail 10km in a boat": "ボートで10km航行する",
+
+"Statistics": "統計",
+"If your numbers go up, you're having more fun": "数字が増えれば増えるほど楽しい！",
+
+"Sailor of the Seven Seas": "七つの海の航海者",
+"Sail 50km in a boat": "ボートで50km航行する",
+
+"Scourge of the West": "西の災厄",
+"Ride 50km on a horse": "馬で50km移動する",
+
+"Sheriff Firearm": "保安官の銃器",
+"Ride 10km on a horse": "馬で10km移動する",
+
+"Sneaky Snitch": "こそこそ密告者",
+"Sneak 100m": "しゃがみ歩きで100m移動する",
+
+"Snout 500": "スナウト500",
+"Ride 1km on a pig": "ブタで1km移動する",
+
+"Spring in your step": "足取り軽やか",
+"Jump 1000 times": "1000回ジャンプする",
+
+"Supersonic": "超音速",
+"Fly 10km with elytra": "エリトラで10km飛ぶ",
+
+"Take to the Skies": "空へ舞い上がれ",
+"Fly 1km with elytra": "エリトラで1km飛ぶ",
+
+"The First Night": "最初の夜",
+"Survive the first night in your brand new world": "新しいワールドで最初の夜を生き延びる",
+
+"The Parrots and the Bats": "コウノトリの贈り物",
+"Breed 100 animals": "動物を100回繁殖させる",
+
+"Two By Two": "2匹ずつ",
+"Breed 2500 animals": "動物を2500回繁殖させる",
+
+"Who needs cars?": "車なんていらない？",
+"Walk 100km": "歩きで100km移動する",
+
+"XP Grinder": "経験値グラインダー",
+"Reach 1000 experience levels": "経験値レベル1000に到達する",
+
+"Your legs must be tired": "足が疲れたでしょう",
+"Sprint 250km": "ダッシュで250km移動する",
+
+
+
+
+"Mad Scientist": "マッドサイエンティスト",
+"Cure a zombie villager of every profession": "全種類の職業の村人ゾンビを治療する",
+
+"A Furious Test Subject": "怒れる実験体",
+"Get attacked by a mob with every potion effect": "全てのポーションの効果を持つモブに攻撃される",
+
+
+
+
+"Event Horizon": "イベント・ホライズン",
+"Survive void damage": "奈落ダメージから生き延びる",
+
+"Dragon vs Dragon": "ドラゴンVSドラゴン",
+"Kill the Ender Dragon while wearing a Dragon Head": "ドラゴンの頭をかぶってエンダードラゴンを倒す",
+
+"Rocketman": "ロケットマン",
+"Fill your inventory with full stacks of firework rockets": "インベントリをそれぞれ1スタックの花火で埋める、貴方は独裁者！",
+
+
+
+
+"A Million Blocks Away": "100万ブロックの彼方へ",
+"Travel a million blocks away from spawn": "スポーン地点から100万ブロック離れた場所へ行く",
+
+"Abyss Lord": "深淵様",
+"Obtain a stack of Conduits": "コンジットを1スタック集める",
+
+"All the Blocks!": "ブロック収集家",
+"Obtain all the blocks!": "全てのブロックを集める！",
+
+"All the Items!": "アイテム収集家",
+"Obtain all the items!": "全てのアイテムを集める！",
+
+"Biological Warfare": "生物兵器戦争",
+"Kill every mob in the game with lingering potions": "残留ポーションで全てのモブを倒す",
+
+"Creepergeddon": "クリーパーゲドン",
+"Obtain a stack of Creeper Heads": "クリーパーの頭を1スタック集める",
+
+"Death From All": "あらゆる死",
+"Get killed by every mob that can kill you. (Ignore in hardcore mode)": "倒せる全てのモブに殺される（ハードコアモードでは無視）",
+
+"Dragon Army": "ドラゴン軍団",
+"Obtain a stack of Ender Dragon Heads": "エンダードラゴンの頭を1スタック集める",
+
+"Dragon vs Dragon II: Electric Boogaloo": "ドラゴンVSドラゴンII：エレクトリック・ブーガルー",
+"Defeat the Ender Dragon while wearing a dragon head... without touching the ground": "ドラゴンの頭をかぶったまま地面に触れずにエンダードラゴンを倒す",
+
+"Endergeddon": "エンダーゲドン",
+"Send every mob to the End... and kill them all there": "全てのモブをエンドに送り、そこで全て倒す",
+
+"Global Vaccination": "世界規模のワクチン接種",
+"Cure a zombie villager of every profession... from every biome": "全ての職業・全てのバイオームの村人ゾンビを治療する",
+
+"Highway to Hell": "地獄へのハイウェイ",
+"Send every mob to the Nether... and kill them all there": "全てのモブをネザーに送り、そこで全て倒す",
+
+"I'm in Space!": "宇宙にいる！",
+"Levitate up a distance of 256 blocks": "256ブロック浮遊する",
+
+"Immortal": "不死身",
+"Fill your entire inventory with Totems of Undying": "不死のトーテムでインベントリを全て埋める",
+
+"Nuclear Fusion": "核融合",
+"Strike every mob that can transform with lightning at once": "雷で変身する全てのモブに同時に雷を落とす",
+
+"Potion Master": "ポーションマスター",
+"Kill every mob in the game with splash potions": "スプラッシュポーションで全てのモブを倒す",
+
+"Rise of the Skeletons": "スケルトンの反乱",
+"Obtain a stack of Skeleton Skulls": "スケルトンの頭を1スタック集める",
+
+"Super Challenges": "超難関チャレンジ",
+"Good luck completing... any of these ;)": "どれか一つでもクリアできたらおめでとう (⁠-ω⁠・⁠)⁠—⁠☆",
+
+"Stack All the Blocks!": "ブロックマニア",
+"Obtain a stack of all the blocks!": "全てのブロックを1スタックずつ集める！",
+
+"Stack All the Items!": "アイテムマニア",
+"Obtain a stack of all the items!": "全てのアイテムを1スタックずつ集める！",
+
+"The World Is Ending": "世界の終焉",
+"Summon ten withers at once": "ウィザーを一度に10体召喚する",
+
+"Warlock": "ベーコンマスター",
+"Obtain a stack of Beacons": "ビーコンを1スタック集める",
+
+"We're in the endgame now": "いよいよ最終局面だ",
+"Construct a village in the End and defend it from a raid": "エンドに村を作り、襲撃から守る",
+
+"Zombie Apocalypse": "ゾンビ・アポカリプス",
+"Obtain a stack of Zombie Heads": "ゾンビの頭を1スタック集める",
+
+
+
+
+
+"Ya like jazz?": "ジャズは好き？",
+"Breed two bees using flowers": "花を使ってハチを繁殖させる",
+
+"Winnie the Pooh": "くまのプーさん",
+"Drink some honey": "ハチミツを飲む",
+
+"Sticky Situation": "べとべとな状況",
+"Jump into a honey block to slide down it": "ハチミツブロックに飛び込んで滑り降りる",
+
+"WHERE'S THE HONEY LEBOWSKI": "ハニーはどこだLEBOWSKI",
+"Drink 100 bottles of honey": "ハチミツを100本飲む",
+
+"Hive Mind": "ハイブマインド",
+"Craft a bee hive using planks and honeycombs then place it": "板材とハニカムで養蜂箱を作り設置する",
+
+"NOT THE BEES!": "ハチはやめて！",
+"Get stung to death by bees": "ハチに刺されて死ぬ",
+
+"Honey, I'm Home!": "ハニー、ただいま！",
+"Craft a stack of honeycomb blocks for building a home out of": "家を建てるためにハニカムブロックを1スタック作る",
+
+
+
+
+"Aaaaaand... OPEN!": "よーし...オープン！",
+"Craft and place an iron door": "鉄のドアを作って設置する",
+
+"Cut In Half": "真っ二つ",
+"Craft some slabs": "ハーフブロックを作る",
+
+"Stairs? NOOOOO!": "階段？やめてくれー！",
+"Craft some stairs": "階段ブロックを作る",
+
+
+
+
+"Everybody Loves Ice!": "みんなアイスが大好き！",
+"Obtain a stack of every type of ice in your inventory": "全ての種類の氷を1スタックずつインベントリに入れる",
+
+
+
+
+"Full Stomach": "満腹",
+"Fill both your hunger bar and saturation level": "満腹度と隠し満腹度を両方最大にする",
+
+
+
+
+"Help! I've been framed!": "助けて！はめられた！",
+
+"Craft a composter using wooden slabs then place it": "木材ハーフブロックでコンポスターを作り設置する",
+
+"Enter an underground cave": "地下洞窟に入る",
+
+"Heart of Darkness": "闇の中心",
+"Submerge yourself in complete darkness": "明るさレベル0の暗闇に入る",
+
+"I'm in Lava With You": "溶岩であなたと共に",
+"Hit something while you and it are in lava": "自分も相手も溶岩の中で攻撃する",
+
+"Total Beelocation": "綿蜜に引越し",
+"Move a Bee Nest with 3 bees inside using Silk Touch": "シルクタッチで3匹のハチが入った巣を移動させる",
+
+"Bee Our Guest": "秘蜜の晩餐会",
+"Use a bottle to collect Honey from a Beehive with a campfire beneath it so you don't aggravate the bees": "焚き火の上にあるハチの巣から瓶でハチミツを採取する（ハチを怒らせないように）",
+
+
+
+
+"BlazeandCave's Advancements" : "BlazeandCave'sの進捗",
+"Loads of brand new advancements for your Minecraft world!" : "あなたのワールドに新しい進捗がたくさん追加されます！",
+
+"Mining Milestone" : "採掘マイルストーン",
+"Complete every advancement in the Mining tab" : "採掘タブの全ての進捗を達成する",
+
+"Building Milestone" : "建築マイルストーン",
+"Complete every advancement in the Building tab" : "建築タブの全ての進捗を達成する",
+
+"Farming Milestone" : "農業マイルストーン",
+"Complete every advancement in the Farming tab" : "農業タブの全ての進捗を達成する",
+
+"Animal Milestone" : "動物マイルストーン",
+"Complete every advancement in the Animal tab" : "動物タブの全ての進捗を達成する",
+
+"Monsters Milestone" : "モンスターマイルストーン",
+"Complete every advancement in the Monsters tab" : "モンスタータブの全ての進捗を達成する",
+
+"Weaponry Milestone" : "武器マイルストーン",
+"Complete every advancement in the Weaponry tab" : "武器タブの全ての進捗を達成する",
+
+"Biomes Milestone" : "バイオームマイルストーン",
+"Complete every advancement in the Biomes tab" : "バイオームタブの全ての進捗を達成する",
+
+"Adventure Milestone" : "冒険マイルストーン",
+"Complete every advancement in the Adventure tab" : "冒険タブの全ての進捗を達成する",
+
+"Redstone Milestone" : "レッドストーンマイルストーン",
+"Complete every advancement in the Redstone tab" : "レッドストーンタブの全ての進捗を達成する",
+
+"Enchanting Milestone" : "エンチャントマイルストーン",
+"Complete every advancement in the Enchanting tab" : "エンチャントタブの全ての進捗を達成する",
+
+"Statistics Milestone" : "統計マイルストーン",
+"Complete every advancement in the Statistics tab" : "統計タブの全ての進捗を達成する",
+
+"Nether Milestone" : "ネザーマイルストーン",
+"Complete every advancement in the Nether tab" : "ネザータブの全ての進捗を達成する",
+
+"Potions Milestone" : "ポーションマイルストーン",
+"Complete every advancement in the Potions tab" : "ポーションタブの全ての進捗を達成する",
+
+"End Milestone" : "エンドマイルストーン",
+"Complete every advancement in the End tab" : "エンドタブの全ての進捗を達成する",
+
+"Super Challenges Milestone" : "超難関チャレンジマイルストーン",
+"Complete every advancement in the Super Challenges tab. Good luck with this one ;)" : "超難関チャレンジタブの全ての進捗を達成する。これは本当に頑張ってね (⁠-ω⁠・⁠)⁠—⁠☆",
+
+"Advancement Legend" : "進捗の覇者",
+"Complete every single advancement in BlazeandCave's Advancements Pack" : "BlazeandCave'sの全ての進捗を達成する",
+
+
+
+
+
+"I am Ravager, hear me ROAR!" : "ラヴェジャーだ、吠えろ！",
+
+"Dragon vs Dragon II" : "ドラゴンVSドラゴンII",
+
+"Legend of Hell Chicken Riders" : "地獄のチキンライダー伝説",
+
+"Scientific Inaccuracy" : "科学的誤り",
+
+"Olaf" : "オラフ",
+"Do you want to build a snow golem?" : "お前もスノーゴーレムを作らないか？",
+
+"Mushroom, Mushroom!" : "マッシュルーム、マッシュルーム！",
+
+"Agent Smithing Table" : "エージェント鍛冶台",
+
+"Foal Play" : "子馬のいたずら",
+
+"Moskstraumen" : "モスケンの渦潮",
+
+"Ring a bell in a village" : "村で鐘を鳴らす",
+
+"Ring a bell in the Nether" : "ネザーで鐘を鳴らす",
+
+
+
+
+"Dungeons and Spawners" : "ダンジョンとスポナー",
+"Open a chest in a dungeon deep underground" : "地下深くのダンジョンでチェストを開ける",
+
+"Steals on Wheels" : "車輪付きの略奪",
+"Loot a minecart chest from an Abandoned Mineshaft" : "廃坑のチェスト付きトロッコを開ける",
+
+"Delicious, Hot Schmoes!" : "美味しいホットシュモーズ！",
+"Place every type of cookable food on a campfire" : "焚き火で焼ける全ての食べ物を置く",
+
+"Oresome!" : "Oresome!",
+"Mine a stack of every ore block" : "全鉱石の原石ブロックを1スタックずつ手に入れる",
+
+
+
+
+"Grass Type" : "草タイプ",
+"Obtain every type of grass block in your inventory" : "全ての種類の草ブロックをインベントリに入れる",
+
+"Shroom Lightyear" : "シュルーム・ライトイヤー",
+"Light up the area with Shroomlight!" : "シュルームライトで周囲を照らす",
+
+"Cerulean!" : "セルリアン！",
+"Light up the area with soul fire torches and soul fire lanterns!" : "魂の松明と魂のランタンで周囲を照らす",
+
+"Let There Be Light!" : "光あれ！",
+"Hold a stack of every light-emitting block and item" : "全ての発光ブロック・アイテムを1スタックずつ持つ",
+
+"No Chain, No Gain" : "チェーンなくして得るものなし",
+"Craft a chain using an iron ingot and iron nuggets" : "鉄インゴットと鉄塊でチェーンを作る",
+
+"Blackstonehenge" : "ブラックストーンヘンジ",
+"Craft or collect all forms of Blackstone, Polished Blackstone and Polished Blackstone Bricks" : "ブラックストーン、磨かれたブラックストーン、磨かれたブラックストーンレンガから作れる全てのブロックを手に入れる",
+
+"Colors of the Wind" : "風の色",
+"Dye a sign with each color of dye" : "全ての色の染料で看板を染める",
+
+
+
+
+"Natural Fertiliser" : "天然肥料",
+"Fill up a composter" : "コンポスターを満杯にする",
+
+"Combine Harvester" : "刈り取り機",
+"Use bone meal on everything that can be grown" : "育てられる全てのものに骨粉を使う",
+
+"What's new with composting?" : "堆肥化の新発見？",
+"Compost every type of compostable item in a Composter" : "全ての堆肥可能なアイテムをコンポスターで堆肥する",
+
+"A Gluttonous Diet" : "大食漢の食事",
+"Obtain a full stack of all the foods" : "全ての食べ物を1スタックずつ集める",
+
+
+
+
+"Foilage" : "草葉の陰",
+"Use shears to pick up tall grass or ferns" : "ハサミで背の高い草やシダを回収する",
+
+"Going Down the Rabbit Hole" : "ウサギの穴を下る",
+"Bring a rabbit to the bottom of the world, then kill it" : "ウサギを世界の最下層まで連れて行き、そこで倒す",
+
+"Just Keeps Going" : "止まらない！",
+"Eat Rabbit Stew, then avoid eating for the next 3 in-game days" : "ウサギシチューを食べてから3日間何も食べない",
+
+"Nest, Quick!" : "巣に急げ",
+"Collect a stack of empty bee nests" : "空のミツバチの巣を1スタック集める",
+
+"Heavy Duty Caravan" : "頑丈なキャラバン",
+"Tame a llama with a strength of 5" : "15スロット分持てるラマを手懐ける",
+
+"Save the Turtles!" : "ウミガメを救え",
+"Collect a stack of turtle eggs" : "カメの卵を1スタック集める",
+
+
+
+
+"So Long & Thanks For The Fish" : "さようなら、そして魚をありがとう",
+"Get murdered by dolphins" : "イルカに殺される",
+
+
+
+
+"Now You’re Thinking With Portals" : "ポータルで考えろ",
+"Find a broken Nether Portal in the Overworld" : "オーバーワールドで壊れたネザーポータルを見つける",
+
+"I just want to make toast!" : "トーストが作りたいだけ！",
+"Name a bunny 'Toast'" : "ウサギに「Toast」と名付ける",
+
+"What's Up, Doc?" : "どうした、ドク？",
+"Turn a mob upside-down" : "モブを逆さまにする",
+
+"Nyan Sheep" : "Nyan Sheep",
+"Nyan Nyan Nyan Nyan..." : "Nyanyanyanyanyanyanya...baabaaaabaaa...",
+
+"Slenderman" : "スレンダーマン",
+"Defeat this terrifying monster" : "この恐ろしいモンスターを倒す",
+
+"The one and true Johnny" : "唯一無二のJohnny",
+"Defeat Johnny" : "Johnnyを倒す",
+
+"Prime Specimen" : "極上の標本",
+"Find Tall Grass or a Large Fern inside a village chest" : "村のチェストで背の高い草または大きなシダを見つける",
+
+"Redemption Arc" : "贖罪の物語",
+"Befriend a Pillager that doesn’t have a crossbow" : "クロスボウを持たないピリジャーと友達になる",
+
+"Council of Crafters" : "星の商人",
+"Trade with a villager at height limit" : "高度限界で村人と取引する",
+
+"Workaholic" : "労基違反",
+"Craft a stack of all the villager job site blocks" : "全ての職業ブロックを1スタックずつ作る",
+
+"I am Loot!" : "私は戦利品！",
+"Open up every type of loot chest" : "全ての種類の戦利品チェストを開ける",
+
+
+
+
+"Paleontologist" : "古生物学者",
+"Craft or mine a stack of bone blocks" : "骨ブロックを1スタック手に入れる",
+
+"Impossible..." : "不可能だ...",
+"Kill an Enderman with an arrow" : "エンダーマンを矢で倒す",
+
+"Family Reunion" : "家族再会",
+"Reunite all zombie variants (and their baby forms) in one place" : "全てのゾンビ系（子供含む）を一箇所に集める",
+
+"Bone-to-party" : "骨パーティー",
+"Reunite all skeleton variants and their three-headed overlord in one place" : "全てのスケルトン系と三つ首の主を一箇所に集める",
+
+
+
+
+"Loser!" : "負け犬！",
+"Die twice within ten seconds" : "10秒以内に2回死亡する",
+
+"Multiclassed" : "武器の達人",
+"Hit a mob with every type of weapon" : "全ての種類の武器でモブを攻撃する",
+
+"Pyrotechnic" : "花火職人",
+"Craft a firework of every shape and additional effect" : "全ての形と追加効果の花火を作る",
+
+"My eyes!" : "目がぁぁ！",
+"Kill a mob using a firework's explosion" : "花火の爆発でモブを倒す",
+
+"Who ya gonna call?" : "ゴーストバスターズ？",
+"Kill a ghast using a firework's explosion" : "花火の爆発でガストを倒す",
+
+
+
+
+"Target Acquired" : "ターゲット発見",
+"Put up a Target for archery practise" : "弓の練習用に的を設置する",
+
+"Target Practise" : "的当て練習",
+"Hit a Target with all types of projectiles" : "全ての飛び道具を的に当てる",
+
+"Bullseye" : "的中",
+"Hit the bullseye of a Target Block with an arrow from 30 blocks away" : "30ブロック離れた場所から矢で的ブロックの中心に当てる",
+
+
+
+
+"This name sounds cooler" : "こっちの名前の方がカッコいい",
+"Name your Diamond Sword 'Diamond Edge'" : "ダイヤの剣に「Diamond Edge」と名付ける",
+
+"I'll be back" : "また戻ってくる",
+"Name your bow 'Terminator'" : "弓に「Terminator」と名付ける",
+
+"God of Thunder" : "雷神",
+"Name your Trident with Loyalty III and Channeling 'Mjolnir'" : "忠誠IIIと召雷付きのトライデントに「Mjolnir」と名付ける",
+
+"A rather pointy fence post" : "クモの巣かき混ぜ棒(ねも訳)",
+"Enchant a wooden sword with Sharpness V. Not really the best weapon, but it could be a minor annoyance to someone" : "木の剣にダメージ増加Vを付与する。最強ではないが、ちょっとした嫌がらせにはなるかも",
+
+"Gotta Go Fast!" : "スピード命！",
+"Obtain the Soul Speed enchantment from a Bastion or bartering with Piglins" : "砦の遺跡のチェストやピグリンとの取引でソウルスピードのエンチャントを入手する",
+
+"Handmade Blinding" : "手作りの目隠し",
+"Wear a carved pumpkin enchanted with Curse of Binding" : "束縛の呪い付きのカボチャをかぶる",
+
+"Master Digger" : "完璧な土工",
+"Create a shovel with all possible enchantments at max level" : "エンチャント可能な全てのエンチャントをシャベルに付与し、完全なシャベルを作る",
+
+"Master Axeman" : "完璧な木こり",
+"Create an axe with all possible enchantments at max level" : "エンチャント可能な全てのエンチャントを斧に付与し、完全な斧を作る",
+
+"Master Farmer" : "完璧な農家",
+"Create a hoe with all possible enchantments at max level" : "エンチャント可能な全てのエンチャントをクワに付与し、完全なクワを作る",
+
+
+
+
+"Mob Hunter" : "モブハンター",
+"Defeat 250 mobs" : "モブを250体倒す",
+
+"Bloodthirsty" : "血に飢えて",
+"Defeat 2500 mobs" : "モブを2500体倒す",
+
+"Kill or be Killed" : "殺るか殺られるか",
+"Defeat 25,000 mobs" : "モブを25000体倒す",
+
+"Taking It In Stride" : "ストライダーでお散歩",
+"Ride 100m on a Strider" : "ストライダーで100m移動する",
+
+"Who Needs Boats?" : "ボートなんていらない？",
+"Ride 1km on a Strider" : "ストライダーで1km移動する",
+
+"This Ride Is Lit, Yo!" : "この乗り物、アツいぜ！",
+"Ride 10km on a Strider" : "ストライダーで10km移動する",
+
+
+
+
+"Stem Research" : "菌糸研究",
+"Attack a huge Nether Fungi until a stem pops out" : "真紅または歪んだ幹を手に入れる",
+
+"What a Fungi!" : "なんてキノコだ！",
+"Pick up Crimson or Warped Fungus" : "真紅または歪んだキノコを手に入れる",
+
+"I am Root" : "アイ・アム・ルート",
+"Pick up some crimson or warped roots" : "真紅または歪んだ根を手に入れる",
+
+"Don't Blink" : "まばたき禁止",
+"Climb on some Weeping Vines in a Crimson Forest" : "真紅の森でしだれツタに登る",
+
+"Twisted" : "ツイステッド",
+"Climb on some Twisting Vines in a Warped Forest" : "歪んだ森でねじれツタに登る",
+
+"What about Corruption Planks?" : "堕落の板材は？",
+"Craft every item made out of crimson wood" : "真紅の板材で作れる全てのブロックを作る",
+
+"Welcome to Warp Zone!" : "ワープゾーンへようこそ！",
+"Craft every item made out of warped wood" : "歪んだ板材で作れる全てのブロックを作る",
+
+"Hot Tourist Destination" : "ホットな観光地",
+"Explore every Nether biome" : "ネザーの全バイオームを探検する",
+
+"Hell Botanist" : "地獄の植物学者",
+"Gather a stack of every Nether plant" : "1スタックのネザーの全ての植物を手に入れる",
+
+"Spreading Corruption" : "ネザーの拡大",
+"Place one of every nether block in the overworld" : "オーバーワールドにネザーブロックを全種類1つずつ設置する",
+
+"The Struggle Nether Ends" : "終わらぬネザーの苦闘",
+"Place one of every nether block in The End" : "エンドにネザーブロックを全種類1つずつ設置する",
+
+"Roadhog" : "ロードホッグ",
+"Hunt a Hoglin for food" : "ホグリンを狩って食料にする",
+
+"When Hoglins Breed" : "ホグリン繁殖中",
+"Breed a baby Hoglin using Crimson Fungi" : "真紅のキノコでホグリンを繁殖させる",
+
+"Whole Hog" : "ホールホッグ",
+"Get mauled by a Hoglin" : "ホグリンに襲われる",
+
+"Giddy Up!" : "さあやろう！",
+"Punch a baby Hoglin that is being ridden by a baby Piglin" : "子供ピグリンが乗っている子供ホグリンを殴る",
+
+"Zork Chop" : "ゾークチョップ",
+"Bring a Hoglin into the Overworld to zombify it, then kill it for zorkchops" : "ホグリンをオーバーワールドに連れてきてゾンビ化させ、Zorkchopのために倒す",
+
+"This Boat Has Legs" : "足の生えたボート",
+"Ride a Strider with a Warped Fungus on a Stick" : "歪んだキノコ付きの棒でストライダーに乗る",
+
+"Bobbleheads" : "ボブルヘッド",
+"Breed two Striders using Warped Fungus" : "歪んだキノコでストライダーを繁殖させる",
+
+"This One’s Mine!" : "これは俺のだ！",
+"Kill a Zombified Piglin that is riding a Strider and take its steed" : "ストライダーに乗ったゾンビピグリンを倒してその乗り物を奪う",
+
+"Oh, Shiny!" : "おっ、キラキラ！",
+"Distract Piglins with gold" : "金でピグリンの気をそらす",
+
+"Cultural Misunderstandings" : "文化的誤解",
+"Slay a Piglin in battle... or an accidental incursion" : "戦t...誤ってピグリンを倒す",
+
+"Who is Cutting Onions?" : "玉ねぎを切っているのは誰？",
+"Obtain Crying Obsidian from a ruined portal or bartering with Piglins" : "壊れたポータルやピグリンとの取引で泣く黒曜石を手に入れる",
+
+"Anchorman" : "アンカーマン",
+"Craft a Respawn Anchor using Crying Obsidian and Glowstone then place it down" : "泣く黒曜石とグロウストーンでリスポーンアンカーを作り設置する",
+
+"Not Quite 'Nine' Lives" : "不死身とまではいかない",
+"Charge a Respawn Anchor to the maximum" : "リスポーンアンカーを最大まで充電する",
+
+"We Got a Live One!" : "生きてるやつが来た！",
+"Bring a Piglin into the Overworld then spare it from an eternity of zombification" : "ピグリンをオーバーワールドに連れてきてゾンビ化させずに救済する",
+
+"When Piglins Fly" : "ピグリンの飛ぶ頃に",
+"Give a piglin elytra then kill it" : "ピグリンにエリトラを与えてから倒す",
+
+"Electrifying Alliance" : "不安な電撃同盟",
+"Smite a ghast with lightning from the Overworld’s heavens" : "オーバーワールドの雷でガストを打つ",
+
+"Time to Fire Back" : "反撃の時",
+"Craft a stack of fire charges" : "ファイヤーチャージを1スタック作る",
+
+"From Whence It Came!" : "元の場所へ！",
+"Find a broken Nether Portal in the Nether" : "ネザーで壊れたネザーポータルを見つける",
+
+"Those Were the Days" : "兵どもが夢の跡",
+"Fight your way into a Bastion Remnant" : "砦の遺跡に突入する",
+
+"War Pigs" : "ブタ戦争",
+"Loot a chest in a Bastion Remnant" : "砦の遺跡のチェストを開ける",
+
+"Gilty!" : "ギルティ！",
+"Mine some Gilded Blackstone from a Bastion Remnant" : "砦の遺跡で金が混じったブラックストーンを採掘する",
+
+"Wub wub wub!" : "ワブワブワブ！",
+"Obtain the Pigstep music disc from a Bastion Remnant" : "砦の遺跡でPigstepの音楽ディスクを入手する",
+
+"Nugget in a Biscuit" : "ビスケットの中の金塊",
+"Mine Nether Gold Ore for a pile of gold nuggets" : "ネザー金鉱石を採掘して金塊を手に入れる",
+
+"Dark Ages" : "暗黒時代",
+"Mine Blackstone from a Basalt Deltas biome" : "玄武岩デルタでブラックストーンを手に入れる",
+
+"Burnt Right Into Your Soul" : "魂まで焼かれる",
+"Get caught on Soul Fire" : "魂の炎に触れて燃える",
+
+"A Soul For A Soul" : "魂には魂を",
+"Place down a Soul Campfire" : "魂の焚き火を設置する",
+
+"Let Me Out!" : "出してくれ！",
+"Stay in the Nether for twenty ingame days" : "ネザーで20日間過ごす",
+
+"Inception" : "新天地開拓の始まり",
+"Build a machine that can break a hole in the roof of the Nether" : "ネザーの天井に穴を開ける装置を作る",
+
+"The Descent" : "ディセント",
+"Dig down into the deepest depths of the Nether" : "ネザーの最深部まで掘り進む",
+
+"Nether Say Die" : "Hell says 'Die'",
+"Excavate out some Ancient Debris from deep beneath the lava oceans" : "溶岩の海の下深くから古代の残骸を掘り出す",
+
+"Holy Scrap!" : "ホーリースクラップ！",
+"Smelt Ancient Debris into Netherite Scrap" : "古代の残骸を精錬してネザライトの欠片にする",
+
+"Diamonds Are Not Forever" : "ダイヤは永遠じゃない",
+"Use Gold Ingots and Netherite Scrap to make a Netherite Ingot" : "金インゴットとネザライトの欠片でネザライトインゴットを作る",
+
+"MOAR Upgraded Tools" : "最良質なツールスミス",
+"Craft a Netherite Pickaxe, Axe, Shovel and Hoe" : "ネザライトのツルハシ、斧、シャベル、クワを作る",
+
+"A Knight to Nether Forget" : "忘れられない騎士",
+"Use a Smithing Table to upgrade your diamond armor to netherite armor" : "鍛冶台でダイヤ装備をネザライト装備にアップグレードする",
+
+"Soul Runnings!" : "魂の走り",
+"Step on Soul Sand with Netherite Boots enchanted with Soul Speed III" : "ソウルスピードIII付きのネザライトブーツでソウルサンドを踏む",
+
+"Fool Me Twice" : "二度も騙されて",
+"Completely use up a netherite hoe. Clearly you have chosen... poorly" : "ネザライトのクワを完全に使い切る。明らかに選択を誤った orz...",
+
+"Get a Lode Of This!" : "ロードストーンを見よ！",
+"Craft a Lodestone using Chiseled Stone Bricks and a Netherite Ingot" : "模様入り石レンガとネザライトインゴットでロードストーンを作る",
+
+"Country Lode, Take Me Home" : "この道をずっとゆけば",
+"Use a Compass on a Lodestone" : "ロードストーンにコンパスを使う",
+
+"Lodes of Applications" : "ロードストーンの活用法",
+"Create a Lodestone Compass in all three dimensions" : "全次元でロードストーンコンパスを作る",
+
+"Archaeologist" : "考古学者",
+"Mine a stack of Ancient Debris" : "古代の残骸を1スタック採掘する",
+
+
+
+
+"Failed Concoctions" : "失敗した調合",
+"Brew a mundane and thick potion" : "ありふれたポーションと濃厚なポーションを醸造する",
+
+
+
+
+"What For?" : "何のために？",
+"Craft 64 ender crystals" : "エンダークリスタルを64個作る",
+
+"Ring of the End" : "エンドの指輪",
+"Defeat the Ender Dragon 20 times" : "エンダードラゴンを20回倒す",
+
+"In Your Face, Neil Armstrong" : "見たか、ニール・アームストロング",
+"Colonise the End with potato crops" : "エンドにジャガイモ畑を作る",
+
+"Organizational Wizard" : "整理の魔法使い",
+"Name a Shulker Box 'Blocks' for storing your blocks" : "ブロック用に「Blocks」と名付けたシュルカーボックスを作る",
+
+"A Wizard’s Breakfast" : "魔法使いの朝食",
+"Eat a stack of Chorus Fruit in one go" : "コーラスフルーツを1スタック食べ続ける",
+
+
+
+
+"Constellation" : "星座",
+"Collect 64 nether stars" : "ネザースターを64個手に入れる",
+
+"Hearts of the Stack" : "スタックの心",
+"Collect 64 Hearts of the Sea" : "海洋の心を64個手に入れる",
+
+"The Devil's Distance" : "悪魔の距離",
+"Use the Nether to travel 666km in the Overworld" : "ネザーを使ってオーバーワールドで666km移動する",
+
+"Ad Astra" : "Ad Astra",
+"Reach an altitude of 10,000 blocks above the world" : "高度10,000ブロックに到達する（My name is shooting star...）",
+
+"Dragon vs Wither: Pre-Sequel" : "ドラゴンVSウィザー：前編",
+"Defeat the Wither while wearing a Dragon head... without touching the ground" : "ドラゴンの頭をかぶったまま、地面に触れずにウィザーを倒す",
+
+
+
+
+"Knowledge is Power" : "知識は力なり",
+
+"Obtain all the special banner patterns" : "特別な旗の模様を全て手に入れる",
+
+"Play a music disc in a jukebox" : "ジュークボックスで音楽ディスクを再生する",
+
+"Listen to all the music discs" : "全ての音楽ディスクを聴く",
+
+"Wear a full suit of iron armor" : "鉄の防具一式を装備する",
+
+"Craft or collect all forms of nether brick and red nether brick" : "ネザーレンガと赤いネザーレンガのから作れる全てのブロックを手に入れる",
+
+"Craft all forms of quartz blocks" : "クォーツブロックから作れる全てのブロックを手に入れる",
+
+"Sleep in a bed to change your respawn point" : "ベッドで寝てリスポーン地点を変更する",
+
+"Break all six types of shovels" : "6種類全てのシャベルを壊す",
+
+"Attack a mob using all six types of axes" : "6種類全ての斧でモブを攻撃する",
+
+"Hit a mob using all six types of shovels" : "6種類全てのシャベルでモブを攻撃する",
+
+"Defeat a Drowned that is holding a nautilus shell" : "オウムガイの殻を持ったドラウンドを倒す",
+
+"Defeat a Drowned that is holding both a nautilus shell and a trident" : "オウムガイの殻とトライデントを持ったドラウンドを倒す",
+
+"Strip the bark off of all six types of logs" : "6種類全ての原木の皮を剥ぐ",
+
+"Sprint 42.195km" : "42.195kmダッシュする",
+
+"Reach 300 experience levels" :"経験値レベル300に到達する",
+
+"Fly 1000km with elytra" : "エリトラで1000km飛行する",
+
+"Use a treasure map to find Buried Treasure" : "宝の地図を使って埋もれた宝を見つける",
+
+
+
+
+"Get attacked by a natural iron golem defending its village" : "村を守る自然発生のアイアンゴーレムに攻撃される",
+
+"Get attacked by dolphins" : "イルカに攻撃される",
+
+"Get hurt by every mob that can kill you" : "プレイヤーが倒せる全てのモブからダメージを受ける",
+
+"Get attacked by an Enderman in The End" : "エンドでエンダーマンに攻撃される",
+
+"Take damage twice within ten seconds" : "10秒以内に2回ダメージを受ける",
+
+"Get attacked by Piglin Brutes" : "ピグリンブルートに攻撃される",
+
+
+
+"Time to Dig!" : "いざ土木！",
+"Use planks and sticks to make a shovel" : "板材と棒でシャベルを作る",
+
+
+"Throw diamonds at another player or mob" : "他のプレイヤーやモブにダイヤモンドを投げる",
+
+
+"One Pickle, Two Pickle, Sea Pickle, Four" : "1ピクルス、2ピクルス、4シーピクルス！",
+"Place four sea pickles in a group underwater" : "水中でシーピクルスを4つまとめて置く",
+
+"Harry Potter" : "ハリー・ポッター",
+"Place every type of plant in a flower pot" : "全ての植物を植木鉢に植える",
+
+"Armor Display" : "アーマーディスプレイ",
+"Place all six sets of armor on six different armor stands" : "6種類の防具を6つの防具立てに飾る",
+
+
+"Unmasked" : "素顔公開",
+"Shear the Pumpkin off of a Snow Golem to unveil their true face" : "スノーゴーレムのカボチャをハサミで外して素顔を見せる",
+
+
+"Delicious Fish" : "おいしい魚",
+"Cook and eat a fish!" : "魚を焼いて食べる！",
+
+"Milkshroom" : "ミルクシュルーム",
+"Milk a mooshroom with a bowl to get mushroom stew" : "ムーシュルームからボウルでミルクを搾ってキノコシチューを作る",
+
+"Live and Let Dye" : "染めて生きろ",
+"Dye Sheep with all 16 colors of wool" : "16色全て羊を染める",
+
+"Foxy Thievery" : "キツネの盗み技",
+"Give a fox a Totem of Undying" : "キツネに不死のトーテムを与える",
+
+"Lead the Way!" : "道案内！",
+"Craft a lead using string and a slimeball, then attach it to a mob" : "糸とスライムボールでリードを作り、モブにつなぐ",
+
+"Beeloons!" : "ビールーン！",
+"Attach a lead to a bee" : "ハチにリードをつける",
+
+"Leader of the Animals" : "動物のリーダー",
+"Attach a lead to every mob that can be leashed" : "リードでつなげる全てのモブをリードでつなぐ",
+
+
+"Echolocation" : "反響定位",
+"Feed a dolphin fish to have it lead you to treasure" : "イルカに魚を与えて宝物まで案内してもらう",
+
+"Lion Hunter" : "ライオンハンター",
+"Feed an Ocelot fish to try and gain its trust" : "ヤマネコに魚を与えて信頼を得る",
+
+
+"Your Daily Fix" : "日々の修理",
+"Use an Iron Ingot to repair a damaged Iron Golem" : "鉄インゴットで壊れたアイアンゴーレムを修理する",
+
+"I'm not lost anymore!" : "もう迷わない！",
+"Right-click a banner with a map" : "地図を持って旗を右クリックする",
+
+
+"Controlled Detonation" : "制御爆破",
+"Persuade a Creeper to blow up using Flint and Steel" : "火打石と打ち金でクリーパーを爆発させる",
+
+"Miracle Drink" : "奇跡のドリンク",
+"Drink milk or honey to cure poison when on half a heart" : "ハート半分の時に牛乳かハチミツで毒を治す",
+
+"Dead Really Don’t Die" : "死んでも死なない",
+"Give a zombie a Totem... so that you have to kill it twice" : "ゾンビにトーテムを与えて2回倒す必要があるようにする",
+
+
+"Half Heart Life" : "ハーフハートライフ",
+"Be on half a heart of health for a minute" : "ハート半分の状態で1分間過ごす",
+
+
+"Brute Force" : "ブルートフォース",
+"Defeat a Piglin Brute in a Bastion Remnant" : "砦の遺跡のピグリンブルートを倒す",
+
+"Et tu, Brute?" : "お前もか、ブルート？",
+"Get murdered by Piglin Brutes" : "ピグリンブルートに殺される",
+
+"Lava Fishing" : "溶岩釣り",
+"Reel in a Strider using a Fishing Rod" : "釣り竿でストライダーを釣り上げる",
+
+"Nether Rock Collection" : "ネザーの岩コレクション",
+"Mine a stack of Netherrack, Basalt, Blackstone and Glowstone in the Nether" : "ネザーでネザーラック、玄武岩、ブラックストーン、グロウストーンを1スタックずつ手に入れる",
+
+
+
+"Attach a lead to a llama to form a llama caravan" : "リードでラマをつなぎ、キャラバンを作る",
+
+"Use Shears to obtain wool from a sheep" : "ハサミで羊から羊毛を手に入れる",
+
+"Swim in lava while having the Fire Resistance effect" : "耐火の効果中に溶岩を泳ぐ",
+
+"Diemonds!" : "Dieモンド！",
+
+
+
+"Awarded for achieving" : "達成の証",
+
+
+
+
+"Miner's Trophy" : "鉱夫のトロフィー",
+"Don't mine at night!" : "夜に採掘しないで！",
+
+"Builder's Trophy" : "建築家のトロフィー",
+"A build of a thousand blocks begins with a single brick" : "千ブロックの建築も一つのレンガから",
+
+"Farmer's Trophy" : "農家のトロフィー",
+"It ain't much but it's honest work" : "大したことはないが、誠実な仕事だ",
+
+"Butcher's Trophy" : "肉屋のトロフィー",
+"No animals were harmed in the obtaining of this trophy" : "このトロフィーの獲得に動物は傷ついていません",
+"(just simulated ones)" : "（シミュレーション上の話です）",
+
+"Slayer's Trophy" : "討伐者のトロフィー",
+"This is all that's left of your foes once you're done with them" : "敵を倒した後に残るものはこれだけだ",
+
+"Sword Trophy" : "剣のトロフィー",
+"Slice and dice" : "斬って刻め",
+
+"Explorer's Trophy" : "探検家のトロフィー",
+"It's a magical world, ol' buddy... let's go exploring!" : "素晴らしい世界だ、相棒...さあ冒険に出よう！",
+
+"Adventurer's Trophy" : "冒険家のトロフィー",
+"So much to do, so much to see..." : "やることも見ることも盛りだくさん...",
+
+"Mechanic's Trophy" : "技師のトロフィー",
+"Give me somewhere to stand and I can move the Earth" : "立つ場所をくれれば地球だって動かせる",
+
+"Enchanter's Trophy" : "エンチャンターのトロフィー",
+"What's next? Enchanting mobs?" : "次は何？モブにエンチャントでもする？",
+
+"Statistician's Trophy" : "統計家のトロフィー",
+"Lies, damned lies, and statistics" : "嘘、大嘘、そして統計",
+
+"Nether Adventurer's Trophy" : "ネザーの冒険家のトロフィー",
+"You'll nether find a better trophy anywhere else!" : "これ以上のトロフィーはネザーにもない！",
+
+"Potion Brewer's Trophy" : "ポーション醸造博士のトロフィー",
+"How did you get here?" : "どうやってここまで来たの？",
+
+"End Adventurer's Trophy" : "エンド冒険家のトロフィー",
+"What could possibly come after the end?" : "エンドの先に何がある？",
+
+"Challenger's Trophy" : "挑戦者のトロフィー",
+"Imagine what the reward must be for the entire datapack" : "全進捗達成の報酬はどんなものだろう",
+
+"Yellow T-Shirt" : "黄色いTシャツ",
+"I completed BlazeandCave's Advancements Pack" : "BlazeandCave'sの進捗をコンプリートした",
+"and all I got was this lousy T-shirt" : "そして手に入れたのはこのしょぼいTシャツだけ",
+
+
+
+
+"Spoon" : "スプーン",
+"There is no spoon" : "スプーンなんてない",
+
+"Santa's Present" : "サンタのプレゼント",
+"Someone's been naughty this year..." : "今年は悪い子がいたようだ...",
+
+"Golem Kit" : "ゴーレムキット",
+"The pumpkin is sold separately" : "カボチャは別売りです",
+
+"Golden Crown" : "黄金の王冠",
+"Piglin-approved" : "ピグリン公認",
+
+"Mayor's Throne" : "市長の玉座",
+"MUMBO FOR MAYOR!" : "市長はMUMBOで決まり！",
+
+
+
+
+"Logolas" : "ログラス",
+"The axe of choice by the masters of chopping" : "伐採の達人が選ぶ斧",
+
+"Torch God's Favor" : "松明神の加護",
+"The Torch God shall no longer haunt Minecraft" : "松明神はもうマイクラを悩ませない",
+
+"The Journal" : "日誌",
+"After all these years, I finally have them all..." : "長年かけて、ついに全て集めた...",
+
+"What are you doing reading this for? Go get Advancement Legend already!" : "こんなの読んでないで、さっさと伝説の進捗を取ってきな！",
+
+"Magic Wand" : "魔法の杖",
+"Made of holly, eleven inches long," : "ヒイラギ製、長さ11インチ、",
+"and contains a single feather from the tail of a phoenix" : "不死鳥の尾羽根が1本入っている",
+"Has no function in the hands of a mere muggle" : "ただのマグルには使えない",
+
+"Sleepless Anchor" : "不眠のアンカー",
+"Beds are for losers" : "ベッドは負け犬のもの",
+
+
+
+
+"A Glutton's Meal" : "大食漢の献立",
+"I see you have quite the appetite. Fatty." : "すごい食欲だな。デブめ。",
+
+"Wilson" : "ウィルソン",
+"Don't worry Wilson, I'll do all the paddling. You just hang on" : "心配するなウィルソン、漕ぐのは任せろ。君はしっかりつかまっててくれ",
+
+"Farmer's Badge" : "農民バッジ",
+"For the continued work you've put out there, take this reward!" : "日々の努力に、このご褒美を！",
+
+
+
+
+"Cowboy Hat" : "カウボーイハット",
+"Don't let it get shot off!" : "撃ち落とされないように！",
+
+"Earth" : "地球",
+"Seven billion people on the planet" : "地球には70億人が住んでいる",
+"Now that sounds overpopulated" : "なんだか人口過多に聞こえるね",
+
+"Super Rod" : "すごいつりざお",
+"Catches the best pokemon from the seas" : "海で最強のポケモンが釣れる",
+
+"Potato Mine" : "ポテト地雷",
+"SPUDOW!" : "スパドウ！",
+
+"Toilet" : "トイレ",
+"WHERE'S THE EFFING HONEY LEBOWSKI?" : "ハチミツはどこだレボウスキー！？",
+
+
+
+
+"Mobestiary" : "モブ図鑑",
+"Available at stores now" : "今すぐお店で手に入る",
+
+"Vanilla Ice Cream" : "バニラアイスクリーム",
+"Life would be vanilla ice cream without 31 flavors of individuality" : "個性がなければ人生はバニラアイスみたいなもの",
+
+"Molten Ice Cream" : "溶けたアイスクリーム",
+"Noo! My ice cream! T_T" : "ああっ！アイスが...(⁠´⁠д⁠`⁠)⁠",
+
+"Hyperlink" : "ハイパーリンク",
+"This advancement was sponsored by MCStacker" : "この進捗はMCStackerの提供でお送りします",
+
+"Handsome Pumpkin" : "イケメンかぼちゃ",
+"This guy rushes me with a spoon... A freakin' spoon!" : "こいつスプーンで突っ込んできた...マジでスプーンだぞ！",
+
+"Pink Camo Pants" : "ピンク迷彩パンツ",
+"They don't camouflage anywhere!" : "どこでも全然隠れられない！",
+
+"The Walking Head" : "歩く頭",
+"Yes, this head totally has legs" : "そう、この頭には本当に足がある",
+
+"Sans's Head" : "サンズの頭",
+"You start to hear distant MEGALOVANIA sounds" : "遠くからMEGALOVANIAが聞こえてくる",
+
+"Ender Arrow" : "エンダーアロー",
+"This arrow ended an enderman. Seems impossible..." : "この矢でエンダーマンを倒した。ありえない...",
+
+
+
+
+"Boomer T-Shirt" : "ブーマーTシャツ",
+"There are no mistakes, just happy explosions" : "失敗なんてない、あるのは楽しい爆発だけ",
+
+"The Hylian Shield" : "ハイリアの盾",
+"Should have spoken to the Keaton Mask Soldier" : "キータンのお面兵士に話しかけておけばよかった",
+"to get a discount at the Bazaar" : "バザーで割引してもらえたのに",
+
+"1000-degree knife" : "1000度のナイフ",
+"(GONE WRONG) (NOT CLICKBAIT)" : "（大失敗）（釣りじゃない）",
+
+
+
+
+"Voyager 1" : "ボイジャー1号",
+"Earth's farthest spacecraft" : "地球から最も遠い宇宙船",
+
+"Cartographer's Quill" : "地図職人の羽ペン",
+"Freshly not-smashed on the ground" : "地面に落ちていない新品",
+
+"A blessing in love" : "恋の加護",
+"Face your fears and ask your crush out!" : "勇気を出して好きな人を誘おう！",
+
+"Bouquet" : "ブーケ",
+"If you catch this at a wedding, you're next to get married" : "結婚式でこれを取ったら次はあなたの番",
+
+"Waterbed" : "ウォーターベッド",
+"Have a good night" : "おやすみなさい",
+
+
+
+
+"Dinnerbone's Head" : "ディナーボーンの頭",
+"No love for Grumm" : "グラムには愛がない",
+
+"Jeb's Head" : "ジェブの頭",
+"Baah, Baah, Baah, Baah, Baah, Baah, Baah!" : "メェ、メェ、メェ、メェ、メェ、メェ、メェ！",
+
+"Groot's Stick" : "グルートの棒",
+"I am Groot" : "私はグルート",
+
+"Medal of Honor" : "名誉勲章",
+"But didn't you start the raid yourself?" : "でも襲撃を始めたのは君じゃなかった？",
+
+"Wall Street" : "ウォール街",
+"Yes, it's a wall" : "そう、ただの壁です",
+
+"Ominous Shield" : "不吉な盾",
+"This shield certifies your rank as a" : "この盾はあなたの階級を証明する",
+"Pillager of the Arch-Illager's forces" : "アーチイリジャー軍の略奪者",
+
+"Stonk Man's Head" : "ストンクスマンの頭",
+"STONKS" : "ストンクス",
+
+"Your Cat's Prize" : "あなたの猫の戦利品",
+"You have so many cats, that now" : "ネコが多すぎて、今や",
+"phantoms have to sleep to avoid meeting you" : "ファントムが君に会わないように寝るようになった",
+
+
+
+
+"Quiver" : "矢筒",
+"You can't actually store arrows in it" : "実は矢は入らない",
+
+
+
+
+"Master Enchanter's Book" : "達人エンチャンターの書",
+"Congratulations, you did it" : "おめでとう、やり遂げたね",
+"This document decrees you as a master enchanter" : "この書はあなたが達人エンチャンターであることを証明する",
+"Go see a doctor" : "お医者さんに診てもらってね",
+
+"Never gonna give you up" : "君を絶対に諦めない",
+
+"Finger Guns" : "指銃",
+"So anyway I started blasting..." : "というわけで撃ち始めた...",
+
+"Chaos Emerald" : "カオスエメラルド",
+"Just gotta find six more" : "あと6個見つけるだけ",
+
+
+
+
+"Strider Treat" : "ストライダーのおやつ",
+"Your strider deserved it" : "君のストライダーはよく頑張った",
+
+"Enchanter's Tome" : "エンチャンターの書",
+"Used by Illager Enchanters to enchant mobs" : "邪悪な村人のエンチャンターがモブに使う",
+
+"World's Most Reliable Shoes" : "世界一信頼できる靴",
+"The statistics tab shall no longer be the grindy super challenges tab" : "統計タブはもう超難関チャレンジタブじゃない",
+
+"Portable Trampoline" : "ポータブルトランポリン",
+"Hours of sick fun for the whole family!" : "家族みんなで何時間も楽しめる！",
+
+"Noah's Ark" : "ノアの方舟",
+"A deluge is imminent" : "大洪水が迫っている",
+
+"Zero Tick Farm" : "ゼロティック農場",
+"RIP Zero Tick Farms" : "ゼロティック農場よ安らかに",
+"2013 - 2020" : "2013年～2020年",
+
+"Black Pearl" : "ブラックパール号",
+"Wherever we want to go, we'll go" : "行きたいところへどこへでも行こう",
+
+"Superman's Cape" : "スーパーマンのマント",
+"Is it a bird?" : "鳥かな？",
+"Is it a plane?" : "飛行機かな？",
+"Is it an egg salad sandwich?" : "卵サラダサンドイッチかな？",
+"No way, it's a Charizard!" : "まさか、リザードンだ！",
+
+"Flowey the Flower" : "フラウィ",
+"All what's left of Asriel, the monsters' prince" : "アズリエル、モンスターの王子のなれの果て",
+
+"Firearm's Firearm" : "銃の銃",
+"Now how did this get here? Seriously?" : "これどうやってここに？マジで？",
+
+"Refreshment" : "リフレッシュメント",
+"You'll need it after running that far" : "そんなに走ったら必要だよね",
+
+"Gold Medal" : "金メダル",
+"Probably not real gold" : "たぶん本物の金じゃない",
+
+"Birthday Cake" : "バースデーケーキ",
+"Happy birthday to you, happy birthday to you," : "ハッピーバースデートゥーユー、ハッピーバースデートゥーユー、",
+"this song is copyrighted, oh wait actually it's public domain!" : "この歌は著作権付き...いや実はパブリックドメイン！",
+
+"Piston Cup" : "ピストンカップ",
+"It's just an empty cup" : "ただの空のカップ",
+
+"Thomas the Tank Engine" : "きかんしゃトーマス",
+"He's number one" : "彼はナンバーワン",
+
+"Black Belt" : "黒帯",
+"Who is the greatest man?" : "最強の男は誰？",
+
+
+
+
+"Farmer's Badge V2" : "農民バッジV2",
+"Farm some more they said, it'll be fun they said..." : "もっと農業しろって言われたけど...楽しいって言ってたけど...",
+
+"Spinny Top" : "コマ",
+"If it falls over, it's not a dream" : "倒れたら夢じゃない",
+
+"Stormbreaker" : "ストームブレイカー",
+"What kind of weapon are we talking about here?" : "どんな武器の話？",
+"The Thanos-killing kind" : "サノスを倒すやつ",
+
+"Baconator" : "ベーコネーター",
+"Oh... wait, I thought you said Bacon!" : "あれ...ベーコンの話じゃなかったのか！",
+
+"Zork Chop" : "ゾークチョップ",
+"Don't ask" : "聞かないで",
+
+
+
+
+"Unknown Mixture" : "謎の混合物",
+"Side effects include possible stomach ache, 20/20 vision," : "副作用：腹痛、視力2.0、",
+"acne, extensive back pain and more..." : "ニキビ、ひどい腰痛など...",
+
+"Stale Milk" : "腐った牛乳",
+"Please drink this" : "飲んでみて",
+
+"Fast and Furious" : "ワイルド・スピード",
+"Getting shot by this will make you fast and furious" : "これに撃たれると速くて怒りっぽくなる",
+
+"This is Anarchy" : "これがアナーキーだ",
+"If you want to survive you need a strong belly" : "生き残りたければ強い胃袋が必要だ",
+
+
+
+
+"TARS" : "TARS",
+"Everybody good? Plenty of slaves for my robot colony?" : "みんな大丈夫？ロボットコロニー用の奴隷は十分いる？",
+
+"Wizard's Fruit" : "魔法使いの果実",
+"Utilised by the Mayor from Powerpuff Girls" : "パワーパフガールズの市長が使っていた",
+
+"Portal Bow" : "ポータルボウ",
+"Portal II" : "ポータルII",
+
+"Moon Rock" : "月の石",
+"Looks like he brought some of the moon back" : "月のかけらを持ち帰ったみたいだ",
+"Smells like cheese" : "チーズのにおいがする",
+
+"Ring of Bedrock" : "岩盤の指輪",
+"The end of the End" : "エンドの終わり",
+
+"Singularity" : "特異点",
+"Newton’s third law - the only way humans have ever" : "ニュートンの第3法則――人類がどこかへ行く唯一の方法は",
+"figured out of getting somewhere is to leave something behind" : "何かを置いていくことだと気づいたこと",
+
+
+
+
+"Cosmonaut Helmet" : "宇宙飛行士のヘルメット",
+"It was a Russian who was the first who could truly say this" : "これを本当に言えた最初の人はロシア人だった",
+
+"Astronaut Helmet" : "アストロノートヘルメット",
+"In zero gravity, a feather and a hammer falls at the same speed" : "無重力では羽もハンマーも同じ速さで落ちる",
+
+"Dragon Bro" : "ドラゴン・ブロ",
+"Dragon Broooo!!!" : "ドラゴンブローーー！！！",
+
+"Power Stone" : "パワーストーン",
+"Maybe you should start a cool rock collection" : "かっこいい石コレクションを始めてみては？",
+
+"Heart of a Siren" : "セイレーンの心臓",
+"No, not sirenhead!" : "違う、サイレンヘッドじゃない！",
+
+"Amphitrite" : "アンピトリテ",
+"Many people called her the personification of the sea itself..." : "多くの人が彼女を海そのものの化身と呼んだ...",
+
+"Devil's Pitchfork" : "悪魔の三叉槍",
+"One Hell Of A Time" : "地獄のようなひととき",
+
+"Space Stone" : "スペースストーン",
+"This universe is finite, its resources, finite" : "この宇宙は有限で、資源も有限だ",
+"If life is left unchecked, life will cease to exist" : "生命が制御されなければ、やがて消滅する",
+"It needs correcting" : "是正が必要だ",
+
+"Reality Stone" : "リアリティストーン",
+"Reality can be whatever I want..." : "現実は思いのまま...",
+
+"Eye of the Apocalypse" : "黙示録の目",
+"The beginning of the end" : "終わりの始まり",
+
+"Wishing Star" : "願い星",
+"Make a wish!" : "願いごとをして！",
+
+"Corrupted Beacon" : "堕落したビーコン",
+"The Corrupted Beacon holds immense power within" : "堕落したビーコンには莫大な力が秘められている",
+"It waits for the moment to unleash its wrath" : "その怒りを解き放つ時を待っている",
+
+"Treasure Chest" : "宝箱",
+"One of each block is stored in there" : "全てのブロックが1つずつ入っている",
+
+"Frame of Infinite Items" : "無限アイテムフレーム",
+"One of each item is stored on here" : "全てのアイテムがここに1つずつ飾られている",
+
+"Pandora's Box" : "パンドラの箱",
+"It is said to have contained all the evils in the world..." : "世界中のあらゆる災厄が入っていたと言われている...",
+
+"Doraemon's Pocket" : "ドラえもんのポケット",
+"I hope I can get thousands of diamonds in here" : "ここからダイヤが何千個も出てきたらいいのに",
+
+"Nuclear Reactor" : "原子炉",
+"You have transcended humanity's progression" : "君は人類の進化を超越した",
+
+"Mind Stone" : "マインドストーン",
+"The ability to give the mindless minds of their own" : "心なき者に心を与える力",
+
+"Soul Stone" : "ソウルストーン",
+"Did you do it?" : "やったのか？",
+"Yes" : "ああ",
+"What did it cost?" : "何を失った？",
+"8 hours" : "8時間",
+
+"Cursed Creeper Head" : "呪われたクリーパーヘッド",
+"Wave 5 of 5: CREEPER-GEDDON!!!" : "第5波：クリーパーゲドン!!!",
+
+"ACDC - Back in Black" : "ACDC - バック・イン・ブラック",
+"Back in Black stomped Highway to Hell in terms of success" : "成功の面ではBack in BlackがHighway to Hellを圧倒した",
+
+"Endfinity Source" : "エンドフィニティソース",
+"They will END the world..." : "彼らは世界を終わらせる...",
+
+"Potion Master's Diploma" : "ポーションマスターの証明書",
+"A certificate granting you the ability to teach" : "教える資格を与える証明書",
+"the subtle science and exact art of potion-making" : "ポーション作りの繊細な科学と正確な技術を極めた証",
+
+"Poison Mask" : "毒マスク",
+"Protects your face from poison but not the rest of your body" : "顔は毒から守るが体は守らない",
+
+"Infinity Gauntlet" : "インフィニティ・ガントレット",
+"Iron Man stole all the stones so the best" : "アイアンマンが全ての石を奪ったから",
+"you can do is punch people with it" : "これで殴るしかない",
+
+"Totem of Immortality" : "不死のトーテム",
+"You'll be immortal as long as you don't die" : "死なない限り不死身だ",
+
+"Time Stone" : "タイムストーン",
+"Perfectly balanced, as all things should be" : "全てが完璧なバランスであるべきだ",
+
+"Instant Death" : "即死",
+"Since you like dying so much..." : "そんなに死ぬのが好きなら...",
+
+
+
+
+"Craft or collect all forms of normal, cracked, mossy and chiseled stone bricks" : "通常・ひび割れ・苔むした・模様入りの石レンガから作られる全てのブロックを手に入れる",
+
+"Swim in water while having the Water Breathing effect" : "水中呼吸の効果中に水の中を泳ぐ",
+
+"Ride a Skeleton Horse" : "スケルトンホースに乗る",
+
+"Follow the Leader" : "リーダーについていく",
+
+"Barbearian" : "バーベアリアン",
+
+"Happy New Year!" : "ハッピーニューイヤー！",
+"Play for a whole Minecraft year" : "マインクラフト内で1年間プレイする",
+
+
+
+
+"Coppers and Robbers": "銅と泥棒",
+"Smelt a Copper Ingot": "銅インゴットを精錬する",
+
+"Budget Channeling": "お手軽チャネリング",
+"Craft a Lightning Rod using Copper Ingots": "銅インゴットで避雷針を作る",
+
+"Surge Protector": "危機一髪！",
+"Protect a villager from an undesired shock without starting a fire": "火事を起こさずに村人を落雷から守る",
+
+"Called Shot": "狙い撃ち",
+"Get struck by lightning while standing on a Lightning Rod": "避雷針の上で雷に打たれる",
+
+"Don’t Come a Copper!": "銅にご用心！",
+"Craft some Cut Copper": "カットされた銅を作る",
+
+"Copper Miner": "銅鉱夫",
+"Mine a stack of Raw Copper": "1スタックの銅の原石を手に入れる",
+
+"Master Copper Miner": "ベテラン銅鉱夫",
+"Mine enough copper to make a stack of Copper Blocks": "1スタックの銅ブロックを手に入れる",
+
+"Wax On": "錆止め",
+"Use Honeycombs to wax a Copper Block, preventing it from oxidising": "ハニカムで銅ブロックにワックスをかけ、酸化を防ぐ",
+
+"Wax Off": "錆止め落とし",
+"Use an axe to scrape wax off of a Copper Block": "斧で銅ブロックのワックスを剥がす",
+
+"The Statue of Liberty": "自由の女神像",
+"Obtain a fully oxidized Block of Copper": "完全に酸化した銅ブロックを入手する",
+
+"Sly Copper: The Copper Heist": "スライ・コッパー：銅泥棒",
+"Collect a stack of every oxidizing stage of Copper Block, Cut Copper, Cut Copper Slabs and Stairs, and the waxed variants of them all": "銅ブロック、切り込み入りの銅、切り込み入りの銅のハーフブロック、切り込み入りの銅の階段それぞれの全酸化段階とワックス付き全種類を1スタックずつ手に入れる",
+
+"G.I. Geode": "G.I.ジオード",
+"Find an Amethyst Geode and mine an Amethyst Cluster": "アメジストジオードを見つけ、アメジストの欠片を手に入れる",
+
+"Good For Your Bones": "骨に良い",
+"Mine some Calcite encasing an Amethyst Geode": "方解石を手に入れる",
+
+"Galileo Figaro": "ガリレオとフィガロ",
+"Zoom in on something using a Spyglass": "望遠鏡で何かを拡大して見る",
+
+"Pixel Perfect": "ピクセルパーフェクト",
+"Use a Spyglass to stare at a bat from at least 50 blocks away": "望遠鏡でコウモリを50ブロック以上離れて見つめる",
+
+"Blackout": "ブラックアウト",
+"Craft Tinted Glass using Glass and Amethyst Shards and use it to block out light": "ガラスとアメジストの欠片で遮光ガラスを作り、光を遮る",
+
+"Amethyst Miner": "アメジスト鉱夫",
+"Mine a stack of Amethyst Blocks, Amethyst Clusters, and every size of Amethyst Bud": "アメジストブロック、アメジストの塊、全サイズのアメジストの芽を1スタックずつ手に入れる",
+
+"Mr. Bean": "ミスター・ビーン",
+"Mine and craft a stack of Raw Iron, Copper and Gold Blocks": "鉄の原石、銅の原石、金の原石ブロックを1スタックずつ手に入れる",
+
+"Filthy Lich": "フィルシーリッチ",
+"Use shears to obtain Glow Lichen from an underground cave": "洞窟でハサミを使いヒカリゴケを手に入れる",
+
+"That's the point!": "それがポイント！",
+"Obtain some Pointed Dripstone from a Dripstone Cave": "鍾乳洞で尖ったドリップストーンを手に入れる",
+
+"Deep Slate Nine": "ディープスレートナイン",
+"Mine deep enough that the stone darkens": "石が暗くなるほど深く掘る",
+
+"Tuff Stuff": "タフスタッフ",
+"Mine some Tuff in the deep underground": "地下深くで凝灰岩を手に入れる",
+
+"Moss Maker": "洞窟に緑を！",
+"Use Bone Meal on Moss to spread its wonderful lushness across hard blocks of stone": "苔に骨粉を使い、石の上に緑を広げる",
+
+"Iggy": "Iggy Azalea",
+"Obtain an Azalea": "ツツジを入手する",
+
+"Particle Fan": "胞子扇風機",
+"Obtain a Spore Blossom": "胞子の花を入手する",
+
+"Lush Hour": "ラッシュアワー",
+"Obtain a stack of all lush-related blocks": "Minecraft x Lush関連(バスボムのコラボだよ)のブロックを全て1スタックずつ入手する",
+
+"A Shiny Treat": "きらめくごちそう",
+"Eat some Glow Berries": "グロウベリーを食べる",
+
+"Bulldozer": "ブルドーザー",
+"Destroy a total of 10,000 blocks of stone": "石を合計1万個破壊する",
+
+"Strike a Light": "火をつけろ",
+"Craft Flint and Steel and use it to light the ground on fire": "火打石と打ち金で地面に火をつける",
+
+"Bonfire Night": "焚き火の夜",
+"Light every flammable block on fire": "燃えるブロック全てに火をつける",
+
+
+
+
+"Setting up the mood": "ムード作り",
+"Place a candle and light it using Flint and Steel": "ろうそくを置き、火打石と打ち金で火をつける",
+
+"The Ritual Begins": "儀式の始まり",
+"Get one stack of Black Candles": "黒いろうそくを1スタック手に入れる",
+
+
+"Place a candle on a cake": "ケーキにろうそくを立てる",
+
+"Pane in the Glass": "ガラスの板み(ねも訳)",
+"Craft a stack of all 16 colors of stained glass panes": "1スタックの全ての色付きガラス板を手に入れる",
+
+"Hot Tub": "ホットタブ",
+"Sit in a cauldron filled with lava": "溶岩入り大釜に入り、浴を楽しむ",
+
+"Rock Polish": "岩磨き",
+"Craft every type of polished block": "全ての磨かれたブロックを手に入れる",
+
+"Deepslate Conspiracy": "ディープスレートの陰謀論",
+"Craft all forms of Deepslate, Polished Deepslate, Deepslate Bricks and Deepslate Tiles": "全種類の深層岩、磨かれた深層岩、深層岩レンガ、深層岩タイルから作れる全てのブロックを手に入れる",
+
+"Skyblock": "スカイブロック",
+"Place a Grass Block high in the sky": "空高くに草ブロックを設置する",
+
+
+
+
+"One-course meal": "ワンコースミール",
+"Use bone meal to grow a sapling into a tree": "骨粉で苗木を木に成長させる",
+
+"Come to the countryside!": "田舎においでよ！",
+"Plant every single type of crop on farmland": "全ての作物を畑に植える",
+
+"An Apple a Day": "一日一個のリンゴ",
+"Eat an Apple every day for 30 in-game days": "30日間毎日リンゴを食べる",
+
+
+
+
+"Goat out of here!": "ヤギ退場！",
+"Slaughter a Goat": "ヤギを倒す",
+
+"Billy the Kid": "ビリー・ザ・キッド",
+"Breed two Goats together using Wheat": "小麦でヤギを繁殖させる",
+
+"Goat Simulator": "ヤギシミュレーター",
+"Get killed by a Goat that rammed into you.": "突進してきたヤギに倒される",
+"You have Goat to be kidding me!": "ヤギだけに冗談でしょ！",
+
+"Whatever Floats Your Goat!": "あなたのヤギたい様に！",
+"Get in a Boat and float with a Goat": "ボートに乗ってヤギと一緒に浮かぶ",
+
+"Screaming Milk": "叫ぶミルク",
+"Milk a screaming Goat": "叫ぶヤギからミルクを搾る",
+
+"Cephalight": "光とイカ",
+"Kill a Glow Squid": "ヒカリイカを倒す",
+
+"Glow and Behold": "この輝きに驚くことなかれ",
+"Use a Glow Ink Sac to light up a sign": "輝くイカスミで看板を光らせる",
+
+"Flashy Items": "派手なアイテム",
+"Put an item up for display in a Glowing Item Frame": "発光する額縁にアイテムを飾る",
+
+"Iceologer Should've Won": "アイスロジャーが勝つべきだった",
+"Kill 100 Glow Squids": "ヒカリイカを100体倒す",
+
+"The Cutest Predator": "いちばんカワイイ捕食者",
+"Catch an Axolotl in a Bucket": "バケツでウーパールーパーを捕まえる",
+
+"The Healing Power of Friendship": "友情の癒しパワー！",
+"Team up with an Axolotl and win a fight": "ウーパールーパーと協力して戦いに勝つ",
+
+"Thanks a lotl": "ありがとう、ウーパー",
+"Team up with an Axolotl in an Ocean Monument to help clear the curse of the Elders": "海底神殿でウーパールーパーと協力してエルダーガーディアンの呪いを解く",
+
+"Axolittle": "子供のウーパールーパー",
+"Breed two Axolotls together using Tropical Fish": "熱帯魚でウーパールーパーを繁殖させる",
+
+"Axolotl of them": "ウーパールーパー全部",
+"Catch all variants of Axolotls inside a Bucket": "全てのウーパールーパーの色をバケツで捕まえる",
+
+"Axeolotl": "オーノールーパー(りおん訳)",
+"Kill an Axolotl with an axe": "斧でウーパールーパーを倒す",
+
+"Humble Bundle": "ハンブルバンドル",
+"Craft a Bundle using Rabbit Hide and String": "ウサギの皮と糸でバンドルを作る",
+
+"Fractal": "多重構造",
+"Put a Bundle in a Bundle in a Bundle in a Bundle in a Bundle… 16 layers deep": "バンドルの中にバンドルを16重に入れる",
+
+"Swine Sailing": "ブタの航海",
+"Ride a saddled pig in a boat in a minecart": "鞍付きのブタに乗り、ボートに乗せてトロッコに乗る",
+
+"Llama Festival": "ラマフェスティバル",
+"Sit on Llamas with all 16 colors of carpet. Getting off will reset your progress": "16色全てのカーペットを敷いたラマに乗る（降りると進捗リセット）",
+
+"Is it a Bird?": "あれは鳥？",
+"Look at a Parrot through a Spyglass": "望遠鏡でオウムを見る",
+
+"So Hungry I Could Eat a Horse!": "馬も食べられるほど空腹！",
+"Feed a Horse every type of food that it can eat": "馬が食べられる全ての食べ物を与える",
+
+
+
+
+"Smooth Operator": "スムーズオペレーター",
+"Slip and slide on some ice": "氷の上で滑る",
+
+"This Snow is Snowier": "この雪はより雪らしい",
+"Fall into some Powder Snow": "粉雪に落ちる",
+
+"Light as a Rabbit": "ウサギのように軽く",
+"Walk on Powder Snow… without sinking in it": "粉雪の上を沈まずに歩く",
+
+"Powder-full": "パウダーいっぱい",
+"Pick up some Powder Snow in a Bucket": "バケツで粉雪をすくう",
+
+"Boatception": "多重ボート",
+"Get in a boat within a shipwreck": "難破船の中でボートに乗る",
+
+"Pandamonium": "パンダモニウム",
+"Feed cake to every type of panda": "全ての種類のパンダにケーキを与える",
+
+"Edge of the Jungle": "ジャングルの端",
+"Enter a Modified Jungle Edge - the rarest biome in Minecraft": "最も珍しいバイオーム「変異したジャングルの端」に入る",
+
+
+
+
+"This Dirt is Dirtier": "この土はより汚い",
+"Trade for some Rooted Dirt from a Wandering Trader": "行商人と取引して根付いた土を手に入れる",
+
+"Leaflet Drop": "リーフレットドロップ",
+"Fall through a Big Dripleaf": "大きなドリップリーフから落下する",
+
+"Hey! You two should kiss!": "君たちキスしなよ！",
+"Use a Spyglass to look at two Villagers sitting in a Boat from at least 50 blocks away": "望遠鏡でボートに座る2人の村人を50ブロック以上離れて見る（リア充爆発しろ）",
+
+"Rare Candy Shop": "レアキャンディショップ",
+"Trade for a Bottle o’ Enchanting from a Cleric": "聖職者と取引してエンチャントの瓶を手に入れる",
+
+"Buy Low, Sell High": "安く買って高く売る",
+"Trade with a villager while under the Hero of the Village effect": "村の英雄の効果中に村人と取引する",
+
+"Justice": "正義",
+"Kill each type of Illager with a single crossbow arrow": "クロスボウの矢1本で全ての邪悪な村人を倒す",
+
+
+
+
+"Poultry Boy": "チキンジョッキー討伐者",
+"Slay the elusive Chicken Jockey": "レアなチキンジョッキーを倒す",
+
+"Basketblock Championship": "バスケットブロック選手権",
+"Kill Endermen that are holding every block that they can hold": "エンダーマンが持てる全てのブロックを持った状態で倒す",
+
+"Pupil Poppers": "瞳のポッパーズ",
+"Eat 1000 Spider Eyes": "クモの目を1000個食べる",
+
+
+
+
+"It's time consuming": "時間がかかるね",
+"Kill something using a clock": "時計でモブを倒す",
+
+"Inspector Gadget": "インスペクター・ガジェット",
+"Kill a zombie while holding a spyglass": "望遠鏡を持ちながらゾンビを倒す",
+
+"Rock, Paper, Shears!": "グー・チョキ・パー！",
+"Beat a zombie at rock, paper, shears": "ゾンビにジャンケンで勝つ",
+
+"Backfire": "自爆",
+"Kill a Blaze using a Blaze Rod while both you and it are on fire": "自分とブレイズが燃えている状態でブレイズロッドでブレイズを倒す",
+
+
+
+
+"Take Notes": "音を取れ",
+"Tune a Note Block through every possible note": "音符ブロックで全ての音階を鳴らす",
+
+"Noteworthy": "注目に値する",
+"Play every possible instrument on a Note Block": "音符ブロックで全ての楽器を演奏する",
+
+"Travelling Bard": "旅する吟遊詩人",
+"Play a Note Block in every type of biome": "全てのバイオームで音符ブロックを演奏する",
+
+"Vibe Check": "バイブチェック",
+"Obtain a Sculk Sensor": "スカルクセンサーを入手する",
+
+
+
+
+"Over-Overkill": "超・やり過ぎ",
+"Deal sixteen hearts of damage in a single melee blow": "一撃でハート16個分のダメージを与える",
+
+
+
+
+
+"Trade with villagers 100 times": "村人と100回取引する",
+
+"Big Spender": "浪費家",
+"Trade with villagers 500 times": "村人と500回取引する",
+
+"STONKS!": "大儲け！",
+"Trade with villagers 2500 times": "村人と2500回取引する",
+
+
+
+
+"Ancient Restoration": "古代の再興",
+"Rebuild and reactivate a Ruined Portal": "壊れたポータルを修復し再起動する",
+
+"Hot Spring": "温泉",
+"Sit in water in the Nether": "ネザーで水に浸かる",
+
+"Polar Opposites": "正反対",
+"Start freezing in the Nether": "ネザーで凍え始める",
+
+"Jenga": "ジェンガ",
+"Ride a Strider riding another Strider riding a boat riding a minecart": "トロッコに乗ったボートに乗ったストライダーに乗ったストライダーに乗る",
+
+"Is it a Balloon?": "あれは風船？",
+"Look at a Ghast through a Spyglass": "望遠鏡でガストを見る",
+
+"A Piglin's Best Friend": "ピグリンの親友",
+"Give a total of 500 gold to Piglins during your nether adventures": "ネザーでピグリンに合計500個の金を渡す",
+
+"Instant Mining": "即時採掘",
+"Hold a Diamond or Netherite Pickaxe enchanted with Efficiency V while under the Haste II effect": "効率V付きのダイヤモンドまたはネザライトのツルハシを持ち、採掘速度上昇IIの効果中でいる",
+
+"Beacon Overlord": "ビーコンの支配者",
+"Acquire every beacon-induced effect at once": "ビーコンの全効果を同時に得る",
+
+"Master Netherite Miner": "ネザライト採掘王",
+"Mine enough Ancient Debris to make a stack of Netherite Ingots (don’t worry, mining a stack of Netherite Blocks is optional in this datapack, I’m not that evil…)": "ネザライトインゴットを1スタック手に入れる（ネザライトブロック1スタックはこのデータパックでは任意なのでご安心を...拷問版も遊びましょうw）",
+
+"Netherite Mad Lad": "ネザライト狂人",
+"Be an absolute madlad and grind enough Ancient Debris to make a stack of Netherite Blocks (this is hidden and not required for Advancement Legend btw…)": "本物の狂人となり、ネザライトブロックを1スタック手に入れる（これは隠し実績で、進捗の覇者には不要です）",
+
+
+
+
+"Gas Bomb": "ガスボム",
+"Ignite a Creeper of each possible effect using Flint and Steel": "火打石と打ち金で全種類のポーションの効果を持つクリーパーを着火する",
+
+
+
+
+"Is it a Plane?": "それは飛行機？",
+"Look at the Ender Dragon through a Spyglass": "望遠鏡でエンダードラゴンを見る",
+
+"Good Luck Getting This One": "これを達成できたら幸運を祈る",
+"Kill a baby Turtle, a Witch, a Phantom, an Elder Guardian and a Piglin Brute with one piercing arrow in The End": "The.Endで貫通の矢1本でウミガメの子供、ウィッチ、ファントム、エルダーガーディアン、ピグリンブルートを倒す",
+
+
+
+
+"The Perfect Run": "完璧な走り",
+"Summon the Ender Dragon, the Wither, and a Raid within thirty seconds of each other, then defeat all of them without taking damage": "エンダードラゴン、ウィザー、襲撃を30秒以内に呼び出し、ダメージを受けずに全て倒す",
+
+"Telescopic": "望遠観察",
+"Look at every mob using a Spyglass, each from at least 25 blocks away": "全てのモブを望遠鏡で25ブロック以上離れて観察する",
+
+
+
+
+
+"Professional": "プロフェッショナル",
+
+"Hot Reels!": "熱いリール！",
+
+"Netherite Miner": "ネザライト鉱夫",
+
+"Stepping on Legos": "レゴを踏むような痛み",
+"Walk on some hot Magma Blocks in the Nether": "ネザーでマグマブロックの上を歩く",
+
+"Mine a stack of Raw Iron": "鉄の原石を1スタック採掘する",
+
+"Mine a stack of Raw Gold": "金の原石を1スタック採掘する",
+
+"Craft and ride a boat to sail on the high seas": "ボートを作って大海原を航海する",
+
+"Mine a stack of Netherrack, Basalt, Blackstone and Magma in the Nether": "ネザーでそれぞれ1スタックのネザーラック、玄武岩、ブラックストーン、マグマブロックを手に入れる",
+
+"Use a shovel to create dirt paths": "シャベルで土の道を作る",
+
+"Deal eight hearts of damage in a single melee blow": "一撃でハート8個分のダメージを与える",
+
+
+
+
+
+"Get stung by a bee": "ハチに刺される",
+
+"Get rammed into by a Goat.": "ヤギに突進される",
+
+"Obtain a carved pumpkin enchanted with Curse of Binding. Be careful not to put it on!": "束縛の呪いが付いた彫刻カボチャを入手する。かぶらないように注意！",
+
+
+
+
+
+"Octuple Compressed Cobblestone": "8倍圧縮丸石",
+"Just imagine how much cobblestone it contains…": "中間素材です()",
+
+"Golden Cobblestone": "金の丸石",
+"Congratulations!": "おめでとう！",
+"You mined 10,000 blocks of Cobblestone": "丸石を1万個採掘した",
+"and unlocked the Golden Cobblestone Skin!": "金の丸石スキンをアンロック！",
+
+"Weathered Copper BlocK": "Weathered Cooper Bloc'K'",
+"It was spelt like this for six whole snapshots": "この綴りで6つのスナップショットを過ごしました",
+
+"Copper Shortsword": "銅の短剣",
+"The Moon Lord fears no weapon, but this one… it scares him": "Moon Lordはどんな武器も恐れないが、これだけは...怖がる",
+
+"Baseball Bat": "野球バット",
+"What?... Oh, when you said stare at a bat,": "え？...ああ、「バットを見つめろ」って言った時、",
+"I thought you meant this bat!": "このバットのことだと思ったよ！",
+
+"Energy Crystal": "エナジークリスタル",
+"Looks like a slimy slug sucked all the power out of it…": "ぬるぬるしたナメクジが全部の力を吸い取ったみたい...",
+
+"Bean Block": "豆ブロック",
+"Mmm, tasty": "うーん、美味しそう",
+
+"Silver Armor Stand": "銀の防具立て",
+"To display your best armor set!": "最高の防具セットを飾ろう！",
+
+"Annoying Orange": "うざいオレンジ",
+"Hey apple, can you spit seeds?": "ねえアップル、種を飛ばせる？",
+
+"Mr Finch's Hoe": "フィンチさんのクワ",
+"Did you at least harvest the sugar cane?": "少なくともサトウキビは収穫した？",
+
+"Compost Mate": "コンポスト仲間",
+"There is ": "There is",
+"1 Composter": "1 'Composter'",
+" among us": " among us",
+
+"Black Bird": "黒い鳥",
+"They should add Crows to Minecraft. Caw!": "マインクラフトにカラスを追加すべきだ。カァー！",
+
+"Fake Tropical Fish": "偽物の熱帯魚",
+"Not as beautiful, but much tastier": "見た目は劣るが、味はずっと美味しい",
+
+"Barry B. Benson's Hive": "バリー・B・ベンソンの巣箱",
+"According to all known laws of aviation…": "航空力学の全ての既知の法則によれば...",
+
+"Ice Wand": "アイスワンド",
+"The Ice Wand was trapped in a tomb of ice for ages,": "アイスワンドは長い間氷の墓に閉じ込められていた、",
+"sealed away by those who feared its power": "その力を恐れた者たちによって封印された",
+
+"Llama Drama": "ラマドラマ",
+"In memoriam of the Great Spitting Massacre of 2021": "2021年の大つば吐き事件を偲んで",
+
+"Matryoshka Doll": "マトリョーシカ人形",
+"And they don't stop coming,": "そして彼らはやって来る...",
+"and they don't stop coming,": "そして彼らはやって来る...",
+"and they don't stop coming…": "そして彼らはやって来る...無限ループって怖くね",
+
+"Basketblock": "バスケットブロック",
+"That's right Number 7, it's a cube!": "そうだ7番、それはキューブだ！",
+
+"Etho's Anvil": "エトの金床",
+"Awarded to distinguished individuals who complete Etho’s challenge": "エトのチャレンジを達成した優秀な者に贈られる",
+
+"Multiweapon": "マルチウェポン",
+"It's a sword, axe and…": "剣であり、斧であり...",
+"Never mind, it broke": "まあいいや、壊れた",
+
+"Bamboo Sword": "竹の剣",
+"Not the best material for a weapon…": "武器としては最適な素材じゃない...",
+
+"The Jungle Book": "ジャングル・ブック",
+"In the jungle, the mighty jungle…": "ジャングルで、力強いジャングルで...",
+
+"The Moon": "月",
+"Yeah, it's just me, you, and the moon": "そう、僕と君と月だけだ",
+
+"The Salad Bowl": "サラダボウル",
+"Perfect for serving justice in": "正義を盛り付けるのにぴったり",
+
+"Steam Engine": "蒸気機関",
+"The beginning of the Industrial Revolution": "産業革命の始まり",
+
+"New Year's Firework": "新年の花火",
+"It's the final countdown!": "最後のカウントダウンだ！",
+
+"Big Pointy Arrow": "大きな尖った矢",
+"Things are on the up and up!": "物事はどんどん上向き！",
+
+"One-Punch Man's Fist": "ワンパンマンの拳",
+"ONE PUUUUUNNNCCHHH!!!": "ワンパァァァンチ！！！",
+"(though in honesty killing everything in one punch": "(正直、全てを一撃で倒すのは",
+"gets kinda boring after awhile…)": "しばらくするとちょっと退屈になる...)",
+
+"Gilded Blade": "金装の刃",
+"A powerful weapon wielded by ancient mobs": "古代のモブが振るった強力な武器",
+
+"Brick Astley": "ブリック・アストリー",
+"Nether gonna brick you up!": "ネザーで君をブリックする！",
+
+"Ultimate Flex": "究極の自慢",
+"Dab on dem haters": "アンチにダブを決めろ",
+
+"Wormhole": "ワームホール",
+"Is this some kind of portal?": "これは何かのポータル？",
+"Aaah!..": "ああっ！...",
+
+"Mario's Hat": "マリオの帽子",
+"Mario, number one! Yahoo!": "マリオ、ナンバーワン！ヤッホー！",
+
+
+
+
+
+"Experience" : "経験値",
+
+
+
+
+
+"You have unlocked the root of the Adventure tab": "冒険タブを解除しました",
+
+"You have unlocked the root of the Animals tab": "動物タブを解除しました",
+
+"You have unlocked the root of the Biomes tab": "バイオームタブを解除しました",
+
+"You have unlocked the root of the Building tab": "建築タブを解除しました",
+
+"You have unlocked the root of the Super Challenges tab": "超難関チャレンジタブを解除しました",
+"WARNING: These are very difficult": "警告：これらは非常に難易度が高いです",
+
+"You have unlocked the root of the Enchanting tab": "エンチャントタブを解除しました",
+
+"You have unlocked the root of the End tab": "エンドタブを解除しました",
+
+"You have unlocked the root of the Farming tab": "農業タブを解除しました",
+
+"You have unlocked the root of the Mining tab": "採掘タブを解除しました",
+
+"You have unlocked the root of the Monsters tab": "モンスタータブを解除しました",
+
+"You have unlocked the root of the Nether tab": "ネザータブを解除しました",
+
+"You have unlocked the root of the Potions tab": "ポーションタブを解除しました",
+
+"You have unlocked the root of the Redstone tab": "レッドストーンタブを解除しました",
+
+"You have unlocked the root of the Statistics tab": "統計タブを解除しました",
+
+"You have unlocked the root of the Weaponry tab": "武器タブを解除しました",
+
+
+
+
+
+"This world is using ": "このワールドに",
+"Blaze": "Blaze",
+"and": "and",
+"Cave": "Cave",
+"'s Advancements Pack!": "'s進捗データパックは適用されています",
+
+" Over ": "合計",
+
+" brand new advancements in your Minecraft world!": "個の新しい進捗があなたのワールドに追加されています！",
+
+" - Created by ": " - 制作者：",
+
+
+" - For information ": " - 詳細は",
+"click here": "こちらをクリック",
+
+" - Join my discord ": " - Discordに参加：",
+"here": "ここ",
+
+"Special thanks to my patreon donors: ": "翻訳者：Project-Nexus(argonaute_nemo,kanataku1106,RionDaglaus,taichan_voidPIA)\nPatreon支援者の皆様：",
+
+
+
+
+
+
+
+"'s Advancements Pack Config": "'s進捗データパックの設定",
+
+"Welcome Message currently enabled": "ウェルカムメッセージ：有効",
+"Welcome Message currently disabled": "ウェルカムメッセージ：無効",
+
+"Item Rewards currently enabled": "アイテム報酬：有効",
+"Item Rewards currently disabled": "アイテム報酬：無効",
+
+"Experience Rewards currently enabled": "経験値報酬：有効",
+"Experience Rewards currently disabled": "経験値報酬：無効",
+
+"Trophies currently enabled": "トロフィー：有効",
+"Trophies currently disabled": "トロフィー：無効",
+
+"Display scoreboard on tab list": "タブにスコアボードを表示",
+"Clear scoreboard from tab list": "タブからスコアボードを消去",
+
+"Display scoreboard on sidebar": "サイドバーにスコアボードを表示",
+"Clear scoreboard from sidebar": "サイドバーからスコアボードを消去",
+
+"Update scoreboard": "スコアボードを更新",
+
+"Grant trophies": "トロフィーを付与",
+
+"Click to enable": "クリックして有効化",
+"Click to disable": "クリックして無効化",
+"Click to run": "クリックして実行",
+
+
+"The advancement count of all players currently online has been updated.": "現在オンラインの全プレイヤーの進捗カウントが更新されました。",
+
+
+"Are you sure?": "よろしいですか？",
+"This function should only be used in worlds that used the Advancements Pack before updating to the Trophy Update.": "この機能はトロフィーアップデート前にデータパックを使っていたワールドでのみ使用してください。",
+"This function may also grossly fill inventories so make sure everyone is prepared to receive them!": "この機能はインベントリを満杯にするため、全員が受け取る準備が出来ているかを確認してください！",
+
+"[ Yes ]": "[はい]",
+"Click to confirm": "クリックして確認",
+
+"[ No ]": "[いいえ]",
+"Click to go back": "クリックして戻る",
+
+
+"All players have been granted trophies.": "全てのプレイヤーにトロフィーが付与されました。",
+"Players that have been granted trophies by this function in the past did not receive any now. To manually re-enable trophy granting for them use the command:": "この機能によって過去にトロフィーを付与されたプレイヤーは、トロフィーを受け取っていません。トロフィー付与を再度有効にするには、次のコマンドを実行してください。",
+"Click to insert command into chat": "クリックしてチャットにコマンドを入力",
+
+
+
+
+"Dripstone Drop": "ドリップストーンドロップ",
+"Survive a fall of at least 10 blocks onto some Pointed Dripstone": "鍾乳石に10ブロック以上落下しても生き残る",
+
+"Lucky Break": "幸運",
+"Survive a long fall with just a sliver of health remaining": "体力がわずかしか残っていない状態で、高所の落下から生き残る",
+
+"Caves & Cliffs": "洞窟と崖",
+"Free fall from the top of the world (build limit) to the bottom of the world and survive": "高度限界から世界の底まで落下して生き残る",
+
+"Bottom to Top": "底を限界へ",
+"Place every cave block at the very top of the world": "全ての洞窟内のブロックを世界の一番上に置く",
+
+
+"A Good Start": "順調なスタートダッシュ",
+"Chop down enough trees to collect a full stack of one log type": "1スタックの原木を手に入れる",
+
+
+"Squid Game": "イカゲーム",
+"Hunt enough Squids to collect a stack of Ink Sacs": "1スタックのイカスミを手に入れる",
+
+
+"Blackberry Market": "闇のベリー販売人",
+"Trade some sweet berries to a Fox with an emerald in their mouth": "エメラルドを咥えたキツネにスイートベリーを押し売りする",
+
+
+"We’re Going on a Bear Hunt": "クマ狩りに行こう！",
+"Get hunted by a Polar Bear": "シロクマに狩られる",
+
+"Dive Bomb": "大きな飛び込み",
+"Dive into water from a cliff at least 50 blocks tall": "高さ50ブロック以上の崖から水中に飛び込む",
+
+"Captain America": "キャプテン・アメリカ",
+"Get completely frozen inside two blocks of Powder Snow for a loooong time.": "粉雪2ブロックの中に長時間完全に凍りつく",
+"Big question is: Can you do this all day?": "...問題はこれを1日中続けられるのか...？",
+
+
+"Map Room": "地図の部屋",
+"Place a map in an item frame": "額縁に地図を飾る",
+
+"Sound the Alarm!": "警鐘を鳴らせ！",
+"Ring the bell with a hostile enemy in the village": "村にいる敵を確認するために鐘を鳴らす",
+
+"The Sound of Music": "サウンド・オブ・ミュージック",
+"Make the Meadows come alive with the sound of music from a jukebox": "ジュークボックスから流れる音楽で草地を活気づける",
+
+
+"Click!": "クリック！",
+"Place and push a button": "ボタンを置いて押そう！",
+
+"Leveraging Synergy": "梃子の原理の相乗効果",
+"Flick a lever": "レバーを引く",
+
+"On A Rail": "世界のトロッコから",
+"Travel by Minecart in a straight line to at least 1 km from where you started": "トロッコでスタート地点から直線距離で1km以上移動する",
+
+
+"Baron of Blacksmiths": "鍛冶屋の男爵",
+"Get a stack of regular, chipped and damaged Anvils": "金床、少し壊れた金床、かなり壊れた金床をそれぞれ1スタック手に入れる",
+
+
+"65": "65",
+"hours of walking": "時間の旅",
+"Walk 1000km. The statistics tab shall no longer be the grindy super challenges tab": "歩きで1000km移動する。統計タブは、もはや超難関チャレンジタブではありません！",
+
+
+"Feels Like Home": "実家のような安心感",
+"Take a Strider for a loooong ride on a lava lake in the Overworld": "オーバーワールドの溶岩湖で長ーーーくストライダーを乗りこなす",
+
+"Gilded Miner": "輝いた鉱夫",
+"Mine a stack of Gilded Blackstone from Bastion Remnants": "砦の遺跡からきらめくブラックストーンを1スタック手に入れる",
+
+"Astrobrute": "アストロブルート",
+"Send a Piglin Brute to the End and kill it there before it zombifies": "ピグリンブルートをエンドに送り込み、ゾンビ化する前に倒す",
+
+"Ludicrous Speed!": "とんでもないスピード！",
+"Achieve an absolutely insane speed by combining the Speed II effect, Dolphin’s Grace, Depth Strider III, Soul Speed III and sprinting": "移動速度上昇IIとイルカの好意の効果、水中歩行IIIとソウルスピードIIIのエンチャント、そしてダッシュを組み合わせて、狂気の速度を実現させる",
+
+
+"Stealth Takedown": "忍び足",
+"Dispatch a Creeper at melee range while you are invisible": "透明化中に近距離でクリーパーを倒す",
+
+"Dogfight": "空中戦",
+"Kill a Skeleton or Stray while both you and it have levitation": "あなたが浮遊状態のときに浮遊状態のスケルトンもしくはストレイを倒す",
+
+"Riddle Me This": "この謎を解け！",
+"The first is to smith a compass that vanishes": "1つ目は消えるコンパスを作ること",
+"The second is to slay a corpse that fishes": "2つ目は釣りをする死体を倒すこと",
+"The third is to travel on an upside-down mount": "3つ目は逆さまの乗り物に乗って旅すること",
+"The fourth is to take a temple tripwire into account": "4つ目はジャングルの寺院のトリップワイヤーの罠を考慮すること",
+"The fifth is to be invisible yet be visible everywhere": "5つ目は透明でありながらどこにいても見えること",
+"The sixth is to return the product of a fowl in mid-air": "6つ目は鳥の産物を空中で返すこと",
+"The seventh is to allow a child to commit the act of stealing": "7つ目は子供が盗みを働くようにすること",
+"The eighth is to smite a Wither with splash healing": "8つ目は治癒のスプラッシュポーションでウィザーを倒すこと",
+"The ninth is to be a pirate; parrot, spyglass, map, and boat": "9つ目は海賊になること。オウム、望遠鏡、地図、そしてボート",
+"The tenth, if you can achieve it, you will be the G.O.A.T.": "10つ目は、もし達成できれば、あなたはG.O.A.T.になる",
+
+
+"First line complete…": "1列目をコンプリート...",
+"Second line complete…": "2列目をコンプリート...",
+"Third line complete…": "3列目をコンプリート...",
+"Fourth line complete…": "4列目をコンプリート...",
+"Fifth line complete…": "5列目をコンプリート...",
+"Sixth line complete…": "6列目をコンプリート...",
+"Seventh line complete…": "7列目をコンプリート...",
+"Eighth line complete…": "8列目をコンプリート...",
+"Ninth line complete…": "9列目をコンプリート...",
+
+"Tenth Parchment": "10枚目の羊皮紙",
+"Place Warped Buttons to number a thousand": "歪んだボタンを1000個置く",
+"For this was the thousandth item added to the game": "これはゲームに追加された1000番目のアイテムで、",
+"Like how this is the thousandth advancement added to the pack": "この進捗データパックに1000番目に追加された進捗です。",
+
+
+
+"All Aboard!": "全員乗車",
+"Craft and board a Minecart for railway journeys": "トロッコを作って旅に出る",
+
+"Star Trader": "星の商人",
+"Trade with a villager at the build height limit": "高度限界で村人と取引する",
+
+"High Feet": "ハイフィート",
+"Discover every mountain biome": "全ての山岳バイオームを見つける",
+
+"Natural Sprinter": "自然の走者",
+"Sprint 10km": "ダッシュで10km移動する",
+
+"Lichen Subscribe": "地衣類登録",
+
+"Atlantis?": "アトランティス？",
+
+"Ahoy!": "Ahoy!",
+
+"Foliage": "葉っぱ",
+
+"How Did We Get Here?": "どうやってここまで？",
+
+
+
+
+
+"Discover every surface biome in the Overworld": "オーバーワールドの地表にある全てのバイオームを見つける",
+
+
+"Discover every biome in every dimension": "全てのバイオームを見つける",
+
+
+"Bounce onto a slime block from at least 30 blocks high": "少なくとも30ブロックの高さから落下し、スライムブロックで跳ねる",
+
+
+"Craft and wear a leather jacket": "革の上着を作って着る",
+
+
+"Dye some leather pants with one color, then put them on": "革のズボンを染めて着る",
+
+
+"Craft a Minecart with Furnace and use coal or charcoal to send it chugging": "かまど付きのトロッコを作り、石炭か木炭を使って動かす",
+
+
+"Trigger a trapped chest. Good for trolling your friends!": "トラップチェストを作動させる。さあ友達をトラップにかけよう！",
+
+
+"Place a line of string between two tripwire hooks, and trigger it": "2つのトリップワイヤーフックの間に糸を置き、作動させる",
+
+
+"Step on a pressure plate": "感圧板を踏む",
+
+
+"Using Frost Walker boots, walk on frozen water over a deep ocean": "氷渡りのエンチャントが付いたブーツを装備し、深い海を渡る",
+
+
+"Use Riptide to give yourself a boost": "激流のエンチャントが付いたトライデントを使って、海中でブーストする",
+
+
+"Travel at least 1000 blocks from the centre of the world in any direction.": "ワールドの中心から少なくとも1000ブロック移動する",
+
+
+"Travel at least 10,000 blocks from the centre of the world in any direction.": "ワールドの中心から少なくとも10000ブロック移動する",
+
+
+"Swim 50km": "泳ぎで50km移動する",
+
+
+"Ride 50km in a minecart": "トロッコで50km移動する",
+
+
+"Walk 50km": "歩きで50km移動する",
+
+
+"Walk 250km": "歩きで250km移動する",
+
+
+"Use planks and sticks to make an axe": "木材と棒を使って斧を作る",
+
+
+
+
+
+"%1$s has made the advancement %2$s%3$s%4$s": "%1$s が進捗 %2$s%3$s%4$s を達成しました",
+"%1$s has reached the goal %2$s%3$s%4$s": "%1$s が目標 %2$s%3$s%4$s を達成しました",
+"%1$s has completed the challenge %2$s%3$s%4$s": "%1$s が挑戦 %2$s%3$s%4$s を完了しました",
+"%1$s has completed the super challenge %2$s%3$s%4$s": "%1$s が超難関チャレンジ %2$s%3$s%4$s をクリアしました",
+"%1$s has found the hidden advancement %2$s%3$s%4$s": "%1$s が隠し進捗 %2$s%3$s%4$s を発見しました",
+
+
+"%1$s has found the hidden advancement %2$s%3$s%4$s%5$s%6$s": "%1$s が隠し進捗 %2$s%3$s%4$s%5$s%6$s を発見しました",
+
+
+"%1$s has completed every advancement in the %2$s tab, earning them the advancement %3$s%4$s%5$s": "%1$s は %2$s タブの全ての進捗を完了し、 %3$s%4$s%5$s の進捗を達成しました",
+
+
+"%1$s has completed every advancement in %2$s tab, earning them the advancement %3$s%4$s%5$s": "%1$s は %2$s タブの全ての進捗を完了し、 %3$s%4$s%5$s の進捗を達成しました",
+
+
+"%1$s has completed every advancement in BlazeandCave's Advancements Pack, earning them the coveted title of %2$s%3$s%4$s": "%1$s はBlazeandCave's進捗データパックの全ての進捗を完了し、念願の称号 %2$s%3$s%4$s を獲得しました",
+
+
+
+
+"Azalea Parachute": "ツツジのパラシュート",
+"Good thing you didn't need this": "これが必要なくてよかった",
+
+"Pyro's Mask": "パイロのマスク",
+"One shudders to imagine what inhuman thoughts lie behind that mask": "あのマスクの裏に隠された非人間的な思考を想像するとゾッとする",
+
+"Deepslate Emerald Ore": "深層エメラルド鉱石",
+"A rare specimen of emeralds embedded in the deepest of caves": "洞窟の奥深くの希少なエメラルドの標本",
+
+"Flex Tape": "フレックステープ",
+"To show the power of Flex Tape, you sawed all the blocks in half!": "フレックステープの威力を見せつけるために、全てのブロックを半分に切ったんだ！",
+"#NotSponsored": "＃スポンサー無し",
+
+"Stairway to Heaven": "Stairway to Heaven",
+"Whatever you do, don't listen to it backwards!": "何があっても、逆再生で聴くな！",
+
+"Hot Potato": "ホットポテト",
+"Whooo, wiggy wiggy wiggy": "うおおお、ブー、ブー、ブー",
+"Gimme that, gimme that, hoo": "あれちょうだい、あれちょうだい、ブー",
+
+"Captain America's Shield": "キャプテン・アメリカの盾",
+"Unfortunately there are no circles in Minecraft,": "残念ながらマイクラには円がありません。",
+"meaning this shield is not very aerodynamic for throwing": "つまり、この盾は投げるのに空力的にあまり適していないということです。",
+
+"Harp String": "ハープの弦",
+"Playing so much must be wearing out your strings...": "弾きすぎて弦がすり減っているんでしょうね...",
+"Here! Have an extra.": "ほら！替えの弦をどうぞ。",
+
+"Roller Coaster Cart": "ジェットコースターのカート",
+"Hey Ferb, I know what we're gonna do today!": "ねえファーブ、今日は何をするかわかってるよ！",
+
+"Time Machine": "タイムマシン",
+"You'll need it to get back all those hours you spent": "費やした時間を取り戻すには、タイムマシンが必要だよ",
+
+"Plaid Block": "チェック柄ブロック",
+"They've gone to plaid!": "チェック柄になってしまった！",
+
+"Stink Bomb": "スティンクボム",
+"P.U!": "P.U!",
+
+"Amalgamation": "融合",
+"The sheer gravitational forces of killing these mobs": "これらのMobを倒す際の圧倒的な重力",
+"appears to have morphed them all together": "どうやら全てが融合してしまったようだ",
+
+"Hubble Space Telescope": "ハッブル宇宙望遠鏡",
+"A telescope orbiting in outer space,": "宇宙を周回する望遠鏡",
+"it can see to infinity and beyond": "無限遠まで見通せる",
+
+"Golden Advancement Plaque": "金の進捗の盾",
+"Awarded to this datapack for reaching 1000 advancements": "このデータパックで1000の進歩を達成した報酬",
+
+
+"WHERE'S THE HONEY?!!!": "ハチミツはどこだ！",
+
+
+
+"Cooperative Mode currently enabled": "協力モードは現在有効です",
+"Cooperative Mode currently disabled": "協力モードは現在無効です",
+
+"Cooperative Mode makes it so that whenever a player gets an advancement, that advancement will be shared across all players.": "協力モードでは、プレイヤーが進捗を達成すると、その進捗が全プレイヤーで共有されます。",
+"Everyone's currently-obtained advancements will be shared between all players immediately when turning this setting on.": "この設定をオンにすると、全員が現在獲得している進捗が全プレイヤーで即座に共有されます。",
+"While the mode can be turned off, shared advancements cannot be easily revoked.": "設定はオフにできますが、共有された進捗は簡単に取り消すことはできません。",
+
+
+"Click to enable for all players": "クリックして全プレイヤーで有効",
+"Click to enable only for the first player to get an advancement": "クリックして最初に進捗を達成したプレイヤーのみで有効",
+"Click to disable for all players": "クリックして全プレイヤーで無効",
+
+
+"Item Rewards:": "アイテム報酬：",
+"Experience Rewards:": "経験値報酬：",
+"Trophies:": "トロフィー：",
+
+"All players": "全プレイヤー",
+"First player only": "最初のプレイヤーのみ",
+"Disabled": "無効",
+
+
+"Advancement Completion Message Settings": "進捗完了通知設定",
+"Advancement Scoreboard Display Settings": "進捗スコアボード表示設定",
+
+"Click to view": "クリックして表示",
+
+"Display Advancements Scoreboard on tab list": "タブに進捗スコアボードを表示する",
+"Display First Advancements Scoreboard on tab list": "タブに競技用進捗スコアボードを表示する",
+
+"Display Advancements Scoreboard on sidebar": "サイドバーに進捗スコアボードを表示する",
+"Display First Advancements Scoreboard on sidebar": "サイドバーに競技用進捗スコアボードを表示する",
+
+"The Advancements Scoreboard keeps track of how many advancements each player has obtained": "進捗スコアボードは、各プレイヤーが獲得した進捗の数を記録します",
+"The First Advancements Scoreboard keeps track of how many advancements each player was the first to obtain": "競技用進捗スコアボードは、各プレイヤーが誰よりも一番最初に獲得した進捗の数を記録します",
+"Click to display": "クリックして表示",
+"Click to clear": "クリックして削除",
+
+
+"Task": "緑進捗",
+"Goal": "目標",
+"Challenge": "挑戦",
+"Super Challenges": "超難関チャレンジ",
+"Milestone": "マイルストーン",
+
+"Advancements:": "進捗：",
+
+
+"Turn all messages on": "全てのメッセージをオン",
+"Turn all messages off": "全てのメッセージをオフ",
+"Set all messages to first-player only (recommended and default for Cooperative Mode)": "全てのメッセージを最初にその進捗を達成したプレイヤーのみに設定する（協力モードでの推奨設定）",
+"Turn all on except tasks (recommended for large servers)": "緑進捗以外をオンにする（大規模サーバーで推奨設定）",
+"Turn all on except tasks and goals": "緑進捗と目標以外をオンにする",
+
+"Click to set": "クリックして設定",
+
+
+"Go back to main config menu": "設定メニューに戻る",
+
+
+
+"A Cliffhanger!": "クリフハンガー",
+"Discover every type of cliff biome": "全ての種類の崖バイオームを見つける",
+
+"A Grassy Nature": "生い茂る自然",
+"Discover every grasslands biome": "全ての種類の草原バイオームを見つける",
+
+"A E S T H E T I C": "美学",
+"Discover the Mirage Isles. No, they’re not not real": "ミラージュ諸島バイオームを見つける。",
+
+"Alpha Days": "アルファ版の日々",
+"Discover the mythical islands of Alpha": "アルファアイランドを見つける",
+
+"Bushranger": "ブッシュレンジャー",
+"Discover every shrublands biome": "全ての種類の低木地バイオームを見つける",
+
+"Choco Mountain": "チョコマウンテン",
+"Discover a White Mesa": "ホワイトメサバイオームを見つける",
+
+"Eruption in the Air": "噴火",
+"Enter a volcano biome": "火山バイオームを見つける",
+
+"Highlander": "ハイランダー",
+"Discover every highlands biome": "全ての種類の高地バイオームを見つける",
+
+"Master Spelunker": "マスタースペランカー",
+"Discover every cave biome": "全ての種類の洞窟バイオームを見つける",
+
+"O-Land-o Bloom": "オーランドオーブルーム",
+"Discover a blooming biome": "花咲く谷バイオームを見つける",
+
+"One Small Steppe For Man": "小さな一歩",
+"Discover a steppe biome": "ステップバイオームを見つける",
+
+"Over the Moon": "月の上で",
+"Discover a moonlight biome": "月光バイオームを見つける",
+
+"Pretty in Purple": "紫で綺麗",
+"Discover every biome with trees of purple leaves": "全ての木が紫色のバイオームを見つける",
+
+"Skylanders": "空の住人",
+"Discover some mysterious lands floating high above the ground": "空に浮かぶ未知のバイオームを見つける",
+
+"Smarter than the Average Bear": "熊より賢い",
+"Discover the Yellowstone biome": "イエローストーンバイオームを見つける",
+
+"Terralithic": "地形マニア",
+"Discover every Terralith biome": "Terralithの全バイオームを見つける",
+
+"The Boreal Deal": "北方の取引",
+"Discover every boreal biome": "全ての種類の北方のバイオームを見つける",
+
+"The World Is Your Canvas": "この世界はあなたのキャンバス",
+"Discover the Painted Mountains": "色付いた山バイオームを見つける",
+
+
+"Discover every vanilla surface biome in the Overworld": "バニラの全ての地表にあるバイオームを見つける",
+"Discover every vanilla biome from every dimension": "バニラの全てのバイオームを見つける",
+
+"Stardust": "スターダスト",
+
+"You have explored everything this world has to offer": "あなたはこの世界の全てを探検しました",
+"But at the end of it all, it is all still made from stardust": "しかし、結局のところ、全ては星の粒子でできています",
+
+
+
+
+"First player on each team": "各チームの最初に任意の進捗を達成したプレイヤー",
+"Click to enable for the first player on each team": "クリックして各チームの最初に任意の進捗を達成したプレイヤーに対して有効",
+
+"Click to enable Cooperative Mode": "協力モードを有効",
+"Click to disable Cooperative Mode": "協力モードを無効",
+"Click to enable Team Cooperative Mode": "チーム協力モードを有効",
+"Team Cooperative Mode currently enabled": "チーム協力モードは現在有効です",
+
+
+
+"Click to view preset options": "クリックしてプリセットを表示",
+"Message Presets": "メッセージプリセット",
+"Set all messages to first-player-on-team only (recommended and default for Team Cooperative Mode)": "全てのメッセージをチーム内の最初に任意の進捗を達成したプレイヤーのみに設定（チーム協力モードの推奨・デフォルト設定）",
+"Turn vanilla messages on (recommended for servers that use plugins that draw from them such as DiscordSRV)": "バニラのメッセージを有効にする（DiscordSRVなどそれらを利用するプラグインを使うサーバーに推奨）",
+
+
+
+"Advancement Scoreboard Display Settings": "進捗スコアボード標準設定",
+
+"Advancements Scoreboard": "進捗スコアボード",
+"First Advancements Scoreboard": "競技用進捗スコアボード",
+
+"Team Advancements": "チーム達成進捗数",
+"The Team Advancements Scoreboard lists every team, and adds up the Advancements score of every member in each team": "チーム達成進捗数スコアボードには全てのチームが表示され、各チームのメンバー全員の進捗スコアが合計されます",
+"For example, if Alex and Steve are on Blue team and both have 100 advancements, Blue team would be listed as 200": "例えば、アレックスとスティーブが青チームに所属し、両者とも100の進捗がある場合、青チームの進捗スコアは200と表示されます",
+
+"Total Team Advancements": "チーム合計達成進捗数",
+"The Total Team Advancements Scoreboard lists every team, and counts how many advancements have been obtained by any member in each team": "チーム合計達成進捗数スコアボードには各チームが表示され、各チームのメンバーが獲得した合計進捗数がカウントされます",
+"For example, if Alex and Steve are on Blue team and both have 100 advancements, but 50 of them are advancements they both got, Blue team would be listed as 150": "例えば、アレックスとスティーブが青チームに所属し、両者とも100の進捗を獲得していますが、そのうち50は両者が獲得した進捗である場合、青チームの進捗は150と表示されます",
+
+"Team First Advancements": "チーム初達成進捗数",
+"The Team First Advancements Scoreboard lists every team, and adds up the First Advancements score of every member in each team": "チーム初達成進捗スコアボードには全チームが表示され、各チームメンバーが獲得した初進捗数がカウントされます",
+"For example, if Alex and Steve are on Blue team and both were the first to get 100 advancements, Blue team would be listed as 200": "例えば、アレックスとスティーブが青チームに所属し、両者とも100の初進捗を獲得している場合、青チームのスコアは200と表示されます",
+
+"First Advancements in Team": "チーム内の初達成進捗数",
+"The First Advancements in Team Scoreboard lists every player, and counts how many advancements they were the first to get out of everyone on their team": "チーム内の初達成進捗数スコアボードには全プレイヤーが並べられ、チームメンバーの中で初達成進捗数がカウントされます",
+"For example, if Alex and Steve are on Blue team and Steve gets 'Monster Hunter', Steve will have this score increase by 1, but when Alex gets it they won't. If Bob is on Red team and gets 'Monster Hunter' after Steve did, they will have this score increase by 1": "例えば、アレックスとスティーブが青チームに所属し、スティーブが「モンスターハンター」を獲得した場合、スティーブのスコアは1増加しますが、アレックスが獲得してもスコアは増加しません。ボブが赤チームに所属し、スティーブより後に「モンスターハンター」を獲得した場合、ボブのスコアは1増加します",
+
+"Recommended for Cooperative Mode": "協力モードで推奨",
+"Recommended when NOT using Cooperative Mode": "協力モードを使用していない場合に使用",
+"Recommended when NOT using Cooperative or Team Cooperative Mode": "協力モードまたはチーム協力モードを使用しない場合に推奨",
+"Recommended for Team Cooperative Mode": "チーム協力モードで推奨",
+"Not recommended for Cooperative Mode": "協力モードでは非推奨",
+"Recommended for Cooperative or Team Cooperative Mode": "協力モードまたはチーム協力モードで推奨",
+
+"How would you like this scoreboard to be displayed?": "このスコアボードをどのように表示しますか？",
+"On tab list": "タブに表示",
+"On sidebar": "サイドバーに表示",
+"Below each player's name": "プレイヤー名の下に表示",
+
+"Clear scoreboard from below player names": "プレイヤー名の下のスコアボードをクリア",
+
+
+
+"Technical Settings": "テクニカル設定",
+"Warning: Some of these settings may cause adverse effects on your progress, and will cause a lag-spike upon being used. Only use if you absolutely know what they do! Use with caution!": "これらの設定の一部は、ゲームの進行に悪影響だけでなく、使用するとラグを引き起こす可能性があります。設定内容を十分理解した上でご使用ください。",
+
+
+"Goes through every advancement for every player online, and recounts how many advancements they have": "オンライン中の全プレイヤーの全進捗を確認し、取得数を再集計します",
+"Should be used if:": "次の場合に使用してください：",
+"- You have recently updated to a new datapack version, especially across a new Minecraft update": "- 最近データパックを新しいバージョンに更新した（特にMinecraftのアップデートをまたいだ場合）",
+"- You have been using commands to manually revoke the advancements of player(s)": "- コマンドでプレイヤーの実績を手動で取り消していた場合",
+
+"Update team scoreboards": "チームスコアボードを更新",
+"Re-calculates the value of team scoreboards that draw from players' advancement and first advancement scores": "プレイヤーの進捗や初進捗達成スコアから算出されるチーム達成進捗数スコアボードの値を再計算します",
+
+"Reset obtained advancements": "取得済み進捗をリセット",
+"Resets the 'bac_obtained' scoreboard. This will make it so that Cooperative Mode will no longer see any advancements as complete and hence not share any, and also set every advancement back up for grabs for the First Advancement scoreboard": "bac_obtainedスコアボードをリセットします。これにより協力モードでは全ての進捗が未達成となり共有されなくなり、競技用進捗スコアボードでも全ての進捗が再び取得可能になります",
+"This function will stop sharing of advancements in Cooperative Mode until they are obtained again, and also reopen every advancement for the First Advancements scoreboard": "この機能は、再度取得されるまで協力モードでの進捗共有を停止し、競技用進捗スコアボードでも全ての進捗を再び取得可能にします",
+"This function should only be used if you intend to turn off Cooperative Mode": "協力モードを無効にする場合のみ、この機能を使用してください",
+
+"Refresh Cooperative Mode advancement sharing": "協力モードの進捗共有を更新",
+
+"Grant missing trophies": "未取得のトロフィーを付与",
+"Gives every online player every trophy from advancements they have obtained so far": "オンライン中の全プレイヤーに、これまで取得した進捗に対応する全てのトロフィーを付与します",
+"This function should only be used on worlds created before the Trophy Update (BACAP 1.11) or if you really want an easy way of getting them back": "この機能はトロフィーアップデート（BACAP 1.11）以前に作成されたワールド、または簡単にトロフィーを取り戻したい場合のみ使用してください",
+
+"Revoke all advancements": "全ての進捗を取り消す",
+"Revokes every advancement, including resetting scoreboards": "全ての進捗を取り消し、スコアボードもリセットします",
+"You may choose to revoke from either yourself, the closest player to you, or from everyone currently online": "自分自身、最も近いプレイヤー、または現在オンラインの全員から進捗を取り消すことができます",
+
+"Once advancements are revoked, they cannot be recovered.": "一度進捗を取り消すと、元に戻すことはできません。",
+"Some statistics advancements may come back automatically. If you wish for these to be reset too, you will need to delete the statistics file of players you want to revoke prior to revoking": "一部の統計進捗は自動的に復活する場合があります。これもリセットしたい場合は、取り消し前に該当プレイヤーの統計ファイルを削除してください",
+"Please choose who you would like to revoke advancements from, or to go back": "進捗を取り消す対象を選択するか、戻るを選んでください",
+"Yourself": "自分自身",
+"The closest player": "最も近いプレイヤー",
+"EVERYONE!! (who is online)": "全員!!（オンライン中）",
+">:)": ">:)",
+
+"All advancements have been revoked from %1$s": "%1$s の全ての進捗が取り消されました",
+"Error: There are no other players online": "エラー：他にオンラインのプレイヤーがいません",
+
+"Go back": "戻る",
+
+
+
+
+"A Journey Begins": "旅の始まり",
+"Find a Traveller’s Map": "旅人の地図を見つける",
+
+"Castle of Hrrms": "フルムの城",
+"Enter a Fortified Village": "要塞化された村に入る",
+
+"Expedition of Discovery": "発見の遠征",
+"Find a Traveller’s Map that leads to a rare biome, then enter that biome with the map in your hand": "珍しいバイオームへ導く旅人の地図を見つけ、その地図を手にそのバイオームに入る",
+
+"Land of Icicles": "氷柱の大地",
+"Discover a Glacial Chasm biome": "氷河の裂け目バイオームを発見する",
+
+"Remote Shelter": "辺境の避難所",
+"Locate a Glacial Hut deep in a Glacial Chasm biome": "氷河の裂け目バイオームの奥深くで氷の小屋を見つける",
+
+"Spire of Ice": "氷の尖塔",
+"Enter the Spire, located in a frigidly cold biome": "極寒のバイオームにある尖塔に入る",
+
+"Under the Ice": "氷の下で",
+"Delve deep beneath the Spire and open up a loot chest": "尖塔の下深くに潜り、戦利品のチェストを開ける",
+
+
+
+
+"Sneak 100": "スニーク100",
+"Sneak near something in the Deep Dark to prevent being heard": "ディープダーク内の何かの近くでこっそり移動して、音を聞かれないようにする",
+
+"It spreads!": "「それ」は広がる",
+"Kill a mob near a Sculk Catalyst": "スカルクカタリストの近くでモブを倒す",
+
+"Shriek Forever After": "永遠の叫び",
+"Trigger a Sculk Shrieker in the Deep Dark. Might not want to do that too many more times…": "ディープダークでスカルクシュリーカーを作動させる。何度もやりたくないかもしれない...",
+
+"The Block of Eternal Screaming": "永遠の叫びのブロック",
+"Use Silk Touch to pick up a Sculk Shrieker": "シルクタッチを使ってスカルクシュリーカーを回収する",
+
+"Cataclyst": "カタクリスト",
+"Kill a Wither near a Sculk Catalyst to unleash a large explosion of sculk": "スカルクカタリストの近くでウィザーを倒し、大規模なスカルクの侵食を引き起こす",
+
+"Monstrous Sacrifices": "怪物の生贄",
+"Kill every hostile monster near a Sculk Catalyst": "スカルクカタリストの近くにいる全ての敵対モンスターを倒す",
+
+"The Incredible Sculk": "驚異のスカルク",
+"Collect a stack of all sculk-related blocks": "1スタックのスカルク関連の全てのブロックを手に入れる",
+
+"Sculker Box": "スカルカー・ボックス",
+"Hold a Shulker Box that is completely filled with Sculk": "スカルクで完全に満たされたシュルカーボックスを所持する",
+
+"Fallen Kingdom": "没落した王国",
+"Find and enter an Ancient City deep underground": "深い地下にある古代都市を見つける",
+
+"Frigid Diversions": "凍てつく気晴らし",
+"Loot a chest inside an ice box in an Ancient City": "古代都市の氷のボックス内のチェストを開ける",
+
+"Death Pointer": "デス・ポインター",
+"Using Echo Shards found in Ancient Cities, craft a Recovery Compass": "古代都市で見つかる残響の欠片を使ってリカバリーコンパスを作成する",
+
+"9 to 5": "9から5へ",
+"Collect enough Disc Fragments to craft another producer of mysterious sounds": "謎めいた音を生む別の装置を作るのに十分なレコードの欠片を集める",
+
+"Echonomy": "エコーノミー",
+"Collect a stack of Echo Shards": "1スタックの残響の欠片を手に入れる",
+
+"Blind as a Bat": "コウモリのように盲目",
+"Kill a Bat while under the blindness or darkness effect": "盲目または暗闇の効果を受けている状態でコウモリを倒す",
+
+
+"Stuck in the Mud": "泥にはまる",
+"Use a Water Bottle on some Dirt to turn it into Mud": "水入り瓶を土に使って泥に変える",
+
+"Elmer Mudd": "エルマー・マッド",
+"Craft or obtain all forms of Mud and Mud Brick": "泥と泥レンガから作れる全てのブロックを手に入れる",
+
+"Mangrove Master": "マングローブの達人",
+"Craft every item made out of mangrove wood": "マングローブの板材で作られる全てのアイテムを手に入れる",
+
+"Incandescent!": "僕たちの力を合わせて！",
+"Light up the area with all three hues of Froglight": "全3種のフロッグライトで周囲を照らす",
+
+
+"A Mangrove Grove": "マングローブの木立",
+"Plant a Mangrove Propagule in a Grove biome": "林バイオームにマングローブの芽を植える",
+
+
+"Frog Family": "カエル一家",
+"Breed two Frogs together using slimeballs": "スライムボールを使ってカエルを繁殖させる",
+
+"Bukkit bukkit": "おけおけ",
+"Catch a Tadpole in a Bucket": "バケツでオタマジャクシを捕まえる",
+
+"When the Squad Hops into Town": "みんなで町に飛び込もう",
+"Attach a lead to each variant of Frog": "各種のカエルにリードを付ける",
+
+"Ram": "ラム（突進）",
+"Obtain a Goat’s Horn by having one ram into a block": "ヤギにブロックに突進させてヤギの角笛を入手する",
+
+"Loud and Proud": "大音量で誇らしく",
+"Play a Goat Horn in the Deep Dark": "ヤギの角笛をディープダークで演奏する",
+
+"Battle of the Bands": "バンドの戦い",
+"Blow into a Goat Horn during a raid": "襲撃中にヤギの角笛を吹く",
+
+"Caprymphony": "カプリムフォニー",
+"Blow every type of Goat Horn": "全ての種類のヤギの角笛を吹く",
+
+"Animal Kingdom": "動物王国",
+"Bring one of every type of animal to one place (have them all within 32 blocks of you)": "全ての種類の動物を1か所に集める（全て自分から32ブロック以内に収める）",
+
+
+"Cargo Carrier": "貨物運搬者",
+"Ride a Boat with a Chest in it": "チェスト付きのボートに乗る",
+
+"Flipper": "フリッパー",
+"Give a Dolphin something to play with": "イルカに遊ぶ物を与える",
+
+
+"Allayance": "アレイアンス",
+"Rescue an Allay from a Pillager Outpost or Woodland Mansion and give it something to play with": "前哨基地か森の洋館からアレイを救出し、遊ぶ物を与える",
+
+"You’ve Got a Friend in Me": "君はともだち",
+"Have an Allay deliver items to you": "アレイにアイテムを配達させる",
+
+"Evelyn Evergreen": "エヴリン・エヴァーグリーン",
+"Have an Allay deliver Spruce Saplings to you while chopping down trees": "木を切る間にアレイにトウヒの苗木を配達させる",
+
+"Budget Vex": "予算型ヴェックス",
+"Give an Allay an Iron Sword": "アレイに鉄の剣を渡す",
+
+"Diagon Allay": "ダイアゴン・アレイ",
+"Have an Allay deliver a potion to you in the Deep Dark": "ディープダークでアレイにポーションを配達させる",
+
+"Birthday Song": "バースデーソング",
+"Have an Allay drop a cake at a note block": "アレイに音符ブロックの上でケーキを落とさせる",
+
+"Awards Ceremony": "授賞式",
+"Have an Allay present to you a trophy awarded from completing one of the advancements": "進捗達成で授与されるトロフィーをアレイから受け取る",
+
+
+"Now that's a lot of damage": "これは大ダメージだ",
+"Succumb to the Warden": "ウォーデンに屈する（倒される）",
+
+"Blind Stare": "盲目的凝視",
+"Look at a Warden with a Spyglass": "望遠鏡でウォーデンを見る",
+
+"Stealth is Optional": "ステルスは任意",
+"Overcome a Warden in the deepest and darkest of caves": "最も深く暗い洞窟でウォーデンを打ち負かす",
+
+"Warden Frostbite": "ウォーデン凍傷",
+"Bring a Warden to the surface of a snowy plains biome and kill it": "雪原バイオームの地表にウォーデンを連れてきて倒す",
+
+"Not Afraid of Heights": "高所恐怖症じゃない",
+"Bring a Warden to world height. It can’t be afraid of heights if it can’t see": "ウォーデンをワールドの高さまで連れて来る。見えなければ高所を恐れないはずだ",
+
+"House of Freaks": "変人の館",
+"Summon five Wardens and have them all be within 16 blocks of the player": "ウォーデンを5体召喚し、全てがプレイヤーの16ブロック以内にいるようにする",
+
+
+"Like a Ninja": "忍者の如く",
+"Find the Swift Sneak enchantment on an Enchanted Book in an Ancient City": "古代都市でスニーク速度上昇が付いたエンチャントされた本を見つける",
+
+"Silent But Deadly": "沈黙だが致命的",
+"Sneak and sprint on sculk with Speed II while wearing Swift Sneak III leggings. Try saying that six times swiftly": "スニーク速度上昇IIIのレギンスを装備して移動速度上昇IIを得た状態でスカルク上をスニークしてダッシュする。これを素早く6回言ってみてください",
+
+
+"Hung, Drawn and Bartered": "吊るされ、引き裂かれ、取引される",
+"Barter for every possible type of item with Piglins": "ピグリンと全ての種類のアイテムを取引（バーター）する",
+
+
+"The Void Frogs": "ヴォイド・フロッグス",
+"Lower a Frog into the void using a Slow Falling potion, then kill it so it becomes one with the void": "低速落下のポーションを使ってカエルを奈落へ落とし、その後倒して奈落と一体化させる",
+
+
+"Farlander": "ファーランダー",
+"Travel all the way to the border of the world": "ワールドの果て（ワールドボーダー）まで旅する",
+
+
+
+
+
+"Use Silk Touch to pick up a Sculk Sensor or find one among Ancient City treasure": "シルクタッチを使ってスカルクセンサーを回収するか、古代都市の戦利品チェストの中から見つける",
+
+
+"Discover every cave biome": "全ての洞窟バイオームを発見する",
+
+
+"Collect every type of log": "全ての種類の原木を手に入れる",
+
+
+"Strip the bark off every type of log": "全ての種類の原木の樹皮を剥ぐ",
+
+
+"Plant down all types of saplings": "全ての種類の苗木を植える",
+
+
+"Hunt all types of land animals with your bow": "弓を使って陸上の全ての種類の動物を狩る",
+
+
+"Discover each type of surface biome in the Overworld": "オーバーワールドの地表にある全てのバイオームを見つける",
+
+
+
+"tab": "タブ",
+
+
+
+"Mobbo": "モッボ",
+"They are your bestest friend!": "彼らはあなたのいちばんの親友だ！",
+
+"The Cataclyst": "カタクリスト",
+"When detonated, it kills every single avatar and NPC in the sector": "爆破されると、そのセクター内の全てのアバターとNPCを撃破する",
+
+"Claptrap": "クラップトラップ",
+"No, I said “Aaaaaand OPEN!”,": "違う、私は「おおおっと、オープン！」と言ったんだ、",
+"not “Aaaaand close a secondary set of doors!”": "「あああっと、第2の扉を閉めろ！」じゃないんだ！",
+
+"Pickle Rick": "ピクル・リック",
+"Look Morty, I've turned myself into a pickle!": "見てモーティ、俺はピクルスになったぞ！",
+
+"Magic Paintbrush": "魔法の絵筆",
+"For painting with all the colors of the wind": "風の全ての色で描くための",
+
+"Very Muddy Boots": "泥だらけのブーツ",
+"The result of too long in muddy fields": "泥田に長くいた結果の産物",
+
+"Pride Rock": "プライドロック",
+"Look, Simba. Everything the light touches is our kingdom": "見ろシンバ、光が当たる全てが俺たちの王国だ",
+
+"Copper Goat Horn": "銅のヤギの角",
+"Such a fun and jazzy instrument, sadly not canon": "とても楽しくジャジーな楽器だが、残念ながら設定上は正史ではない",
+
+"FrogChamp": "フロッグチャンプ",
+"It’s Wednesday, my dudes!": "今日は水曜日だ、みんな！（It’s Wednesday, my dudes!）",
+
+"Warden Head": "ウォーデンの頭",
+"Players: How are you meant to kill the Warden?": "プレイヤー：ウォーデンをどうやって倒すんだ？",
+"Mojang: That's the neat part - you don't!": "Mojang：そこが肝心なところだ — 倒さないんだ！",
+"You: Hold my golden carrots": "あなた：俺の金ニンジンを預かれ（任せてみろ）",
+
+"The Warden's Sign": "ウォーデンの看板",
+"This sign can’t stop me because I can't see!": "この看板は俺を止められない。だって見えないから！",
+
+"Reuben the Wither Storm Ender": "リューべン・ザ・ウィザー・ストーム・エンダー",
+"He was a great pig": "彼はすばらしい豚だった",
+
+"The Trophy Trophy": "トロフィー・トロフィー",
+"If an Allay brings you this, you will": "もしアレイがこれを持ってきたら、あなたは",
+"receive the Trophy Trophy Trophy": "トロフィー・トロフィー・トロフィーを受け取るだろう",
+
+"Spongebob Squarepants": "スポンジ・ボブ・スクエアパンツ",
+"Who lives in a pineapple under the sea?": "誰が海の下のパイナップルに住んでいる？",
+
+"Fence Post": "フェンスポスト",
+"Look at this luxurious fence post": "この豪華なフェンスポストを見てくれ",
+"With its courageously mundane colour": "勇敢に地味な色合いをまとい、",
+"And violent corners": "そして暴力的な角を持つ",
+"This isn't just any fence post…": "これはただのフェンスポストではない...",
+"It's my fence post! Seriously, get out!": "俺のフェンスポストだ！本気で出て行け！",
+
+"Stone of the Farlands": "ファーランドの石",
+"A preserved piece of stone from the lands that existed before Beta 1.8": "Beta 1.8 より前に存在した土地から保存された石片",
+
+
+
+
+
+"Nerds Never Die": "オタクは死なない",
+"Name a Piglin Brute 'Technoblade'": "ピグリンブルートに「Technoblade」と名付ける",
+
+"And make it double!": "それを倍にしろ！",
+"Play a jukebox near some Allays, then give one an Amethyst Shard and see what happens!": "アレイの近くでジュークボックスを鳴らし、1体にアメジストの欠片を渡して何が起きるか見てみよう！",
+
+"Living Dummy": "生きてるダミー",
+"Get killed from hitting an Armor Stand": "防具立てを叩いて死ぬ",
+
+
+"Get hurt from hitting an Armor Stand": "防具立てを叩いて怪我をする",
+
+"Built on Sand, Set in Stone": "砂の上に建て、石に据える",
+"Craft or collect a stack of all forms of Sandstone and Red Sandstone": "砂岩と赤い砂岩から作れる全てのブロックをそれぞれ1スタック手に入れる",
+
+"Hot Chocolate": "ホットチョコレート",
+"Plant some cocoa in the nice steamy Nether": "蒸気の立つネザーにカカオを植える",
+
+"Silence of the Lambs": "羊たちの沈黙",
+"Bring a Sheep into an Ancient City and silence it": "羊を古代都市に連れて行き、黙らせる（Silence it）",
+
+"It's High Noon": "正午だ",
+"Snipe a Husk from 50 blocks away while riding a Horse": "馬に乗っている間に50ブロック離れた位置からハスクを狙撃する",
+
+"Spleaf": "スプリーフ",
+"Kill a mob using a shovel while both of you are standing on a Big Dripleaf": "自分とモブが共に大きなドリップリーフに立っている状態でシャベルを使ってモブを倒す",
+
+"There it goes…": "いった...",
+"Kill a mob at the bottom of the world from the build limit using any kind of projectile": "最高高度から底辺（ワールドの最下層）にいるモブをあらゆる投射物で倒す",
+
+"Unending Hell": "終わりなき地獄",
+"Travel directly from the End to the Nether": "エンドから直接ネザーへ移動する",
+
+
+
+"Undying Fandom": "不死のファンダム",
+"Receive every type of gift from Villagers as a Hero of the Village": "村の英雄として村人からの全種類の贈り物を受け取る",
+
+"Dig through some Rooted Dirt beneath an Azalea Tree so you can find a Lush Cave": "ツツジの木の下の根付いた土を掘り、繁茂した洞窟を見つける",
+
+
+
+"Totally Not Terraria": "完全にTerrariaじゃない",
+"Find an Underground Cabin": "地下小屋を見つける",
+
+
+
+"Crown of the Potato King": "ポテトキングの王冠",
+"A crown forged in the purest gold, made by the richest of Piglins": "最も裕福なピグリンたちが作った純金の王冠",
+"Worn only by Alex (aka Technoblade), the one and only Potato King": "唯一無二のポテトキング、Alex（別名 Technoblade）だけが身に着ける",
+
+"Tinfoil Mining Helmet": "アルミホイル採掘ヘルメット",
+"Baked by a chef and hermit known for": "あるシェフ兼隠者によって考案され、",
+"extensive and exquisite branch mining": "広範囲で洗練された枝掘りで知られる",
+
+"Calendar": "カレンダー",
+"I hate Mondays": "月曜日が大嫌いだ",
+
+
+"A preserved piece of stone from": "保存された石片：",
+"the lands that existed before Beta 1.8": "Beta 1.8 より前に存在した土地からのもの",
+
+
+
+"Advancement added by Terralith version": "Terralithバージョンで追加された進捗",
+
+"Modified by the Amplified Nether version": "Amplified Netherバージョンで修正済み",
+
+
+
+"Click to follow link": "リンクを開くにはクリックしてください",
+
+"The Welcome Message appears when a player logs into the world for the first time. On servers that already have a custom welcome message, this should be turned off": "ウェルカムメッセージはプレイヤーがワールドに初めてログインしたときに表示されます。既にカスタムのウェルカムメッセージがあるサーバーでは、これをオフにしてください",
+
+"Item Rewards are a small amount of bonus items awarded upon completing some advancements": "アイテム報酬は、一部の進捗達成時に与えられる少量のボーナスアイテムです",
+"Experience Rewards are awarded upon completing some advancements, adding directly to a player's XP count": "経験値報酬は一部の進捗達成時に付与され、プレイヤーのXPに直接加算されます",
+"Trophies are decorative items awarded upon completing some advancements, in particular challenges, super challenges and milestones": "トロフィーは一部の進捗（特にチャレンジ、超難関チャレンジ、マイルストーン）達成時に与えられる装飾品です",
+
+"Cooperative Mode shares every advancement gained among every player": "協力モードでは、得た進捗が全プレイヤーで共有されます",
+"Team Cooperative Mode works similarly, but only shares among players of the same team": "チーム協力モードは似ていますが、同じチームのプレイヤー間でのみ共有されます",
+
+"Settings for what messages that appear upon completing each tier of advancement should appear": "各進捗階層達成時に表示されるメッセージの設定",
+"Settings for what type of scoreboard to display and where": "表示するスコアボードの種類と表示位置の設定",
+"Functions for updating, resetting and revoking advancements": "進捗を更新、リセット、取り消すための機能",
+"Need help understanding how the datapack, this config menu, or anything else works?": "データパックやこの設定メニュー、その他の使い方で助けが必要ですか？",
+
+"Help": "ヘルプ",
+
+
+"Help Menu": "ヘルプメニュー",
+
+"Full documentation on how to use the Config Menu": "設定メニューの使い方に関する完全な文書",
+"How to update to new datapack versions": "新しいデータパックバージョンへの更新方法",
+"How to add players to teams": "プレイヤーをチームに追加する方法",
+"Important Links": "重要なリンク",
+"Troubleshooting": "トラブルシューティング",
+"Frequently Asked Questions": "よくある質問",
+
+
+"1) Make a backup of your world for safety if you mess anything up": "1) 万が一に備えてワールドのバックアップを取ってください",
+"2) Leave your world for more safety and don't go in during the process": "2) 作業中はワールドに入らないでください（より安全です）",
+"3) Delete the old datapacks COMPLETELY from your world": "3) ワールドから古いデータパックを完全に削除してください",
+"4) Copy and paste in the new updated datapacks": "4) 新しい更新済みのデータパックをコピー＆ペーストしてください",
+"5) Go into your world. If the new datapacks are for a newer version of Minecraft make sure you are now using that version": "5) ワールドに入り、新しいデータパックが新しいMinecraftバージョン向けなら、そのバージョンを使用していることを確認してください",
+"6) If you messed up, go to your backup, make a backup of your backup, then repeat steps 2-6 on the backup": "6) もし失敗したらバックアップを使い、そのバックアップのバックアップを作り、手順2～6をバックアップ上で繰り返してください",
+
+
+"This datapack adds 16 teams, one of each colour, that this datapack can work with.": "このデータパックは16のチーム（各色1つ）を追加し、これらで動作します。",
+"For Team Cooperative Mode and team-based scoreboards to work properly, players MUST be added to these teams using the following command:": "チーム協力モードやチームベースのスコアボードを正しく機能させるには、以下のコマンドでプレイヤーを必ずこれらのチームに追加してください：",
+
+"You may freely change the team's display name, prefix and suffix using their respective commands as well": "チームの表示名、プレフィックス、サフィックスは、それぞれのコマンドで自由に変更できます。",
+
+
+"Language Pack": "言語パック",
+"The Language Pack is a resource pack that translates all advancements and trophies into other languages.": "言語パックは、全ての進捗とトロフィーを他言語に翻訳するリソースパックです。",
+
+"Hardcore Version": "ハードコア版",
+"The Hardcore Version is an add-on datapack that makes the datapack possible to complete in Hardcore Mode.": "ハードコア版は、ハードコアモードで達成可能にするアドオンデータパックです。",
+
+"Terralith Version": "Terralith 版",
+"The Terralith Version is an add-on datapack that adds advancements for the Terralith datapack by Starmute.": "Terralith版は、StarmuteのTerralithデータパック向けの進捗を追加するアドオンです。",
+
+"Advancements Docmentation": "進捗ドキュメント",
+"The Advancements Docmentation is a spreadsheet detailing every advancement in the datapack.": "進捗ドキュメントは、このデータパックに含まれる全進捗を詳細に記したスプレッドシートです。",
+
+"List of Trophies": "トロフィー一覧",
+"A spreadsheet detailing every trophy in the datapack.": "データパック内の全トロフィーを詳細に記したスプレッドシートです。",
+
+"Discord": "Discord",
+"Patreon": "Patreon",
+
+
+"If certain aspects of this datapack are not working properly (e.g. Advancements are granted automatically when they shouldn't), make sure you are using the correct version of the datapack for the Minecraft version you are running.": "このデータパックの一部機能が正しく動作しない場合（例：本来なら進捗が自動で与えられないのに与えられるなど）、実行中のMinecraftバージョンに対応した正しいデータパックを使用しているか確認してください。",
+"In addition, some advancements may break on Spigot or Paper servers.": "また、一部の進捗はSpigotやPaperサーバーで壊れる可能性があります。",
+
+
+"Why aren't all tabs visible at the start?": "なぜ開始時に全てのタブが表示されないのですか？",
+"How do I install the Language Pack?": "言語パックはどうやってインストールしますか？",
+"How can I translate the advancements into a new language?": "進捗を新しい言語に翻訳するにはどうすればいいですか？",
+"What is the name of the mod that lets you see progress on advancements?": "進捗の進行状況を表示するモッドの名前は何ですか？",
+
+
+"A tab will not show up if you haven't gained any advancements in that tab yet.": "そのタブでまだ進捗を獲得していないと、そのタブは表示されません。",
+"Most root advancements are easy to obtain, but some are further along in progression.": "多くのルート進捗は入手しやすいですが、いくつかは進行のかなり先にあります。",
+"Notably, the Super Challenges tab is not unlocked until after defeating the Ender Dragon.": "特に、超難関チャレンジタブはエンダードラゴンを倒すまでアンロックされません。",
+
+
+"The Language Pack is NOT a datapack and is not installed in the same way.": "言語パックはデータパックではなく、インストール方法も異なります。",
+"Instead, it is a resource pack, and it is installed just like any other resource pack.": "代わりにリソースパックであり、他のリソースパックと同様にインストールします。",
+"Place it into your resourcepacks folder, then select it in the resource pack menu.": "resourcepacks フォルダに配置し、リソースパックメニューで選択してください。",
+"Once you do this, the custom advancements will appear in whatever language you have selected if this language is supported.": "これを行うと、その言語が対応していればカスタム進捗が選択した言語で表示されます。",
+
+
+"Download the Language Pack, unzip it, then locate the file named base_language_file.json": "言語パックをダウンロードして解凍し、base_language_file.jsonというファイルを探してください。",
+"Follow the instructions within in order to translate your language.": "その中の指示に従って翻訳を行ってください。",
+"If you finish translating a new language, you can send it to the creator (Cavinator1) on Planet Minecraft or Discord and it may get added in a future update!": "新しい言語の翻訳を完成させたら、Planet MinecraftやDiscordで作者（Cavinator1）に送って下さい。将来のアップデートで追加される可能性があります！",
+"You will be credited for your contributions to translation.": "翻訳への貢献はクレジットされます。",
+
+
+"The mod in question is named Advancement Info, which displays the requirements that have been completed on each advancement.": "該当のモッドはAdvancement Infoと呼ばれ、各進捗で達成済みの要件を表示します。",
+"It is extremely useful, especially for Super Challenges with many requirements such as 'All the Blocks'.": "特に「All the Blocks」のように要件が多い超難関チャレンジで非常に便利です。",
+"It can be downloaded here:": "ここからダウンロードできます：",
+
+
+
+
+
+
+"Hanging Around": "ハンギング・アラウンド",
+"Put up a Hanging Sign": "吊り看板を取り付ける",
+
+"Sign Off": "サインオフ",
+"Use honeycomb to wax a sign, setting its ink for eternity": "ハニカムで看板にワックスをかけ、インクを永遠に固定する",
+
+"Shelf Expression": "棚の表現",
+"Fill a Chiseled Bookshelf with books": "模様入りの本棚を本で満たす",
+
+"Bamboozled": "バンブーズルド",
+"Craft every item made out of bamboo wood": "竹の木材で作られる全てのアイテムを手に入れる",
+
+"Cherry Bomb": "チェリーボム",
+"Craft every item made out of cherry wood": "サクラの木材で作られる全てのアイテムを手に入れる",
+
+
+"Desert Rider": "砂漠の騎手",
+"Find a Camel in a desert village and ride it": "砂漠の村でラクダを見つけて乗る",
+
+"Hump Day": "ハンプデー",
+"Breed two Camels using cactus": "サボテンを使ってラクダを繁殖させる",
+
+"The High Road": "高みの道",
+"Kill a hostile monster with a melee attack while riding a Camel": "ラクダに乗ったまま近接攻撃で敵対モンスターを倒す",
+
+
+"Pretty in Pink": "ピンクで素敵",
+"Find a Cherry Grove": "サクラの林を見つける",
+
+
+"Brushed Away": "ブラッシュド・アウェイ",
+"Craft a Brush using a feather, copper and a stick": "羽毛・銅・棒からブラシをクラフトする",
+
+"Respecting the Remnants": "文明の面影に敬意を",
+"Using a Brush, carefully excavate a Pottery Sherd from a suspicious block": "ブラシを使って怪しげなブロックから壺の欠片を慎重に掘り出す",
+
+"Careful Restoration": "丁寧な修復作業",
+"Put together a Decorated Pot using four Pottery Sherds": "壺の欠片を4つ使って飾り壷を組み立てる",
+
+"Pottery Exhibition": "陶器展",
+"Find one of each type of Pottery Sherd throughout your archaeology expeditions": "考古学探検で各種の壺の欠片をそれぞれ1つずつ見つける",
+
+"Life… uhh… finds a way": "命は...ええと...道を見つける",
+"Find a strange egg among the sand of an Ocean Ruin using a Brush. Smells interesting": "ブラシを使って海底遺跡の砂から奇妙な卵を見つける。匂いが気になる",
+
+
+"Truffle Worm": "トリュフワーム",
+"Have a Sniffer dig up seeds": "スニッファーに種を掘らせる",
+
+"Jurassic Sniff": "ジュラシック・スニッフ",
+"Breed two Sniffers together using Torchflower Seeds": "トーチフラワーの種を使ってスニッファーを2匹繁殖させる",
+
+"Little Sniffs": "可愛らしい鼻の音",
+"Feed a Snifflet": "スニフレット（子供のスニッファー）に餌を与える",
+
+"Planting the Past": "遥か古の植物",
+"Plant any Sniffer Seed": "任意のスニッファーが掘り出した種を植える",
+
+"Happy Trails!": "ハッピートレイル！",
+"Discover the Trail Ruins": "旅路の遺跡を発見する",
+
+"Raiders of the Lost Trim": "失われたトリムの略奪者",
+"Carefully excavate a Smithing Template from the Trail Ruins": "旅路の遺跡から鍛冶型を慎重に掘り出す",
+
+"A Chiptune Relic": "チップチューンの遺物",
+"Excavate an ancient record from within the Trail Ruins": "旅路の遺跡から古いレコードを発掘する",
+
+"Good-Lookin’ Treasure": "見目良き宝物",
+"Find a Smithing Template": "鍛冶型を見つける",
+
+"Crafting a New Look": "おニューの衣装",
+"Use a Smithing Template to apply a trim to a piece of armor": "鍛冶型を使って防具に装飾を適用する",
+
+"Mold Maker": "モールドメーカー",
+"Use seven diamonds to duplicate a Smithing Template": "ダイヤ7個で鍛冶型を複製する",
+
+"Coordinated Flair": "統一された装飾",
+"Wear a suit of armor with all four pieces trimmed with the same material": "4箇所全て同じ素材で装飾された防具一式を着用する",
+
+"Chromatic Armory": "クロマティック・アーモリー",
+"Trim pieces of armor with all types of materials": "全ての素材で防具の装飾を行う",
+
+"Genesis of the End": "終末の起源",
+"Find the Eye Smithing Template in a Stronghold": "要塞でエンダーアイ風の装飾用鍛冶型を見つける",
+
+"Vexingly Hard to Find": "見つけるのが厄介",
+"Find the Vex Smithing Template in a Woodland Mansion": "ウッドランドマンションでヴェックス風の装飾用鍛冶型を見つける",
+
+"The Sound of Silence": "沈黙の音",
+"Find the Silence Smithing Template in an Ancient City": "古代都市で静寂の装飾用鍛冶型を見つける",
+
+"Smithing With Style": "オシャレな鍛冶職人",
+"Apply every type of armor trim at least once": "全ての種類の防具トリムを少なくとも一度適用する",
+
+"Stacked Smither": "スタックド・スミザー",
+"Obtain a stack of every Smithing Template": "全ての鍛冶型を各1スタック入手する",
+
+
+"Maximum Resistance": "最大耐性",
+"Take a hit from the Warden with the maximum possible protection": "可能な限り最大の防護を得た状態でウォーデンの攻撃を受ける",
+
+
+"The Power of Books": "本は力なり",
+"Read the power signal of a Chiseled Bookshelf using a comparator": "レッドストーンコンパレーターを使って模様入りの本棚の出力信号を読み取る",
+
+"Calibration Sensation": "較正センセーション",
+"Craft a Calibrated Sculk Sensor using Amethyst Shards": "アメジストの欠片を使って調律されたスカルクセンサーを作る",
+
+"Monstrous Music": "怪物的音楽",
+"Play Note Blocks with each type of mob head above it": "各種モブの頭を音符ブロックの上に置いて演奏する",
+
+
+"Om Nom Nom": "むしゃむしゃ",
+"Eat 200 food items": "食料アイテムを200個食べる",
+
+"Yum Yum Yummo": "うまうま",
+"Eat 1000 food items": "食料アイテムを1000個食べる",
+
+"Food, Glorious Food!": "食べ物、栄光の食べ物！",
+"Eat 5000 food items": "食料アイテムを5000個食べる",
+
+"Loot ‘Em!": "略奪しろ！",
+"Open 10 loot chests": "戦利品チェストを10個開ける",
+
+"More For Me": "もっとちょうだい",
+"Open 100 loot chests": "戦利品チェストを100個開ける",
+
+"I <3 Chests": "チェスト大好き",
+"Open 500 loot chests": "戦利品チェストを500個開ける",
+
+"Giga XP Grinder": "ギガXPグラインダー",
+"Reach 1000 experience levels": "経験値レベル1000に到達する",
+
+
+"Time to Upgrade!": "アップグレードの時！",
+"Find a Netherite Upgrade Smithing Template in a Bastion Remnant": "砦の遺跡でネザライト強化用鍛冶型を見つける",
+
+"Piglin Peril": "ピグリンの危機",
+"Obtain a Piglin Head by blowing up a Piglin with a Charged Creeper": "帯電クリーパーでピグリンを吹き飛ばしてピグリンの頭を入手する",
+
+
+"Poglin!": "ポグリン！",
+"Obtain a stack of Piglin Heads": "ピグリンの頭を1スタック入手する",
+
+
+"You are a big cheater!": "お前は大チーターだ！",
+"You don't want to have this advancement unlocked!": "この進捗は解除したくないはずだ！",
+
+
+
+
+
+"The following are not required:": "以下は必須ではありません：",
+
+
+"Strip the bark off every type of log, stem, and bamboo block": "全ての種類の原木・幹・竹ブロックの樹皮を剥ぐ",
+
+
+"Cut down a full stack of logs and stems of all types": "全種類の原木と幹をそれぞれ1スタック手に入れる",
+
+
+"Dig deep down, mine up ore": "深く掘り進め、鉱石を採掘せよ",
+
+"Battle against the monsters of darkness": "闇夜のモンスターたちと戦え",
+
+"Village, pillage and exploration": "村、襲撃、探索",
+
+
+
+"Ch-ch-ch-ch-ch-ch-Cherry bomb!": "チチチチチチ・チェリーボム！",
+"“I wanna explode,” says Cherry #1": "「爆発したい」とチェリー #1 は言う",
+"“No, let's detonate instead!” says his brother, Cherry #2": "「いや、代わりに起爆しよう！」と兄弟のチェリー #2 は言う",
+"After intense consultation they agree to EXPLODONATE": "激しい協議の末、彼らは「EXPLODONATE」で合意した",
+
+"Nokia 3310": "Nokia 3310",
+"Awarded to players who prove themselves as unbreakable as this object": "この物体のように壊れないことを証明したプレイヤーに授与される",
+
+"Body Pillow": "抱き枕",
+"Large fandoms result in questionable merchandise such as": "大きなファンダムはこのような怪しい商品を生むことがある：",
+"body pillows featuring your own likeness being produced": "あなたの姿をあしらった抱き枕が製造されることもある",
+
+"Golden Idol": "黄金の偶像",
+"Stealing this may result in a giant boulder rolling after you": "これを盗むと巨大な岩が追いかけてくるかもしれない",
+
+"Tron Suit": "トロンスーツ",
+"The Grid. A digital frontier": "ザ・グリッド。デジタルなフロンティア",
+"I tried to picture clusters of information": "情報の塊を思い描こうとした",
+"as they moved through the computer": "それらがコンピュータ内を移動するさまを",
+"What did they look like? Ships? Motorcycles?": "それらはどんな形に見えただろうか？ 船？ バイク？",
+"Were the circuits like freeways?": "回路は高速道路のようだったのか？",
+"I kept dreaming of a world I thought I'd never see": "私は決して見ることはないと思っていた世界を夢見続けた",
+"And then, one day... I got in": "そしてある日...私はそこに入った",
+
+"The Midnight - Monsters": "ザ・ミッドナイト - モンスターズ",
+"I was wrong, love's a con": "私は間違っていた、愛はペテンだ",
+
+"Fart in a Jar": "瓶の中のおなら",
+"May annoy others": "他人を不快にさせるかもしれない",
+
+"Mammoth Steak": "マンモスステーキ",
+"Just picture a mammoth steak, fried, roasted or stewed!": "マンモスステーキを想像してみて、揚げても焼いてもシチューにしても最高だ！",
+
+"Mimic": "ミミック",
+"You didn't think you could open that many chests": "そんなに多くのチェストを開けても",
+"and not come across one of these?": "これに出会わないと思っていたのか？",
+
+"Poglin": "ポグリン",
+"So when I MLG water-bucket... Poglin!": "だから私がMLGで水バケツを使うと...ポグリン！",
+
+
+
+"Welcome!": "ようこそ！",
+
+"If you enjoy, your presence on my": "気に入っていただけたら、私の",
+
+"would be welcome!": "参加は歓迎します！",
+
+"Thank you for downloading": "ダウンロードしてくれてありがとうございます",
+"If you wish to change settings, use the following command:": "設定を変更したい場合は、次のコマンドを使用してください：",
+"Want to keep up with updates to the Advancements Pack? Join my": "このデータパックの更新を追いたいなら、私の",
+
+"and give yourself the Advancement Pack Squad in #roles!": "に参加して #roles で Advancement Pack Squad を付与してください！",
+
+"Note from the developer": "開発者からの注意",
+
+"This is an Alpha Build of BlazeandCave's Advancements Pack, designed for snapshots of the next major Minecraft update.": "これは BlazeandCave's進捗データパックのアルファビルドで、次期Minecraft大型アップデートのスナップショット向けに作られています。",
+"All brand-new advancements included in this version are intended for trigger testing purposes and do not yet have reward functions.": "このバージョンに含まれる新規の進捗はトリガー検証目的であり、まだ報酬機能を持ちません。",
+"This means they currently do not have custom advancement completion messages, will not count towards the advancements scoreboard, and don't get shared in cooperative mode.": "つまり現在はカスタムの進捗完了メッセージがなく、進捗スコアボードにカウントされず、協力モードで共有されません。",
+"This functionality will be added in the first Beta Build, which will be released when Minecraft snapshots begin entering a largely bug-fixing period in preparation for the major Minecraft update's release.": "この機能は、Minecraftのスナップショットが主にバグ修正段階に入った際にリリースされる最初のベータビルドで追加されます。",
+"Thank you for your patience and understanding.": "ご理解とご協力に感謝します。",
+
+"This is a Beta Build of BlazeandCave's Advancements Pack, designed for snapshots of the next major Minecraft update.": "これは BlazeandCave's進捗データパックのベータビルドで、次期Minecraft大型アップデートのスナップショット向けに作られています。",
+"This version of the datapack should be fairly stable and playable, with every brand-new advancement working at full functionality, but there may be some unwanted bugs or other issues.": "このデータパックは比較的安定してプレイ可能で、全ての新規進捗が機能しますが、いくつかの不具合や問題が残る可能性があります。",
+"Thank you for your patience and understanding.": "ご理解とご協力に感謝します。",
+
+
+
+
+
+"To view progress, run:": "進捗を表示するには次を実行してください：",
+
+"Custom Statistics": "カスタム統計",
+
+"Days played:": "プレイ日数：",
+"Food items eaten:": "食べた食料アイテム：",
+"Loot chests opened:": "開けた略奪チェスト数：",
+"Gold Bartered to Piglins:": "ピグリンに交易した金の量：",
+
+"You have eaten an apple every day for": "あなたは毎日リンゴを食べています：",
+
+"days.": "日。",
+"You have eaten an apple today.": "今日はリンゴを食べました。",
+"You have not eaten an apple today.": "今日はリンゴを食べていません。",
+"If you have just slept, and it says you have eaten an apple when you actually haven't yet, try running this trigger again in 10 seconds.": "もし直前に寝たことで、実際にはまだリンゴを食べていないのに食べたと表示される場合は、10秒後に再度このトリガーを実行してみてください。",
+
+
+
+
+
+"Thank you to all of my Patrons!": "全ての支援者の皆様に感謝します！",
+
+
+"of each kind of Smithing Template": "各種類の鍛冶型のうちの",
+
+
+"Pottery Sherd": "陶器断片",
+"You only need a stack of one kind of Smithing Template": "必要なのは1種類の鍛冶型を1スタックだけです",
+
+
+
+"%1$s tab": "%1$s タブ",
+
+
+"Global install": "グローバルインストール",
+"Properly installs Hardcore, Terralith and other add-on versions of BlazeandCave's Advancements Pack that have been placed in your world's datapacks folder by reordering datapack priorities": "ワールドのdatapacksフォルダに配置された BlazeandCave's進捗データパック（Hardcore、Terralith、その他のアドオン）を、データパックの優先順位を並べ替えて正しくインストールします",
+
+
+
+
+
+"A Suspicious Advancement": "怪しい進捗",
+"Obtain a block of Suspicious Sand or Suspicious Gravel": "怪しい砂または怪しい砂利のブロックを入手する",
+
+"Blowback": "逆風",
+"Kill a Breeze with a deflected Wind Charge": "はじき返したウィンドチャージでブリーズを倒す",
+
+"Break Wind": "風を砕く",
+"Defeat a Breeze in the Trial Chambers": "試練の間でブリーズを倒す",
+
+"Breeze Suppressor": "ブリーズ抑制",
+"Defeat enough Breezes to collect a stack of Breeze Rods": "1スタックのブリーズロッドを手に入れる",
+
+"Core Keeper": "コアキーパー",
+"Obtain a stack of Heavy Cores": "1スタックのヘビーコアを手に入れる",
+
+"From Under Your Feet": "足元から",
+"Throw a Wind Charge at a mob that is standing on top of a trapdoor": "トラップドアの上に立っているモブにウィンドチャージを投げつける",
+
+"Hard Mode Activated": "ハードモード起動",
+"Drink an Ominous Bottle in a Trial Chamber to cast a greater challenge": "試練の間内で不吉な瓶を飲んで、より強力な挑戦を発生させる",
+
+"Keys to Success": "成功への鍵",
+"Collect a stack of all kinds of keys": "全種類の鍵をそれぞれ1スタック手に入れる",
+
+"Minecraft: Trial(s) Edition": "Minecraft: トライアル版",
+"Step foot in a Trial Chamber": "試練の間に足を踏み入れる",
+
+"Omniscient": "全知",
+"Collect a stack of one tier of Ominous Bottles": "同一レベルの不吉な瓶を1スタック手に入れる",
+
+"Revaulting": "怪錠",
+"Unlock an Ominous Vault with an Ominous Trial Key": "不吉な試練の鍵で不吉な宝物庫を開ける",
+
+"sus": "妙だな...?",
+"Obtain a stack of Suspicious Sand and Suspicious Gravel": "全2種の1スタックの怪しげな砂と怪しげな砂利を手に入れる",
+
+"This will be a breeze!": "余裕だよ！",
+"Famous last words. Get killed by a Breeze": "有名な最後の言葉。ブリーズに殺される",
+
+
+"Famous last words. Get hit by a Breeze. Don’t die": "有名な最後の言葉。ブリーズに当てられる。ただし死ぬな",
+
+"Tricky Treasures": "厄介な宝物",
+"Collect every kind of treasure item that can only be found in Trial Chambers": "試練の間でしか見つからない全ての宝アイテムを収集する",
+
+"Under Lock and Key": "錠と鍵に隠されしもの",
+"Unlock a Vault using a Trial Key": "試練の鍵で宝物庫を開ける",
+
+"Vault Hunter": "宝物庫ハンター",
+"Unlock 25 Vaults across Trial Chambers": "試練の間の宝物庫を合計25個開ける",
+
+"Who Needs Rockets?": "ロケットいらず",
+"Use a Wind Charge to launch yourself upward at least 8 blocks": "ウィンドチャージを使って最低でも8ブロック上方へ打ち上げる",
+
+
+"Isn’t It Scute?": "可憐でしょう？",
+"Brush an Armadillo to get Armadillo Scutes": "アルマジロをブラッシングしてアルマジロのウロコを入手する",
+
+"Good as New": "まるで新品",
+"Repair damaged Wolf Armor using Armadillo Scutes": "アルマジロのウロコを使ってダメージを受けたオオカミの鎧を修理する",
+
+"Shear Brilliance": "ハサミのひらめき",
+"Remove Wolf Armor from a Wolf using Shears": "ハサミでオオカミからオオカミの鎧を取り外す",
+
+"The Whole Pack": "ワンチーム",
+"Tame one of each Wolf variant": "全ての種類のオオカミをそれぞれ1体ずつ手懐ける",
+
+"Farmadillo": "ファーマディロ",
+"Breed two Armadillos using Spider Eyes": "クモの目を使ってアルマジロを繁殖させる",
+
+"Armadoggo": "アーマドッゴ",
+"Equip your canine best friend with Wolf Armor": "愛犬にオオカミの鎧を装備させる",
+
+"Paw Patrol": "パウ・パトロール",
+"Equip Wolves with Wolf Armor dyed blue, red, yellow, lime, pink and orange": "オオカミらに青・赤・黄・ライム・ピンク・オレンジに染色したオオカミの鎧を装備させる",
+
+
+"Bulbous!": "バルバス！",
+"Light up the area with a Copper Bulb!": "銅の電球で周囲を照らす",
+
+"Lighten Up": "明るくなーれ",
+"Scrape a Copper Bulb with an axe to make it brighter": "斧で銅の電球を削って明るさを上げる",
+
+
+"Overwarden": "オーバーウォーデン",
+"Have fifty Wardens present within 100 blocks of you": "自分の周囲100ブロック以内にウォーデンを50体存在させる",
+
+
+"Mace Windu": "メイス・ウィンドゥ",
+"Obtain the Wind Burst enchantment on a Mace": "メイスにウィンドバーストエンチャントを付与する",
+
+"Whack-a-mole": "モグラ叩き",
+"Using a Mace enchanted with Wind Burst, hit eight Armadillos consecutively without touching the ground": "ウィンドバースト付きのメイスを使い、地面に触れずに連続でアルマジロを8体ヒットさせる",
+
+"Master Macerator": "完璧な武闘家",
+"Create a mace with all possible enchantments at max level": "エンチャント可能な全てのエンチャントをメイスに付与し、完全なメイスを作る",
+
+
+"Diver's Dozen": "ダイバーのダズン",
+"Kill 12 mobs while airborne using Elytra. Stopping flight or touching liquid will reset your progress": "エリトラを使って空中にいる間に12体のモブを倒す。飛行を停止するか液体に触れると進捗はリセットされる",
+
+"Dimension Penetration": "次元貫通",
+"Get hit by an arrow that has visited every dimension during its lifetime": "その飛行中に全ての次元を渡ってきた矢に当てられる",
+
+
+"Grate Expectations": "グレート・エクスペクテーションズ（格子の期待）",
+"Craft or obtain a Copper Grate": "銅の格子を作成または入手する",
+
+
+"Bogged Down": "泥に嵌る",
+"Kill a Bogged. Watch those poison arrows!": "ボクドを倒す。毒の矢に注意！",
+
+
+"Imbued Projectiles": "付与された飛翔体",
+"Craft some Tipped Arrows using arrows and a Lingering Potion": "矢と残留ポーションを使って効果付きの矢を作成する",
+
+"Secret of the Ooze": "ウーズの秘密",
+"Use a Slime Block to brew a Potion of Oozing": "スライムブロックを使って浸出のポーションを手に入れる",
+
+"Final Shout": "最後の叫び",
+"Kill a mob that has the Wind Charged, Weaving and Oozing effects": "蓄風、巣張り、浸出の効果が付いたモブを倒す",
+
+
+"Craftception": "クラフトセプション",
+"Craft a Crafter": "Crafterをクラフトする",
+
+"Crafters Crafting Crafters": "自動作業台製自動作業台",
+"Be near a Crafter when it crafts a Crafter": "CrafterがCrafterを作るときにその近くにいる",
+
+"Factorio": "ファクトリオ",
+"Be near a Crafter when it crafts a Dispenser 64 times": "自動作業台がディスペンサーを64回作成する際にその近くにいる",
+
+"We Have Liftoff!": "打ち上げ成功！",
+"Build a redstone machine that uses TNT to launch you at least 100 blocks into the stratosphere": "TNTを用いて自分を少なくとも100ブロック上空に打ち上げるレッドストーン機構を構築する",
+
+
+"Nice to Mace You!": "メイスに会えて嬉しい！",
+"Craft a Mace using a Breeze Rod and a Heavy Core, then do a smash attack by hitting a mob after falling": "ブリーズロッドとヘビーコアでメイスを作り、落下後にモブを殴ってスマッシュ攻撃を行う",
+
+"Meteor Strike": "隕石攻撃",
+"Deal 50 hearts of damage in a single hit using the Mace": "メイスで単一攻撃により50ハート分のダメージを与える",
+
+"Warden Extinction": "ウォーデン絶滅",
+"Deal 250 hearts of damage in a single hit using the Mace… to one-shot a Warden": "メイスで単一の攻撃により250ハート分のダメージを与え、ウォーデンを一撃で倒す",
+
+
+
+"Underpants": "アンダーパンツ",
+"Never underestimate the power of underwear!": "下着の力を侮るな！",
+
+"Copper Golem": "カッパー・ゴーレム",
+"Allayed in favour of the Allay": "アレイに引き継がれた",
+
+"Piñata": "ピニャータ",
+"Much easier to hit than a bat, and filled with candy!": "コウモリよりずっと当てやすく、中にはお菓子がぎっしり！",
+
+"Armored Paws": "アーマード・ポーズ",
+"So Mojang said 1.20.5 was the Armored Paws drop,": "それでMojangは1.20.5でArmored Pawsがドロップすると言ったんだ、",
+"meaning they added a new item as a drop": "つまり新しいアイテムをドロップとして追加したということだ",
+"What, you're telling me there is no Armored Paws drop?": "え、Armored Pawsのドロップが存在しないって言うのか？",
+"Fine, I'll add it myself!": "仕方ない、自分で追加してやる！",
+
+"Really Really Pointy Arrow": "本当に本当に尖った矢",
+"This deals more damage than it seems": "見た目よりも多くのダメージを与える",
+
+"Klefki": "クレフキ",
+"It never lets go of a key that it likes,": "気に入った鍵は決して放さない、",
+"so people give it the keys to vaults and safes as a way to prevent crime": "そのため人々は犯罪防止のために金庫や保管庫の鍵を渡すのだ",
+
+"Iron Man Suit": "アイアンマン・スーツ",
+"Has he lost his mind?": "彼は正気を失ったのか？",
+"Can he see or is he blind?": "彼は見えているのか、それとも盲目なのか？",
+
+"1-UP Life": "1-UP ライフ",
+"Every Goomba stomped from the eighth onward grants an extra life!": "8体目以降に踏みつけたクリボーごとに追加の1ライフが与えられる！",
+
+"God Particle": "神の粒子",
+"This boson is so central to the state of physics today,": "このボソンは現代物理学の状況にとって極めて中心的で、",
+"so crucial to our final understanding of the structure of matter,": "物質構造の最終的理解にとって非常に重要で、",
+"yet so elusive…": "それでいながら極めて捉えどころがない...",
+
+"Viceroy Nute Gunray": "副王ヌート・ガンレイ",
+"This is getting out of hand…": "事態が手に負えなくなってきた...",
+"now there are 50 of them!": "今や50体もいる！",
+
+
+
+
+
+"Craft or collect all forms of Tuff, Polished Tuff, and Tuff Bricks": "凝灰岩、磨かれた凝灰岩、凝灰岩レンガから作れる全てのブロックを手に入れる",
+
+
+"Collect every type of log and stem": "全ての種類の原木と幹を手に入れる",
+
+
+"Deflect a Skeleton's arrow with a Shield": "盾でスケルトンの矢をはじき返す",
+
+
+"Shoot a mob with a Tipped Arrow of Poison": "毒の付いた先端矢（Tipped Arrow of Poison）でモブを撃つ",
+
+
+"Deal eight hearts of damage in a single melee blow without using a Mace": "メイスを使わずに単一の近接攻撃で8ハートのダメージを与える",
+"Deal sixteen hearts of damage in a single melee blow without using a Mace": "メイスを使わずに単一の近接攻撃で16ハートのダメージを与える",
+
+
+"Start a Raid with the highest level of Bad Omen": "最高レベルの不吉な予感で襲撃を開始する",
+
+
+"Apply a banner to your shield": "盾に旗を貼る",
+
+
+"Use shears to pick up short grass or ferns": "ハサミを使って短い草やシダを回収する",
+
+
+"Collect a stack of Turtle Scutes": "亀のウロコを1スタック集める",
+
+
+"Eight billion people on the planet": "地球上の80億の人々",
+
+
+
+"Revoke death advancements (Hardcore to survival)": "死亡関連の進捗を取り消す（ハードコア→サバイバル）",
+"Revokes all death-related advancements. This function should only be used if you die while playing in Hardcore Mode and using the Hardcore version of this datapack, but want to continue playing anyway as though it is ordinary survival.": "死亡に関する全ての進捗を取り消します。この機能は、ハードコアモードでプレイ中に死亡し、このデータパックのハードコア版を使用しているが、通常のサバイバルのようにプレイを続けたい場合にのみ使用してください。",
+
+
+
+
+
+
+
+"Craft a Bundle using Leather and String": "革と糸でバンドルを作る",
+
+
+"Kill a Skeleton while both you and it have levitation": "スケルトンとあなたの両方が浮遊状態のときにそのスケルトンを倒す",
+
+"Advancement added by Nullscape": "Nullscapeによって追加された進捗",
+"Advancement added by Nullscape Version": "Nullscape版によって追加された進捗",
+
+
+
+
+
+"Eyeball Forest": "アイボール・フォレスト",
+"Obtain an Eyeblossom from a Pale Garden": "ペールガーデンからヒトミソウを入手する",
+
+"Heart Breaker": "ハートブレイカー",
+"Smash a Creaking Heart to destroy its Creaking": "クリーキングの心臓を粉砕してそのきしみ（Creaking）を破壊する",
+
+"Pale in Comparison": "比較にならないほど淡い",
+"Place a block of Pale Moss next to a block of regular Moss": "色あせた苔ブロックを苔ブロックの隣に置く",
+
+"Resinance": "レジナンス",
+"Pick off a Resin Clump growing on the side of a Pale Oak tree": "ペールオークの側面に成長している樹皮の塊を摘み取る",
+
+"Fake Copper": "フェイク・コッパー",
+"Craft all forms of Resin Blocks and Resin Bricks": "樹皮ブロックと樹皮レンガから作れる全てのブロックを手に入れる",
+
+
+"Pale Gardener": "ペール・ガーデナー",
+"Craft every item made out of pale oak wood": "ペールオークの板材で作れる全てのアイテムを手に入れる",
+
+
+"Flamboyant Range": "フランボヤント・レンジ",
+"Put 4 of each type of dye into a single Bundle": "各種染料を4つずつ1つのバンドルに入れる",
+
+
+"Light Show": "ライトショー",
+"Place Stained Glass directly on top of a Beacon to change the colour of its beam": "ビーコンの真上に色付きガラスを直接置いてビームの色を変える",
+
+
+"I yearned for the mines": "鉱山を恋しがった",
+"Spend five in-game days below y-level 32": "ゲーム内で5日間、Y座標32以下で過ごす",
+
+
+
+"Steve's Head": "スティーブの頭",
+"I… am Steve!": "わ...私はスティーブだ！",
+
+"Eridium": "エリディウム",
+"Released into the borderlands after Vault Hunters opened the Vault": "宝物庫ハンターが宝物庫を開けた後、ボーダーランズに放出された",
+
+"Sculk Meteorite": "スカルク隕石",
+"This actually caused the rise of the Warden species, not its extinction": "これは実際にウォーデン種の台頭を引き起こしたのであって、絶滅させたわけではない",
+
+"Vent": "ベント",
+"red is sus i saw them vent": "赤が怪しい、奴らがベントしているのを見た",
+
+
+
+"BlazeandCave's Advancements Pack": "BlazeandCave's進捗データパック",
+
+"Oh no guys I'm o o z i n g": "やばいみんな、漏れ出してる...",
+
+
+
+
+"Kill a raid captain. I’d warn against drinking that bottle they dropped…": "襲撃のリーダーを倒す。彼らが落としたあの瓶は飲まないほうがいいと忠告しておく...",
+
+
+"Sneak on sculk with Speed II while wearing Swift Sneak III leggings. Try saying that six times swiftly": "スニーク速度上昇IIIのレギンスを履いた状態で移動速度上昇IIを得て、スカルクにこっそり近づく。これを6回素早く言ってみてください",
+
+
+"The third is to ride an upside-down mount a lot": "3つ目は、逆さまの乗り物にたくさん乗ることだ",
+"The fourth is to put a pot in a pot and a pot on a pot": "4つ目は、植木鉢の中に植木鉢を入れ、植木鉢の上に植木鉢を置くことだ",
+
+
+
+
+
+
+"Craft a Lodestone using Chiseled Stone Bricks and an Iron Ingot": "模様入りの石レンガと鉄インゴットでロードストーン（羅針石）を作る",
+
+"The mod in question is named Advancement Info Reloaded, which displays the requirements that have been completed on each advancement.": "質問のmodはAdvancement Info Reloadedという名前で、各進捗に対してどの要件が達成済みかを表示します。",
+
+"of each kind of Pottery Sherd": "各種類の陶器断片の",
+
+"Discover every Terralith cave biome": "全てのTerralith洞窟バイオームを発見する",
+
+
+
+
+
+"Booshes": "ブッシーズ！",
+"Collect some Bushes": "いくつかの茂みを手に入れる",
+
+"Certified Spud Chomper": "毒ジャガイモイーター",
+"Eat 100 Poisonous Potatoes": "毒ジャガイモを100個食べる",
+
+"You can't take the sky from me": "その空は奪えない",
+"Obtain a Firefly Bush": "ホタルの茂みを入手する",
+
+
+"Piglet's BIG Advancement": "ピグレットの大きな進捗",
+"Breed two pigs to get this little piggy": "この小さな子豚を得るために豚を繁殖させる",
+
+"The Three Little Pigs": "三匹のこぶた",
+"Unite all Pig variants in one place": "全種類の豚を一か所に集める",
+
+"Beef Moover": "ビーフ・ムーバー",
+"Unite all Cow variants in one place": "全種類の牛を一か所に集める",
+
+"Omelette": "オムレツ",
+"Collect a stack of all kinds of Chicken Eggs": "全種類のニワトリの卵を1スタック集める",
+
+"Chick Buffet": "チキン・ビュッフェ",
+"Unite all Chicken variants in one place": "全種類のニワトリを一か所に集める",
+
+
+"Heart Transplanter": "クリーキングハート植林家",
+"Place a Creaking Heart with the correct alignment between two Pale Oak Log blocks": "2つのペールオーク原木の間に、正しい向きでクリーキングの心臓を設置する",
+
+"Le creak, c'est chic": "きしみは粋だ",
+"Place fifty Creaking Hearts and inundate yourself with an absolute nightmare": "クリーキングの心臓を50個設置して、自分を完全な悪夢で満たす",
+
+
+"All Around the World": "世界中を巡る",
+"Buy every kind of Explorer Map that can be bought from Cartographers": "製図家から購入できる全種類の探検家の地図を買う",
+
+
+"Look Out!": "気をつけて！",
+"Zoom in on a Creeper with a Spyglass from less than a block away": "望遠鏡で1ブロック未満の距離からクリーパーを拡大する",
+
+"Absolute Cinema": "絶対なる映画",
+"Defeat a Chicken Jockey in a Woodland Mansion": "森の洋館でチキンジョッキーを倒す",
+
+
+"Splatfest": "スプラトゥーンフェス",
+"Have at least 100 of each type of Chicken Egg fired in the air at once within 48 blocks of you": "自分から48ブロック以内で、全種類のニワトリの卵をそれぞれ同時に少なくとも100個空中に発射する",
+
+
+"Oh baby a triple!": "おお、ベイビー、トリプル！",
+"Kill three mobs at the same time using a Multishot Crossbow from at least 30 blocks away": "少なくとも30ブロック離れた場所から拡散付きクロスボウを使って同時に3体のモブを倒す",
+
+
+"Test Flight": "試験飛行",
+"Ride 100m on a Happy Ghast": "ハッピーガストに乗って100m移動する",
+
+"Who Needs Elytra?": "エリトラなんて要らない？",
+"Ride 1km on a Happy Ghast": "ハッピーガストに乗って1km移動する",
+
+"Big Blimp Enthusiast": "大型飛行船愛好家",
+"Ride 10km on a Happy Ghast": "ハッピーガストに乗って10km移動する",
+
+
+"Stay Hydrated": "水分補給を忘れずに",
+"Place a Dried Ghast block into water": "乾燥したガストブロックを水に置く",
+
+"Snow Cone?": "スノーコーン？",
+"Feed snowballs to a Ghastling": "ガストリングに雪玉を与える",
+
+"Hot Air Balloon": "熱気球",
+"Craft a Harness, place it on a Happy Ghast, and ride it": "ハーネスを作り、ハッピーガストに装着して乗る",
+
+"Midport Village": "ミッドポート村",
+"Ride a Happy Ghast into a village": "ハッピーガストに乗って村へ入る",
+
+"Lead Zeppelin": "リード・ツェッペリン",
+"Attach a Boat to a Happy Ghast using a Lead": "リードでボートをハッピーガストに繋ぐ",
+
+"Pillow Fight": "枕合戦",
+"Slay a Ghast while riding a Happy Ghast": "ハッピーガストに乗っている間にガストを倒す",
+
+"Collateral Damage": "それはいわゆる「コラテラル・ダメージ」というやつだ",
+"Deflect a Ghast fireball into a Happy Ghast": "ガストの火の玉をはじいてハッピーガストに当てる",
+
+
+"String Shot": "ストリングショット",
+"Shoot a mob with an Arrow of Weaving": "巣張りの矢でモブを撃つ",
+
+
+"Why do I hear boss music?": "なぜボス音楽が聞こえるの？",
+"Play a Music Disc while fighting the Ender Dragon": "エンダードラゴンと戦いながら音楽ディスクを再生する",
+
+"Unstoppable Force vs Immovable Object": "止められない力VS動かない物体",
+"Hit a Shulker with a thrown Wind Charge": "投げたウィンドチャージでシュルカーに当てる",
+
+"You're doing it wrong": "やり方が違うよ",
+"Kill a mob with a Mace while levitating upwards": "上昇しながらメイスでモブを倒す",
+
+
+"Let's take it up a notch": "さらに一段上げよう",
+"Collect 64 Enchanted Golden Apples": "エンチャントされた金のリンゴを64個集める",
+
+"At the Rim of the Sky": "空の縁で",
+"Slay the Ender Dragon in one hit using a Mace": "メイスでエンダードラゴンを一撃で倒す",
+
+
+
+"Serenity": "セレニティ",
+"A Firefly-class mid-bulk transport ship, called home by her motley crew": "寄せ集めのクルーたちが“我が家”と呼ぶ、ファイアフライ級中型輸送船",
+
+"Mega Spud": "メガ・スパッド",
+"Champion of the colosseums of the Poisonous Potato dimension": "毒ジャガイモ次元のコロッセオの覇者",
+
+"Lava Chicken": "ラヴァチキン",
+"You ever wonder what happens when you mix hot lava and chicken?": "溶岩とチキンを混ぜるとどうなるか、考えたことある？",
+
+"Fogg's Pocket Watch": "フォッグの懐中時計",
+"Now try to do it in 80 days": "さあ、80日間でやってみよう",
+
+"Uru": "ウル",
+"The most durable metal in the universe, forged in the heart of a dying star": "宇宙で最も頑丈な金属。死にゆく星の中心で鍛えられた",
+
+"M.O.A.B.": "M.O.A.B.",
+"M.O.A.B stands for Massive Ornary Air Blimp, not Mother Of All Bloons": "M.O.A.B.は“巨大で扱いにくい飛行船”の略であって、“全てのバルーンの母”ではない",
+"Either way, it brings pain": "どちらにせよ痛みをもたらす",
+
+"Mini Ghast": "ミニガスト",
+"Only able to hover just above the ground": "地面すれすれにしか浮かべない",
+"Uses its tears to knock players off ledges": "涙でプレイヤーを足場から突き落とす",
+
+"Shiny Netherite Grade Ender Dragon Mob Trophy": "ネザライト級に輝くエンダードラゴン・モブトロフィー",
+"As a child you yearned for the Craftmines... perhaps a bit too much": "子どもの頃、クラフトマインズに憧れすぎたのかもしれない",
+
+"Notch's Head": "ノッチの頭",
+"The original creator": "ザ・オリジナルクリエイター",
+
+
+
+
+"Shoot down a phantom with an arrow from 30 blocks away": "ファントムを30ブロック離れた場所から矢で撃ち落とす",
+
+
+"Kill a Pillager, Vindicator, Evoker, Ravager and Witch with a single crossbow arrow": "ピリジャー、ヴィンディケーター、エヴォーカー、ラヴェジャー、ウィッチを一本のクロスボウの矢で全て倒す",
+
+
+
+"Dragon vs Wither: The Pre-Sequel": "ドラゴンVSウィザー：前編",
+
+
+
+
+
+"Copper Age": "銅の時代",
+"Craft a slightly better pickaxe": "少しだけより良いツルハシを手に入れる",
+
+"Copper Golem Overlord": "銅のゴーレムの大君主",
+"Wear a full suit of Copper Armor while surrounded by at least ten living Copper Golems": "10体以上の銅のゴーレムに囲まれた状態で、銅の装備一式を装備する",
+
+"Beep Bop": "ピポッ",
+"Build a Copper Golem": "銅のゴーレムを置く",
+
+"Wax Treatment": "ワックスをかける",
+"Apply Honeycomb to a Copper Golem to stop it from oxidizing": "銅のゴーレムにハニカムで錆止めする",
+
+"Total Copout": "大量のストライキ",
+"Smash a living Copper Golem into scrap": "銅のゴーレムをスクラップにして叩き潰す",
+
+"Such a poser": "すごいポーズ",
+"Cycle a Copper Golem Statue through all its poses": "銅のゴーレム像をあらゆるポーズに切り替える",
+
+"Statue of Limitations": "限界の像",
+"Collect a stack of every oxidizing stage of Copper Golem Statues, including all of their waxed variants": "銅のゴーレム像の全酸化段階とワックス付き全種類を1スタックずつ手に入れる",
+
+"Conductive Conglomerate": "導電性の集まり",
+"Collect a stack of every oxidizing stage of Lightning Rods, including all of their waxed variants": "避雷針の全酸化段階とワックス付き全種類を1スタックずつ手に入れる",
+
+"D. B. Copper": "ダン・カッパー",
+"Collect a stack of every oxidizing stage of Copper Chests, including all of their waxed variants": "銅のチェストの全酸化段階とワックス付き全種類を1スタックずつ手に入れる",
+
+"Life Sentence": "終身刑",
+"Collect a stack of every oxidizing stage of Copper Bars, including all of their waxed variants": "銅格子の全酸化段階とワックス付き全種類を1スタックずつ手に入れる",
+
+"Chain Gang": "強制労働",
+"Collect a stack of every oxidizing stage of Copper Chains, including all of their waxed variants": "銅の鎖の全酸化段階とワックス付き全種類を1スタックずつ手に入れる",
+
+"Gratest of All Time": "史上最高の金網",
+"Collect a stack of every oxidizing stage of Copper Grates, including all of their waxed variants": "銅の金網の全酸化段階とワックス付き全種類を1スタックずつ手に入れる",
+
+"Green Lanterns": "緑のランタン",
+"Collect a stack of every oxidizing stage of Copper Lanterns, including all of their waxed variants": "銅のランタンの全酸化段階とワックス付き全種類を1スタックずつ手に入れる",
+
+"Copper Computer": "銅コンピューター",
+"Collect a stack of every oxidizing stage of Copper Bulbs, including all of their waxed variants": "銅の電球の全酸化段階とワックス付き全種類を1スタックずつ手に入れる",
+
+"School of Hard Knocks": "厳しい経験",
+"Collect a stack of every oxidizing stage of Copper Doors and Trapdoors, including all of their waxed variants": "銅のドアと銅のトラップドアの全酸化段階とワックス付き全種類を1スタックずつ手に入れる",
+
+
+"Chartreuse!": "シャルトリューズ色",
+"Light up the area with Copper Torches and Copper Lanterns!": "銅の松明と銅のランタンで周囲を照らす",
+
+"Shelfception": "棚重構造",
+"Put a Shelf on a Shelf": "棚に棚を入れる",
+
+"Locked and Loaded": "保存と読み込み",
+"Swap your entire hotbar of items with a trio of powered Shelves": "ホットバーのアイテムを隣接した3つの棚のアイテムと入れ替える",
+
+
+"Echidna": "ハリモグラ",
+"Obtain Thorns III on a piece of armour": "棘の鎧IIIのエンチャントを付与する",
+
+
+
+
+"M.A.R.I.L.L.A.": "M.A.R.I.L.L.A",
+"Hello, my name is %1$s": "やあ、僕の名前は %1$s",
+
+"Green Lantern Ring": "グリーンランタンの指輪",
+"Grants incredible powers harnessed from the wearer's willpower": "着用者の冀求力によって驚異的な力を授けます",
+
+
+
+
+"Collect a stack of every oxidizing stage of Copper Blocks, Chiseled Copper, and Cut Copper Blocks, Slabs and Stairs, including all of their waxed variants": "銅ブロック、模様入りの銅ブロック、切り込み入りの銅ブロック、切り込み入りの銅のハーフブロック、切り込み入りの銅の階段のそれぞれの全酸化段階とワックス付き全種類を1スタックずつ手に入れる",
+
+
+"Have a Copper Golem completely oxidize into a statue, then mine it": "銅のゴーレムを完全に酸化させて像にし、それを掘る",
+
+
+"Craft an Iron Chain using an Iron Ingot and Iron Nuggets": "鉄インゴットと鉄塊を使って鉄の鎖を手に入れる",
+
+
+"Craft a Lead using String, then attach it to a mob": "糸を使ってリードを作り、それをモブに繋げる",
+
+
+"Attack mobs using every kind of axe": "全ての種類の斧でモブを攻撃する",
+
+
+"Hit mobs using every kind of shovel": "全ての種類のシャベルでモブを攻撃する",
+
+
+"Break every kind of shovel": "全ての種類のシャベルを壊す",
+
+
+"Put every full set of armor on different armor stands" : "全ての防具をそれぞれの防具立てに飾る",
+
+
+
+"Feeding the §mDucks§r§a Chickens": "§mDucks§r§a Chickens§r に餌をやる",
+
+"Loot 'em!": "奪え！",
+
+
+
+
+
+"__END OF FILE__": "__END OF FILE__"
+}

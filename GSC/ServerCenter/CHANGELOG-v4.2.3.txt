@@ -1,0 +1,9 @@
+Geumyi Server Center v4.2.3 — Stability & Optimization Update
+
+- Removed periodic PowerShell/CIM telemetry from the Host.
+- Added native Windows TCP/UDP/process/system telemetry.
+- Hidden non-interactive Host helper processes to avoid focus-stealing console flashes.
+- Bundles GeumyiStatusAgent 0.5.4 Discord single-message status hotfix.
+- Preserves client Host URL/API token on same-role client updates.
+- Keeps one version across Server PC, Main/Management PC, and Both install modes.
+- Retains Control API v1 and existing GSCM compatibility.

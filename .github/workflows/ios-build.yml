@@ -1,10 +1,10 @@
-name: Build GSCM 1.1.1 iOS unsigned IPA
+name: Build GSCM 1.1.2 iOS unsigned IPA
 
 on:
   push:
     branches: [ main ]
     paths:
-      - 'gscm-ios-source.b64'
+      - 'GSCM/**'
       - '.github/workflows/ios-build.yml'
   workflow_dispatch:
 
@@ -40,9 +40,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          base64 -D -i gscm-ios-source.b64 -o gscm-ios-source.zip
-          mkdir app
-          ditto -x -k gscm-ios-source.zip app
+          cp -R GSCM app
           cd app
           test -f pubspec.yaml
           test -f tool/ios/patch_ios.sh
@@ -74,8 +72,8 @@ jobs:
           ditto build/ios/iphoneos/Runner.app dist/Payload/Runner.app
           (
             cd dist
-            /usr/bin/zip -qry GSCM-v1.1.1-unsigned.ipa Payload
-            /usr/bin/shasum -a 256 GSCM-v1.1.1-unsigned.ipa > GSCM-v1.1.1-unsigned.ipa.sha256
+            /usr/bin/zip -qry GSCM-v1.1.2-unsigned.ipa Payload
+            /usr/bin/shasum -a 256 GSCM-v1.1.2-unsigned.ipa > GSCM-v1.1.2-unsigned.ipa.sha256
           )
           ls -lh dist
 
@@ -84,7 +82,8 @@ jobs:
         with:
           name: GSCM-iOS-unsigned
           path: |
-            app/dist/GSCM-v1.1.1-unsigned.ipa
-            app/dist/GSCM-v1.1.1-unsigned.ipa.sha256
+            app/dist/GSCM-v1.1.2-unsigned.ipa
+            app/dist/GSCM-v1.1.2-unsigned.ipa.sha256
           if-no-files-found: error
           retention-days: 14
+

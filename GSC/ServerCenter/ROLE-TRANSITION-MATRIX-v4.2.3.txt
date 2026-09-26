@@ -1,0 +1,35 @@
+Geumyi Server Center v4.2.3 — Role Transition Matrix
+=====================================================
+
+Roles
+1 = 서버 PC
+2 = 본컴 / 원격 관리 PC
+3 = 둘 다
+
+Target: 서버 PC
+- Install/refresh Host Windows Service.
+- Install/refresh integrated Agent runtime and managed companion plugin payload.
+- Remove local Client/autostart/shortcuts.
+- Configure Minecraft/firewall rules.
+- Optional dedicated Windows server profile is applied and backed up for rollback.
+- Existing server profiles and Agent identity/config are preserved where possible.
+
+Target: 관리 PC
+- Gracefully save/stop all managed Minecraft servers first if this PC previously had a server role.
+- If graceful stop fails, abort transition instead of force-killing Minecraft Java.
+- Remove Host service/legacy Host tasks/server firewall runtime and Agent executable runtime.
+- Preserve Agent identity/config data for a future server-role reinstall.
+- Install Client, secure client config and optional Client autostart.
+- Restore dedicated Windows server profile if previously applied.
+
+Target: 둘 다
+- Install/refresh Host Service + Agent + Client.
+- Keep server and client configuration together on one PC.
+- Restore dedicated-only Windows tuning because this is not the dedicated Server-PC role.
+
+Universal migration behavior
+- Existing Minecraft world/plugins/server.properties/start scripts are never deleted.
+- Existing server.json is backed up before v4 rewrites it.
+- Existing server profiles are migrated; wild/playground paths can be refreshed by Setup.
+- Legacy scheduled Host tasks are cleaned up as part of Service migration.
+- Role state is written only after successful installation flow.

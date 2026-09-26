@@ -1,0 +1,1116 @@
+{
+  "resource_pack_name": "Geumyi Suite BE",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "geumyi_chem:element_h": {
+      "textures": [
+        "textures/items/element_h"
+      ]
+    },
+    "geumyi_chem:element_he": {
+      "textures": [
+        "textures/items/element_he"
+      ]
+    },
+    "geumyi_chem:element_li": {
+      "textures": [
+        "textures/items/element_li"
+      ]
+    },
+    "geumyi_chem:element_be": {
+      "textures": [
+        "textures/items/element_be"
+      ]
+    },
+    "geumyi_chem:element_b": {
+      "textures": [
+        "textures/items/element_b"
+      ]
+    },
+    "geumyi_chem:element_c": {
+      "textures": [
+        "textures/items/element_c"
+      ]
+    },
+    "geumyi_chem:element_n": {
+      "textures": [
+        "textures/items/element_n"
+      ]
+    },
+    "geumyi_chem:element_o": {
+      "textures": [
+        "textures/items/element_o"
+      ]
+    },
+    "geumyi_chem:element_f": {
+      "textures": [
+        "textures/items/element_f"
+      ]
+    },
+    "geumyi_chem:element_ne": {
+      "textures": [
+        "textures/items/element_ne"
+      ]
+    },
+    "geumyi_chem:element_na": {
+      "textures": [
+        "textures/items/element_na"
+      ]
+    },
+    "geumyi_chem:element_mg": {
+      "textures": [
+        "textures/items/element_mg"
+      ]
+    },
+    "geumyi_chem:element_al": {
+      "textures": [
+        "textures/items/element_al"
+      ]
+    },
+    "geumyi_chem:element_si": {
+      "textures": [
+        "textures/items/element_si"
+      ]
+    },
+    "geumyi_chem:element_p": {
+      "textures": [
+        "textures/items/element_p"
+      ]
+    },
+    "geumyi_chem:element_s": {
+      "textures": [
+        "textures/items/element_s"
+      ]
+    },
+    "geumyi_chem:element_cl": {
+      "textures": [
+        "textures/items/element_cl"
+      ]
+    },
+    "geumyi_chem:element_ar": {
+      "textures": [
+        "textures/items/element_ar"
+      ]
+    },
+    "geumyi_chem:element_k": {
+      "textures": [
+        "textures/items/element_k"
+      ]
+    },
+    "geumyi_chem:element_ca": {
+      "textures": [
+        "textures/items/element_ca"
+      ]
+    },
+    "geumyi_chem:element_sc": {
+      "textures": [
+        "textures/items/element_sc"
+      ]
+    },
+    "geumyi_chem:element_ti": {
+      "textures": [
+        "textures/items/element_ti"
+      ]
+    },
+    "geumyi_chem:element_v": {
+      "textures": [
+        "textures/items/element_v"
+      ]
+    },
+    "geumyi_chem:element_cr": {
+      "textures": [
+        "textures/items/element_cr"
+      ]
+    },
+    "geumyi_chem:element_mn": {
+      "textures": [
+        "textures/items/element_mn"
+      ]
+    },
+    "geumyi_chem:element_fe": {
+      "textures": [
+        "textures/items/element_fe"
+      ]
+    },
+    "geumyi_chem:element_co": {
+      "textures": [
+        "textures/items/element_co"
+      ]
+    },
+    "geumyi_chem:element_ni": {
+      "textures": [
+        "textures/items/element_ni"
+      ]
+    },
+    "geumyi_chem:element_cu": {
+      "textures": [
+        "textures/items/element_cu"
+      ]
+    },
+    "geumyi_chem:element_zn": {
+      "textures": [
+        "textures/items/element_zn"
+      ]
+    },
+    "geumyi_chem:element_ga": {
+      "textures": [
+        "textures/items/element_ga"
+      ]
+    },
+    "geumyi_chem:element_ge": {
+      "textures": [
+        "textures/items/element_ge"
+      ]
+    },
+    "geumyi_chem:element_as": {
+      "textures": [
+        "textures/items/element_as"
+      ]
+    },
+    "geumyi_chem:element_se": {
+      "textures": [
+        "textures/items/element_se"
+      ]
+    },
+    "geumyi_chem:element_br": {
+      "textures": [
+        "textures/items/element_br"
+      ]
+    },
+    "geumyi_chem:element_kr": {
+      "textures": [
+        "textures/items/element_kr"
+      ]
+    },
+    "geumyi_chem:element_rb": {
+      "textures": [
+        "textures/items/element_rb"
+      ]
+    },
+    "geumyi_chem:element_sr": {
+      "textures": [
+        "textures/items/element_sr"
+      ]
+    },
+    "geumyi_chem:element_y": {
+      "textures": [
+        "textures/items/element_y"
+      ]
+    },
+    "geumyi_chem:element_zr": {
+      "textures": [
+        "textures/items/element_zr"
+      ]
+    },
+    "geumyi_chem:element_nb": {
+      "textures": [
+        "textures/items/element_nb"
+      ]
+    },
+    "geumyi_chem:element_mo": {
+      "textures": [
+        "textures/items/element_mo"
+      ]
+    },
+    "geumyi_chem:element_tc": {
+      "textures": [
+        "textures/items/element_tc"
+      ]
+    },
+    "geumyi_chem:element_ru": {
+      "textures": [
+        "textures/items/element_ru"
+      ]
+    },
+    "geumyi_chem:element_rh": {
+      "textures": [
+        "textures/items/element_rh"
+      ]
+    },
+    "geumyi_chem:element_pd": {
+      "textures": [
+        "textures/items/element_pd"
+      ]
+    },
+    "geumyi_chem:element_ag": {
+      "textures": [
+        "textures/items/element_ag"
+      ]
+    },
+    "geumyi_chem:element_cd": {
+      "textures": [
+        "textures/items/element_cd"
+      ]
+    },
+    "geumyi_chem:element_in": {
+      "textures": [
+        "textures/items/element_in"
+      ]
+    },
+    "geumyi_chem:element_sn": {
+      "textures": [
+        "textures/items/element_sn"
+      ]
+    },
+    "geumyi_chem:element_sb": {
+      "textures": [
+        "textures/items/element_sb"
+      ]
+    },
+    "geumyi_chem:element_te": {
+      "textures": [
+        "textures/items/element_te"
+      ]
+    },
+    "geumyi_chem:element_i": {
+      "textures": [
+        "textures/items/element_i"
+      ]
+    },
+    "geumyi_chem:element_xe": {
+      "textures": [
+        "textures/items/element_xe"
+      ]
+    },
+    "geumyi_chem:element_cs": {
+      "textures": [
+        "textures/items/element_cs"
+      ]
+    },
+    "geumyi_chem:element_ba": {
+      "textures": [
+        "textures/items/element_ba"
+      ]
+    },
+    "geumyi_chem:element_la": {
+      "textures": [
+        "textures/items/element_la"
+      ]
+    },
+    "geumyi_chem:element_ce": {
+      "textures": [
+        "textures/items/element_ce"
+      ]
+    },
+    "geumyi_chem:element_pr": {
+      "textures": [
+        "textures/items/element_pr"
+      ]
+    },
+    "geumyi_chem:element_nd": {
+      "textures": [
+        "textures/items/element_nd"
+      ]
+    },
+    "geumyi_chem:element_pm": {
+      "textures": [
+        "textures/items/element_pm"
+      ]
+    },
+    "geumyi_chem:element_sm": {
+      "textures": [
+        "textures/items/element_sm"
+      ]
+    },
+    "geumyi_chem:element_eu": {
+      "textures": [
+        "textures/items/element_eu"
+      ]
+    },
+    "geumyi_chem:element_gd": {
+      "textures": [
+        "textures/items/element_gd"
+      ]
+    },
+    "geumyi_chem:element_tb": {
+      "textures": [
+        "textures/items/element_tb"
+      ]
+    },
+    "geumyi_chem:element_dy": {
+      "textures": [
+        "textures/items/element_dy"
+      ]
+    },
+    "geumyi_chem:element_ho": {
+      "textures": [
+        "textures/items/element_ho"
+      ]
+    },
+    "geumyi_chem:element_er": {
+      "textures": [
+        "textures/items/element_er"
+      ]
+    },
+    "geumyi_chem:element_tm": {
+      "textures": [
+        "textures/items/element_tm"
+      ]
+    },
+    "geumyi_chem:element_yb": {
+      "textures": [
+        "textures/items/element_yb"
+      ]
+    },
+    "geumyi_chem:element_lu": {
+      "textures": [
+        "textures/items/element_lu"
+      ]
+    },
+    "geumyi_chem:element_hf": {
+      "textures": [
+        "textures/items/element_hf"
+      ]
+    },
+    "geumyi_chem:element_ta": {
+      "textures": [
+        "textures/items/element_ta"
+      ]
+    },
+    "geumyi_chem:element_w": {
+      "textures": [
+        "textures/items/element_w"
+      ]
+    },
+    "geumyi_chem:element_re": {
+      "textures": [
+        "textures/items/element_re"
+      ]
+    },
+    "geumyi_chem:element_os": {
+      "textures": [
+        "textures/items/element_os"
+      ]
+    },
+    "geumyi_chem:element_ir": {
+      "textures": [
+        "textures/items/element_ir"
+      ]
+    },
+    "geumyi_chem:element_pt": {
+      "textures": [
+        "textures/items/element_pt"
+      ]
+    },
+    "geumyi_chem:element_au": {
+      "textures": [
+        "textures/items/element_au"
+      ]
+    },
+    "geumyi_chem:element_hg": {
+      "textures": [
+        "textures/items/element_hg"
+      ]
+    },
+    "geumyi_chem:element_tl": {
+      "textures": [
+        "textures/items/element_tl"
+      ]
+    },
+    "geumyi_chem:element_pb": {
+      "textures": [
+        "textures/items/element_pb"
+      ]
+    },
+    "geumyi_chem:element_bi": {
+      "textures": [
+        "textures/items/element_bi"
+      ]
+    },
+    "geumyi_chem:element_po": {
+      "textures": [
+        "textures/items/element_po"
+      ]
+    },
+    "geumyi_chem:element_at": {
+      "textures": [
+        "textures/items/element_at"
+      ]
+    },
+    "geumyi_chem:element_rn": {
+      "textures": [
+        "textures/items/element_rn"
+      ]
+    },
+    "geumyi_chem:element_fr": {
+      "textures": [
+        "textures/items/element_fr"
+      ]
+    },
+    "geumyi_chem:element_ra": {
+      "textures": [
+        "textures/items/element_ra"
+      ]
+    },
+    "geumyi_chem:element_ac": {
+      "textures": [
+        "textures/items/element_ac"
+      ]
+    },
+    "geumyi_chem:element_th": {
+      "textures": [
+        "textures/items/element_th"
+      ]
+    },
+    "geumyi_chem:element_pa": {
+      "textures": [
+        "textures/items/element_pa"
+      ]
+    },
+    "geumyi_chem:element_u": {
+      "textures": [
+        "textures/items/element_u"
+      ]
+    },
+    "geumyi_chem:element_np": {
+      "textures": [
+        "textures/items/element_np"
+      ]
+    },
+    "geumyi_chem:element_pu": {
+      "textures": [
+        "textures/items/element_pu"
+      ]
+    },
+    "geumyi_chem:element_am": {
+      "textures": [
+        "textures/items/element_am"
+      ]
+    },
+    "geumyi_chem:element_cm": {
+      "textures": [
+        "textures/items/element_cm"
+      ]
+    },
+    "geumyi_chem:element_bk": {
+      "textures": [
+        "textures/items/element_bk"
+      ]
+    },
+    "geumyi_chem:element_cf": {
+      "textures": [
+        "textures/items/element_cf"
+      ]
+    },
+    "geumyi_chem:element_es": {
+      "textures": [
+        "textures/items/element_es"
+      ]
+    },
+    "geumyi_chem:element_fm": {
+      "textures": [
+        "textures/items/element_fm"
+      ]
+    },
+    "geumyi_chem:element_md": {
+      "textures": [
+        "textures/items/element_md"
+      ]
+    },
+    "geumyi_chem:element_no": {
+      "textures": [
+        "textures/items/element_no"
+      ]
+    },
+    "geumyi_chem:element_lr": {
+      "textures": [
+        "textures/items/element_lr"
+      ]
+    },
+    "geumyi_chem:element_rf": {
+      "textures": [
+        "textures/items/element_rf"
+      ]
+    },
+    "geumyi_chem:element_db": {
+      "textures": [
+        "textures/items/element_db"
+      ]
+    },
+    "geumyi_chem:element_sg": {
+      "textures": [
+        "textures/items/element_sg"
+      ]
+    },
+    "geumyi_chem:element_bh": {
+      "textures": [
+        "textures/items/element_bh"
+      ]
+    },
+    "geumyi_chem:element_hs": {
+      "textures": [
+        "textures/items/element_hs"
+      ]
+    },
+    "geumyi_chem:element_mt": {
+      "textures": [
+        "textures/items/element_mt"
+      ]
+    },
+    "geumyi_chem:element_ds": {
+      "textures": [
+        "textures/items/element_ds"
+      ]
+    },
+    "geumyi_chem:element_rg": {
+      "textures": [
+        "textures/items/element_rg"
+      ]
+    },
+    "geumyi_chem:element_cn": {
+      "textures": [
+        "textures/items/element_cn"
+      ]
+    },
+    "geumyi_chem:element_nh": {
+      "textures": [
+        "textures/items/element_nh"
+      ]
+    },
+    "geumyi_chem:element_fl": {
+      "textures": [
+        "textures/items/element_fl"
+      ]
+    },
+    "geumyi_chem:element_mc": {
+      "textures": [
+        "textures/items/element_mc"
+      ]
+    },
+    "geumyi_chem:element_lv": {
+      "textures": [
+        "textures/items/element_lv"
+      ]
+    },
+    "geumyi_chem:element_ts": {
+      "textures": [
+        "textures/items/element_ts"
+      ]
+    },
+    "geumyi_chem:element_og": {
+      "textures": [
+        "textures/items/element_og"
+      ]
+    },
+    "geumyi_chem:species_h2": {
+      "textures": [
+        "textures/items/species_h2"
+      ]
+    },
+    "geumyi_chem:species_o2": {
+      "textures": [
+        "textures/items/species_o2"
+      ]
+    },
+    "geumyi_chem:species_n2": {
+      "textures": [
+        "textures/items/species_n2"
+      ]
+    },
+    "geumyi_chem:species_cl2": {
+      "textures": [
+        "textures/items/species_cl2"
+      ]
+    },
+    "geumyi_chem:species_i2": {
+      "textures": [
+        "textures/items/species_i2"
+      ]
+    },
+    "geumyi_chem:species_h2o": {
+      "textures": [
+        "textures/items/species_h2o"
+      ]
+    },
+    "geumyi_chem:species_co2": {
+      "textures": [
+        "textures/items/species_co2"
+      ]
+    },
+    "geumyi_chem:species_nh3": {
+      "textures": [
+        "textures/items/species_nh3"
+      ]
+    },
+    "geumyi_chem:species_hcl": {
+      "textures": [
+        "textures/items/species_hcl"
+      ]
+    },
+    "geumyi_chem:species_ch4": {
+      "textures": [
+        "textures/items/species_ch4"
+      ]
+    },
+    "geumyi_chem:species_so2": {
+      "textures": [
+        "textures/items/species_so2"
+      ]
+    },
+    "geumyi_chem:species_so3": {
+      "textures": [
+        "textures/items/species_so3"
+      ]
+    },
+    "geumyi_chem:species_no": {
+      "textures": [
+        "textures/items/species_no"
+      ]
+    },
+    "geumyi_chem:species_no2": {
+      "textures": [
+        "textures/items/species_no2"
+      ]
+    },
+    "geumyi_chem:species_h2s": {
+      "textures": [
+        "textures/items/species_h2s"
+      ]
+    },
+    "geumyi_chem:species_hclaq": {
+      "textures": [
+        "textures/items/species_hclaq"
+      ]
+    },
+    "geumyi_chem:species_h2so4": {
+      "textures": [
+        "textures/items/species_h2so4"
+      ]
+    },
+    "geumyi_chem:species_hno3": {
+      "textures": [
+        "textures/items/species_hno3"
+      ]
+    },
+    "geumyi_chem:species_naoh": {
+      "textures": [
+        "textures/items/species_naoh"
+      ]
+    },
+    "geumyi_chem:species_koh": {
+      "textures": [
+        "textures/items/species_koh"
+      ]
+    },
+    "geumyi_chem:species_caoh2": {
+      "textures": [
+        "textures/items/species_caoh2"
+      ]
+    },
+    "geumyi_chem:species_nacl": {
+      "textures": [
+        "textures/items/species_nacl"
+      ]
+    },
+    "geumyi_chem:species_naclaq": {
+      "textures": [
+        "textures/items/species_naclaq"
+      ]
+    },
+    "geumyi_chem:species_agno3": {
+      "textures": [
+        "textures/items/species_agno3"
+      ]
+    },
+    "geumyi_chem:species_agno3aq": {
+      "textures": [
+        "textures/items/species_agno3aq"
+      ]
+    },
+    "geumyi_chem:species_bacl2": {
+      "textures": [
+        "textures/items/species_bacl2"
+      ]
+    },
+    "geumyi_chem:species_bacl2aq": {
+      "textures": [
+        "textures/items/species_bacl2aq"
+      ]
+    },
+    "geumyi_chem:species_na2so4": {
+      "textures": [
+        "textures/items/species_na2so4"
+      ]
+    },
+    "geumyi_chem:species_na2so4aq": {
+      "textures": [
+        "textures/items/species_na2so4aq"
+      ]
+    },
+    "geumyi_chem:species_pbno3_2": {
+      "textures": [
+        "textures/items/species_pbno3_2"
+      ]
+    },
+    "geumyi_chem:species_pbno3_2aq": {
+      "textures": [
+        "textures/items/species_pbno3_2aq"
+      ]
+    },
+    "geumyi_chem:species_ki": {
+      "textures": [
+        "textures/items/species_ki"
+      ]
+    },
+    "geumyi_chem:species_kiaq": {
+      "textures": [
+        "textures/items/species_kiaq"
+      ]
+    },
+    "geumyi_chem:species_kno3": {
+      "textures": [
+        "textures/items/species_kno3"
+      ]
+    },
+    "geumyi_chem:species_kno3aq": {
+      "textures": [
+        "textures/items/species_kno3aq"
+      ]
+    },
+    "geumyi_chem:species_nano3": {
+      "textures": [
+        "textures/items/species_nano3"
+      ]
+    },
+    "geumyi_chem:species_nano3aq": {
+      "textures": [
+        "textures/items/species_nano3aq"
+      ]
+    },
+    "geumyi_chem:species_cuso4": {
+      "textures": [
+        "textures/items/species_cuso4"
+      ]
+    },
+    "geumyi_chem:species_cuso4aq": {
+      "textures": [
+        "textures/items/species_cuso4aq"
+      ]
+    },
+    "geumyi_chem:species_fecl3": {
+      "textures": [
+        "textures/items/species_fecl3"
+      ]
+    },
+    "geumyi_chem:species_fecl3aq": {
+      "textures": [
+        "textures/items/species_fecl3aq"
+      ]
+    },
+    "geumyi_chem:species_cacl2": {
+      "textures": [
+        "textures/items/species_cacl2"
+      ]
+    },
+    "geumyi_chem:species_cacl2aq": {
+      "textures": [
+        "textures/items/species_cacl2aq"
+      ]
+    },
+    "geumyi_chem:species_zncl2": {
+      "textures": [
+        "textures/items/species_zncl2"
+      ]
+    },
+    "geumyi_chem:species_zncl2aq": {
+      "textures": [
+        "textures/items/species_zncl2aq"
+      ]
+    },
+    "geumyi_chem:species_nh4cl": {
+      "textures": [
+        "textures/items/species_nh4cl"
+      ]
+    },
+    "geumyi_chem:species_na2so3": {
+      "textures": [
+        "textures/items/species_na2so3"
+      ]
+    },
+    "geumyi_chem:species_nahco3": {
+      "textures": [
+        "textures/items/species_nahco3"
+      ]
+    },
+    "geumyi_chem:species_fes": {
+      "textures": [
+        "textures/items/species_fes"
+      ]
+    },
+    "geumyi_chem:species_agcl": {
+      "textures": [
+        "textures/items/species_agcl"
+      ]
+    },
+    "geumyi_chem:species_baso4": {
+      "textures": [
+        "textures/items/species_baso4"
+      ]
+    },
+    "geumyi_chem:species_pbi2": {
+      "textures": [
+        "textures/items/species_pbi2"
+      ]
+    },
+    "geumyi_chem:species_cuoh2": {
+      "textures": [
+        "textures/items/species_cuoh2"
+      ]
+    },
+    "geumyi_chem:species_feoh3": {
+      "textures": [
+        "textures/items/species_feoh3"
+      ]
+    },
+    "geumyi_chem:species_caco3": {
+      "textures": [
+        "textures/items/species_caco3"
+      ]
+    },
+    "geumyi_chem:species_fe2o3": {
+      "textures": [
+        "textures/items/species_fe2o3"
+      ]
+    },
+    "geumyi_chem:species_sio2": {
+      "textures": [
+        "textures/items/species_sio2"
+      ]
+    },
+    "geumyi_chem:species_cao": {
+      "textures": [
+        "textures/items/species_cao"
+      ]
+    },
+    "geumyi_chem:species_cuo": {
+      "textures": [
+        "textures/items/species_cuo"
+      ]
+    },
+    "geumyi_chem:species_zno": {
+      "textures": [
+        "textures/items/species_zno"
+      ]
+    },
+    "geumyi_chem:species_al2o3": {
+      "textures": [
+        "textures/items/species_al2o3"
+      ]
+    },
+    "geumyi_chem:species_na2co3": {
+      "textures": [
+        "textures/items/species_na2co3"
+      ]
+    },
+    "geumyi_chem:species_na2co3aq": {
+      "textures": [
+        "textures/items/species_na2co3aq"
+      ]
+    },
+    "geumyi_chem:species_fecl2": {
+      "textures": [
+        "textures/items/species_fecl2"
+      ]
+    },
+    "geumyi_chem:species_fecl2aq": {
+      "textures": [
+        "textures/items/species_fecl2aq"
+      ]
+    },
+    "geumyi_chem:species_feso4": {
+      "textures": [
+        "textures/items/species_feso4"
+      ]
+    },
+    "geumyi_chem:species_feso4aq": {
+      "textures": [
+        "textures/items/species_feso4aq"
+      ]
+    },
+    "geumyi_chem:species_cuno3_2": {
+      "textures": [
+        "textures/items/species_cuno3_2"
+      ]
+    },
+    "geumyi_chem:species_cuno3_2aq": {
+      "textures": [
+        "textures/items/species_cuno3_2aq"
+      ]
+    },
+    "geumyi_chem:species_co": {
+      "textures": [
+        "textures/items/species_co"
+      ]
+    },
+    "geumyi_chem:tool_lab_kit": {
+      "textures": [
+        "textures/items/tool_lab_kit"
+      ]
+    },
+    "geumyi_chem:tool_ph_paper": {
+      "textures": [
+        "textures/items/tool_ph_paper"
+      ]
+    },
+    "geumyi_chem:tool_lab_bench": {
+      "textures": [
+        "textures/items/tool_lab_bench"
+      ]
+    },
+    "geumyi_chem:tool_beaker": {
+      "textures": [
+        "textures/items/tool_beaker"
+      ]
+    },
+    "geumyi_chem:tool_test_tube": {
+      "textures": [
+        "textures/items/tool_test_tube"
+      ]
+    },
+    "geumyi_chem:tool_gas_collector": {
+      "textures": [
+        "textures/items/tool_gas_collector"
+      ]
+    },
+    "geumyi_chem:tool_heater": {
+      "textures": [
+        "textures/items/tool_heater"
+      ]
+    },
+    "geumyi_chem:tool_electrolyzer": {
+      "textures": [
+        "textures/items/tool_electrolyzer"
+      ]
+    },
+    "geumyi_chem:tool_filter": {
+      "textures": [
+        "textures/items/tool_filter"
+      ]
+    },
+    "geumyi_chem:tool_distiller": {
+      "textures": [
+        "textures/items/tool_distiller"
+      ]
+    },
+    "geumyi_chem:tool_scale": {
+      "textures": [
+        "textures/items/tool_scale"
+      ]
+    },
+    "geumyi_chem:tool_pressure_chamber": {
+      "textures": [
+        "textures/items/tool_pressure_chamber"
+      ]
+    },
+    "geumyi_tech:tech_manual": {
+      "textures": [
+        "textures/items/tech_tech_manual"
+      ]
+    },
+    "geumyi_tech:tech_workbench": {
+      "textures": [
+        "textures/items/tech_tech_workbench"
+      ]
+    },
+    "geumyi_tech:copper_wire": {
+      "textures": [
+        "textures/items/tech_copper_wire"
+      ]
+    },
+    "geumyi_tech:machine_frame": {
+      "textures": [
+        "textures/items/tech_machine_frame"
+      ]
+    },
+    "geumyi_tech:basic_circuit": {
+      "textures": [
+        "textures/items/tech_basic_circuit"
+      ]
+    },
+    "geumyi_tech:electric_motor": {
+      "textures": [
+        "textures/items/tech_electric_motor"
+      ]
+    },
+    "geumyi_tech:heating_coil": {
+      "textures": [
+        "textures/items/tech_heating_coil"
+      ]
+    },
+    "geumyi_tech:battery_cell": {
+      "textures": [
+        "textures/items/tech_battery_cell"
+      ]
+    },
+    "geumyi_tech:high_density_cell": {
+      "textures": [
+        "textures/items/tech_high_density_cell"
+      ]
+    },
+    "geumyi_tech:iron_dust": {
+      "textures": [
+        "textures/items/tech_iron_dust"
+      ]
+    },
+    "geumyi_tech:copper_dust": {
+      "textures": [
+        "textures/items/tech_copper_dust"
+      ]
+    },
+    "geumyi_tech:gold_dust": {
+      "textures": [
+        "textures/items/tech_gold_dust"
+      ]
+    },
+    "geumyi_tech:silicon_dust": {
+      "textures": [
+        "textures/items/tech_silicon_dust"
+      ]
+    },
+    "geumyi_tech:silicon_wafer": {
+      "textures": [
+        "textures/items/tech_silicon_wafer"
+      ]
+    },
+    "geumyi_tech:power_cable": {
+      "textures": [
+        "textures/items/tech_power_cable"
+      ]
+    },
+    "geumyi_tech:coal_generator": {
+      "textures": [
+        "textures/items/tech_coal_generator"
+      ]
+    },
+    "geumyi_tech:solar_panel": {
+      "textures": [
+        "textures/items/tech_solar_panel"
+      ]
+    },
+    "geumyi_tech:battery_box": {
+      "textures": [
+        "textures/items/tech_battery_box"
+      ]
+    },
+    "geumyi_tech:battery_box_mk2": {
+      "textures": [
+        "textures/items/tech_battery_box_mk2"
+      ]
+    },
+    "geumyi_tech:crusher": {
+      "textures": [
+        "textures/items/tech_crusher"
+      ]
+    },
+    "geumyi_tech:electric_furnace": {
+      "textures": [
+        "textures/items/tech_electric_furnace"
+      ]
+    },
+    "geumyi_tech:electrolyzer": {
+      "textures": [
+        "textures/items/tech_electrolyzer"
+      ]
+    }
+  }
+}

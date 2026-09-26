@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "BACAP Korean - Bedrock FINAL",
+    "description": "Bedrock Korean BACAP translation pack; validation-cleaned with en_US fallback.",
+    "uuid": "6f2ab6a2-224b-4a2c-aa6f-76ec99ccdb8f",
+    "version": [
+      1,
+      0,
+      1
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "e8a36a84-e302-4ec0-b847-2d85d4975d80",
+      "version": [
+        1,
+        0,
+        1
+      ]
+    }
+  ]
+}

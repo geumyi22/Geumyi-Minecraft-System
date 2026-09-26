@@ -1,0 +1,19 @@
+package kr.geumyi.discordstatus;
+
+record Metrics(
+    long timestamp,
+    double tps1m,
+    double tps5m,
+    double tps15m,
+    double mspt,
+    double memoryPercent,
+    long memoryUsedBytes,
+    long memoryMaxBytes,
+    int online,
+    int maxPlayers,
+    int javaPlayers,
+    int bedrockPlayers,
+    int loadedChunks,
+    int entities,
+    long uptimeSeconds
+) {}

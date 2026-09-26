@@ -1,34 +1,16 @@
-# Version Matrix
+# Version and source recovery matrix
 
-Baseline date: **2026-09-26**
+Confirmed target baseline: 2026-09-26. Version does not imply complete source recovery.
 
-| Area | Current | Scope |
-|---|---:|---|
-| Paper | 26.3 | Wild + Playground |
-| GSC | 4.2.3 | Main PC / Server PC / Both |
-| StatusAgent | 0.5.4 | Server management |
-| GSCM | 1.1.2+112 | Android + iOS |
-| GST | 1.1.1 HOTFIX | Wild + Playground |
-| GDS | 1.1.1 | Wild + Playground |
-| Technology | 0.1.3 | Wild only |
-| Chemistry | 0.4.1 | Wild only |
-
-## GSCM build outputs
-
-- Android APK: GSCM 1.1.2 successful GitHub Actions build, run `36227422769`.
-- iOS IPA: unsigned, internal version `1.1.2`, build `112`, bundle id `com.geumyi.gscm`.
-
-## Current package layout
-
-The maintained MC package uses:
-
-- `야생 섭/`
-- `놀이터 섭/`
-- `금이 섭 관리/플러그인 최신본/`
-- `금이 섭 관리/build/`
-
-Inside `금이 섭 관리/build/`:
-- latest unsigned IPA
-- latest Android Builder CLEAN ZIP
-
-No obsolete 26.2 rollback package is part of the current baseline.
+| Component | Baseline | Path | Recovery status |
+|---|---|---|---|
+| GSC | 4.2.3 | GSC/ServerCenter | Recovered source; installer JAR payloads supplied from Releases |
+| GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Partial overlay (4 Java files); helper source not yet recovered |
+| GSCM | 1.1.2+112 | GSCM | Recovered Flutter/Android source and iOS generation scripts |
+| GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | source not yet recovered for exact HOTFIX |
+| GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full plugin source, stubs and tests |
+| GeumyiTechnology | 0.1.3 | Plugins/GeumyiTechnology | source not yet recovered |
+| GeumyiChemistry | 0.4.1 | Plugins/GeumyiChemistry | source not yet recovered |
+| Wild server | Paper 26.3 | Servers/Wild | Paper provenance recovered; current operational configuration source not yet recovered |
+| Playground server | Paper 26.3 | Servers/Playground | Paper provenance recovered; current operational configuration source not yet recovered |
+| Resource packs | Java 26.3 / bundled Bedrock | ResourcePacks | Recovered expanded assets and Wild Geyser mapping |

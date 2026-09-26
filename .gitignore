@@ -38,3 +38,27 @@ desktop.ini
 *.apk
 *.ipa
 MC_LATEST_*.zip
+
+
+# Distribution archives, credentials and local build state
+*.jar
+*.zip
+*.mcpack
+*.class
+*.b64
+*.mobileprovision
+*.p8
+*.cer
+key.properties
+local.properties
+release-source.txt
+dist/
+build-repro/
+.gradle/
+Pods/
+DerivedData/
+agent-state.properties
+config.json
+client-config.json
+pairing.txt
+devices.json

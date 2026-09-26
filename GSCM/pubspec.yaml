@@ -1,0 +1,20 @@
+name: gscm
+description: Geumyi Server Center Mobile
+publish_to: none
+version: 1.1.2+112
+
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  mobile_scanner: 7.4.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: 6.0.0
+
+flutter:
+  uses-material-design: true

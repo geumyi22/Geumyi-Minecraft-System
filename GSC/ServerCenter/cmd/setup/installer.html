@@ -1,0 +1,133 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Geumyi Server Center 설치</title><style>
+:root{color-scheme:dark;--bg:#06101d;--panel:#0b1a2d;--panel2:#102642;--line:#244b73;--text:#f5f8ff;--muted:#96adc7;--blue:#158cff;--cyan:#35d7ff;--green:#48e7a4;--red:#ff637d}*{box-sizing:border-box}html,body{height:100%;margin:0;font-family:"Segoe UI",Arial,sans-serif;color:var(--text);overflow:hidden}body{background:radial-gradient(circle at 78% -12%,#315d86 0,#173650 27%,#0c1b2b 58%,#091421 82%)}.window{position:absolute;inset:3.5vh 4vw;min-width:900px;min-height:650px;background:linear-gradient(155deg,#07182bfa,#081421fc);border:1px solid #2d689f;border-radius:18px;box-shadow:0 30px 80px #000b;display:grid;grid-template-columns:260px 1fr;overflow:hidden}.side{background:linear-gradient(180deg,#061b31,#071321);border-right:1px solid #1b4c76;padding:28px 24px;position:relative}.mini-brand{display:flex;align-items:center;gap:10px;margin-bottom:36px}.mini-brand img{width:36px;height:36px;border-radius:9px;box-shadow:0 0 20px #2ea9ff55}.mini-brand b{font-size:14px}.steps{position:relative;margin-left:9px}.steps:before{content:"";position:absolute;left:11px;top:17px;bottom:17px;width:2px;background:#31577c}.step{position:relative;display:flex;align-items:center;gap:14px;margin:0 0 34px;font-size:13px;color:#7f9bb8}.step .circle{width:24px;height:24px;border:2px solid #52789e;border-radius:50%;background:#0a1b2d;z-index:1}.step.active{color:white;font-weight:700}.step.active .circle{border-color:#37d6ff;box-shadow:0 0 18px #37d6ff;background:#136fc3}.step.done{color:#b4c9de}.step.done .circle{border-color:#39e7a5;background:#12805b;box-shadow:0 0 14px #39e7a555}.side-foot{position:absolute;bottom:28px;left:28px;color:#54779c;font-size:11px;line-height:1.8}.main{display:grid;grid-template-rows:115px 1fr 76px;min-width:0}.head{display:flex;align-items:center;padding:20px 34px;border-bottom:1px solid #153c61;background:linear-gradient(90deg,#0a1a2d,#0b2341)}.app-icon{width:72px;height:72px;border-radius:18px;margin-right:18px;box-shadow:0 0 30px #238fff55}.head h1{margin:0;font-size:27px}.head p{margin:4px 0 0;color:#9db6cf;font-size:13px}.quote{margin-left:auto;text-align:right;color:#7795b5;font-size:11px;line-height:1.6}.body{padding:25px 34px;overflow:auto}.page{display:none}.page.active{display:block}.page h2{font-size:22px;margin:0 0 6px}.desc{color:#a7bacd;font-size:13px;margin-bottom:18px}.card{border:1px solid #1d4b77;background:linear-gradient(180deg,#0b1e34,#09182a);border-radius:14px;padding:15px;margin-bottom:12px}.role{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:13px 14px;border:1px solid #285982;border-radius:12px;margin:9px 0;cursor:pointer;background:#0b1b2f}.role:hover,.role.selected{border-color:#2c9bff;background:#0e2b4b;box-shadow:inset 0 0 0 1px #1f7ecc55}.role input{accent-color:#1f9cff;transform:scale(1.15)}.role b{display:block;font-size:14px}.role span{display:block;color:#8fa9c4;font-size:11px;margin-top:4px}.options{display:grid;grid-template-columns:1fr 1fr;gap:9px}.opt{display:flex;align-items:flex-start;gap:9px;border:1px solid #204669;background:#09192a;border-radius:10px;padding:11px}.opt input{accent-color:#1f9cff;margin-top:2px}.opt b{font-size:12px}.opt span{display:block;color:#819bb7;font-size:10px;margin-top:3px}.field{margin:13px 0}.field label{display:block;color:#9fb5cc;font-size:11px;margin-bottom:6px}.field input{width:100%;background:#0b1827;border:1px solid #3b607f;border-radius:10px;color:white;padding:11px 12px;outline:none;font-size:13px}.field input:focus{border-color:#2b9fff;box-shadow:0 0 0 2px #248eff33}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.summary{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sum-card{border:1px solid #234b70;border-radius:12px;padding:13px;background:#0a192a}.sum-card b{font-size:12px}.sum-card div{font-size:11px;color:#90a8c2;line-height:1.8;margin-top:5px}.progress{height:14px;background:#07111c;border:1px solid #214365;border-radius:999px;overflow:hidden;margin:26px 0 15px}.bar{height:100%;width:0;background:linear-gradient(90deg,#1688ff,#39dcff,#4be5a4);transition:width .28s}.status{color:#b7cbe0;font-size:13px}.done-box{text-align:center;padding:40px 20px}.done-icon{width:76px;height:76px;border-radius:50%;margin:auto;background:#0d6f55;border:2px solid #42e5a4;display:grid;place-items:center;font-size:38px;box-shadow:0 0 35px #42e5a444}.done-box h2{margin-top:18px}.foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:0 28px;border-top:1px solid #173e62;background:#071525}.foot button{min-width:106px;padding:11px 17px;border-radius:9px;border:1px solid #315d83;background:#10253d;color:#e9f4ff;font:650 13px "Segoe UI";cursor:pointer}.foot button:hover{background:#173758}.foot .primary{background:linear-gradient(180deg,#168dff,#0964c8);border-color:#4ec5ff;box-shadow:0 0 18px #168dff44}.foot button:disabled{opacity:.35;cursor:default}.note{border-left:3px solid #2c98ed;background:#0a1b2e;padding:10px 12px;color:#89a7c4;font-size:11px;line-height:1.6;border-radius:7px}.warn{color:#ffc56a}.error{color:#ff8295}.hide{display:none!important}
+</style></head><body><div class="window"><aside class="side"><div class="mini-brand"><img src="/app.ico"><b>Geumyi Server Center 설치</b></div><div class="steps" id="steps"><div class="step active"><i class="circle"></i><span>환영</span></div><div class="step"><i class="circle"></i><span>설치 유형</span></div><div class="step"><i class="circle"></i><span>서버 구성</span></div><div class="step"><i class="circle"></i><span>설치 진행</span></div><div class="step"><i class="circle"></i><span>완료</span></div></div><div class="side-foot">Geumyi Server Center<br>v4.2.3 · 서버 플랫폼 에디션</div></aside><section class="main"><header class="head"><img class="app-icon" src="/app.ico"><div><h1>Geumyi Server Center</h1><p>마인크래프트 서버 관리 · v4.2.3</p></div><div class="quote">“좋은 사람들이 모여,<br>더 특별한 이야기가 만들어집니다.”<br>- Geumyi Server Center</div></header><div class="body">
+<div class="page active" data-page="0"><h2>환영합니다</h2><div class="desc">마인크래프트 서버 운영과 전용 서버 PC 설정까지 하나의 설치기로 구성합니다.</div><div class="card"><b>v4의 핵심</b><div class="options" style="margin-top:12px"><div class="opt"><div>🖥</div><div><b>서버 호스트 백그라운드 관리</b><span>야생/놀이터 자동 시작·복구·RCON</span></div></div><div class="opt"><div>🤖</div><div><b>Discord / GDS 에이전트</b><span>에이전트 자동 시작 및 감시 복구</span></div></div><div class="opt"><div>▣</div><div><b>시스템 트레이 전용</b><span>화면 위에 떠 있는 위젯 없이 트레이에만 상주</span></div></div><div class="opt"><div>⚙</div><div><b>통합 설정</b><span>서버 경로·자동복구·원격 연결을 앱에서 설정</span></div></div></div></div><div class="note">v4.2.3은 역할을 기억합니다. 서버 PC ↔ 관리 PC ↔ 둘 다로 바꾸면 필요한 구성요소를 자동 추가/제거하고, 전용 서버 Windows 설정도 안전하게 적용/원복합니다. 기존 Minecraft 월드, plugins, server.properties는 삭제하지 않습니다.</div></div>
+<div class="page" data-page="1"><h2>설치 유형 선택</h2><div class="desc">이 PC의 역할에 맞는 구성을 선택하세요. <span id="roleTransition" class="warn"></span></div><label class="role"><input type="radio" name="role" value="1"><div><b>서버 PC · 전용 모드</b><span>호스트 Windows 서비스 + GDS 호환 모듈 + 서버 자동시작 + 방화벽 + Windows 24/7 서버 프로필. 관리 앱은 제거합니다.</span></div></label><label class="role"><input type="radio" name="role" value="2"><div><b>본컴 / 원격 관리 PC</b><span>관리 앱만 설치합니다. 기존 호스트/에이전트/서버 방화벽/전용 Windows 프로필은 자동 제거·원복합니다.</span></div></label><label class="role selected"><input type="radio" name="role" value="3" checked><div><b>둘 다 · 테스트/겸용</b><span>호스트 서비스 + 에이전트 + 관리 앱을 함께 사용합니다. 전용 서버 Windows 프로필은 적용하지 않습니다.</span></div></label><div class="card"><b>역할별 자동 설정</b><div class="options" style="margin-top:10px"><label id="clientAutoOpt" class="opt"><input id="autostart" type="checkbox" checked><div><b>Windows 로그인 시 트레이 자동 실행</b><span>관리 PC/둘 다에서 관리 앱을 시스템 트레이에 자동 실행합니다.</span></div></label><label id="remoteOpt" class="opt"><input id="remote" type="checkbox" checked><div><b>LAN / Tailscale 원격 관리 허용</b><span>서버 역할의 관리 API 8787을 LocalSubnet/Tailscale에만 허용합니다.</span></div></label><label id="dedicatedOpt" class="opt"><input id="dedicatedOptimize" type="checkbox" checked><div><b>전용 서버 Windows 설정 자동 적용</b><span>서버 PC 전용. 절전/디스크 절전/USB·PCIe 절전, Fast Startup, Power Throttling, Game DVR를 조정하고 자동 재시작을 억제합니다. 역할 해제 시 원복합니다.</span></div></label><div class="opt"><div>🛡</div><div><b>보안 설정은 유지</b><span>Defender와 Windows Update 자체는 끄지 않고, RCON/GDS 내부 포트는 외부에 열지 않습니다.</span></div></div></div><div class="field"><label>설치 위치</label><input id="installDir"></div></div></div>
+<div class="page" data-page="2"><h2>서버 / 연결 구성</h2><div id="detailDesc" class="desc">서버 PC의 실제 서버 폴더를 확인합니다.</div><div id="serverFields"><div class="field"><label>🌲 야생 서버 폴더</label><div style="display:flex;gap:8px"><input id="wildPath" placeholder="server.properties와 start.bat이 있는 폴더"><button type="button" onclick="pickFolder('wildPath',this)">폴더 선택</button></div></div><div class="field"><label>🎮 놀이터 서버 폴더</label><div style="display:flex;gap:8px"><input id="playPath" placeholder="server.properties와 start.bat이 있는 폴더"><button type="button" onclick="pickFolder('playPath',this)">폴더 선택</button></div></div><div class="note">기존 ProgramData의 server_path.txt / launch.cmd 설정을 자동 감지합니다. 서버 PC에서 OneDrive 경로가 감지되면 설치 후 전용 서버 폴더로 이전 권장을 안내합니다.</div></div><div id="clientFields" class="hide"><div class="field"><label>서버 호스트 URL</label><input id="hostURL" placeholder="http://100.x.x.x:8787"></div><div class="field"><label>API 토큰</label><input id="token" type="password" placeholder="서버 PC 설치 후 생성되는 토큰"></div><div class="note">LAN 또는 Tailscale 주소를 권장합니다. RCON 포트는 외부에 직접 공개하지 않습니다.</div></div></div>
+<div class="page" data-page="3"><h2>설치 준비 완료</h2><div class="desc">설치 내용을 확인한 뒤 설치를 시작하세요.</div><div id="summary" class="summary"></div><div class="note" style="margin-top:12px">역할 전환 시 기존 구성요소를 자동 정리합니다. 서버 → 관리 PC 전환은 Minecraft 서버를 먼저 저장·정상 종료하며, 강제 Java 종료는 하지 않습니다. 서버 데이터 자체는 건드리지 않습니다.</div></div>
+<div class="page" data-page="4"><h2>설치 진행</h2><div class="desc">백그라운드에서 설치 중입니다. 화면은 계속 응답하도록 설계되어 있습니다.</div><div class="progress"><div id="bar" class="bar"></div></div><div id="status" class="status">준비 중...</div><div id="installError" class="error" style="margin-top:14px"></div><div class="note" style="margin-top:22px">서버 PC는 전원/업데이트 재부팅 억제/방화벽/자동시작 설정까지 적용합니다. 일부 Windows 항목이 지원되지 않아도 로그에 남기고 안전한 항목만 계속 적용합니다.</div></div>
+<div class="page" data-page="5"><div class="done-box"><div class="done-icon">✓</div><h2>설치가 완료되었습니다</h2><div class="desc">Geumyi Server Center v4.2.3이 준비되었습니다.</div><div class="card" style="text-align:left;max-width:620px;margin:20px auto"><div>• 역할 전환 시 호스트 / 에이전트 / 관리 앱 자동 추가·제거</div><div>• 서버 PC 전용 Windows 24/7 프로필 + 원복 백업</div><div>• Minecraft Java/Bedrock 방화벽 자동 구성 · RCON 외부 비공개</div><div>• 호스트 Windows 서비스 + 지연 자동 시작 + 장애 자동 복구</div><div>• 상태 진단/사전 점검 + 백업/롤백 + 시작 실패 진단 + 무한 재시작 방지</div><div>• GSCM용 Control API v1 + WebSocket + Job Queue + Audit Log</div><div>• 기존 월드/plugins/start.bat/에이전트 설정 보존 · v4 연동 플러그인 보관</div></div><label class="opt" style="max-width:620px;margin:auto"><input id="launch" type="checkbox" checked><div><b id="launchTitle">완료 후 Geumyi Server Center 실행</b><span id="launchDesc">관리 UI를 실행합니다.</span></div></label></div></div>
+</div><footer class="foot"><button id="back" onclick="back()">이전</button><button id="next" class="primary" onclick="next()">다음</button><button id="cancel" onclick="cancelInstall()">취소</button></footer></section></div><script>
+let page=0, installing=false, finished=false, discovery={}, pollTimer=null, lastProgressAt=0;
+const pages=[...document.querySelectorAll('.page')],steps=[...document.querySelectorAll('.step')];
+const $=id=>document.getElementById(id);
+
+async function pickFolder(id,btn){
+  const el=$(id),old=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='선택 창 여는 중…'}
+  try{
+    const r=await fetch('/api/pick-folder?start='+encodeURIComponent(el.value||''),{cache:'no-store'});
+    if(!r.ok)throw new Error(await r.text());
+    const x=await r.json();
+    if(x.path){el.value=x.path;el.focus();el.setSelectionRange?.(el.value.length,el.value.length)}
+  }catch(e){alert('폴더 선택 실패: '+e.message)}
+  finally{if(btn){btn.disabled=false;btn.textContent=old||'폴더 선택'}}
+}
+function role(){return Number(document.querySelector('input[name=role]:checked').value)}
+function roleLabel(v){return v===1?'서버 PC':v===2?'본컴 / 원격 관리 PC':v===3?'둘 다':'기존 설치 없음'}
+function updateRoleUI(){
+  const r=role(),client=r===2,server=r!==2,dedicated=r===1;
+  $('autostart').disabled=!hasClientRoleJS(r);
+  $('remote').disabled=!server;
+  $('dedicatedOptimize').disabled=!dedicated;
+  $('clientAutoOpt').style.opacity=hasClientRoleJS(r)?'1':'.45';$('remoteOpt').style.opacity=server?'1':'.45';$('dedicatedOpt').style.opacity=dedicated?'1':'.45';
+  if(discovery.existing_role&&discovery.existing_role!==r)$('roleTransition').textContent='현재 '+roleLabel(Number(discovery.existing_role))+' → '+roleLabel(r)+'로 자동 전환됩니다.';
+  else if(discovery.existing_role)$('roleTransition').textContent='현재 역할: '+roleLabel(Number(discovery.existing_role)); else $('roleTransition').textContent='';
+  if($('launchTitle')){if(r===1){$('launchTitle').textContent='완료 후 로컬 Host 대시보드 열기';$('launchDesc').textContent='브라우저에서 127.0.0.1:8787을 엽니다.';$('launch').checked=false}else{$('launchTitle').textContent='완료 후 Geumyi Server Center 실행';$('launchDesc').textContent='관리 UI를 열고 트레이에서 계속 실행합니다.';$('launch').checked=true}}
+}
+function hasClientRoleJS(r){return r===2||r===3}
+function show(){
+  pages.forEach((p,i)=>p.classList.toggle('active',i===page));
+  steps.forEach((s,i)=>{s.classList.toggle('active',i===Math.min(page,4));s.classList.toggle('done',i<Math.min(page,4))});
+  $('back').disabled=page===0||installing||page===5;
+  $('cancel').classList.toggle('hide',page>=4);
+  $('next').classList.toggle('hide',page===4);
+  $('next').textContent=page===3?'설치':page===5?'완료':'다음';
+  updateRoleUI();
+  if(page===2)prepareDetail();
+  if(page===3)buildSummary();
+}
+function back(){if(page>0&&!installing){page--;show()}}
+async function next(){
+  if(page===0){page=1;show();return}
+  if(page===1){page=2;show();return}
+  if(page===2){if(!validateDetail())return;page=3;show();return}
+  if(page===3){startInstall();return}
+  if(page===5){await finishSetup();return}
+}
+function validateDetail(){
+  if(role()===2){const noHost=!$('hostURL').value.trim()||$('hostURL').value.trim()==='http://';const noToken=!$('token').value.trim()&&!discovery.existing_client_token;if(noHost||noToken){alert('서버 호스트 URL과 API 토큰을 입력하세요. 기존 설치의 토큰은 자동 유지됩니다.');return false}}
+  else{if(!$('wildPath').value.trim()||!$('playPath').value.trim()){alert('야생/놀이터 서버 폴더를 입력하세요.');return false}}
+  return true
+}
+function prepareDetail(){
+  let client=role()===2;$('serverFields').classList.toggle('hide',client);$('clientFields').classList.toggle('hide',!client);
+  $('detailDesc').textContent=client?'서버 PC와 원격 연결할 정보를 입력합니다.':'server.properties가 있는 실제 서버 폴더를 확인합니다.';
+  updateRoleUI();
+  if(!client){if(!$('wildPath').value)$('wildPath').value=discovery.wild_path||'';if(!$('playPath').value)$('playPath').value=discovery.play_path||''}
+  else if(!$('hostURL').value)$('hostURL').value='http://';
+}
+function options(){return{role:role(),install_dir:$('installDir').value.trim(),autostart_client:$('autostart').checked,remote:$('remote').checked,dedicated_optimize:$('dedicatedOptimize').checked,wild_path:$('wildPath').value.trim(),play_path:$('playPath').value.trim(),host_url:$('hostURL').value.trim(),token:$('token').value.trim()}}
+function buildSummary(){
+  let o=options(),r=o.role===1?'서버 PC':o.role===2?'본컴 / 원격 관리 PC':'둘 다';
+  let items=[['설치 유형',r],['설치 위치',o.install_dir]];
+  if(discovery.existing_role&&Number(discovery.existing_role)!==o.role)items.push(['역할 전환',roleLabel(Number(discovery.existing_role))+' → '+r+' · 불필요 구성 자동 제거']);
+  if(hasClientRoleJS(o.role))items.push(['트레이 자동 실행',o.autostart_client?'사용':'사용 안 함']);
+  if(o.role===2)items.push(['Host',o.host_url]);else{items.push(['야생',o.wild_path],['놀이터',o.play_path],['원격 관리',o.remote?'LAN/Tailscale 허용':'로컬 전용'],['Minecraft 방화벽','Java TCP + Bedrock UDP 자동 허용']);if(o.role===1)items.push(['Windows 전용 서버 프로필',o.dedicated_optimize?'자동 적용 + 역할 해제 시 원복':'적용 안 함'])}
+  $('summary').innerHTML=items.map(x=>`<div class="sum-card"><b>${esc(x[0])}</b><div>${esc(x[1]||'-')}</div></div>`).join('');
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function startInstall(){
+  installing=true;page=4;show();
+  $('bar').style.width='1%';$('status').textContent='설치 요청 전달 중...';$('installError').textContent='';
+  lastProgressAt=Date.now();
+  startPolling(); // POST 응답을 기다리기 전에 진행상태 감시를 시작한다.
+  const ctl=new AbortController();
+  const timer=setTimeout(()=>ctl.abort(),3500);
+  try{
+    const r=await fetch('/api/install',{method:'POST',headers:{'Content-Type':'application/json','Cache-Control':'no-store'},body:JSON.stringify(options()),signal:ctl.signal,cache:'no-store'});
+    clearTimeout(timer);
+    if(!r.ok){const t=await r.text();throw new Error(t||('HTTP '+r.status))}
+    $('status').textContent='설치 요청 접수됨...';
+  }catch(e){
+    clearTimeout(timer);
+    // 요청 응답만 늦어져도 백엔드 설치는 이미 시작됐을 수 있으므로 페이지를 되돌리지 않는다.
+    if(e.name==='AbortError'){$('status').textContent='설치 요청 확인 중...';}
+    else{$('installError').textContent='설치 요청 응답 지연: '+e.message+' · 진행 상태를 계속 확인합니다.';}
+  }
+}
+function startPolling(){if(pollTimer)clearTimeout(pollTimer);pollOnce()}
+async function pollOnce(){
+  if(!installing)return;
+  try{
+    const r=await fetch('/api/progress?ts='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const p=await r.json();
+    if(p.started||p.percent>0){lastProgressAt=Date.now();}
+    $('bar').style.width=Math.max(1,p.percent||0)+'%';
+    if(p.status)$('status').textContent=p.status;
+    if(p.error)$('installError').textContent=p.error;
+    if(p.done){
+      installing=false;
+      if(p.error){page=3;alert('설치 오류: '+p.error);show()}
+      else{finished=true;page=5;show()}
+      return;
+    }
+  }catch(e){
+    $('status').textContent='설치 백엔드 상태 확인 중...';
+  }
+  if(Date.now()-lastProgressAt>12000){
+    $('installError').textContent='설치 백엔드의 진행 신호가 12초 이상 없습니다. 설치기는 계속 재연결을 시도합니다. 문제가 지속되면 C:\ProgramData\GeumyiServerCenter\logs\setup.log를 확인하세요.';
+  }
+  pollTimer=setTimeout(pollOnce,300);
+}
+async function finishSetup(){
+  const launch=$('launch').checked;
+  document.body.innerHTML='<div style="height:100%;display:grid;place-items:center;background:#0a1624;color:white;font-family:Segoe UI"><div style="text-align:center"><div style="font-size:42px">✓</div><h2>설치 완료</h2><p style="color:#9db2c8">관리 프로그램을 준비하고 설치 창을 닫는 중입니다…</p></div></div>';
+  await fetch('/api/finish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({launch})}).catch(()=>{});
+  setTimeout(()=>{try{window.close()}catch{}},120);
+}
+async function cancelInstall(){if(installing)return;if(confirm('설치를 취소할까요?'))await fetch('/api/exit',{method:'POST'}).catch(()=>{})}
+document.querySelectorAll('.role').forEach(x=>x.onclick=()=>{x.querySelector('input').checked=true;const r=role();if(r===1){$('autostart').checked=false;$('dedicatedOptimize').checked=true}else{$('autostart').checked=true;$('dedicatedOptimize').checked=false}document.querySelectorAll('.role').forEach(y=>y.classList.toggle('selected',y===x));updateRoleUI()});
+(async()=>{try{discovery=await (await fetch('/api/discover?ts='+Date.now(),{cache:'no-store'})).json();$('installDir').value=discovery.install_dir||'C:\\Program Files\\Geumyi Server Center';$('wildPath').value=discovery.wild_path||'';$('playPath').value=discovery.play_path||'';if(discovery.existing_client_host_url)$('hostURL').value=discovery.existing_client_host_url;if(discovery.existing_client_token)$('token').placeholder='기존 API 토큰 자동 유지';const er=Number(discovery.existing_role||0);if(er>=1&&er<=3){const el=document.querySelector('input[name=role][value="'+er+'"]');if(el){el.checked=true;document.querySelectorAll('.role').forEach(y=>y.classList.toggle('selected',y.contains(el)));if(er===1){$('autostart').checked=false;$('dedicatedOptimize').checked=true}else{$('dedicatedOptimize').checked=false}}}}catch{}updateRoleUI();show()})();
+</script></body></html>

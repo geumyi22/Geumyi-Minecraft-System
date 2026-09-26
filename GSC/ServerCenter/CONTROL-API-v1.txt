@@ -1,0 +1,84 @@
+Geumyi Server Center — Control API v1 (GSC 4.2.3)
+===================================================
+Base: http://<GSC Host>:8787/api/v1
+Authentication: Authorization: Bearer <Host API token or per-device token>
+Alternative: X-GSC-Token: <token>
+Loopback may remain no-auth when allow_loopback_no_auth=true.
+Remote transport is restricted to LAN/private/Tailscale address space.
+
+Core
+GET /info
+GET /snapshot
+GET /servers
+GET /servers/{id}
+GET /servers/{id}/players
+GET /servers/{id}/health
+GET /servers/{id}/inventory
+GET /servers/{id}/console?kind=server|launcher&lines=500
+GET /jobs?limit=100&id=wild
+GET /jobs/{job-id}
+GET /events?limit=200&id=wild
+GET /audit?limit=200
+GET /ws
+
+Server control
+POST /servers/{id}/actions
+  {"action":"start"}
+  {"action":"restart","countdown_seconds":60}
+  {"action":"stop","countdown_seconds":30}
+  {"action":"force-stop"}
+  {"action":"force-stop-launcher"}
+  {"action":"cancel-schedule"}
+
+POST /servers/{id}/command
+  {"command":"list"}
+
+POST /servers/{id}/player-action
+  {"action":"kick","player":"Player","reason":"..."}
+Actions: kick, whitelist_add, whitelist_remove, op, deop, ban, pardon
+
+POST /servers/{id}/schedule
+  {"action":"restart","execute_at":"2026-09-25T04:00:00+09:00","countdown_seconds":60}
+DELETE /servers/{id}/schedule
+
+GSCM mobile access
+GET /mobile
+POST /mobile
+  {"enabled":true,"pairing_ttl_seconds":300}
+
+GET /pairing
+POST /pairing
+  Creates a one-time 8-digit code. Default TTL 300 seconds.
+POST /pairing/claim  (no bearer token; LAN/Tailscale only; rate limited)
+  {"code":"12345678","device_id":"...","name":"Galaxy ..."}
+Response includes device_token.
+
+GET /devices
+POST /devices
+  {"action":"revoke|restore|delete","id":"..."}
+
+Backups / restore
+GET /backups?id=wild
+POST /backups
+  {"id":"wild","scope":"world|config|full"}
+POST /backups/verify
+  {"id":"wild","file":"...zip"}
+POST /backups/restore
+  {"id":"wild","file":"...zip"}
+
+Automation / metrics
+GET/POST /automations
+GET /metrics?id=wild
+
+WebSocket
+GET /ws
+Event types include hello, snapshot, server.state, servers.status, host.status,
+event, job.created, job.updated, mobile.updated and pong.
+
+Security model
+- GSCM talks only to GSC :8787.
+- GSC talks locally to RCON/GDS/GST/Agent.
+- Never expose RCON, GDS or Agent ports directly to the phone.
+- Do not port-forward 8787 to the public Internet; use LAN/Tailscale.
+
+GET  /api/v1/pairing/qr          Auth required. Returns no-cache SVG QR for the active one-time gscm://pair claim.

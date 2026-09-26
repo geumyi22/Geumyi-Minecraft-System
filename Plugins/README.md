@@ -1,6 +1,10 @@
-# Plugins
+# Plugin source recovery
 
-- GST 1.1.1 HOTFIX — Wild + Playground
-- GDS 1.1.1 — Wild + Playground
-- Technology 0.1.3 — Wild only
-- Chemistry 0.4.1 — Wild only
+| Component | Target | Status |
+|---|---|---|
+| GDS | 1.1.1 | Recovered Java source, stubs, config template and tests |
+| GST | 1.1.1 HOTFIX | source not yet recovered for exact HOTFIX |
+| Technology | 0.1.3 | source not yet recovered |
+| Chemistry | 0.4.1 | source not yet recovered |
+
+Binary releases remain at [mc-2026.09.26-v3](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/mc-2026.09.26-v3).

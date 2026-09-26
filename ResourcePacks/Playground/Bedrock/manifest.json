@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Geumyi Server Resource Pack - Bedrock 26.50",
+    "description": "Geumyi Server resource pack for Bedrock/Geyser; validated for Bedrock 26.50.",
+    "uuid": "1b2f6fbc-e538-4c8f-8687-2e80b538e091",
+    "version": [
+      1,
+      0,
+      2
+    ],
+    "min_engine_version": [
+      1,
+      21,
+      0
+    ]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "e98580fc-c814-4337-86d1-2943ba9b188e",
+      "version": [
+        1,
+        0,
+        2
+      ]
+    }
+  ]
+}

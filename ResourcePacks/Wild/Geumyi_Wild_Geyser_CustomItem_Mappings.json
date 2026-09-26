@@ -1,0 +1,2221 @@
+{
+  "format_version": 2,
+  "items": {
+    "minecraft:light_blue_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/h",
+        "bedrock_identifier": "geumyi_chem:element_h",
+        "display_name": "[CHEM] H 수소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_h",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/c",
+        "bedrock_identifier": "geumyi_chem:element_c",
+        "display_name": "[CHEM] C 탄소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_c",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/n",
+        "bedrock_identifier": "geumyi_chem:element_n",
+        "display_name": "[CHEM] N 질소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_n",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/o",
+        "bedrock_identifier": "geumyi_chem:element_o",
+        "display_name": "[CHEM] O 산소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_o",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/p",
+        "bedrock_identifier": "geumyi_chem:element_p",
+        "display_name": "[CHEM] P 인",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_p",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/s",
+        "bedrock_identifier": "geumyi_chem:element_s",
+        "display_name": "[CHEM] S 황",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_s",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/se",
+        "bedrock_identifier": "geumyi_chem:element_se",
+        "display_name": "[CHEM] Se 셀레늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_se",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:white_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/he",
+        "bedrock_identifier": "geumyi_chem:element_he",
+        "display_name": "[CHEM] He 헬륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_he",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ne",
+        "bedrock_identifier": "geumyi_chem:element_ne",
+        "display_name": "[CHEM] Ne 네온",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ne",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ar",
+        "bedrock_identifier": "geumyi_chem:element_ar",
+        "display_name": "[CHEM] Ar 아르곤",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ar",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/kr",
+        "bedrock_identifier": "geumyi_chem:element_kr",
+        "display_name": "[CHEM] Kr 크립톤",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_kr",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/xe",
+        "bedrock_identifier": "geumyi_chem:element_xe",
+        "display_name": "[CHEM] Xe 제논",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_xe",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/rn",
+        "bedrock_identifier": "geumyi_chem:element_rn",
+        "display_name": "[CHEM] Rn 라돈",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_rn",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/og",
+        "bedrock_identifier": "geumyi_chem:element_og",
+        "display_name": "[CHEM] Og 오가네손",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_og",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/so3",
+        "bedrock_identifier": "geumyi_chem:species_so3",
+        "display_name": "[CHEM] SO₃ 삼산화황",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_so3",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/nahco3",
+        "bedrock_identifier": "geumyi_chem:species_nahco3",
+        "display_name": "[CHEM] NaHCO₃ 탄산수소나트륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_nahco3",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/zno",
+        "bedrock_identifier": "geumyi_chem:species_zno",
+        "display_name": "[CHEM] ZnO 산화아연",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_zno",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/na2co3",
+        "bedrock_identifier": "geumyi_chem:species_na2co3",
+        "display_name": "[CHEM] Na₂CO₃ 탄산나트륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_na2co3",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:red_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/li",
+        "bedrock_identifier": "geumyi_chem:element_li",
+        "display_name": "[CHEM] Li 리튬",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_li",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/na",
+        "bedrock_identifier": "geumyi_chem:element_na",
+        "display_name": "[CHEM] Na 나트륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_na",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/k",
+        "bedrock_identifier": "geumyi_chem:element_k",
+        "display_name": "[CHEM] K 칼륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_k",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/rb",
+        "bedrock_identifier": "geumyi_chem:element_rb",
+        "display_name": "[CHEM] Rb 루비듐",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_rb",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/cs",
+        "bedrock_identifier": "geumyi_chem:element_cs",
+        "display_name": "[CHEM] Cs 세슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_cs",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/fr",
+        "bedrock_identifier": "geumyi_chem:element_fr",
+        "display_name": "[CHEM] Fr 프랑슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_fr",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:orange_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/be",
+        "bedrock_identifier": "geumyi_chem:element_be",
+        "display_name": "[CHEM] Be 베릴륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_be",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/mg",
+        "bedrock_identifier": "geumyi_chem:element_mg",
+        "display_name": "[CHEM] Mg 마그네슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_mg",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ca",
+        "bedrock_identifier": "geumyi_chem:element_ca",
+        "display_name": "[CHEM] Ca 칼슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ca",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/sr",
+        "bedrock_identifier": "geumyi_chem:element_sr",
+        "display_name": "[CHEM] Sr 스트론튬",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_sr",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ba",
+        "bedrock_identifier": "geumyi_chem:element_ba",
+        "display_name": "[CHEM] Ba 바륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ba",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ra",
+        "bedrock_identifier": "geumyi_chem:element_ra",
+        "display_name": "[CHEM] Ra 라듐",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ra",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/fecl3",
+        "bedrock_identifier": "geumyi_chem:species_fecl3",
+        "display_name": "[CHEM] FeCl₃ 염화철(III)",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_fecl3",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/copper_dust",
+        "bedrock_identifier": "geumyi_tech:copper_dust",
+        "display_name": "[TECH] copper_dust",
+        "bedrock_options": {
+          "icon": "geumyi_tech:copper_dust",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:lime_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/b",
+        "bedrock_identifier": "geumyi_chem:element_b",
+        "display_name": "[CHEM] B 붕소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_b",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/si",
+        "bedrock_identifier": "geumyi_chem:element_si",
+        "display_name": "[CHEM] Si 규소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_si",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ge",
+        "bedrock_identifier": "geumyi_chem:element_ge",
+        "display_name": "[CHEM] Ge 저마늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ge",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/as",
+        "bedrock_identifier": "geumyi_chem:element_as",
+        "display_name": "[CHEM] As 비소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_as",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/sb",
+        "bedrock_identifier": "geumyi_chem:element_sb",
+        "display_name": "[CHEM] Sb 안티모니",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_sb",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/te",
+        "bedrock_identifier": "geumyi_chem:element_te",
+        "display_name": "[CHEM] Te 텔루륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_te",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:yellow_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/f",
+        "bedrock_identifier": "geumyi_chem:element_f",
+        "display_name": "[CHEM] F 플루오린",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_f",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/cl",
+        "bedrock_identifier": "geumyi_chem:element_cl",
+        "display_name": "[CHEM] Cl 염소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_cl",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/br",
+        "bedrock_identifier": "geumyi_chem:element_br",
+        "display_name": "[CHEM] Br 브로민",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_br",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/i",
+        "bedrock_identifier": "geumyi_chem:element_i",
+        "display_name": "[CHEM] I 아이오딘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_i",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/at",
+        "bedrock_identifier": "geumyi_chem:element_at",
+        "display_name": "[CHEM] At 아스타틴",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_at",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ts",
+        "bedrock_identifier": "geumyi_chem:element_ts",
+        "display_name": "[CHEM] Ts 테네신",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ts",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/fecl2",
+        "bedrock_identifier": "geumyi_chem:species_fecl2",
+        "display_name": "[CHEM] FeCl₂ 염화철(II)",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_fecl2",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/gold_dust",
+        "bedrock_identifier": "geumyi_tech:gold_dust",
+        "display_name": "[TECH] gold_dust",
+        "bedrock_options": {
+          "icon": "geumyi_tech:gold_dust",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:cyan_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/al",
+        "bedrock_identifier": "geumyi_chem:element_al",
+        "display_name": "[CHEM] Al 알루미늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_al",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ga",
+        "bedrock_identifier": "geumyi_chem:element_ga",
+        "display_name": "[CHEM] Ga 갈륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ga",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/in",
+        "bedrock_identifier": "geumyi_chem:element_in",
+        "display_name": "[CHEM] In 인듐",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_in",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/sn",
+        "bedrock_identifier": "geumyi_chem:element_sn",
+        "display_name": "[CHEM] Sn 주석",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_sn",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/tl",
+        "bedrock_identifier": "geumyi_chem:element_tl",
+        "display_name": "[CHEM] Tl 탈륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_tl",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/pb",
+        "bedrock_identifier": "geumyi_chem:element_pb",
+        "display_name": "[CHEM] Pb 납",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_pb",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/bi",
+        "bedrock_identifier": "geumyi_chem:element_bi",
+        "display_name": "[CHEM] Bi 비스무트",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_bi",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/po",
+        "bedrock_identifier": "geumyi_chem:element_po",
+        "display_name": "[CHEM] Po 폴로늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_po",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/cuno3_2",
+        "bedrock_identifier": "geumyi_chem:species_cuno3_2",
+        "display_name": "[CHEM] Cu(NO₃)₂ 질산구리(II)",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_cuno3_2",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:gray_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/sc",
+        "bedrock_identifier": "geumyi_chem:element_sc",
+        "display_name": "[CHEM] Sc 스칸듐",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_sc",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ti",
+        "bedrock_identifier": "geumyi_chem:element_ti",
+        "display_name": "[CHEM] Ti 타이타늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ti",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/v",
+        "bedrock_identifier": "geumyi_chem:element_v",
+        "display_name": "[CHEM] V 바나듐",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_v",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/cr",
+        "bedrock_identifier": "geumyi_chem:element_cr",
+        "display_name": "[CHEM] Cr 크로뮴",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_cr",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/mn",
+        "bedrock_identifier": "geumyi_chem:element_mn",
+        "display_name": "[CHEM] Mn 망가니즈",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_mn",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/fe",
+        "bedrock_identifier": "geumyi_chem:element_fe",
+        "display_name": "[CHEM] Fe 철",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_fe",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/co",
+        "bedrock_identifier": "geumyi_chem:element_co",
+        "display_name": "[CHEM] Co 코발트",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_co",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ni",
+        "bedrock_identifier": "geumyi_chem:element_ni",
+        "display_name": "[CHEM] Ni 니켈",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ni",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/cu",
+        "bedrock_identifier": "geumyi_chem:element_cu",
+        "display_name": "[CHEM] Cu 구리",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_cu",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/zn",
+        "bedrock_identifier": "geumyi_chem:element_zn",
+        "display_name": "[CHEM] Zn 아연",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_zn",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/y",
+        "bedrock_identifier": "geumyi_chem:element_y",
+        "display_name": "[CHEM] Y 이트륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_y",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/zr",
+        "bedrock_identifier": "geumyi_chem:element_zr",
+        "display_name": "[CHEM] Zr 지르코늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_zr",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/nb",
+        "bedrock_identifier": "geumyi_chem:element_nb",
+        "display_name": "[CHEM] Nb 나이오븀",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_nb",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/mo",
+        "bedrock_identifier": "geumyi_chem:element_mo",
+        "display_name": "[CHEM] Mo 몰리브데넘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_mo",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/tc",
+        "bedrock_identifier": "geumyi_chem:element_tc",
+        "display_name": "[CHEM] Tc 테크네튬",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_tc",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ru",
+        "bedrock_identifier": "geumyi_chem:element_ru",
+        "display_name": "[CHEM] Ru 루테늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ru",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/rh",
+        "bedrock_identifier": "geumyi_chem:element_rh",
+        "display_name": "[CHEM] Rh 로듐",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_rh",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/pd",
+        "bedrock_identifier": "geumyi_chem:element_pd",
+        "display_name": "[CHEM] Pd 팔라듐",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_pd",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ag",
+        "bedrock_identifier": "geumyi_chem:element_ag",
+        "display_name": "[CHEM] Ag 은",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ag",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/cd",
+        "bedrock_identifier": "geumyi_chem:element_cd",
+        "display_name": "[CHEM] Cd 카드뮴",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_cd",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/hf",
+        "bedrock_identifier": "geumyi_chem:element_hf",
+        "display_name": "[CHEM] Hf 하프늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_hf",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ta",
+        "bedrock_identifier": "geumyi_chem:element_ta",
+        "display_name": "[CHEM] Ta 탄탈럼",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ta",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/w",
+        "bedrock_identifier": "geumyi_chem:element_w",
+        "display_name": "[CHEM] W 텅스텐",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_w",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/re",
+        "bedrock_identifier": "geumyi_chem:element_re",
+        "display_name": "[CHEM] Re 레늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_re",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/os",
+        "bedrock_identifier": "geumyi_chem:element_os",
+        "display_name": "[CHEM] Os 오스뮴",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_os",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ir",
+        "bedrock_identifier": "geumyi_chem:element_ir",
+        "display_name": "[CHEM] Ir 이리듐",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ir",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/pt",
+        "bedrock_identifier": "geumyi_chem:element_pt",
+        "display_name": "[CHEM] Pt 백금",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_pt",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/au",
+        "bedrock_identifier": "geumyi_chem:element_au",
+        "display_name": "[CHEM] Au 금",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_au",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/hg",
+        "bedrock_identifier": "geumyi_chem:element_hg",
+        "display_name": "[CHEM] Hg 수은",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_hg",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/rf",
+        "bedrock_identifier": "geumyi_chem:element_rf",
+        "display_name": "[CHEM] Rf 러더포듐",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_rf",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/db",
+        "bedrock_identifier": "geumyi_chem:element_db",
+        "display_name": "[CHEM] Db 더브늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_db",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/sg",
+        "bedrock_identifier": "geumyi_chem:element_sg",
+        "display_name": "[CHEM] Sg 시보귬",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_sg",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/bh",
+        "bedrock_identifier": "geumyi_chem:element_bh",
+        "display_name": "[CHEM] Bh 보륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_bh",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/hs",
+        "bedrock_identifier": "geumyi_chem:element_hs",
+        "display_name": "[CHEM] Hs 하슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_hs",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/cn",
+        "bedrock_identifier": "geumyi_chem:element_cn",
+        "display_name": "[CHEM] Cn 코페르니슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_cn",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:pink_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/la",
+        "bedrock_identifier": "geumyi_chem:element_la",
+        "display_name": "[CHEM] La 란타넘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_la",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ce",
+        "bedrock_identifier": "geumyi_chem:element_ce",
+        "display_name": "[CHEM] Ce 세륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ce",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/pr",
+        "bedrock_identifier": "geumyi_chem:element_pr",
+        "display_name": "[CHEM] Pr 프라세오디뮴",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_pr",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/nd",
+        "bedrock_identifier": "geumyi_chem:element_nd",
+        "display_name": "[CHEM] Nd 네오디뮴",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_nd",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/pm",
+        "bedrock_identifier": "geumyi_chem:element_pm",
+        "display_name": "[CHEM] Pm 프로메튬",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_pm",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/sm",
+        "bedrock_identifier": "geumyi_chem:element_sm",
+        "display_name": "[CHEM] Sm 사마륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_sm",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/eu",
+        "bedrock_identifier": "geumyi_chem:element_eu",
+        "display_name": "[CHEM] Eu 유로퓸",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_eu",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/gd",
+        "bedrock_identifier": "geumyi_chem:element_gd",
+        "display_name": "[CHEM] Gd 가돌리늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_gd",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/tb",
+        "bedrock_identifier": "geumyi_chem:element_tb",
+        "display_name": "[CHEM] Tb 터븀",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_tb",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/dy",
+        "bedrock_identifier": "geumyi_chem:element_dy",
+        "display_name": "[CHEM] Dy 디스프로슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_dy",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ho",
+        "bedrock_identifier": "geumyi_chem:element_ho",
+        "display_name": "[CHEM] Ho 홀뮴",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ho",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/er",
+        "bedrock_identifier": "geumyi_chem:element_er",
+        "display_name": "[CHEM] Er 어븀",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_er",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/tm",
+        "bedrock_identifier": "geumyi_chem:element_tm",
+        "display_name": "[CHEM] Tm 툴륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_tm",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/yb",
+        "bedrock_identifier": "geumyi_chem:element_yb",
+        "display_name": "[CHEM] Yb 이터븀",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_yb",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/lu",
+        "bedrock_identifier": "geumyi_chem:element_lu",
+        "display_name": "[CHEM] Lu 루테튬",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_lu",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:purple_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ac",
+        "bedrock_identifier": "geumyi_chem:element_ac",
+        "display_name": "[CHEM] Ac 악티늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ac",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/th",
+        "bedrock_identifier": "geumyi_chem:element_th",
+        "display_name": "[CHEM] Th 토륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_th",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/pa",
+        "bedrock_identifier": "geumyi_chem:element_pa",
+        "display_name": "[CHEM] Pa 프로트악티늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_pa",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/u",
+        "bedrock_identifier": "geumyi_chem:element_u",
+        "display_name": "[CHEM] U 우라늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_u",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/np",
+        "bedrock_identifier": "geumyi_chem:element_np",
+        "display_name": "[CHEM] Np 넵투늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_np",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/pu",
+        "bedrock_identifier": "geumyi_chem:element_pu",
+        "display_name": "[CHEM] Pu 플루토늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_pu",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/am",
+        "bedrock_identifier": "geumyi_chem:element_am",
+        "display_name": "[CHEM] Am 아메리슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_am",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/cm",
+        "bedrock_identifier": "geumyi_chem:element_cm",
+        "display_name": "[CHEM] Cm 퀴륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_cm",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/bk",
+        "bedrock_identifier": "geumyi_chem:element_bk",
+        "display_name": "[CHEM] Bk 버클륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_bk",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/cf",
+        "bedrock_identifier": "geumyi_chem:element_cf",
+        "display_name": "[CHEM] Cf 캘리포늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_cf",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/es",
+        "bedrock_identifier": "geumyi_chem:element_es",
+        "display_name": "[CHEM] Es 아인슈타이늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_es",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/fm",
+        "bedrock_identifier": "geumyi_chem:element_fm",
+        "display_name": "[CHEM] Fm 페르뮴",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_fm",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/md",
+        "bedrock_identifier": "geumyi_chem:element_md",
+        "display_name": "[CHEM] Md 멘델레븀",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_md",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/no",
+        "bedrock_identifier": "geumyi_chem:element_no",
+        "display_name": "[CHEM] No 노벨륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_no",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/lr",
+        "bedrock_identifier": "geumyi_chem:element_lr",
+        "display_name": "[CHEM] Lr 로렌슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_lr",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/i2",
+        "bedrock_identifier": "geumyi_chem:species_i2",
+        "display_name": "[CHEM] I₂ 아이오딘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_i2",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:black_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/mt",
+        "bedrock_identifier": "geumyi_chem:element_mt",
+        "display_name": "[CHEM] Mt 마이트너륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_mt",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/ds",
+        "bedrock_identifier": "geumyi_chem:element_ds",
+        "display_name": "[CHEM] Ds 다름슈타튬",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_ds",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/rg",
+        "bedrock_identifier": "geumyi_chem:element_rg",
+        "display_name": "[CHEM] Rg 뢴트게늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_rg",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/nh",
+        "bedrock_identifier": "geumyi_chem:element_nh",
+        "display_name": "[CHEM] Nh 니호늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_nh",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/fl",
+        "bedrock_identifier": "geumyi_chem:element_fl",
+        "display_name": "[CHEM] Fl 플레로븀",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_fl",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/mc",
+        "bedrock_identifier": "geumyi_chem:element_mc",
+        "display_name": "[CHEM] Mc 모스코븀",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_mc",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:element/lv",
+        "bedrock_identifier": "geumyi_chem:element_lv",
+        "display_name": "[CHEM] Lv 리버모륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:element_lv",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/fes",
+        "bedrock_identifier": "geumyi_chem:species_fes",
+        "display_name": "[CHEM] FeS 황화철(II)",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_fes",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/cuo",
+        "bedrock_identifier": "geumyi_chem:species_cuo",
+        "display_name": "[CHEM] CuO 산화구리(II)",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_cuo",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:white_stained_glass_pane": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/h2",
+        "bedrock_identifier": "geumyi_chem:species_h2",
+        "display_name": "[CHEM] H₂ 수소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_h2",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/hcl",
+        "bedrock_identifier": "geumyi_chem:species_hcl",
+        "display_name": "[CHEM] HCl 염화수소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_hcl",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:light_blue_stained_glass_pane": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/o2",
+        "bedrock_identifier": "geumyi_chem:species_o2",
+        "display_name": "[CHEM] O₂ 산소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_o2",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:cyan_stained_glass_pane": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/n2",
+        "bedrock_identifier": "geumyi_chem:species_n2",
+        "display_name": "[CHEM] N₂ 질소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_n2",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:lime_stained_glass_pane": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/cl2",
+        "bedrock_identifier": "geumyi_chem:species_cl2",
+        "display_name": "[CHEM] Cl₂ 염소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_cl2",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:glass_bottle": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/h2o",
+        "bedrock_identifier": "geumyi_chem:species_h2o",
+        "display_name": "[CHEM] H₂O 물",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_h2o",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/hclaq",
+        "bedrock_identifier": "geumyi_chem:species_hclaq",
+        "display_name": "[CHEM] HCl(aq) 염산",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_hclaq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/h2so4",
+        "bedrock_identifier": "geumyi_chem:species_h2so4",
+        "display_name": "[CHEM] H₂SO₄(aq) 황산",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_h2so4",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/hno3",
+        "bedrock_identifier": "geumyi_chem:species_hno3",
+        "display_name": "[CHEM] HNO₃(aq) 질산",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_hno3",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/naoh",
+        "bedrock_identifier": "geumyi_chem:species_naoh",
+        "display_name": "[CHEM] NaOH(aq) 수산화나트륨 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_naoh",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/koh",
+        "bedrock_identifier": "geumyi_chem:species_koh",
+        "display_name": "[CHEM] KOH(aq) 수산화칼륨 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_koh",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/caoh2",
+        "bedrock_identifier": "geumyi_chem:species_caoh2",
+        "display_name": "[CHEM] Ca(OH)₂(aq) 수산화칼슘 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_caoh2",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/naclaq",
+        "bedrock_identifier": "geumyi_chem:species_naclaq",
+        "display_name": "[CHEM] NaCl(aq) 염화나트륨 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_naclaq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/agno3aq",
+        "bedrock_identifier": "geumyi_chem:species_agno3aq",
+        "display_name": "[CHEM] AgNO₃(aq) 질산은 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_agno3aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/bacl2aq",
+        "bedrock_identifier": "geumyi_chem:species_bacl2aq",
+        "display_name": "[CHEM] BaCl₂(aq) 염화바륨 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_bacl2aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/na2so4aq",
+        "bedrock_identifier": "geumyi_chem:species_na2so4aq",
+        "display_name": "[CHEM] Na₂SO₄(aq) 황산나트륨 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_na2so4aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/pbno3_2aq",
+        "bedrock_identifier": "geumyi_chem:species_pbno3_2aq",
+        "display_name": "[CHEM] Pb(NO₃)₂(aq) 질산납(II) 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_pbno3_2aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/kiaq",
+        "bedrock_identifier": "geumyi_chem:species_kiaq",
+        "display_name": "[CHEM] KI(aq) 아이오딘화칼륨 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_kiaq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/kno3aq",
+        "bedrock_identifier": "geumyi_chem:species_kno3aq",
+        "display_name": "[CHEM] KNO₃(aq) 질산칼륨 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_kno3aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/nano3aq",
+        "bedrock_identifier": "geumyi_chem:species_nano3aq",
+        "display_name": "[CHEM] NaNO₃(aq) 질산나트륨 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_nano3aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/cuso4aq",
+        "bedrock_identifier": "geumyi_chem:species_cuso4aq",
+        "display_name": "[CHEM] CuSO₄(aq) 황산구리(II) 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_cuso4aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/fecl3aq",
+        "bedrock_identifier": "geumyi_chem:species_fecl3aq",
+        "display_name": "[CHEM] FeCl₃(aq) 염화철(III) 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_fecl3aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/cacl2aq",
+        "bedrock_identifier": "geumyi_chem:species_cacl2aq",
+        "display_name": "[CHEM] CaCl₂(aq) 염화칼슘 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_cacl2aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/zncl2aq",
+        "bedrock_identifier": "geumyi_chem:species_zncl2aq",
+        "display_name": "[CHEM] ZnCl₂(aq) 염화아연 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_zncl2aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/na2co3aq",
+        "bedrock_identifier": "geumyi_chem:species_na2co3aq",
+        "display_name": "[CHEM] Na₂CO₃(aq) 탄산나트륨 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_na2co3aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/fecl2aq",
+        "bedrock_identifier": "geumyi_chem:species_fecl2aq",
+        "display_name": "[CHEM] FeCl₂(aq) 염화철(II) 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_fecl2aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/feso4aq",
+        "bedrock_identifier": "geumyi_chem:species_feso4aq",
+        "display_name": "[CHEM] FeSO₄(aq) 황산철(II) 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_feso4aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/cuno3_2aq",
+        "bedrock_identifier": "geumyi_chem:species_cuno3_2aq",
+        "display_name": "[CHEM] Cu(NO₃)₂(aq) 질산구리(II) 수용액",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_cuno3_2aq",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:tool/beaker",
+        "bedrock_identifier": "geumyi_chem:tool_beaker",
+        "display_name": "[CHEM] 비커",
+        "bedrock_options": {
+          "icon": "geumyi_chem:tool_beaker",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:tool/test_tube",
+        "bedrock_identifier": "geumyi_chem:tool_test_tube",
+        "display_name": "[CHEM] 시험관 세트",
+        "bedrock_options": {
+          "icon": "geumyi_chem:tool_test_tube",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:gray_stained_glass_pane": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/co2",
+        "bedrock_identifier": "geumyi_chem:species_co2",
+        "display_name": "[CHEM] CO₂ 이산화탄소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_co2",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/no",
+        "bedrock_identifier": "geumyi_chem:species_no",
+        "display_name": "[CHEM] NO 일산화질소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_no",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:yellow_stained_glass_pane": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/nh3",
+        "bedrock_identifier": "geumyi_chem:species_nh3",
+        "display_name": "[CHEM] NH₃ 암모니아",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_nh3",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:black_stained_glass_pane": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/ch4",
+        "bedrock_identifier": "geumyi_chem:species_ch4",
+        "display_name": "[CHEM] CH₄ 메테인",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_ch4",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/co",
+        "bedrock_identifier": "geumyi_chem:species_co",
+        "display_name": "[CHEM] CO 일산화탄소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_co",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:light_gray_stained_glass_pane": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/so2",
+        "bedrock_identifier": "geumyi_chem:species_so2",
+        "display_name": "[CHEM] SO₂ 이산화황",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_so2",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:brown_stained_glass_pane": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/no2",
+        "bedrock_identifier": "geumyi_chem:species_no2",
+        "display_name": "[CHEM] NO₂ 이산화질소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_no2",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:green_stained_glass_pane": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/h2s",
+        "bedrock_identifier": "geumyi_chem:species_h2s",
+        "display_name": "[CHEM] H₂S 황화수소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_h2s",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:sugar": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/nacl",
+        "bedrock_identifier": "geumyi_chem:species_nacl",
+        "display_name": "[CHEM] NaCl 염화나트륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_nacl",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/na2so4",
+        "bedrock_identifier": "geumyi_chem:species_na2so4",
+        "display_name": "[CHEM] Na₂SO₄ 황산나트륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_na2so4",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/ki",
+        "bedrock_identifier": "geumyi_chem:species_ki",
+        "display_name": "[CHEM] KI 아이오딘화칼륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_ki",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/kno3",
+        "bedrock_identifier": "geumyi_chem:species_kno3",
+        "display_name": "[CHEM] KNO₃ 질산칼륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_kno3",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/nano3",
+        "bedrock_identifier": "geumyi_chem:species_nano3",
+        "display_name": "[CHEM] NaNO₃ 질산나트륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_nano3",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/na2so3",
+        "bedrock_identifier": "geumyi_chem:species_na2so3",
+        "display_name": "[CHEM] Na₂SO₃ 아황산나트륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_na2so3",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/silicon_dust",
+        "bedrock_identifier": "geumyi_tech:silicon_dust",
+        "display_name": "[TECH] silicon_dust",
+        "bedrock_options": {
+          "icon": "geumyi_tech:silicon_dust",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:quartz": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/agno3",
+        "bedrock_identifier": "geumyi_chem:species_agno3",
+        "display_name": "[CHEM] AgNO₃ 질산은",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_agno3",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/bacl2",
+        "bedrock_identifier": "geumyi_chem:species_bacl2",
+        "display_name": "[CHEM] BaCl₂ 염화바륨",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_bacl2",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/pbno3_2",
+        "bedrock_identifier": "geumyi_chem:species_pbno3_2",
+        "display_name": "[CHEM] Pb(NO₃)₂ 질산납(II)",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_pbno3_2",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/cacl2",
+        "bedrock_identifier": "geumyi_chem:species_cacl2",
+        "display_name": "[CHEM] CaCl₂ 염화칼슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_cacl2",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/zncl2",
+        "bedrock_identifier": "geumyi_chem:species_zncl2",
+        "display_name": "[CHEM] ZnCl₂ 염화아연",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_zncl2",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/sio2",
+        "bedrock_identifier": "geumyi_chem:species_sio2",
+        "display_name": "[CHEM] SiO₂ 이산화규소",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_sio2",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/al2o3",
+        "bedrock_identifier": "geumyi_chem:species_al2o3",
+        "display_name": "[CHEM] Al₂O₃ 산화알루미늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_al2o3",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/silicon_wafer",
+        "bedrock_identifier": "geumyi_tech:silicon_wafer",
+        "display_name": "[TECH] silicon_wafer",
+        "bedrock_options": {
+          "icon": "geumyi_tech:silicon_wafer",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:blue_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/cuso4",
+        "bedrock_identifier": "geumyi_chem:species_cuso4",
+        "display_name": "[CHEM] CuSO₄ 황산구리(II)",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_cuso4",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:snowball": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/nh4cl",
+        "bedrock_identifier": "geumyi_chem:species_nh4cl",
+        "display_name": "[CHEM] NH₄Cl 염화암모늄",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_nh4cl",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:white_concrete_powder": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/agcl",
+        "bedrock_identifier": "geumyi_chem:species_agcl",
+        "display_name": "[CHEM] AgCl↓ 염화은 앙금",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_agcl",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/baso4",
+        "bedrock_identifier": "geumyi_chem:species_baso4",
+        "display_name": "[CHEM] BaSO₄↓ 황산바륨 앙금",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_baso4",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/caco3",
+        "bedrock_identifier": "geumyi_chem:species_caco3",
+        "display_name": "[CHEM] CaCO₃↓ 탄산칼슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_caco3",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/cao",
+        "bedrock_identifier": "geumyi_chem:species_cao",
+        "display_name": "[CHEM] CaO 산화칼슘",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_cao",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:yellow_concrete_powder": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/pbi2",
+        "bedrock_identifier": "geumyi_chem:species_pbi2",
+        "display_name": "[CHEM] PbI₂↓ 아이오딘화납(II) 앙금",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_pbi2",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:light_blue_concrete_powder": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/cuoh2",
+        "bedrock_identifier": "geumyi_chem:species_cuoh2",
+        "display_name": "[CHEM] Cu(OH)₂↓ 수산화구리(II) 앙금",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_cuoh2",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:brown_concrete_powder": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/feoh3",
+        "bedrock_identifier": "geumyi_chem:species_feoh3",
+        "display_name": "[CHEM] Fe(OH)₃↓ 수산화철(III) 앙금",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_feoh3",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:brick": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/fe2o3",
+        "bedrock_identifier": "geumyi_chem:species_fe2o3",
+        "display_name": "[CHEM] Fe₂O₃ 산화철(III)",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_fe2o3",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:green_dye": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:species/feso4",
+        "bedrock_identifier": "geumyi_chem:species_feso4",
+        "display_name": "[CHEM] FeSO₄ 황산철(II)",
+        "bedrock_options": {
+          "icon": "geumyi_chem:species_feso4",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:brewing_stand": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:tool/lab_kit",
+        "bedrock_identifier": "geumyi_chem:tool_lab_kit",
+        "display_name": "[CHEM] 화학 실험 키트",
+        "bedrock_options": {
+          "icon": "geumyi_chem:tool_lab_kit",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_chem:tool/distiller",
+        "bedrock_identifier": "geumyi_chem:tool_distiller",
+        "display_name": "[CHEM] 증류 장치",
+        "bedrock_options": {
+          "icon": "geumyi_chem:tool_distiller",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:paper": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:tool/ph_paper",
+        "bedrock_identifier": "geumyi_chem:tool_ph_paper",
+        "display_name": "[CHEM] pH 시험지",
+        "bedrock_options": {
+          "icon": "geumyi_chem:tool_ph_paper",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:ghast_tear": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:tool/gas_collector",
+        "bedrock_identifier": "geumyi_chem:tool_gas_collector",
+        "display_name": "[CHEM] 기체 포집기",
+        "bedrock_options": {
+          "icon": "geumyi_chem:tool_gas_collector",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:blaze_powder": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:tool/heater",
+        "bedrock_identifier": "geumyi_chem:tool_heater",
+        "display_name": "[CHEM] 화학 가열기",
+        "bedrock_options": {
+          "icon": "geumyi_chem:tool_heater",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:redstone_torch": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:tool/electrolyzer",
+        "bedrock_identifier": "geumyi_chem:tool_electrolyzer",
+        "display_name": "[CHEM] 전기분해 장치",
+        "bedrock_options": {
+          "icon": "geumyi_chem:tool_electrolyzer",
+          "creative_category": "items"
+        }
+      },
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/battery_cell",
+        "bedrock_identifier": "geumyi_tech:battery_cell",
+        "display_name": "[TECH] battery_cell",
+        "bedrock_options": {
+          "icon": "geumyi_tech:battery_cell",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:hopper": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:tool/filter",
+        "bedrock_identifier": "geumyi_chem:tool_filter",
+        "display_name": "[CHEM] 여과 장치",
+        "bedrock_options": {
+          "icon": "geumyi_chem:tool_filter",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:light_weighted_pressure_plate": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:tool/scale",
+        "bedrock_identifier": "geumyi_chem:tool_scale",
+        "display_name": "[CHEM] 전자저울",
+        "bedrock_options": {
+          "icon": "geumyi_chem:tool_scale",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:heavy_core": [
+      {
+        "type": "definition",
+        "model": "geumyi_chem:tool/pressure_chamber",
+        "bedrock_identifier": "geumyi_chem:tool_pressure_chamber",
+        "display_name": "[CHEM] 압력 챔버",
+        "bedrock_options": {
+          "icon": "geumyi_chem:tool_pressure_chamber",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:book": [
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/tech_manual",
+        "bedrock_identifier": "geumyi_tech:tech_manual",
+        "display_name": "[TECH] tech_manual",
+        "bedrock_options": {
+          "icon": "geumyi_tech:tech_manual",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:string": [
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/copper_wire",
+        "bedrock_identifier": "geumyi_tech:copper_wire",
+        "display_name": "[TECH] copper_wire",
+        "bedrock_options": {
+          "icon": "geumyi_tech:copper_wire",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:heavy_weighted_pressure_plate": [
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/machine_frame",
+        "bedrock_identifier": "geumyi_tech:machine_frame",
+        "display_name": "[TECH] machine_frame",
+        "bedrock_options": {
+          "icon": "geumyi_tech:machine_frame",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:comparator": [
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/basic_circuit",
+        "bedrock_identifier": "geumyi_tech:basic_circuit",
+        "display_name": "[TECH] basic_circuit",
+        "bedrock_options": {
+          "icon": "geumyi_tech:basic_circuit",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:piston": [
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/electric_motor",
+        "bedrock_identifier": "geumyi_tech:electric_motor",
+        "display_name": "[TECH] electric_motor",
+        "bedrock_options": {
+          "icon": "geumyi_tech:electric_motor",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:tripwire_hook": [
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/heating_coil",
+        "bedrock_identifier": "geumyi_tech:heating_coil",
+        "display_name": "[TECH] heating_coil",
+        "bedrock_options": {
+          "icon": "geumyi_tech:heating_coil",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:echo_shard": [
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/high_density_cell",
+        "bedrock_identifier": "geumyi_tech:high_density_cell",
+        "display_name": "[TECH] high_density_cell",
+        "bedrock_options": {
+          "icon": "geumyi_tech:high_density_cell",
+          "creative_category": "items"
+        }
+      }
+    ],
+    "minecraft:gunpowder": [
+      {
+        "type": "definition",
+        "model": "geumyi_tech:item/iron_dust",
+        "bedrock_identifier": "geumyi_tech:iron_dust",
+        "display_name": "[TECH] iron_dust",
+        "bedrock_options": {
+          "icon": "geumyi_tech:iron_dust",
+          "creative_category": "items"
+        }
+      }
+    ]
+  }
+}

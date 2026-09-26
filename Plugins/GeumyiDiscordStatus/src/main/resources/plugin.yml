@@ -1,0 +1,19 @@
+name: GeumyiDiscordStatus
+version: 1.1.1
+main: kr.geumyi.discordstatus.GeumyiDiscordStatus
+api-version: '26.3'
+author: Geumyi
+description: GSC v4.1-ready Minecraft bridge with GST Diagnostics v2, structured lag incidents, safe actions and audit metadata for Spigot/Paper 26.3.
+softdepend: [GeumyiServerTools, Geyser-Spigot, floodgate, DiscordSRV]
+commands:
+  gds:
+    description: Geumyi Discord Status / GSC Bridge management command
+    usage: /gds
+    permission: geumyidiscordstatus.use
+permissions:
+  geumyidiscordstatus.use:
+    default: op
+  geumyidiscordstatus.admin:
+    default: op
+  geumyidiscordstatus.announce:
+    default: op

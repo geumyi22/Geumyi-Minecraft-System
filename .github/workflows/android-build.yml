@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'gscm-ios-source.b64'
+      - 'GSCM/**'
       - '.github/workflows/android-build.yml'
   workflow_dispatch:
 
@@ -34,9 +34,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          base64 --decode gscm-ios-source.b64 > gscm-source.zip
-          mkdir app
-          unzip -q gscm-source.zip -d app
+          cp -R GSCM app
           test -f app/pubspec.yaml
 
       - name: Configure Android Gradle compatibility
@@ -153,3 +151,4 @@ jobs:
             dist/GSCM-v1.1.2-Android.apk.sha256
           if-no-files-found: error
           retention-days: 14
+

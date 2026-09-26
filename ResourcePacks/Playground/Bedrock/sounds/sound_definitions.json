@@ -1,0 +1,170 @@
+{
+  "format_version": "1.14.0",
+  "sound_definitions": {
+    "custom.test": {
+      "sounds": [
+        "sounds/custom/test"
+      ]
+    },
+    "custom.case": {
+      "sounds": [
+        "sounds/custom/case"
+      ]
+    },
+    "custom.happy": {
+      "sounds": [
+        "sounds/custom/happy"
+      ]
+    },
+    "custom.jump": {
+      "sounds": [
+        "sounds/custom/jump"
+      ]
+    },
+    "custom.what": {
+      "sounds": [
+        "sounds/custom/what"
+      ]
+    },
+    "custom.gotong": {
+      "sounds": [
+        "sounds/custom/gotong"
+      ]
+    },
+    "custom.stopbutton": {
+      "sounds": [
+        "sounds/custom/stopbutton"
+      ]
+    },
+    "custom.onetick": {
+      "sounds": [
+        "sounds/custom/onetick"
+      ]
+    },
+    "custom.twotick": {
+      "sounds": [
+        "sounds/custom/twoticks"
+      ]
+    },
+    "custom.stinger": {
+      "sounds": [
+        "sounds/custom/stinger"
+      ]
+    },
+    "custom.roundover": {
+      "sounds": [
+        "sounds/custom/roundover"
+      ]
+    },
+    "custom.huh": {
+      "sounds": [
+        "sounds/custom/huh"
+      ]
+    },
+    "custom.whattv": {
+      "sounds": [
+        "sounds/custom/whattv"
+      ]
+    },
+    "custom.cc": {
+      "sounds": [
+        "sounds/custom/cc"
+      ]
+    },
+    "funny.amazon1": {
+      "sounds": [
+        "sounds/funny/amazon1"
+      ]
+    },
+    "funny.amazon2": {
+      "sounds": [
+        "sounds/funny/amazon2"
+      ]
+    },
+    "geumyitv.bollollo": {
+      "sounds": [
+        "sounds/geumyitv/bollollo"
+      ]
+    },
+    "geumyitv.gcum": {
+      "sounds": [
+        "sounds/geumyitv/gcum"
+      ]
+    },
+    "geumyitv.gellelle": {
+      "sounds": [
+        "sounds/geumyitv/gellelle"
+      ]
+    },
+    "geumyitv.ollollo": {
+      "sounds": [
+        "sounds/geumyitv/ollollo"
+      ]
+    },
+    "geumyitv.star": {
+      "sounds": [
+        "sounds/geumyitv/star"
+      ]
+    },
+    "geumyitv.bananachacha": {
+      "sounds": [
+        "sounds/geumyitv/bananachacha"
+      ]
+    },
+    "geumyitv.test1": {
+      "sounds": [
+        "sounds/geumyitv/test1"
+      ]
+    },
+    "custom.kbs": {
+      "sounds": [
+        "sounds/custom/kbs"
+      ]
+    },
+    "geumyitv.bang": {
+      "sounds": [
+        "sounds/geumyitv/bang"
+      ]
+    },
+    "custom.off": {
+      "sounds": [
+        "sounds/custom/off"
+      ]
+    },
+    "custom.on": {
+      "sounds": [
+        "sounds/custom/on"
+      ]
+    },
+    "custom.doff": {
+      "sounds": [
+        "sounds/custom/doff"
+      ]
+    },
+    "custom.don": {
+      "sounds": [
+        "sounds/custom/don"
+      ]
+    },
+    "geumsong.goldvania": {
+      "sounds": [
+        "sounds/geumsong/goldvania"
+      ]
+    },
+    "geumsong.triple_bananachacha": {
+      "sounds": [
+        "sounds/geumsong/triple_bananachacha"
+      ]
+    },
+    "geumyitv.geumyiinhi": {
+      "sounds": [
+        "sounds/geumyitv/geumyiinhi"
+      ]
+    },
+    "geumyitv.gsans": {
+      "sounds": [
+        "sounds/geumyitv/gsans"
+      ]
+    }
+  }
+}

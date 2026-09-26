@@ -1,0 +1,111 @@
+# GeumyiDiscordStatus v1.1.1 - GSC v4.1 Bridge
+# Spigot/Paper 26.3용. 기존 0.3.x config.yml을 그대로 두고 교체해도 누락된 기본값이 자동 보완됩니다.
+# 동일 JAR을 놀이터/야생에 넣고 server.id, server.name, api.port만 각각 다르게 설정하세요.
+
+server:
+  id: survival
+  name: "금이 야생"
+
+# GSC v4용 outbound bridge.
+# url/secret이 비어 있으면 아래 legacy agent.* 값을 자동으로 사용합니다.
+bridge:
+  enabled: true
+  url: ""
+  secret: ""
+  heartbeat-seconds: 10
+  connect-timeout-ms: 1200
+  request-timeout-ms: 1800
+  max-in-flight: 8
+  retry:
+    max-attempts: 3
+    base-delay-ms: 500
+
+# v3.x GeumyiStatusAgent 호환 설정. 그대로 유지됩니다.
+agent:
+  enabled: true
+  url: "http://127.0.0.1:8877/ingest"
+  secret: "CHANGE_THIS_SAME_SECRET"
+  heartbeat-seconds: 10
+  connect-timeout-ms: 1200
+  request-timeout-ms: 1800
+
+# GSC Host/Console이 읽는 로컬 상태 API.
+api:
+  enabled: true
+  bind: "127.0.0.1"
+  port: 8766
+  token: ""
+  allow-unauthenticated-loopback: true
+
+  # v4 안전 작업 API. token이 비어 있으면 기본적으로 POST 작업은 거부합니다.
+  actions-enabled: true
+  allow-unauthenticated-actions: false
+  action-timeout-ms: 3000
+  worker-threads: 4
+  allowed-actions:
+    - broadcast
+    - save
+    - maintenance
+    - restart_schedule
+    - restart_cancel
+    - whitelist
+    - whitelist_add
+    - whitelist_remove
+    - kick
+
+# Agent/GSC가 죽었을 때도 Discord 이벤트를 보낼 수 있는 비상용 직접 Webhook.
+# 평소에는 false 권장. HTTP는 전부 비동기로 실행됩니다.
+discord:
+  direct-events:
+    enabled: false
+    webhook-url: ""
+    username: "SDC Server Status"
+
+# 플러그인/데이터팩 인벤토리는 TPS 샘플보다 느린 주기로 갱신해 main thread 부담을 줄입니다.
+inventory:
+  refresh-seconds: 30
+
+performance:
+  enabled: true
+  interval-seconds: 5
+  low-tps: 18.0
+  high-mspt: 50.0
+  high-memory-percent: 90.0
+  consecutive-samples: 3
+  recovery-samples: 3
+  alert-cooldown-seconds: 120
+
+integration:
+  gst:
+    enabled: true
+    # GST 1.1 runtime/health-v2.json을 읽어 GDS/GSC/GSCM 상태에 전달합니다.
+    health-max-age-seconds: 30
+    # GST 1.1 runtime/lag-events.jsonl의 start/recovered incident를 구조화해 relay합니다.
+    relay-lag-events: true
+    # GST 1.0/구버전 fallback. structured lag-events가 있으면 중복 relay하지 않습니다.
+    relay-alert-log: true
+    relay-existing-on-startup: false
+    # GST가 있으면 GDS 자체 성능 경고보다 GST incident를 우선해 중복을 줄입니다.
+    prefer-gst-performance-alerts: true
+  discordsrv:
+    suppress-join-quit-when-present: true
+
+events:
+  startup: true
+  shutdown: true
+  first-join: true
+  join: false
+  quit: false
+  death: false
+
+restart:
+  # 기본은 카운트다운/공지/상태만 관리하고 실제 restart 명령은 실행하지 않습니다.
+  execute-command-at-zero: false
+  command-at-zero: "restart"
+
+logging:
+  events-file: true
+  metrics-file: true
+  actions-file: true
+  metrics-interval-seconds: 60
+  debug: false
