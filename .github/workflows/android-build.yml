@@ -1,0 +1,75 @@
+name: Build GSCM 1.1.1 Android APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'gscm-ios-source.b64'
+      - '.github/workflows/android-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gscm-android-build
+  cancel-in-progress: true
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Flutter stable
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Restore GSCM source
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode gscm-ios-source.b64 > gscm-source.zip
+          mkdir app
+          unzip -q gscm-source.zip -d app
+          test -f app/pubspec.yaml
+
+      - name: Resolve Flutter packages
+        working-directory: app
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: app
+        run: flutter analyze
+
+      - name: Test
+        working-directory: app
+        run: flutter test
+
+      - name: Build release APK
+        working-directory: app
+        run: flutter build apk --release
+
+      - name: Stage artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp app/build/app/outputs/flutter-apk/app-release.apk dist/GSCM-v1.1.1-Android.apk
+          sha256sum dist/GSCM-v1.1.1-Android.apk > dist/GSCM-v1.1.1-Android.apk.sha256
+          ls -lh dist
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSCM-1.1.1-Android
+          path: |
+            dist/GSCM-v1.1.1-Android.apk
+            dist/GSCM-v1.1.1-Android.apk.sha256
+          if-no-files-found: error
+          retention-days: 14
