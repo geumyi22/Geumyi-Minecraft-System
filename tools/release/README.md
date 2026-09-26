@@ -1,17 +1,20 @@
 # Release publishing
 
-The repository keeps source/configuration/documentation in Git.
+The repository keeps source/configuration/documentation in Git. Large distributable binaries are published through GitHub Releases.
 
-Large distributable binaries are published through GitHub Releases.
-
-## Automated flow
+## Manual Actions flow
 
 1. Put the current master bundle at a downloadable HTTPS URL.
-2. Set:
-   - `release-source.txt` — direct HTTPS download URL
-   - `release-tag.txt` — release tag
-   - `release-sha256.txt` — SHA-256 of the master ZIP
-3. A push changing these files triggers `.github/workflows/publish-system-release.yml`.
-4. The workflow verifies the master ZIP, extracts current packages, extracts GSCM APK/IPA and the GSC installer, generates `SHA256SUMS.txt`, and creates/updates the GitHub Release.
+2. Update these tracked metadata files when the baseline changes:
+   - `release-tag.txt` — default release tag
+   - `release-sha256.txt` — expected SHA-256 of the master ZIP
+3. Open **Actions → Publish Geumyi System Release → Run workflow**.
+4. Enter:
+   - `source_url` — required direct HTTPS download URL
+   - `tag` — optional override; blank uses `release-tag.txt`
+   - `sha256` — optional override; blank uses `release-sha256.txt`
+5. The workflow downloads the master ZIP, verifies SHA-256, extracts the current distributables, generates `SHA256SUMS.txt`, and creates or updates the GitHub Release.
 
-Never put credentials into `release-source.txt`.
+`release-source.txt` is intentionally not tracked. Do not commit temporary Dropbox URLs, signed URLs, credentials, tokens, or other private download locations.
+
+`release-source.example.txt` is only an example of the URL shape and is not read by the workflow.
