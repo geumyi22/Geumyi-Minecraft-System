@@ -43,17 +43,68 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path("app/android/app/build.gradle.kts")
-          s=p.read_text()
-          s=s.replace('    id("kotlin-android")\\n','')
-          s=s.replace('\\n    kotlinOptions {\\n        jvmTarget = JavaVersion.VERSION_17.toString()\\n    }\\n','\\n')
-          p.write_text(s)
-          p=Path("app/android/settings.gradle.kts")
-          s=p.read_text().replace('    id("org.jetbrains.kotlin.android") version "2.4.0" apply false\\n','')
-          p.write_text(s)
-          PY
+          cat > app/android/app/build.gradle.kts <<'EOF'
+          plugins {
+              id("com.android.application")
+              id("dev.flutter.flutter-gradle-plugin")
+          }
+
+          android {
+              namespace = "com.geumyi.gscm"
+              compileSdk = flutter.compileSdkVersion
+              ndkVersion = flutter.ndkVersion
+
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+
+              defaultConfig {
+                  applicationId = "com.geumyi.gscm"
+                  minSdk = 24
+                  targetSdk = flutter.targetSdkVersion
+                  versionCode = flutter.versionCode
+                  versionName = flutter.versionName
+              }
+
+              buildTypes {
+                  release {
+                      signingConfig = signingConfigs.getByName("debug")
+                  }
+              }
+          }
+
+          flutter {
+              source = "../.."
+          }
+          EOF
+
+          cat > app/android/settings.gradle.kts <<'EOF'
+          pluginManagement {
+              val flutterSdkPath = run {
+                  val properties = java.util.Properties()
+                  file("local.properties").inputStream().use { properties.load(it) }
+                  val flutterSdkPath = properties.getProperty("flutter.sdk")
+                  require(flutterSdkPath != null) { "flutter.sdk not set in local.properties" }
+                  flutterSdkPath
+              }
+
+              includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+
+          plugins {
+              id("dev.flutter.flutter-plugin-loader") version "1.0.0"
+              id("com.android.application") version "9.1.0" apply false
+          }
+
+          include(":app")
+          EOF
 
       - name: Resolve Flutter packages
         working-directory: app
