@@ -1,4 +1,4 @@
-name: Build GSCM iOS unsigned IPA
+name: Build GSCM 1.1.1 iOS unsigned IPA
 
 on:
   push:
@@ -74,8 +74,8 @@ jobs:
           ditto build/ios/iphoneos/Runner.app dist/Payload/Runner.app
           (
             cd dist
-            /usr/bin/zip -qry GSCM-v1.1.0-unsigned.ipa Payload
-            /usr/bin/shasum -a 256 GSCM-v1.1.0-unsigned.ipa > GSCM-v1.1.0-unsigned.ipa.sha256
+            /usr/bin/zip -qry GSCM-v1.1.1-unsigned.ipa Payload
+            /usr/bin/shasum -a 256 GSCM-v1.1.1-unsigned.ipa > GSCM-v1.1.1-unsigned.ipa.sha256
           )
           ls -lh dist
 
@@ -84,7 +84,7 @@ jobs:
         with:
           name: GSCM-iOS-unsigned
           path: |
-            app/dist/GSCM-v1.1.0-unsigned.ipa
-            app/dist/GSCM-v1.1.0-unsigned.ipa.sha256
+            app/dist/GSCM-v1.1.1-unsigned.ipa
+            app/dist/GSCM-v1.1.1-unsigned.ipa.sha256
           if-no-files-found: error
           retention-days: 14
