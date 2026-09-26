@@ -1,11 +1,6 @@
 name: Publish Geumyi System Release
 
 on:
-  push:
-    paths:
-      - release-source.txt
-      - release-tag.txt
-      - release-sha256.txt
   workflow_dispatch:
 
 permissions:
