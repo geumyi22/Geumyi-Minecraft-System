@@ -16,8 +16,8 @@
     },
     {
       "path": ".github/workflows/publish-system-release.yml",
-      "bytes": 3140,
-      "sha256": "acce230a4e39796909f8b3f6f93b3d9183ccfc06bdfcb16024eccb1da53ef276",
+      "bytes": 3821,
+      "sha256": "68fc41821161500ddef1caa651bda47970909d6b302f6b7fe5386efb8bee302e",
       "source": "Existing repository workflow (source path migrated for GSCM)"
     },
     {
@@ -8386,8 +8386,8 @@
     },
     {
       "path": "tools/release/README.md",
-      "bytes": 715,
-      "sha256": "39394b2252d9135f502edb6d045ba779c1ab10ea04aa415ab8354efd3e50dc91",
+      "bytes": 1118,
+      "sha256": "106168f96aae869597636599a1ad94fb5b38d73d8b2b33deee674b1445dbd6c3",
       "source": "Repository documentation or import housekeeping"
     },
     {
