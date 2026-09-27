@@ -2,6 +2,8 @@
 
 Requires JDK 21 (`javac`, `jar`). Run `./build.sh`.
 
-This recovered package now contains all nine Java source files. The five helper sources were recovered from the preserved 0.4.0 source package; four were byte-identical through the 0.4.5 base JAR, and `ServerState` was recovered by the single verified 0.4.5 delta (`reportedJavaPort`).
+This recovered package contains all nine Java source files. Five helper sources were recovered from preserved earlier source/bytecode evidence; the four 0.5.4 overlay sources were preserved directly.
 
-The build is deterministic with a fixed JAR timestamp. Output: `GeumyiStatusAgent-0.5.4.jar`.
+A clean full-source build is used for compilation validation. It is **not** expected to be byte-identical to the historical deployed JAR because that artifact retained precompiled helper classes from its older binary base. See `RECOVERY.md` for the entry-level comparison.
+
+Output: `GeumyiStatusAgent-0.5.4.jar`.
