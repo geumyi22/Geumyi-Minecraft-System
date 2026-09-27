@@ -913,6 +913,24 @@
       "modifiedFromRecovered": false
     },
     {
+      "path": "Plugins/GeumyiChemistry/build.gradle.kts",
+      "bytes": 535,
+      "sha256": "df61539342262e8246d4d9b30a99571209e77a27ea157f60c2d97c90cc548d8b",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/CHANGELOG.md",
+      "bytes": 1204,
+      "sha256": "f90e10b2b6759605b53934017cefb7f2ca3d581d6d6427746483f18df89b20d6",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/INSTALL-KR.md",
+      "bytes": 2806,
+      "sha256": "7787bf97f9b12e20bfb8bd8d06dbc17e90292ea5acdbeaefe7e29ab14e5af708",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
       "path": "Plugins/GeumyiChemistry/README.md",
       "bytes": 766,
       "sha256": "0659636d2a64155ec84447acfe4e9e4ffc2eb7c5fcc22a6480df014580a299aa",
@@ -923,6 +941,72 @@
       "bytes": 870,
       "sha256": "0c21477464328a24f3724a47f30d766a17945ecd97866fb9fd9df5f7d8d07623",
       "source": "Day-3 GeumyiChemistry 0.4.1 reconstructed-source verification evidence"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/settings.gradle.kts",
+      "bytes": 37,
+      "sha256": "4acfa9aa54c601e718adafb15fb92d2afa02915ef8306487f17b21d96e4d85d7",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/src/main/java/kr/geumyi/chemistry/GeumyiChemistry.java",
+      "bytes": 85128,
+      "sha256": "68ffbc5d9681de459e96a6b2b5e42f860a80494edc3f9bf60ce3924e2f83ebbc",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/src/main/resources/config.yml",
+      "bytes": 696,
+      "sha256": "26f34710769891a94f92958e4355608944ac88b650b443425bc1d8416d8253db",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/src/main/resources/elements.csv",
+      "bytes": 5213,
+      "sha256": "2f474438481a6df00d12e78b02d5f89472b9d32448d3e9d4c5f65172e8e2f92d",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/src/main/resources/extract-v4.yml",
+      "bytes": 3955,
+      "sha256": "83785e003d8ad318b3b739f254b88ae698a5e809ae636d353d6a6dd5248a21a5",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/src/main/resources/META-INF/geumyi-26.3-upgrade.properties",
+      "bytes": 193,
+      "sha256": "7bc002963fc0f1d5e50356fbc930b7d894e990032bc7b4a49af314c18b02415e",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/src/main/resources/plugin.yml",
+      "bytes": 613,
+      "sha256": "d28c0bae89742731eec26eb9d68aa665ddb34cd76e78360280ac36c078f6f39d",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/src/main/resources/reactions-v4.yml",
+      "bytes": 18283,
+      "sha256": "9ff6bc6c3a5a06f2c0b7b3b31eb79498f14eb46fee38c7d9164d27782cbc364c",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/src/main/resources/species-v4.csv",
+      "bytes": 7707,
+      "sha256": "6ee1b31a27117d3ce00e283aa449ab820dce17c868f1db04d6a65407d6501674",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/tools/gen_packs.py",
+      "bytes": 11659,
+      "sha256": "ee0cc8e94a279ea879588ad4a32be15f18b334a2e3675a14d547c949c7978a8a",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiChemistry/tools/validate_v04.py",
+      "bytes": 11321,
+      "sha256": "8cfb3faea18b124b4591f5502b99e50601e4ff86f3d6ce671964e115fda9bdcd",
+      "source": "Day-3 reconstructed GeumyiChemistry 0.4.1 source imported 2026-09-27"
     },
     {
       "path": "Plugins/GeumyiDiscordStatus/BUILD.md",
@@ -1243,6 +1327,24 @@
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
+      "path": "Plugins/GeumyiServerTools/BUILD.md",
+      "bytes": 619,
+      "sha256": "819138973593c41dfa8a380492c86483c8885cc649940755d2ebfdede6f266eb",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/build.sh",
+      "bytes": 1499,
+      "sha256": "94ff3707ac143e928366350fd56eac78f366af4c4adde5c4cfac4b050cd8016c",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/CHANGELOG.md",
+      "bytes": 1259,
+      "sha256": "a27b73465e8af3fcba5df3b264a6b71d436c3e7e7c3544b1a0c33e93227420fc",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
       "path": "Plugins/GeumyiServerTools/HOTFIX-PATCH.md",
       "bytes": 977,
       "sha256": "17b8a9ffcded1037261ca3c95c77252fedc7a91a5a8d7af9bb4883f3381f7365",
@@ -1261,6 +1363,252 @@
       "source": "Repository documentation or import housekeeping"
     },
     {
+      "path": "Plugins/GeumyiServerTools/src/main/java/kr/geumyi/servertools/DiagnosticsService.java",
+      "bytes": 17592,
+      "sha256": "c9e55dc4f29f93304d31073f58aa9d59d869d9c186d0f9755e65d57ef5ef96be",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/java/kr/geumyi/servertools/GeumyiServerToolsApi.java",
+      "bytes": 722,
+      "sha256": "5bce3f68f0473ed24c303323e8059c62fdd2f61105a22b464f9bb6fc6f5bf131",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/java/kr/geumyi/servertools/GeumyiServerToolsV110.java",
+      "bytes": 13596,
+      "sha256": "cbb3c8d7548ffd9108aaa87539cb515b7d887c19ff73290ad9cd38c79e18f2b6",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/java/kr/geumyi/servertools/GscRuntimeBridge.java",
+      "bytes": 17864,
+      "sha256": "bfa1f3e03adc0582b0068696922976ca80640fc9019860c5ed5afa06a11487af",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/java/kr/geumyi/servertools/HealthService.java",
+      "bytes": 5511,
+      "sha256": "54ddd0ee93c4738e76978c928d1f44604d1c9358e34ea6acfae6a1a9f7ded0c4",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/java/kr/geumyi/servertools/IdleFreezeController.java",
+      "bytes": 1919,
+      "sha256": "92ecc82364454a69ab285447b2691fd1828104a462ebfb334e3a799f9175ee8e",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/java/kr/geumyi/servertools/LagDetector.java",
+      "bytes": 2398,
+      "sha256": "323301cf9e288c7bfe46249c349012408e21ca38403fdf6c15dbc1fd8e5687ec",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/java/kr/geumyi/servertools/MaintenanceController.java",
+      "bytes": 6844,
+      "sha256": "c461372dee95a2be3d28194af7b68529866c896b47bd59691cd8b43169ba7440",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/java/kr/geumyi/servertools/PerformanceMonitor.java",
+      "bytes": 8753,
+      "sha256": "e33cee6b135ecf3c49271166c8805bd4d883d774af6bf493d98b8d9d0243b107",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/resources/config.yml",
+      "bytes": 2067,
+      "sha256": "11b840f9eb4287b13f83ec060b9b498a15d9b7c0cdbebb346f431814431bb754",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/resources/META-INF/geumyi-26.3-upgrade.properties",
+      "bytes": 198,
+      "sha256": "d41a59dd2036c77d8eda1d2eba738abc1580b6f7d89915caff48ebb01d3731c3",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/resources/META-INF/geumyi-gscv4.properties",
+      "bytes": 91,
+      "sha256": "1398f3d38eec355218d5747d5f52393bd96137d24bfec5de4fa0964e6c47378d",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/src/main/resources/plugin.yml",
+      "bytes": 1014,
+      "sha256": "ab1144759cd3f25f75445149148d34b5aa8498698e1886ecb227794c76b6e755",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/Bukkit.java",
+      "bytes": 1004,
+      "sha256": "e712d2ff2c65fa9a76029c99142312ffb6d7c38d7ecd827871faa6b5f1e85a0b",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/Chunk.java",
+      "bytes": 46,
+      "sha256": "8a69a68c3bf3abd53f49b148349cfaebd6f1124788fe7ee80f7c9149b14f1743",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/command/Command.java",
+      "bytes": 89,
+      "sha256": "3a7dd0ff8fe8baddbdaea60bb6d916198b4ad5e1d5d642058e63c5c93c2e24f5",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/command/CommandSender.java",
+      "bytes": 139,
+      "sha256": "128f5da145f280a0e5d92a00c4fea4856d941dc143220d4429459dd427c89001",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/command/ConsoleCommandSender.java",
+      "bytes": 91,
+      "sha256": "3cbcf439d5d79fd995baea3a303774e48d7272d882d0a029af43d4aab1f6b0b9",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/configuration/file/FileConfiguration.java",
+      "bytes": 520,
+      "sha256": "bb11f0af8650799baf5522a4f494c82f6c7606bbff2df7233926def1d60abbf3",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/configuration/file/FileConfigurationOptions.java",
+      "bytes": 155,
+      "sha256": "7fae60db8970cf0909fc05451321f223c094e1c8ff8120056116f0a6320e7931",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/entity/Entity.java",
+      "bytes": 54,
+      "sha256": "69a447511bef81f54b906c2bfe1b5510ef8ffd1f3eb4b81a3ce613e13338206f",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/entity/Player.java",
+      "bytes": 222,
+      "sha256": "b711245b5931d59b02fcfb5c84d35beb6efcaedd8be6062b3d335d19e10f1106",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/event/EventHandler.java",
+      "bytes": 252,
+      "sha256": "503eb90e467a4099c3db495bc82ad2d8d90d6c21e464a4536aca6d8af0a007e6",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/event/EventPriority.java",
+      "bytes": 100,
+      "sha256": "f6bd19cfe9332cd7fa581109632a7a755a7996128c8185d4c2c91b6e040a1c70",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/event/Listener.java",
+      "bytes": 55,
+      "sha256": "32859511984ffc75307a25c76f67d52b506db29a10ccaaa96eab36269d0e0327",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/event/player/PlayerJoinEvent.java",
+      "bytes": 139,
+      "sha256": "49dd72c9e8a5f4c9d4b2ae63daf693dfc73c63bbdd2484e3be64120ab7729ded",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/event/player/PlayerLoginEvent.java",
+      "bytes": 283,
+      "sha256": "8a703af0ab5f81bb2204a0eb761e7e778a7d4701f45faa6e0b73502bed0bf797",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/GameRule.java",
+      "bytes": 138,
+      "sha256": "c3643162b0bc666b9f0ac13eeb72ed7779b49bae8b094cef710abcb97b5355a8",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/plugin/java/JavaPlugin.java",
+      "bytes": 863,
+      "sha256": "355c71c058acb997be8f27682e4d96ce600a7f7cf41f5f436dbb2d3ef3250a08",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/plugin/Plugin.java",
+      "bytes": 134,
+      "sha256": "d2219dd56686bd847055802c8a3e0104d95405ade985a270071f8fca1b728dd1",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/plugin/PluginDescriptionFile.java",
+      "bytes": 105,
+      "sha256": "926e23e1f63357187d68d09cc6017546816c37cabb5f74eb825357302dc0e56d",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/plugin/PluginManager.java",
+      "bytes": 182,
+      "sha256": "9549fd8a4f9267899bb9ca2af35f1a7a4d9499e703c6c7119165ab8226374b9d",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/plugin/ServicePriority.java",
+      "bytes": 94,
+      "sha256": "d10ac3f2d2afa085a249e0dea0795341d56cf524868a7d761e22f917f2a3f2d6",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/plugin/ServicesManager.java",
+      "bytes": 193,
+      "sha256": "0c484ae14ecf745ebb6157fe22484fbdd753aec6a9c9f5aa88f03b05355d0f18",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/scheduler/BukkitScheduler.java",
+      "bytes": 251,
+      "sha256": "edd359729f995c6b6e2620d7c891e172f8ceb0152e741341534c1b8f2d3fca38",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/scheduler/BukkitTask.java",
+      "bytes": 77,
+      "sha256": "356d60e706295f7fcd573fd8865e4ffc8b97273b7e96558227dcc963b6efaa4d",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/stubs/org/bukkit/World.java",
+      "bytes": 239,
+      "sha256": "a713a540b250e5368fea6d6cd64cc70093a6138e37a66c809af2a4f84f0df4a1",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiServerTools/tests/kr/geumyi/servertools/CoreTests.java",
+      "bytes": 1774,
+      "sha256": "3a5c622ea46b88d54509ffef2727889a4e5a0f2522971978e096f9c889c69343",
+      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/build.gradle.kts",
+      "bytes": 533,
+      "sha256": "b093444d7fbcc8c008fb84bea5a193eb7cfb3db3161190e0006b9172988a6a57",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/CHANGELOG.md",
+      "bytes": 803,
+      "sha256": "59dad06a1f2b16271e540a88be11b8d2a151c43f3a139d2f3e901f056cffe71d",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/INSTALL-KR.md",
+      "bytes": 2377,
+      "sha256": "8f77667b004bb5e5922b3b4741f73368c8b4a1153a054cda034b1f5b5b8bb8e7",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
       "path": "Plugins/GeumyiTechnology/README.md",
       "bytes": 820,
       "sha256": "02d00be89006732bdf85087312a635fb9084ea628ceaf77fca698356e29c82c8",
@@ -1271,6 +1619,120 @@
       "bytes": 1067,
       "sha256": "1c5c5b9bfafe437f2f4d18d56f81ad4add1b38ba030a14107c7bf3e163327bb0",
       "source": "Day-3 GeumyiTechnology 0.1.3 reconstructed-source verification evidence"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/ROADMAP.md",
+      "bytes": 486,
+      "sha256": "4c00533264894ecf173c639e092f20da3056347522211d1e5b4c17f2c237a597",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/settings.gradle.kts",
+      "bytes": 38,
+      "sha256": "1930d97a02b9939ebd5dad613a6ce771eed76b7fd69a03e181ec8f9557569d96",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/java/kr/geumyi/technology/BlockKey.java",
+      "bytes": 1102,
+      "sha256": "bf6cfe048118d87eb13edb09d3bcc80c6095d1ff24c11607eeca0a3c0a84f8af",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/java/kr/geumyi/technology/GeumyiTechnology.java",
+      "bytes": 40665,
+      "sha256": "e28bf856623089c09a5b0c8547343f296ad3dd78064e2337cc15901ce9bc9f18",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/java/kr/geumyi/technology/IngredientSpec.java",
+      "bytes": 600,
+      "sha256": "c95219c19813756413e99da713edbf8a32ca8f99bc9b803f8eb0bf3c8b30991a",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/java/kr/geumyi/technology/MachineData.java",
+      "bytes": 546,
+      "sha256": "877ed9ede2dcb4a551a022a7cd62ab1c10850b760a5a6321b66c502381fde14c",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/java/kr/geumyi/technology/MachineProcess.java",
+      "bytes": 333,
+      "sha256": "86df8e3ab1e146c3cf73ce4dea430e5a888f6b43b8c1f2753e36184069036e5c",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/java/kr/geumyi/technology/MachineStore.java",
+      "bytes": 5425,
+      "sha256": "8e295fc7180e37fa7e57d341ba33b8743fff9cbf7daec7588ffd4b6f34a9266b",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/java/kr/geumyi/technology/MachineType.java",
+      "bytes": 1322,
+      "sha256": "294ebbe9f95eba8057124352a8431581793eae1bc77c7acfff011444b5df9fc9",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/java/kr/geumyi/technology/PowerNetwork.java",
+      "bytes": 5382,
+      "sha256": "7869fd9288a9e1a089d28432aeeedd700f6fabf49c0d4a4b426af1e0fcbe047c",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/java/kr/geumyi/technology/RecipeDef.java",
+      "bytes": 1336,
+      "sha256": "15322107d68d241257d6398ffd251a5655b20158ea6ed7f0dc0903e8bdda4e41",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/java/kr/geumyi/technology/TechItem.java",
+      "bytes": 4162,
+      "sha256": "02075723d3fb393ddc06f64a3ae3db40270bfee83199d7815a4562d03a74e6d8",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/java/kr/geumyi/technology/TechnologyRecipes.java",
+      "bytes": 10107,
+      "sha256": "333ea7d472d3b0cdb103be2f7c31da934d071ab49ff54f5d8ffd50feecc86e67",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/resources/config.yml",
+      "bytes": 418,
+      "sha256": "43ca25ce2db6899ea25df5d1b7d1f89933ce7176a8fd4446f275ea524eb5af34",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/resources/META-INF/geumyi-26.3-upgrade.properties",
+      "bytes": 193,
+      "sha256": "50e39689a9e06884a0d9d54aa6e1f4b58830e872f93614652bb1215ec72912dd",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/src/main/resources/plugin.yml",
+      "bytes": 552,
+      "sha256": "b7c01bf81615bc57759bfddffbec43e5df865f56c017c527d130a07bb4fe6c13",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/tools/build_suite_packs.py",
+      "bytes": 3349,
+      "sha256": "1309b39e6dfcc845ff23f0c00cac88eae56e3b18dd41984d34eb42ce9abdc96a",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/tools/gen_resource_packs.py",
+      "bytes": 9786,
+      "sha256": "a2096a768e7bec36e1588f7509c9095d960a3ece11f9971ffcb21c44e08e8a15",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
+    },
+    {
+      "path": "Plugins/GeumyiTechnology/tools/validate.py",
+      "bytes": 7214,
+      "sha256": "158b028330ffa4838a6268fc2b94a0c5132b4d2f997b87d0e032d057741b3b15",
+      "source": "Day-3 reconstructed GeumyiTechnology 0.1.3 source imported 2026-09-27"
     },
     {
       "path": "Plugins/README.md",
@@ -1286,9 +1748,9 @@
     },
     {
       "path": "RECOVERY-REPORT.md",
-      "bytes": 9493,
-      "sha256": "f95c366d79a40529e1c015f2d91ddce90bea0d4ea339ce6a922170941aed74d8",
-      "source": "Repository documentation updated after final Day-3 CI verification 2026-09-27"
+      "bytes": 10004,
+      "sha256": "5aa1af92c73254140ff7944997ca46c504867eb3d85c4851d35719571b9300a7",
+      "source": "Repository documentation updated after recovered-source import and Day-3 finalization 2026-09-27"
     },
     {
       "path": "release-sha256.txt",
@@ -8426,9 +8888,9 @@
     },
     {
       "path": "SECURITY-NOTES.md",
-      "bytes": 4777,
-      "sha256": "a72c99f8974345fab77bb9fb59195fcf3dc766627fae31698b65f54f024dd6d6",
-      "source": "Repository public-security review updated 2026-09-27"
+      "bytes": 5333,
+      "sha256": "d62da0aa665dcbf8c0f80b0ed5ad0713fa14d00661565d454529cbc310a999dd",
+      "source": "Repository public-security review updated after recovered-source import 2026-09-27"
     },
     {
       "path": "Servers/Playground/PAPER_26.3_INFO.json",
@@ -8476,9 +8938,9 @@
     },
     {
       "path": "VERSION-MATRIX.md",
-      "bytes": 2579,
-      "sha256": "46f8982c8dc2ec8ff0de70a2e23d75349482a2675c8c25fd3ea4f7d6a2fd022e",
-      "source": "Repository documentation updated after final Day-3 CI verification 2026-09-27"
+      "bytes": 2641,
+      "sha256": "a47eca6ddd96736430ff23a532576b55701a5cbbe803d9707d863a7d540e3340",
+      "source": "Repository documentation updated after recovered-source import and Day-3 finalization 2026-09-27"
     }
   ],
   "synced": "2026-09-27"
