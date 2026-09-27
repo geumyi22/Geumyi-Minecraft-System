@@ -45,6 +45,12 @@
       "source": "Day-4 live E2E verification summary finalized after follow-up closure 2026-09-27"
     },
     {
+      "path": "DAY5-STABILITY-REPORT.md",
+      "bytes": 1494,
+      "sha256": "8c25c234a2a58ac0d900c1f644cdbf4ecf330b2a18d70dfddbddb254808b305e",
+      "source": "Day-5 GSC/GSCM stability closure based on user-confirmed operational verification 2026-09-28"
+    },
+    {
       "path": "GSC/README.md",
       "bytes": 515,
       "sha256": "35f2690b2106ef1afe2c58f4d60eb4c6242bda7d5bb8dc6010ebac1e589a38bd",
@@ -1748,15 +1754,15 @@
     },
     {
       "path": "README.md",
-      "bytes": 2777,
-      "sha256": "ada6ef9121f9494765e9dfbf0dec7d272be5676850670c131edddce7ee9ad11a",
-      "source": "Repository overview refreshed after Day-4 verification and cleanup 2026-09-27"
+      "bytes": 2859,
+      "sha256": "aae1cbcb9fb9c89d9cbcc447419574ec82c1a40cfefe7531a4084b1d4cdd1e60",
+      "source": "Repository overview updated with Day-5 stability report 2026-09-28"
     },
     {
       "path": "RECOVERY-REPORT.md",
-      "bytes": 11774,
-      "sha256": "363142c6e07605d2d22ff46a22783e38ce76f649c5dc303b52c9ac650a9bc368",
-      "source": "Repository recovery report updated after Day-4 follow-up closure 2026-09-27"
+      "bytes": 12500,
+      "sha256": "26214f9e8ebc1025d4d28f7237b85be61da6cec8172035440194545c54c4b007",
+      "source": "Repository recovery/verification report updated for Day-5 closure 2026-09-28"
     },
     {
       "path": "release-sha256.txt",
@@ -8882,9 +8888,9 @@
     },
     {
       "path": "ROADMAP.md",
-      "bytes": 3359,
-      "sha256": "e37edd89e04140579b92d7e1f9cd312e5b3e72bae3943c8a44ee536bd9a698eb",
-      "source": "Repository roadmap updated after Day-4 follow-up closure 2026-09-27"
+      "bytes": 4259,
+      "sha256": "5c5fa825953fc4eeaf0cb130b4f7d16170e083b8a53c07ef346950e6a8a0d4db",
+      "source": "Repository roadmap updated for Day-5 completion and Day-6 start 2026-09-28"
     },
     {
       "path": "SECURITY-NOTES.md",
@@ -8950,10 +8956,10 @@
     },
     {
       "path": "VERSION-MATRIX.md",
-      "bytes": 2857,
-      "sha256": "5f38a491117affcccbbe49a84b83d7c7dde36d5468bbdfc9e66835ebf55343d6",
-      "source": "Repository version matrix updated after Day-4 follow-up closure 2026-09-27"
+      "bytes": 3247,
+      "sha256": "0308147f2bbf8f93fc006b2626ce25ec7aff1d41a375040f6ecd733fcde03f5d",
+      "source": "Version matrix updated for Day-5 completion and Day-6 device verification 2026-09-28"
     }
   ],
-  "synced": "2026-09-27"
+  "synced": "2026-09-28"
 }
