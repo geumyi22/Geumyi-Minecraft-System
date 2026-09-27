@@ -6,6 +6,9 @@ CI:
 - System CI run 36299122264: GSC, GDS and ResourcePack validation passed.
 - System CI run 36304228157: follow-up run with StatusAgent JDK 21 source build completed successfully alongside GSC, GDS and ResourcePack validation.
 - System CI run 36305340513: post-security-sanitization verification completed successfully; GSC, StatusAgent, GDS and ResourcePack jobs all passed.
+- Pre-Day-6 System CI run 36344295861: GSC, StatusAgent, GDS and ResourcePack jobs all passed on the normalized preflight commit.
+- Pre-Day-6 GSCM Android run 36344295867: analyze, tests, release APK build and artifact upload passed.
+- Pre-Day-6 GSCM iOS run 36344295880: release no-codesign build, unsigned IPA packaging and artifact upload passed.
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|

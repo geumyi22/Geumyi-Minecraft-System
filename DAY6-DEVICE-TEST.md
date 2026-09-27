@@ -16,6 +16,11 @@ Status: **IN PROGRESS**
 - GST, GeumyiTechnology and GeumyiChemistry are not currently covered by System CI; expanding automated build coverage is intentionally scheduled for Day 7 and is not a Day-6 device-test blocker.
 - Two harmless version-identification strings remain in recovered runtime source: the GSCM HTTP User-Agent says `GSCM/1.0.0 Android`, and the Agent Discord REST User-Agent says `GeumyiStatusAgent/0.5.3`. They do not affect protocol behavior. They are deliberately left unchanged before Day 6 so Git source continues to correspond to the already-built/runtime baseline; centralizing version metadata belongs to Day 7/8.
 - Coordinated-baseline documentation and installer-template comments were normalized to GST 1.1.1 HOTFIX, GDS 1.1.1 and Agent 0.5.4 before device testing.
+- Fresh pre-Day-6 CI on commit `9c0da6cd1b3400c92c804ab8c4e93a6a3b5bd390` passed:
+  - System CI run [36344295861](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/36344295861): GSC Go tests, StatusAgent JDK 21 build, GDS JDK 21 build and ResourcePack validation all passed.
+  - Android run [36344295867](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/36344295867): Flutter package resolution, analyze, tests, release APK build and artifact upload passed.
+  - iOS run [36344295880](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/36344295880): iOS Runner preparation, release no-codesign build, unsigned IPA packaging and artifact upload passed.
+- The commits after that CI only update documentation and `SOURCE-MANIFEST.json`; application/runtime source is unchanged.
 
 ## Evidence rule
 
