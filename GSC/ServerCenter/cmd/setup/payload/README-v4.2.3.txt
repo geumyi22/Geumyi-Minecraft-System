@@ -15,8 +15,8 @@ GSCM mobile-backend release built on the v4.1.5 reliability baseline.
 
 Coordinated baseline
 - GeumyiServerCenter 4.2.3
-- GeumyiServerTools 1.1.0
-- GeumyiDiscordStatus 1.1.0
+- GeumyiServerTools 1.1.1 HOTFIX
+- GeumyiDiscordStatus 1.1.1
 - GeumyiStatusAgent 0.5.4
 
 GSCM / mobile foundation

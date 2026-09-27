@@ -40,7 +40,7 @@ planned_shutdown_memory_minutes=180
 daily_summary.enabled=true
 daily_summary.hour=0
 daily_summary.minute=5
-# ===== GSC Control API (Agent 0.5.3) =====
+# ===== GSC Control API (Agent 0.5.4) =====
 gsc.enabled=true
 gsc.base_url=http://127.0.0.1:8787/api/v1
 # Leave blank when GSC allow_loopback_no_auth=true. Otherwise set a local API/device token.

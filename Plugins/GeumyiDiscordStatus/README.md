@@ -2,7 +2,7 @@
 
 Recovered from ChatGPT Library GeumyiDiscordStatus-1.1.1-Source.zip. The source, compile-only API stubs, default configuration, tests and build script are included. See BUILD.md.
 
-# GeumyiDiscordStatus 1.1.0 — GSC v4.1 Bridge
+## GSC v4.1 Bridge
 
 Paper 26.3 서버 안에서 상태/이벤트/플레이어/플러그인 정보를 구조화해 GSC와 GeumyiStatusAgent에 전달하는 Minecraft-side bridge입니다.
 Discord Gateway Bot 자체는 이 플러그인의 역할이 아닙니다. Bot Token은 Paper 플러그인에 넣지 않습니다.
