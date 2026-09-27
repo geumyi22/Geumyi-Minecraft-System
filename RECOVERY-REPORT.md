@@ -42,7 +42,7 @@ SOURCE-MANIFEST.json lists final paths, hashes and provenance. Release assets re
 
 Language JSON normalization: 31 BACAP language files contained hash comments; comments and author credits are preserved in ResourcePacks/Wild/LANGUAGE-COMMENTS.md. Raw string control characters were escaped and one misplaced quote pair in zh_tw was corrected. Translation text was not rewritten. All 488 JSON/pack metadata files then parsed successfully.
 
-Final tracked tree: 1,211 files, including 1,016 resource-pack files; SOURCE-MANIFEST.json covers every other tracked path. All staged Git blobs were matched to the validated local files. The existing 15 release assets retain the same IDs, sizes and digests.
+Final tracked tree after the 2026-09-27 CI addition: 1,212 files, including 1,016 resource-pack files; SOURCE-MANIFEST.json covers every other tracked path. All staged Git blobs were matched to the validated local files. The existing 15 release assets retain the same IDs, sizes and digests.
 
 ## 2026-09-27 follow-up
 
