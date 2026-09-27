@@ -39,6 +39,12 @@
       "source": "Repository documentation or import housekeeping"
     },
     {
+      "path": "DAY4-E2E-REPORT.md",
+      "bytes": 3499,
+      "sha256": "a7468bcab35aeb9e3c551418b91e5657070cd4b880ca36a719e9fa9fef4c0a82",
+      "source": "Day-4 live E2E verification summary 2026-09-27"
+    },
+    {
       "path": "GSC/README.md",
       "bytes": 515,
       "sha256": "35f2690b2106ef1afe2c58f4d60eb4c6242bda7d5bb8dc6010ebac1e589a38bd",
@@ -1748,9 +1754,9 @@
     },
     {
       "path": "RECOVERY-REPORT.md",
-      "bytes": 10004,
-      "sha256": "5aa1af92c73254140ff7944997ca46c504867eb3d85c4851d35719571b9300a7",
-      "source": "Repository documentation updated after recovered-source import and Day-3 finalization 2026-09-27"
+      "bytes": 11703,
+      "sha256": "b4ff2c2ace5b49a9ca8527fe2761840c60624050f1f4070ec709fb58782d32dc",
+      "source": "Repository documentation updated after Day-4 live E2E verification 2026-09-27"
     },
     {
       "path": "release-sha256.txt",
@@ -8882,15 +8888,15 @@
     },
     {
       "path": "ROADMAP.md",
-      "bytes": 2664,
-      "sha256": "c35a6f33f5dd811f5bc4c804284e2116fd464701287d30e224d6fddd876d6165",
-      "source": "Repository roadmap and final-day lobby/transfer design plan added 2026-09-27"
+      "bytes": 3423,
+      "sha256": "55ff68882d3932b89690f1fdf7153ed86f9240bc41b1dc963ba27c05f99b8048",
+      "source": "Repository roadmap updated after Day-4 live E2E verification 2026-09-27"
     },
     {
       "path": "SECURITY-NOTES.md",
-      "bytes": 5333,
-      "sha256": "d62da0aa665dcbf8c0f80b0ed5ad0713fa14d00661565d454529cbc310a999dd",
-      "source": "Repository public-security review updated after recovered-source import 2026-09-27"
+      "bytes": 6065,
+      "sha256": "ff3f4f007c91ce544818a2a040929b5adaef9d5f6933a2f7ba4de39807c01bd7",
+      "source": "Repository public-security review updated after Day-4 evidence handling 2026-09-27"
     },
     {
       "path": "Servers/Playground/PAPER_26.3_INFO.json",
@@ -8904,6 +8910,12 @@
       "bytes": 1070,
       "sha256": "1f728219c76e04d0e28a3a48204fe334eaa8c407d6f0d5801ffdb5ab7c45f8d1",
       "source": "Repository documentation or import housekeeping"
+    },
+    {
+      "path": "Servers/Playground/server.properties.e2e-2026-09-27",
+      "bytes": 2109,
+      "sha256": "c5b9499ff5c50a71eccb9589db7fc21e53845897aefbb487726277799c501f2c",
+      "source": "Sanitized Day-4 live Playground server.properties evidence captured 2026-09-27"
     },
     {
       "path": "Servers/Playground/server.properties.recovered-2026-09-10",
@@ -8925,6 +8937,12 @@
       "source": "Repository documentation or import housekeeping"
     },
     {
+      "path": "Servers/Wild/server.properties.e2e-2026-09-27",
+      "bytes": 1935,
+      "sha256": "b7c53fdbc4016e9578770a4b2f234a0497f79f0d99168641ca2aabc5b868c1fb",
+      "source": "Sanitized Day-4 live Wild server.properties evidence captured 2026-09-27"
+    },
+    {
       "path": "Servers/Wild/server.properties.recovered-2026-09-10",
       "bytes": 1933,
       "sha256": "0d5cd102ed743a3ec10af76d2962c07a7daca5ef2ce7a4c4e04698f671b6f658",
@@ -8938,9 +8956,9 @@
     },
     {
       "path": "VERSION-MATRIX.md",
-      "bytes": 2641,
-      "sha256": "a47eca6ddd96736430ff23a532576b55701a5cbbe803d9707d863a7d540e3340",
-      "source": "Repository documentation updated after recovered-source import and Day-3 finalization 2026-09-27"
+      "bytes": 2868,
+      "sha256": "f8f6debdb3e25de32c270380713d5a7d914aa0e3eba7b8e672615cd7b5c126a7",
+      "source": "Repository documentation updated after Day-4 live E2E verification 2026-09-27"
     }
   ],
   "synced": "2026-09-27"
