@@ -12,19 +12,19 @@
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
 | GSC | 4.2.3 | GSC/ServerCenter | Recovered source; installer JAR payloads supplied from Releases |
-| GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Partial overlay (4 Java files); helper source not yet recovered |
+| GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction recovered; clean JDK 21 build validated; historical JAR overlay assembly documented |
 | GSCM | 1.1.2+112 | GSCM | Recovered Flutter/Android source and iOS generation scripts |
-| GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | source not yet recovered for exact HOTFIX |
+| GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | Exact HOTFIX/overlay delta recovered; 31/31 uncompressed JAR entries matched final deployed HOTFIX; legacy 0.1.5 core remains binary-only |
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full plugin source, stubs and tests |
-| GeumyiTechnology | 0.1.3 | Plugins/GeumyiTechnology | source not yet recovered |
-| GeumyiChemistry | 0.4.1 | Plugins/GeumyiChemistry | source not yet recovered |
-| Wild server | Paper 26.3 | Servers/Wild | Paper provenance recovered; current operational configuration source not yet recovered |
-| Playground server | Paper 26.3 | Servers/Playground | Paper provenance recovered; current operational configuration source not yet recovered |
+| GeumyiTechnology | 0.1.3 | Plugins/GeumyiTechnology | Reconstructed source verified against deployed 0.1.3 bytecode/resources; not claimed as untouched original source |
+| GeumyiChemistry | 0.4.1 | Plugins/GeumyiChemistry | Reconstructed source verified against deployed 0.4.1 bytecode/resources; not claimed as untouched original source |
+| Wild server | Paper 26.3 | Servers/Wild | Paper provenance + sanitized 2026-09-10 server.properties evidence recovered; exact 2026-09-26 live config still pending server-PC capture |
+| Playground server | Paper 26.3 | Servers/Playground | Paper provenance + sanitized 2026-09-10 server.properties evidence recovered; exact 2026-09-26 live config still pending server-PC capture |
 | Resource packs | Java 26.3 / bundled Bedrock | ResourcePacks | Recovered expanded assets and Wild Geyser mapping |
 
 ## Exclusions and limitations
 
-GST's available source predates the current HOTFIX and depends on an old binary base. Agent's source is an overlay, with five helper sources missing; its original base dependency remains obtainable inside the existing Release archive. Older Technology/Chemistry sources were not promoted. The older local/web RCON server manager was not substituted for the current GSC deployment.
+GST's legacy 0.1.5 core remains binary-only, but the 1.1.1 HOTFIX overlay/delta has been recovered exactly. StatusAgent helper sources were reconstructed and validated while retaining the deployed overlay JAR as the runtime baseline. Technology 0.1.3 and Chemistry 0.4.1 are explicitly labeled reconstructions rather than untouched original source archives. The older local/web RCON server manager was not substituted for the current GSC deployment.
 
 GSC installer compilation requires release JAR payloads. The source importer does not operate or reconfigure live Minecraft servers or install mobile builds. Required cross-platform resource assets are kept in each pack; identical assets use the same Git blob.
 
@@ -42,7 +42,7 @@ SOURCE-MANIFEST.json lists final paths, hashes and provenance. Release assets re
 
 Language JSON normalization: 31 BACAP language files contained hash comments; comments and author credits are preserved in ResourcePacks/Wild/LANGUAGE-COMMENTS.md. Raw string control characters were escaped and one misplaced quote pair in zh_tw was corrected. Translation text was not rewritten. All 488 JSON/pack metadata files then parsed successfully.
 
-Final tracked tree after the 2026-09-27 CI addition: 1,212 files, including 1,016 resource-pack files; SOURCE-MANIFEST.json covers every other tracked path. All staged Git blobs were matched to the validated local files. The existing 15 release assets retain the same IDs, sizes and digests.
+Tracked-file count changed during Day-3 recovery; SOURCE-MANIFEST.json is synchronized at the end of the Day-3 work.
 
 ## 2026-09-27 follow-up
 
@@ -50,3 +50,14 @@ Final tracked tree after the 2026-09-27 CI addition: 1,212 files, including 1,01
 - The first ResourcePack CI attempt exposed a validator assumption: the current Java 26.3 packs use `min_format`/`max_format` ranges rather than legacy `pack_format`. The validator was corrected to accept and validate both forms before the successful rerun.
 - Library recovery recheck found `GeumyiServerTools-1.1.1-Source.zip`. A clean rebuild matches the pre-HOTFIX 1.1.1 JAR entry contents. The current Release HOTFIX JAR SHA-256 `af0509ea77f49fab6bf4dea48ddc0d030e50fa0880eb9250185b47e5ec696ac7` differs from that build in exactly three archive entries: `META-INF/geumyi-26.3-upgrade.properties`, `GscRuntimeBridge.class`, and `HealthService.class`. Therefore the exact final HOTFIX source remains unrecovered and the earlier source was not promoted as current.
 - The same Library recheck did not expose exact complete source packages for GeumyiTechnology 0.1.3, GeumyiChemistry 0.4.1, or GeumyiStatusAgent 0.5.4. Older source/bundles remain available but were not substituted for the current versions.
+
+## Day 3 — 2026-09-27
+
+- GST 1.1.1 HOTFIX: the user-supplied final HOTFIX JAR SHA-256 matched the existing Release asset (`af0509ea77f49fab6bf4dea48ddc0d030e50fa0880eb9250185b47e5ec696ac7`). The recovered overlay rebuild matched **31/31 uncompressed JAR-entry SHA-256 values**. The exact source delta is documented under `Plugins/GeumyiServerTools`; the older 0.1.5 core is still binary-only.
+- GeumyiStatusAgent 0.5.4: all nine Java sources are present. The clean JDK 21 build succeeds. Because the historical deployed artifact reused older precompiled helper classes, a byte-identical clean rebuild is not claimed; normalized bytecode comparison and the historical assembly distinction are documented in `GSC/StatusAgent/RECOVERY.md`.
+- GeumyiTechnology 0.1.3: reconstructed from preserved 0.1.0 source, compatibility artifacts and the deployed 0.1.3 JAR. Method/field descriptors and bytecode operations align after compiler-specific normalization; key resources match byte-for-byte.
+- GeumyiChemistry 0.4.1: reconstructed from preserved 0.4.0 source and deployed 0.4.1 JAR. The 26.3 compatibility/version delta and resources were verified.
+- Wild/Playground: sanitized 2026-09-10 `server.properties` evidence was recovered. RCON/management secrets and historical resource-pack share URLs are not published. These files are evidence only, not replacements for the exact 2026-09-26 live configs.
+- Both preserved configs already have `accepts-transfers=true`, relevant to the planned final-day Lobby -> Wild/Playground/Other server-transfer design.
+- Public-repository review: current recovered material and the master release were checked for common secret/personal-information patterns. No active credential was identified in the reviewed current material. Git history separately exposes non-noreply commit-email metadata and an old deleted Dropbox share URL; see `SECURITY-NOTES.md`.
+- System CI was extended to compile/verify StatusAgent alongside GSC, GDS and ResourcePack checks.
