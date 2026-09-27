@@ -16,5 +16,3 @@ The repository keeps source/configuration/documentation in Git. Large distributa
 5. The workflow downloads the master ZIP, verifies SHA-256, extracts the current distributables, generates `SHA256SUMS.txt`, and creates or updates the GitHub Release.
 
 `release-source.txt` is intentionally not tracked. Do not commit temporary Dropbox URLs, signed URLs, credentials, tokens, or other private download locations.
-
-`release-source.example.txt` is only an example of the URL shape and is not read by the workflow.

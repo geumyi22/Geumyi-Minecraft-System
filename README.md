@@ -11,8 +11,8 @@
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full plugin source, stubs and tests |
 | GeumyiTechnology | 0.1.3 | Plugins/GeumyiTechnology | Reconstructed and semantically verified against deployed 0.1.3; not labeled untouched original source |
 | GeumyiChemistry | 0.4.1 | Plugins/GeumyiChemistry | Reconstructed and semantically verified against deployed 0.4.1; not labeled untouched original source |
-| Wild server | Paper 26.3 | Servers/Wild | Paper provenance + sanitized 2026-09-10 server.properties evidence; exact current live config still requires server-PC capture |
-| Playground server | Paper 26.3 | Servers/Playground | Paper provenance + sanitized 2026-09-10 server.properties evidence; exact current live config still requires server-PC capture |
+| Wild server | Paper 26.3 | Servers/Wild | 2026-09-27 live E2E evidence captured; sanitized current server.properties tracked |
+| Playground server | Paper 26.3 | Servers/Playground | 2026-09-27 live E2E evidence captured; sanitized current server.properties tracked |
 | Resource packs | Java 26.3 / bundled Bedrock | ResourcePacks | Recovered expanded assets and Wild Geyser mapping |
 
 ## 사용 방법
@@ -23,6 +23,7 @@
 - StatusAgent: [복구 근거](GSC/StatusAgent/RECOVERY.md)
 - GST / Technology / Chemistry: 각 컴포넌트의 `README.md`와 `RECOVERY.md`에서 원본/재구성 범위를 구분합니다.
 - 리소스팩: [구성 및 패키징](ResourcePacks/README.md)
+- 실제 서버 검증 결과: [DAY4-E2E-REPORT.md](DAY4-E2E-REPORT.md)
 - 이후 작업 순서와 최종 로비/서버 이동 설계 계획: [ROADMAP.md](ROADMAP.md)
 
 완성 EXE/JAR/APK/IPA/ZIP은 [기존 Release](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/mc-2026.09.26-v3)에 유지합니다. 운영 토큰·RCON 비밀번호·키스토어·월드·개인 로그는 Git에 넣지 않습니다.

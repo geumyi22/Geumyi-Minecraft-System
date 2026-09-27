@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-27 — Recovery completion and Day-4 verification
+
+- Completed GST 1.1.1 HOTFIX, StatusAgent 0.5.4, GeumyiTechnology 0.1.3 and GeumyiChemistry 0.4.1 source recovery/reconstruction tracking.
+- Captured sanitized live Wild/Playground server configuration evidence and completed Day-4 E2E verification.
+- Kept runtime binaries in GitHub Releases rather than the source tree.
+- Removed the unused `release-source.example.txt`; the release workflow uses the explicit `source_url` input plus `release-tag.txt` / `release-sha256.txt`.
+
 ## 2026-09-26 — Source recovery
 
 - Expanded GSC 4.2.3, partial Agent 0.5.4, GSCM 1.1.2+112 and GDS 1.1.1 into their component directories.
