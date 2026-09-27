@@ -7,7 +7,7 @@
 | 1 | GitHub 소스 복구·정리, 최신 버전 기준 통일 | 완료 |
 | 2 | GSC / GDS / ResourcePack System CI 구축 및 실제 Actions 성공 확인 | 완료 |
 | 3 | GST HOTFIX·StatusAgent·Technology·Chemistry 복구, Wild/Playground 설정 근거 회수, Public 보안 점검 | 완료 |
-| 4 | 실제 Wild/Playground 서버 E2E 부팅 및 플러그인/리소스팩/연동 검증 | 완료* |
+| 4 | 실제 Wild/Playground 서버 E2E 부팅 및 플러그인/리소스팩/연동 검증 | 완료 |
 | 5 | GSC/GSCM 통합 안정화: 재연결, Whole Shutdown, 락, 고아 프로세스, 상태 오탐, 네트워크 복구 | 예정 |
 | 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 예정 |
 | 7 | GSC/GST/GDS/Agent/Technology/Chemistry/GSCM 자동 빌드 체계 정리 | 예정 |
@@ -23,12 +23,14 @@ Day 3의 복구/검증 단계는 완료했습니다. 당시 남겨 둔 Wild/Play
 
 Wild/Playground Paper 26.3 실서버 부팅, GSC 4.2.3, GSCM 1.1.2, StatusAgent 0.5.4, GST 1.1.1 HOTFIX, GDS 1.1.1의 실제 상태/연동 증거를 확인했습니다. 세부 근거와 비차단 이슈는 `DAY4-E2E-REPORT.md`에 기록합니다.
 
-Day 4는 **완료***로 닫습니다. 별표는 다음 항목이 별도 후속 작업이기 때문입니다.
+Day 4는 **완료**로 닫습니다.
 
-- Bedrock/Geyser 오프라인/enable 오류는 사용자가 지정한 별도 플러그인 호환성 이슈로 Day-4 합격/실패 판정에서 제외
-- 서버 시작 중 잠깐 표시되는 GSC `주의` 상태는 이번 검증에서 정상적인 시작 전이 상태로 제외
-- Playground AutoSaveWorld v4.15 RegionFileCache 오류는 운영 차단이 아닌 후속 호환성 정리 항목
-- resource-pack SHA1 미설정 및 ProtocolLib 26.3 미검증 경고는 비차단 유지보수 항목
+후속 항목 처리 상태:
+- Bedrock/Geyser 문제: 사용자 보고 기준 해결
+- Playground AutoSaveWorld 오류: 사용자 보고 기준 해결
+- ProtocolLib 26.3 경고: 사용자 보고 기준 해결
+- DiscordSRV 누락 설정: V2 자동 보정 로그에서 92개 누락 키 추가 확인, 사용자 승인으로 통과
+- resource-pack SHA1: 자동 검증 성공은 확인하지 못했으나 사용자 승인으로 Day-4 비차단/통과 처리. 기술적 검증 완료로 기록하지 않음
 
 ## Day 10 — 로비/서버 이동 설계
 

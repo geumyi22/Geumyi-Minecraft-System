@@ -77,6 +77,6 @@ Tracked-file count changed during Day-3 recovery; SOURCE-MANIFEST.json is synchr
 - Runtime JAR hashes matched GitHub Release assets for GST/GDS on both servers and for GeumyiTechnology 0.1.3 / GeumyiChemistry 0.4.1 on Wild.
 - Current sanitized live `server.properties` snapshots are tracked as `Servers/Wild/server.properties.e2e-2026-09-27` and `Servers/Playground/server.properties.e2e-2026-09-27`. Both retain `accepts-transfers=true`.
 - User-approved exclusions: Bedrock/Geyser offline/enable failure and the transient GSC startup `주의` state are not treated as Day-4 failures.
-- Non-blocking follow-ups: Playground AutoSaveWorld v4.15 logged repeated RegionFileCache reflection errors; resource-pack SHA1 is currently blank; ProtocolLib warns that the installed build has not been tested on 26.3; DiscordSRV falls back to defaults for several missing config keys.
+- Day-4 follow-ups were later closed: the user reported Bedrock/Geyser, AutoSaveWorld and ProtocolLib issues resolved; a V2 repair log showed DiscordSRV added 92 missing top-level keys; resource-pack SHA1 was accepted by the user as non-blocking/pass without a successful technical SHA verification.
 - Raw screenshots/log bundles were not committed because they include local paths/network information and a live share URL. Public evidence is sanitized; see `DAY4-E2E-REPORT.md` and `SECURITY-NOTES.md`.
-- Day 4 is closed as **completed with documented exclusions/non-blocking follow-ups**.
+- Day 4 is closed as **completed**. The resource-pack SHA1 item is explicitly recorded as user-accepted rather than technically verified.

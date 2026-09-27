@@ -27,12 +27,15 @@ These are intentionally **not** treated as Day-4 failures:
 2. The transient GSC `주의` state shown during server startup: treated as startup-transition behavior for this verification.
 3. The third "Other" server being offline: it is outside the Wild/Playground Day-4 target.
 
-## Non-blocking observations
+## Follow-up disposition
 
-- Playground AutoSaveWorld v4.15 logged 66 `Could not dump RegionFileCache` errors with `Can't find method saveLevel with params length 0` during the collected period. Surrounding AutoSaveWorld INFO messages continued through save/backup cycles, so this is recorded as a plugin compatibility follow-up rather than a Day-4 blocker.
-- Both live server configurations currently have `resource-pack-sha1=` empty; Paper logs warn that clients may not refresh a pack unless its name changes.
-- ProtocolLib warns that Minecraft/Paper 26.3 has not yet been tested by that installed build.
-- DiscordSRV reports multiple missing configuration keys and falls back to defaults; no failure of the GDS/Agent status path was observed.
+The original Day-4 follow-up list is now closed for the Day-4 milestone.
+
+- Bedrock/Geyser issue: user reported resolved.
+- Playground AutoSaveWorld RegionFileCache issue: user reported resolved.
+- ProtocolLib 26.3 warning: user reported resolved.
+- DiscordSRV missing configuration keys: the V2 pre-start repair log showed 92 missing top-level keys added; user accepted this item as passed.
+- `resource-pack-sha1` remained unverified at the end of the repair attempts because the configured share URL did not return a ZIP to the verifier. The user explicitly accepted this item as passed/non-blocking for Day 4. This is an acceptance decision, not a claim that the SHA-1 field was technically verified.
 
 ## Evidence-handling note
 
@@ -40,6 +43,6 @@ The collection tool successfully removed obvious token/private-key fields, but i
 
 ## Day-4 result
 
-**Completed with documented exclusions and non-blocking follow-ups.**
+**Completed. All Day-4 follow-up items are closed for this milestone; the resource-pack SHA-1 item is closed by explicit user acceptance rather than technical verification.**
 
 No blocking fault was observed in the Java server, GSC, GSCM, StatusAgent, GST or GDS path. Bedrock/Geyser remains a separate known plugin issue and is excluded from this completion decision by user instruction.
