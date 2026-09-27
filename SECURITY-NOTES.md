@@ -36,6 +36,13 @@ The **current tree being clean does not remove data already present in Git histo
 - A deleted historical `release-source.txt` commit contains an old Dropbox shared URL in its diff. Deleting the file from `main` did not erase the URL from Git history. Revoke that Dropbox shared link if it has not already been revoked.
 - History rewriting is intentionally **not** performed automatically. It changes commit SHAs and can affect releases, Actions references and clones. Do it only as a separately approved maintenance operation after credentials/share links have been revoked.
 
+## 2026-09-27 recovered-source import follow-up
+
+The GST 1.1.1 HOTFIX overlay source, GeumyiTechnology 0.1.3 reconstructed source and GeumyiChemistry 0.4.1 reconstructed source were added to the tracked tree after the initial Day-3 documentation pass.
+
+- Before import, the recovered source snapshots were checked for GitHub/Discord token forms, private-key headers, Dropbox share URLs, Windows user-profile paths and email-address patterns; no matches were found.
+- Existing current-tree redactions and the historical Git caveats above remain unchanged.
+
 ## Publication rules
 
 Do not commit or publish:
