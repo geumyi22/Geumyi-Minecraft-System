@@ -1,6 +1,6 @@
 # Geumyi Minecraft System — 작업 로드맵
 
-기준일: 2026-09-27
+기준일: 2026-09-28
 
 | Day | 목표 | 상태 |
 |---|---|---|
@@ -8,8 +8,8 @@
 | 2 | GSC / GDS / ResourcePack System CI 구축 및 실제 Actions 성공 확인 | 완료 |
 | 3 | GST HOTFIX·StatusAgent·Technology·Chemistry 복구, Wild/Playground 설정 근거 회수, Public 보안 점검 | 완료 |
 | 4 | 실제 Wild/Playground 서버 E2E 부팅 및 플러그인/리소스팩/연동 검증 | 완료 |
-| 5 | GSC/GSCM 통합 안정화: 재연결, Whole Shutdown, 락, 고아 프로세스, 상태 오탐, 네트워크 복구 | 예정 |
-| 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 예정 |
+| 5 | GSC/GSCM 통합 안정화: 재연결, Whole Shutdown, 락, 고아 프로세스, 상태 오탐, 네트워크 복구 | 완료 |
+| 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 진행 |
 | 7 | GSC/GST/GDS/Agent/Technology/Chemistry/GSCM 자동 빌드 체계 정리 | 예정 |
 | 8 | 자동 Release/업데이트/체크섬/패키징 표준화 | 예정 |
 | 9 | 서버·설정 백업/복원/롤백 및 실패 복구 테스트 | 예정 |
@@ -31,6 +31,16 @@ Day 4는 **완료**로 닫습니다.
 - ProtocolLib 26.3 경고: 사용자 보고 기준 해결
 - DiscordSRV 누락 설정: V2 자동 보정 로그에서 92개 누락 키 추가 확인, 사용자 승인으로 통과
 - resource-pack SHA1: 자동 검증 성공은 확인하지 못했으나 사용자 승인으로 Day-4 비차단/통과 처리. 기술적 검증 완료로 기록하지 않음
+
+## Day 5 완료 기준
+
+Day 5는 **사용자 실사용 검증 통과**로 완료 처리합니다. 시작/종료/재시작/강제 종료, 중복 명령 및 락, GSC/Agent 재연결, 네트워크 복구, Whole Shutdown, 고아 프로세스 여부, Other 서버 상태/알림 동작을 사용자가 기존 운영 중 이미 확인했고 모두 정상이라고 확인했습니다.
+
+새로운 Day-5 로그 재수집이나 별도 assistant-side E2E 재현은 수행하지 않았으므로, 이를 새로 재현된 자동 테스트 결과로 기록하지 않습니다. 세부 경계는 `DAY5-STABILITY-REPORT.md`에 기록합니다.
+
+## Day 6 진행 기준
+
+Day 6은 GSCM **Android + iOS 실기기 검증** 단계입니다. 페어링, 인증정보 지속, 앱 재실행, WS 재연결 + HTTP 재동기화, 서버 제어, 네트워크 복구, Android/iOS 동작 차이를 실제 기기에서 확인합니다.
 
 ## Day 10 — 로비/서버 이동 설계
 

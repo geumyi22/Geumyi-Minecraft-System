@@ -1,6 +1,6 @@
 # Version and source recovery matrix
 
-Confirmed runtime baseline: 2026-09-26. Recovery status updated 2026-09-27.
+Confirmed runtime baseline: 2026-09-26. Recovery/verification status updated 2026-09-28.
 
 CI:
 - System CI run 36299122264: GSC, GDS and ResourcePack validation passed.
@@ -9,9 +9,9 @@ CI:
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
-| GSC | 4.2.3 | GSC/ServerCenter | Recovered source; Windows Go tests covered by System CI |
+| GSC | 4.2.3 | GSC/ServerCenter | Recovered source; Windows Go tests covered by System CI; Day-5 integration behavior user-verified in operation |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction present; JDK 21 clean build succeeds; historical deployed JAR reused older precompiled helper classes so byte-identical clean rebuild is not claimed |
-| GSCM | 1.1.2+112 | GSCM | Recovered Flutter/Android source and iOS generation scripts; Android/iOS Actions succeeded |
+| GSCM | 1.1.2+112 | GSCM | Recovered Flutter/Android source and iOS generation scripts; Android/iOS Actions succeeded; Day-5 control/reconnection behavior user-verified, Day-6 device verification in progress |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | Exact final HOTFIX/overlay source is tracked; rebuilt overlay matched 31/31 uncompressed JAR entries. Legacy 0.1.5 core remains binary-only |
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full plugin source, stubs and tests; JDK 21 CI passes |
 | GeumyiTechnology | 0.1.3 | Plugins/GeumyiTechnology | Reconstructed source tree is tracked; built from preserved 0.1.0 source + compatibility artifacts + deployed 0.1.3 JAR; semantic bytecode/resource comparison completed; not labeled untouched original source |
@@ -27,3 +27,8 @@ The repository is now public. Current tracked/recovered material was reviewed fo
 ## Day-4 live verification
 
 See `DAY4-E2E-REPORT.md` for the 2026-09-27 live server-PC verification and final follow-up disposition. The resource-pack SHA1 item was accepted by the user without successful technical SHA verification.
+
+
+## Day-5 integration stability
+
+See `DAY5-STABILITY-REPORT.md`. Day 5 is closed from user-confirmed operational use; no fresh diagnostic replay was collected for that closure. Day 6 Android/iOS device verification is in progress.

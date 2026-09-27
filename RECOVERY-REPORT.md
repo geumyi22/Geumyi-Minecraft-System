@@ -80,3 +80,14 @@ Tracked-file count changed during Day-3 recovery; SOURCE-MANIFEST.json is synchr
 - Day-4 follow-ups were later closed: the user reported Bedrock/Geyser, AutoSaveWorld and ProtocolLib issues resolved; a V2 repair log showed DiscordSRV added 92 missing top-level keys; resource-pack SHA1 was accepted by the user as non-blocking/pass without a successful technical SHA verification.
 - Raw screenshots/log bundles were not committed because they include local paths/network information and a live share URL. Public evidence is sanitized; see `DAY4-E2E-REPORT.md` and `SECURITY-NOTES.md`.
 - Day 4 is closed as **completed**. The resource-pack SHA1 item is explicitly recorded as user-accepted rather than technically verified.
+
+
+## Day 5 — 2026-09-28
+
+- GSC/GSCM integration stability was closed by user-confirmed operational verification.
+- The user confirmed working server start/stop/restart/force-stop behavior for Wild and Playground.
+- Duplicate-command/lock handling, GSC reconnection, StatusAgent recovery, temporary network recovery, Whole Shutdown and absence of a known remaining orphan-process issue were reported working.
+- The Other server control/status/notification path was also reported working.
+- No fresh Day-5 diagnostic bundle or replay log was collected, so this is not represented as a newly reproduced assistant-side E2E run.
+- No Day-5 source change was required.
+- Day 6 begins focused Android/iOS GSCM device verification.
