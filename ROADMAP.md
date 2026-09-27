@@ -6,8 +6,8 @@
 |---|---|---|
 | 1 | GitHub 소스 복구·정리, 최신 버전 기준 통일 | 완료 |
 | 2 | GSC / GDS / ResourcePack System CI 구축 및 실제 Actions 성공 확인 | 완료 |
-| 3 | GST HOTFIX·StatusAgent·Technology·Chemistry 복구, Wild/Playground 설정 근거 회수, Public 보안 점검 | 완료* |
-| 4 | 실제 Wild/Playground 서버 E2E 부팅 및 플러그인/리소스팩/연동 검증 | 예정 |
+| 3 | GST HOTFIX·StatusAgent·Technology·Chemistry 복구, Wild/Playground 설정 근거 회수, Public 보안 점검 | 완료 |
+| 4 | 실제 Wild/Playground 서버 E2E 부팅 및 플러그인/리소스팩/연동 검증 | 완료* |
 | 5 | GSC/GSCM 통합 안정화: 재연결, Whole Shutdown, 락, 고아 프로세스, 상태 오탐, 네트워크 복구 | 예정 |
 | 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 예정 |
 | 7 | GSC/GST/GDS/Agent/Technology/Chemistry/GSCM 자동 빌드 체계 정리 | 예정 |
@@ -17,7 +17,18 @@
 
 ## Day 3 완료 기준
 
-Day 3의 복구/검증 단계는 완료했습니다. 다만 Wild/Playground의 **정확한 2026-09-26 실서버 설정**은 보존 자료만으로 증명할 수 없으므로, Day 4 실제 서버 E2E에서 서버 PC의 현재 설정을 캡처해 확정합니다. 이 제한은 복구 실패를 숨기지 않고 별도로 유지합니다.
+Day 3의 복구/검증 단계는 완료했습니다. 당시 남겨 둔 Wild/Playground 실서버 설정 확인 항목은 Day 4에서 서버 PC의 2026-09-27 현재 설정을 캡처해 공개용으로 정리했습니다.
+
+## Day 4 완료 기준
+
+Wild/Playground Paper 26.3 실서버 부팅, GSC 4.2.3, GSCM 1.1.2, StatusAgent 0.5.4, GST 1.1.1 HOTFIX, GDS 1.1.1의 실제 상태/연동 증거를 확인했습니다. 세부 근거와 비차단 이슈는 `DAY4-E2E-REPORT.md`에 기록합니다.
+
+Day 4는 **완료***로 닫습니다. 별표는 다음 항목이 별도 후속 작업이기 때문입니다.
+
+- Bedrock/Geyser 오프라인/enable 오류는 사용자가 지정한 별도 플러그인 호환성 이슈로 Day-4 합격/실패 판정에서 제외
+- 서버 시작 중 잠깐 표시되는 GSC `주의` 상태는 이번 검증에서 정상적인 시작 전이 상태로 제외
+- Playground AutoSaveWorld v4.15 RegionFileCache 오류는 운영 차단이 아닌 후속 호환성 정리 항목
+- resource-pack SHA1 미설정 및 ProtocolLib 26.3 미검증 경고는 비차단 유지보수 항목
 
 ## Day 10 — 로비/서버 이동 설계
 

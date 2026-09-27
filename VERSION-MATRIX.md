@@ -16,10 +16,14 @@ CI:
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full plugin source, stubs and tests; JDK 21 CI passes |
 | GeumyiTechnology | 0.1.3 | Plugins/GeumyiTechnology | Reconstructed source tree is tracked; built from preserved 0.1.0 source + compatibility artifacts + deployed 0.1.3 JAR; semantic bytecode/resource comparison completed; not labeled untouched original source |
 | GeumyiChemistry | 0.4.1 | Plugins/GeumyiChemistry | Reconstructed source tree is tracked; built from preserved 0.4.0 source + deployed 0.4.1 JAR; semantic bytecode/resource comparison completed; not labeled untouched original source |
-| Wild server | Paper 26.3 | Servers/Wild | Paper provenance + sanitized 2026-09-10 server.properties evidence recovered; exact 2026-09-26 live config still requires capture from server PC |
-| Playground server | Paper 26.3 | Servers/Playground | Paper provenance + sanitized 2026-09-10 server.properties evidence recovered; exact 2026-09-26 live config still requires capture from server PC |
+| Wild server | Paper 26.3 | Servers/Wild | 2026-09-27 live E2E evidence captured; sanitized current server.properties tracked; GSC/GST/GDS runtime healthy; Bedrock/Geyser excluded as separate known issue |
+| Playground server | Paper 26.3 | Servers/Playground | 2026-09-27 live E2E evidence captured; sanitized current server.properties tracked; GSC/GST/GDS runtime healthy; AutoSaveWorld RegionFileCache issue is non-blocking follow-up; Bedrock/Geyser excluded |
 | Resource packs | Java 26.3 / bundled Bedrock | ResourcePacks | Recovered expanded assets and Wild Geyser mapping; JSON/metadata CI passes |
 
 ## Public repository note
 
 The repository is now public. Current tracked/recovered material was reviewed for common credential and personal-information patterns; see `SECURITY-NOTES.md`. Git-history metadata and a deleted historical share URL have separate caveats documented there.
+
+## Day-4 live verification
+
+See `DAY4-E2E-REPORT.md` for the 2026-09-27 live server-PC verification, user-approved exclusions and non-blocking follow-ups.

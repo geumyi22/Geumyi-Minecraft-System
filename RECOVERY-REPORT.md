@@ -18,8 +18,8 @@
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full plugin source, stubs and tests |
 | GeumyiTechnology | 0.1.3 | Plugins/GeumyiTechnology | Reconstructed source verified against deployed 0.1.3 bytecode/resources; not claimed as untouched original source |
 | GeumyiChemistry | 0.4.1 | Plugins/GeumyiChemistry | Reconstructed source verified against deployed 0.4.1 bytecode/resources; not claimed as untouched original source |
-| Wild server | Paper 26.3 | Servers/Wild | Paper provenance + sanitized 2026-09-10 server.properties evidence recovered; exact 2026-09-26 live config still pending server-PC capture |
-| Playground server | Paper 26.3 | Servers/Playground | Paper provenance + sanitized 2026-09-10 server.properties evidence recovered; exact 2026-09-26 live config still pending server-PC capture |
+| Wild server | Paper 26.3 | Servers/Wild | 2026-09-27 live server-PC evidence captured; sanitized current server.properties tracked; Day-4 Java/GSC/GST/GDS path verified |
+| Playground server | Paper 26.3 | Servers/Playground | 2026-09-27 live server-PC evidence captured; sanitized current server.properties tracked; Day-4 Java/GSC/GST/GDS path verified with non-blocking AutoSaveWorld follow-up |
 | Resource packs | Java 26.3 / bundled Bedrock | ResourcePacks | Recovered expanded assets and Wild Geyser mapping |
 
 ## Exclusions and limitations
@@ -67,3 +67,16 @@ Tracked-file count changed during Day-3 recovery; SOURCE-MANIFEST.json is synchr
 - Source preservation follow-up: the recovered GST 1.1.1 HOTFIX overlay source, GeumyiTechnology 0.1.3 reconstructed source, and GeumyiChemistry 0.4.1 reconstructed source are now tracked under `Plugins/` on `main`; this closes the prior gap where only recovery documentation was tracked.
 - The newly tracked source snapshots were screened before publication for GitHub/Discord token forms, private-key headers, Dropbox share URLs, Windows user-profile paths, and email-address patterns; no matches were found.
 - Day-3 recovery work is closed with one deliberate runtime boundary: the exact 2026-09-26 Wild/Playground live configuration cannot be proven from preserved archives and must be captured from the actual server PC during E2E work.
+
+## Day 4 — 2026-09-27
+
+- Live Wild and Playground evidence was collected from the actual server PC. Both servers reached the Paper 26.3 running state with 24 plugin JARs detected on each server.
+- Host Java 25.0.4.1 LTS was captured.
+- GSC 4.2.3 showed Wild and Playground online. GSCM 1.1.2 showed a realtime Control API connection, Agent online and two managed Minecraft servers online.
+- Discord status output identified StatusAgent 0.5.4, Wild/Playground online, GST `HEALTHY`, approximately 20 TPS and fresh heartbeats. Offline detection followed by recovery notification was also observed.
+- Runtime JAR hashes matched GitHub Release assets for GST/GDS on both servers and for GeumyiTechnology 0.1.3 / GeumyiChemistry 0.4.1 on Wild.
+- Current sanitized live `server.properties` snapshots are tracked as `Servers/Wild/server.properties.e2e-2026-09-27` and `Servers/Playground/server.properties.e2e-2026-09-27`. Both retain `accepts-transfers=true`.
+- User-approved exclusions: Bedrock/Geyser offline/enable failure and the transient GSC startup `주의` state are not treated as Day-4 failures.
+- Non-blocking follow-ups: Playground AutoSaveWorld v4.15 logged repeated RegionFileCache reflection errors; resource-pack SHA1 is currently blank; ProtocolLib warns that the installed build has not been tested on 26.3; DiscordSRV falls back to defaults for several missing config keys.
+- Raw screenshots/log bundles were not committed because they include local paths/network information and a live share URL. Public evidence is sanitized; see `DAY4-E2E-REPORT.md` and `SECURITY-NOTES.md`.
+- Day 4 is closed as **completed with documented exclusions/non-blocking follow-ups**.

@@ -43,6 +43,17 @@ The GST 1.1.1 HOTFIX overlay source, GeumyiTechnology 0.1.3 reconstructed source
 - Before import, the recovered source snapshots were checked for GitHub/Discord token forms, private-key headers, Dropbox share URLs, Windows user-profile paths and email-address patterns; no matches were found.
 - Existing current-tree redactions and the historical Git caveats above remain unchanged.
 
+## 2026-09-27 Day-4 live-evidence handling
+
+The Day-4 server-PC bundle and screenshots were reviewed but are intentionally **not** committed verbatim.
+
+- Screenshots expose local workstation paths and network information.
+- The first collector build missed a live resource-pack share URL when the value used an escaped `https\://` form.
+- The collector also formatted one keystore-password redaction poorly.
+- No raw runtime token/private-key material is intentionally published.
+- Only derived, manually reviewed `server.properties.e2e-2026-09-27` snapshots and `DAY4-E2E-REPORT.md` are stored in the public repository.
+- RCON/management secrets and live resource-pack URLs are replaced with explicit `REDACTED_...` placeholders.
+
 ## Publication rules
 
 Do not commit or publish:
