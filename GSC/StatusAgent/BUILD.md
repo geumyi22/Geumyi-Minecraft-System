@@ -1,7 +1,7 @@
-# Build StatusAgent 0.5.4 (partial source)
+# GeumyiStatusAgent 0.5.4 build
 
-Requires JDK 21 and Bash. The four Java source files are the recovered 0.5.4 overlay. Helper class source is **source not yet recovered**.
+Requires JDK 21 (`javac`, `jar`). Run `./build.sh`.
 
-The unmodified build script expects `base/GeumyiStatusAgent-0.4.5.jar`. Obtain it from `GeumyiServerCenter_FINAL_v4.2.3.zip → GeumyiStatusAgent-0.5.4-BUNDLE.zip → GeumyiStatusAgent-0.5.4-Source.zip → base/` in the existing mc-2026.09.26-v3 release. This is a build dependency, not the current runtime version. Keep it local and ignored.
+This recovered package now contains all nine Java source files. The five helper sources were recovered from the preserved 0.4.0 source package; four were byte-identical through the 0.4.5 base JAR, and `ServerState` was recovered by the single verified 0.4.5 delta (`reportedJavaPort`).
 
-Then run `bash build.sh`; output is GeumyiStatusAgent-0.5.4.jar. No decompiled or invented helper source was added.
+The build is deterministic with a fixed JAR timestamp. Output: `GeumyiStatusAgent-0.5.4.jar`.
