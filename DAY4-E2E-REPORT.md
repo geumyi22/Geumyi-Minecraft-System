@@ -23,7 +23,7 @@ Live Wild and Playground server operation was checked using the server-PC eviden
 
 These are intentionally **not** treated as Day-4 failures:
 
-1. Bedrock/Geyser offline state and the Geyser enable error: currently tracked as a separate plugin compatibility issue.
+1. Bedrock/Geyser offline state and the Geyser enable error were excluded from the original Day-4 pass/fail decision; the user later reported this issue resolved.
 2. The transient GSC `주의` state shown during server startup: treated as startup-transition behavior for this verification.
 3. The third "Other" server being offline: it is outside the Wild/Playground Day-4 target.
 
@@ -45,4 +45,4 @@ The collection tool successfully removed obvious token/private-key fields, but i
 
 **Completed. All Day-4 follow-up items are closed for this milestone; the resource-pack SHA-1 item is closed by explicit user acceptance rather than technical verification.**
 
-No blocking fault was observed in the Java server, GSC, GSCM, StatusAgent, GST or GDS path. Bedrock/Geyser remains a separate known plugin issue and is excluded from this completion decision by user instruction.
+No blocking fault was observed in the Java server, GSC, GSCM, StatusAgent, GST or GDS path. The original Bedrock/Geyser exclusion is preserved as historical Day-4 context; the user later reported that issue resolved.

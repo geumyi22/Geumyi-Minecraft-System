@@ -19,7 +19,7 @@
 | GeumyiTechnology | 0.1.3 | Plugins/GeumyiTechnology | Reconstructed source verified against deployed 0.1.3 bytecode/resources; not claimed as untouched original source |
 | GeumyiChemistry | 0.4.1 | Plugins/GeumyiChemistry | Reconstructed source verified against deployed 0.4.1 bytecode/resources; not claimed as untouched original source |
 | Wild server | Paper 26.3 | Servers/Wild | 2026-09-27 live server-PC evidence captured; sanitized current server.properties tracked; Day-4 Java/GSC/GST/GDS path verified |
-| Playground server | Paper 26.3 | Servers/Playground | 2026-09-27 live server-PC evidence captured; sanitized current server.properties tracked; Day-4 Java/GSC/GST/GDS path verified with non-blocking AutoSaveWorld follow-up |
+| Playground server | Paper 26.3 | Servers/Playground | 2026-09-27 live server-PC evidence captured; sanitized current server.properties tracked; Day-4 Java/GSC/GST/GDS path verified; AutoSaveWorld follow-up later reported resolved |
 | Resource packs | Java 26.3 / bundled Bedrock | ResourcePacks | Recovered expanded assets and Wild Geyser mapping |
 
 ## Exclusions and limitations
