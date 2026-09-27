@@ -1,0 +1,14 @@
+# GeumyiTechnology v0.1.3
+# Energy unit: GT (Geumyi Tech Energy)
+power:
+  coal-output-per-second: 40
+  solar-output-per-second: 12
+  max-fuel-seconds: 7200
+
+safety:
+  # Prevent accidental runaway placement from custom-item duplication or automation bugs.
+  max-placed-tech-blocks: 5000
+
+resource-pack:
+  # Custom item models are cosmetic. PDC identity remains authoritative even without packs.
+  use-item-models: true

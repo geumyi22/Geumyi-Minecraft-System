@@ -1,0 +1,17 @@
+name: GeumyiTechnology
+version: 0.1.3
+main: kr.geumyi.technology.GeumyiTechnology
+api-version: '26.3'
+author: Geumyi Server
+contributors: [OpenAI]
+description: Modular survival technology project for Paper 26.3 with power networks, industry machines and optional GeumyiChemistry integration.
+softdepend: [GeumyiChemistry]
+commands:
+  gtech:
+    description: Geumyi Technology main command
+    usage: /gtech
+    aliases: [gt, technology, 기술]
+permissions:
+  geumyi.tech.admin:
+    description: Allows Geumyi Technology admin commands
+    default: op
