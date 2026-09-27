@@ -52,9 +52,9 @@
     },
     {
       "path": "DAY6-DEVICE-TEST.md",
-      "bytes": 2554,
-      "sha256": "58ef8fd69986f81b8942dddf4c7e00ed39976a1a6f4c5ac3626a0113fd61af92",
-      "source": "Day-6 Android/iOS real-device verification checklist started 2026-09-28"
+      "bytes": 3701,
+      "sha256": "439fa3ef2c97888804ed3ae0afebf49f8c7f423188dbce69cfa09518560c8fe1",
+      "source": "Pre-Day-6 static audit/version-label normalization 2026-09-28"
     },
     {
       "path": "GSC/README.md",
@@ -365,8 +365,8 @@
     {
       "path": "GSC/ServerCenter/cmd/setup/agent.properties.template",
       "bytes": 1748,
-      "sha256": "183bddff262f35d3554d40a9bb5dc4eecd14ad090cc4f28b1386aa4769b9eef9",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/agent.properties.template",
+      "sha256": "aa74437e68d0654e6332ddafa879cb7f319cb8b9666dd3af9eba84f3a91779b6",
+      "source": "Pre-Day-6 static audit/version-label normalization 2026-09-28",
       "modifiedFromRecovered": false
     },
     {
@@ -393,15 +393,15 @@
     {
       "path": "GSC/ServerCenter/cmd/setup/payload/agent.properties.managed",
       "bytes": 1773,
-      "sha256": "bd91df17810714e39d14627438d24430f35f3820f34657ed42cc8a11e63a600e",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/payload/agent.properties.managed",
+      "sha256": "b3e283f126bed21572414ed449eb63cab5659796f87e1088c249d2de96f1b64a",
+      "source": "Pre-Day-6 static audit/version-label normalization 2026-09-28",
       "modifiedFromRecovered": false
     },
     {
       "path": "GSC/ServerCenter/cmd/setup/payload/agent.properties.template",
       "bytes": 1748,
-      "sha256": "183bddff262f35d3554d40a9bb5dc4eecd14ad090cc4f28b1386aa4769b9eef9",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/payload/agent.properties.template",
+      "sha256": "aa74437e68d0654e6332ddafa879cb7f319cb8b9666dd3af9eba84f3a91779b6",
+      "source": "Pre-Day-6 static audit/version-label normalization 2026-09-28",
       "modifiedFromRecovered": false
     },
     {
@@ -413,9 +413,9 @@
     },
     {
       "path": "GSC/ServerCenter/cmd/setup/payload/README-v4.2.3.txt",
-      "bytes": 5248,
-      "sha256": "ed08f11e6ee369af5acaa11be95513609380df28e88bd0696df36ce9bef07ef6",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/payload/README-v4.2.3.txt",
+      "bytes": 5255,
+      "sha256": "dceed99262b9ea0db36b5bdc9c6440e570c760105f5cb7e9377bd8988772ea27",
+      "source": "Pre-Day-6 static audit/version-label normalization 2026-09-28",
       "modifiedFromRecovered": false
     },
     {
@@ -504,9 +504,9 @@
     },
     {
       "path": "GSC/ServerCenter/README-v4.2.3.txt",
-      "bytes": 5248,
-      "sha256": "ed08f11e6ee369af5acaa11be95513609380df28e88bd0696df36ce9bef07ef6",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/README-v4.2.3.txt",
+      "bytes": 5255,
+      "sha256": "dceed99262b9ea0db36b5bdc9c6440e570c760105f5cb7e9377bd8988772ea27",
+      "source": "Pre-Day-6 static audit/version-label normalization 2026-09-28",
       "modifiedFromRecovered": false
     },
     {
@@ -925,9 +925,9 @@
     },
     {
       "path": "GSCM/tool/ios/README-iOS.md",
-      "bytes": 1388,
-      "sha256": "cbce3c67bd9bcefbfecd051624036e71a6146f6874fb7e736467cabfb55b6d5c",
-      "source": "gscm-original/tool/ios/README-iOS.md",
+      "bytes": 1395,
+      "sha256": "e9fa62d9acecdf23a4411228f2ad7ef8b8d70cb7c02a7f24a1d9f9e66f3eff84",
+      "source": "Pre-Day-6 static audit/version-label normalization 2026-09-28",
       "modifiedFromRecovered": false
     },
     {
@@ -1064,9 +1064,9 @@
     },
     {
       "path": "Plugins/GeumyiDiscordStatus/README.md",
-      "bytes": 2029,
-      "sha256": "edefb64ae73d7fb0051001889428641f8a6264ef0c74053b799e0b6bd1bb8273",
-      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
+      "bytes": 2000,
+      "sha256": "e7f2acaab5bd4169589a6e70b66501ca2f42c092b56770e5d214a361d37b0c21",
+      "source": "Pre-Day-6 static audit/version-label normalization 2026-09-28"
     },
     {
       "path": "Plugins/GeumyiDiscordStatus/src/main/java/kr/geumyi/discordstatus/ActionResult.java",
@@ -1346,9 +1346,9 @@
     },
     {
       "path": "Plugins/GeumyiServerTools/BUILD.md",
-      "bytes": 619,
-      "sha256": "819138973593c41dfa8a380492c86483c8885cc649940755d2ebfdede6f266eb",
-      "source": "Day-3 recovered GeumyiServerTools 1.1.1 HOTFIX overlay source imported 2026-09-27"
+      "bytes": 848,
+      "sha256": "a1f22a85c7cf5780a53aed0a767fdb8e2b11dce008bb6b55075d718d85b74d1e",
+      "source": "Pre-Day-6 static audit/version-label normalization 2026-09-28"
     },
     {
       "path": "Plugins/GeumyiServerTools/build.sh",
