@@ -34,9 +34,9 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 831,
-      "sha256": "08caaa7dd1c408acfc6e7a5fc469626a34d0a3578c186a1e5a1ab37c4ed02444",
-      "source": "Repository documentation or import housekeeping"
+      "bytes": 1371,
+      "sha256": "bf03042132780fec1dee17dfa565014f29597852186703ccfb52e69830326e22",
+      "source": "Repository changelog updated after Day-4 verification and cleanup 2026-09-27"
     },
     {
       "path": "DAY4-E2E-REPORT.md",
@@ -1748,9 +1748,9 @@
     },
     {
       "path": "README.md",
-      "bytes": 2793,
-      "sha256": "4e2a0e68776a25c2c092c4fafef5d677ac01b9c3f24d936c0cd718a8985ae77e",
-      "source": "Repository documentation updated after Day-3 recovery 2026-09-27"
+      "bytes": 2777,
+      "sha256": "ada6ef9121f9494765e9dfbf0dec7d272be5676850670c131edddce7ee9ad11a",
+      "source": "Repository overview refreshed after Day-4 verification and cleanup 2026-09-27"
     },
     {
       "path": "RECOVERY-REPORT.md",
@@ -1762,12 +1762,6 @@
       "path": "release-sha256.txt",
       "bytes": 65,
       "sha256": "fb3ac69986a691c62249d2a894c19637444a5f51bd968aaf4e7250f3270019b4",
-      "source": "Repository documentation or import housekeeping"
-    },
-    {
-      "path": "release-source.example.txt",
-      "bytes": 67,
-      "sha256": "254cd475514d5fa01e5f3395c742966f6e5f6aaf8d1cca74b611145bde2cac66",
       "source": "Repository documentation or import housekeeping"
     },
     {
@@ -8950,9 +8944,9 @@
     },
     {
       "path": "tools/release/README.md",
-      "bytes": 1118,
-      "sha256": "106168f96aae869597636599a1ad94fb5b38d73d8b2b33deee674b1445dbd6c3",
-      "source": "Repository documentation or import housekeeping"
+      "bytes": 1019,
+      "sha256": "52b6b43e092254f66bf7da152bf127d86c5a61a4a0238d4550daccc283d898de",
+      "source": "Release documentation cleaned after removal of unused source example 2026-09-27"
     },
     {
       "path": "VERSION-MATRIX.md",
