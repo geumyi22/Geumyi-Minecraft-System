@@ -6,7 +6,7 @@
 |---|---|---|
 | 1 | GitHub 소스 복구·정리, 최신 버전 기준 통일 | 완료 |
 | 2 | GSC / GDS / ResourcePack System CI 구축 및 실제 Actions 성공 확인 | 완료 |
-| 3 | GST HOTFIX·StatusAgent·Technology·Chemistry 복구, Wild/Playground 설정 근거 회수, Public 보안 점검 | 진행/마감 단계 |
+| 3 | GST HOTFIX·StatusAgent·Technology·Chemistry 복구, Wild/Playground 설정 근거 회수, Public 보안 점검 | 완료* |
 | 4 | 실제 Wild/Playground 서버 E2E 부팅 및 플러그인/리소스팩/연동 검증 | 예정 |
 | 5 | GSC/GSCM 통합 안정화: 재연결, Whole Shutdown, 락, 고아 프로세스, 상태 오탐, 네트워크 복구 | 예정 |
 | 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 예정 |
@@ -14,6 +14,10 @@
 | 8 | 자동 Release/업데이트/체크섬/패키징 표준화 | 예정 |
 | 9 | 서버·설정 백업/복원/롤백 및 실패 복구 테스트 | 예정 |
 | 10 | 최종 장애/E2E 테스트 + 문서/Release 마감 + 로비 중심 멀티서버 네트워크 설계 | 예정 |
+
+## Day 3 완료 기준
+
+Day 3의 복구/검증 단계는 완료했습니다. 다만 Wild/Playground의 **정확한 2026-09-26 실서버 설정**은 보존 자료만으로 증명할 수 없으므로, Day 4 실제 서버 E2E에서 서버 PC의 현재 설정을 캡처해 확정합니다. 이 제한은 복구 실패를 숨기지 않고 별도로 유지합니다.
 
 ## Day 10 — 로비/서버 이동 설계
 
