@@ -43,3 +43,10 @@ SOURCE-MANIFEST.json lists final paths, hashes and provenance. Release assets re
 Language JSON normalization: 31 BACAP language files contained hash comments; comments and author credits are preserved in ResourcePacks/Wild/LANGUAGE-COMMENTS.md. Raw string control characters were escaped and one misplaced quote pair in zh_tw was corrected. Translation text was not rewritten. All 488 JSON/pack metadata files then parsed successfully.
 
 Final tracked tree: 1,211 files, including 1,016 resource-pack files; SOURCE-MANIFEST.json covers every other tracked path. All staged Git blobs were matched to the validated local files. The existing 15 release assets retain the same IDs, sizes and digests.
+
+## 2026-09-27 follow-up
+
+- Added `.github/workflows/system-ci.yml`. System CI run 36299122264 completed successfully: GSC `go test ./...` on Windows, GDS JDK 21 build plus JAR integrity/stub checks, and ResourcePack JSON/`pack.mcmeta`/`manifest.json` validation all passed.
+- The first ResourcePack CI attempt exposed a validator assumption: the current Java 26.3 packs use `min_format`/`max_format` ranges rather than legacy `pack_format`. The validator was corrected to accept and validate both forms before the successful rerun.
+- Library recovery recheck found `GeumyiServerTools-1.1.1-Source.zip`. A clean rebuild matches the pre-HOTFIX 1.1.1 JAR entry contents. The current Release HOTFIX JAR SHA-256 `af0509ea77f49fab6bf4dea48ddc0d030e50fa0880eb9250185b47e5ec696ac7` differs from that build in exactly three archive entries: `META-INF/geumyi-26.3-upgrade.properties`, `GscRuntimeBridge.class`, and `HealthService.class`. Therefore the exact final HOTFIX source remains unrecovered and the earlier source was not promoted as current.
+- The same Library recheck did not expose exact complete source packages for GeumyiTechnology 0.1.3, GeumyiChemistry 0.4.1, or GeumyiStatusAgent 0.5.4. Older source/bundles remain available but were not substituted for the current versions.
