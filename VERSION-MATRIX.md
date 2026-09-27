@@ -2,6 +2,8 @@
 
 Confirmed target baseline: 2026-09-26. Version does not imply complete source recovery.
 
+CI verification (2026-09-27): System CI run 36299122264 passed GSC `go test ./...`, GDS JDK 21 build/artifact checks, and ResourcePack JSON/metadata validation.
+
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
 | GSC | 4.2.3 | GSC/ServerCenter | Recovered source; installer JAR payloads supplied from Releases |
