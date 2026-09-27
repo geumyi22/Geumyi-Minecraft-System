@@ -1,0 +1,159 @@
+name: System CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'GSC/ServerCenter/**'
+      - 'Plugins/GeumyiDiscordStatus/**'
+      - 'ResourcePacks/**'
+      - '.github/workflows/system-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'GSC/ServerCenter/**'
+      - 'Plugins/GeumyiDiscordStatus/**'
+      - 'ResourcePacks/**'
+      - '.github/workflows/system-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: system-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gsc:
+    name: GSC / Go test
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: GSC/ServerCenter/go.mod
+          cache: false
+
+      - name: Run GSC tests
+        working-directory: GSC/ServerCenter
+        run: go test ./...
+
+  gds:
+    name: GDS / JDK 21 build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build GDS
+        working-directory: Plugins/GeumyiDiscordStatus
+        shell: bash
+        run: bash build.sh
+
+      - name: Verify GDS artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s Plugins/GeumyiDiscordStatus/GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar
+          unzip -t Plugins/GeumyiDiscordStatus/GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar >/dev/null
+          if unzip -Z1 Plugins/GeumyiDiscordStatus/GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar | grep -q '^org/bukkit/'; then
+            echo 'ERROR: compile-only Bukkit stubs leaked into JAR' >&2
+            exit 1
+          fi
+
+  resourcepacks:
+    name: ResourcePacks / metadata validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate JSON, pack.mcmeta and manifest.json
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          root = pathlib.Path("ResourcePacks")
+          json_files = sorted(root.rglob("*.json"))
+          pack_meta = sorted(root.rglob("pack.mcmeta"))
+          manifests = sorted(root.rglob("manifest.json"))
+
+          if not pack_meta:
+              raise SystemExit("No pack.mcmeta files found")
+          if not manifests:
+              raise SystemExit("No manifest.json files found")
+
+          failures = []
+
+          for path in sorted(set(json_files + pack_meta)):
+              try:
+                  with path.open("r", encoding="utf-8-sig") as f:
+                      json.load(f)
+              except Exception as exc:
+                  failures.append(f"{path}: {exc}")
+
+          for path in pack_meta:
+              try:
+                  with path.open("r", encoding="utf-8-sig") as f:
+                      data = json.load(f)
+                  pack = data.get("pack")
+                  if not isinstance(pack, dict):
+                      raise ValueError("missing object: pack")
+                  if "pack_format" not in pack:
+                      raise ValueError("missing pack.pack_format")
+                  if "description" not in pack:
+                      raise ValueError("missing pack.description")
+              except Exception as exc:
+                  failures.append(f"{path}: {exc}")
+
+          for path in manifests:
+              try:
+                  with path.open("r", encoding="utf-8-sig") as f:
+                      data = json.load(f)
+                  if "format_version" not in data:
+                      raise ValueError("missing format_version")
+                  header = data.get("header")
+                  if not isinstance(header, dict):
+                      raise ValueError("missing object: header")
+                  if not header.get("uuid"):
+                      raise ValueError("missing header.uuid")
+                  modules = data.get("modules")
+                  if not isinstance(modules, list) or not modules:
+                      raise ValueError("missing/non-empty modules")
+                  for i, module in enumerate(modules):
+                      if not isinstance(module, dict) or not module.get("uuid"):
+                          raise ValueError(f"modules[{i}] missing uuid")
+              except Exception as exc:
+                  failures.append(f"{path}: {exc}")
+
+          if failures:
+              print("Resource pack validation failed:", file=sys.stderr)
+              for failure in failures:
+                  print(f" - {failure}", file=sys.stderr)
+              raise SystemExit(1)
+
+          print(
+              f"Validated {len(json_files)} JSON files, "
+              f"{len(pack_meta)} pack.mcmeta files, "
+              f"and {len(manifests)} manifest.json files."
+          )
+          PY
