@@ -1,6 +1,6 @@
 {
   "baseline": "2026-09-26",
-  "note": "Manifest synchronized after Day-3 recovery on 2026-09-27. SOURCE-MANIFEST.json intentionally excludes itself.",
+  "note": "Manifest synchronized through the pre-Day-6 audit on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
   "files": [
     {
       "path": ".github/workflows/android-build.yml",
