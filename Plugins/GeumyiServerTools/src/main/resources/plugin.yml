@@ -1,0 +1,31 @@
+name: GeumyiServerTools
+version: 1.1.1
+main: kr.geumyi.servertools.GeumyiServerToolsV110
+api-version: '26.3'
+author: Geumyi
+description: GSC v4.1-ready server operations, diagnostics v2, lag incident recording, AFK room, maintenance, safe-stop handshake and runtime telemetry for Spigot/Paper 26.3.
+softdepend: [GeumyiDiscordStatus, Geyser-Spigot, floodgate, CoreProtect]
+commands:
+  gst:
+    description: Geumyi Server Tools main command
+    usage: /gst
+    permission: geumyiservertools.use
+    aliases: [servertools, gstools]
+  death:
+    description: Show your recent death location
+    usage: /death
+    permission: geumyiservertools.death
+permissions:
+  geumyiservertools.use:
+    default: op
+  geumyiservertools.admin:
+    default: op
+  geumyiservertools.alerts:
+    default: op
+  geumyiservertools.death:
+    default: true
+  geumyiservertools.death.others:
+    default: op
+  geumyiservertools.maintenance.bypass:
+    description: Allows joining while GST maintenance mode blocks new joins.
+    default: op

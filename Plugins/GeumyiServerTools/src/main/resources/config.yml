@@ -1,0 +1,97 @@
+# GeumyiServerTools v1.1.1
+# Spigot/Paper 26.3 / GSC v4.1-ready. Existing 0.1.5/1.0 settings remain compatible.
+
+monitor:
+  enabled: true
+  interval-seconds: 5
+  low-tps: 18.0
+  high-mspt: 50.0
+  high-memory-percent: 85
+  consecutive-samples: 3
+  alert-cooldown-seconds: 60
+  history-size: 120
+
+afk:
+  enabled: true
+  threshold-seconds: 300
+  notify-player: true
+
+afk-room:
+  enabled: true
+  world-name: geumyi_afk
+  room-size: 11
+  center-y: 200
+  wake-grace-ticks: 10
+  show-title: true
+  protect-from-damage: true
+  restore-on-reconnect: true
+
+sleep:
+  enabled: true
+  percentage: 50
+  exclude-afk: true
+  clear-weather: true
+  minimum-active-players: 1
+
+death:
+  enabled: true
+  history-per-player: 5
+  notify-coordinates: true
+
+chunk-diagnostics:
+  batch-size-per-tick: 40
+  max-chunks-per-scan: 5000
+  top-results: 10
+  count-block-entities: true
+
+notifications:
+  first-join-admin-alert: true
+  performance-alerts: true
+
+backup-watch:
+  enabled: false
+  path: ""
+  max-depth: 2
+
+countdown:
+  default-seconds: 60
+
+idle-freeze:
+  enabled: true
+  freeze-time: true
+  freeze-weather: true
+
+# v1.0: game-side maintenance mode. This does NOT rewrite server whitelist settings.
+maintenance:
+  enabled: true
+  block-new-joins: true
+  reminder-seconds: 60
+  show-title: true
+  default-reason: "서버 점검 중입니다."
+  persist-state: true
+
+# GSC v4 can call /gst preparestop before a managed stop/restart.
+prepare-stop:
+  enable-maintenance: true
+  save-all-flush: true
+  ready-delay-ticks: 40
+  default-reason: "서버 점검/재시작 준비"
+
+# Local, one-way runtime telemetry for GSC v4. No remote command socket is opened here.
+gsc-v4:
+  enabled: true
+  interval-seconds: 5
+  runtime-directory: "runtime"
+  event-log-max-mb: 5
+  disk-warning-free-gb: 5
+  write-ready-marker: true
+
+# GST 1.1: records sustained TPS/MSPT/memory degradation as incidents.
+# Thresholds are inherited from the existing monitor.* values above.
+lag-recorder:
+  enabled: true
+  poll-seconds: 2
+  recovery-samples: 3
+  window-samples: 60
+  incident-history: 20
+  event-log-max-mb: 5
