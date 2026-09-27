@@ -51,6 +51,12 @@
       "source": "Day-5 GSC/GSCM stability closure based on user-confirmed operational verification 2026-09-28"
     },
     {
+      "path": "DAY6-DEVICE-TEST.md",
+      "bytes": 2554,
+      "sha256": "58ef8fd69986f81b8942dddf4c7e00ed39976a1a6f4c5ac3626a0113fd61af92",
+      "source": "Day-6 Android/iOS real-device verification checklist started 2026-09-28"
+    },
+    {
       "path": "GSC/README.md",
       "bytes": 515,
       "sha256": "35f2690b2106ef1afe2c58f4d60eb4c6242bda7d5bb8dc6010ebac1e589a38bd",
