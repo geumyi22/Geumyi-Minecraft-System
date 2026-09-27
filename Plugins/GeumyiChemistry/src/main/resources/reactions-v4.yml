@@ -1,0 +1,741 @@
+# GeumyiChemistry v0.4.0
+# lab: GENERAL | SOLUTION | GAS | PRECIPITATION | ACID_BASE | REDOX | ELECTROLYSIS | THERMAL
+# temperature: ROOM | HEATED
+# pressure: NORMAL | HIGH (optional, default NORMAL)
+# catalyst: chemistry ID (optional, placed in catalyst slot and not consumed)
+# inputs/outputs use chemistry IDs and integer stoichiometric amounts.
+reactions:
+  hydrogen_gas:
+    name: 수소 기체 생성
+    lab: GAS
+    temperature: ROOM
+    inputs: H=2
+    outputs: H2=1
+  hydrogen_atomization:
+    name: 수소 분자 분해
+    lab: GENERAL
+    temperature: HEATED
+    inputs: H2=1
+    outputs: H=2
+  oxygen_gas:
+    name: 산소 기체 생성
+    lab: GAS
+    temperature: ROOM
+    inputs: O=2
+    outputs: O2=1
+  oxygen_atomization:
+    name: 산소 분자 분해
+    lab: GENERAL
+    temperature: HEATED
+    inputs: O2=1
+    outputs: O=2
+  nitrogen_gas:
+    name: 질소 기체 생성
+    lab: GAS
+    temperature: ROOM
+    inputs: N=2
+    outputs: N2=1
+  nitrogen_atomization:
+    name: 질소 분자 분해
+    lab: GENERAL
+    temperature: HEATED
+    inputs: N2=1
+    outputs: N=2
+  chlorine_gas:
+    name: 염소 기체 생성
+    lab: GAS
+    temperature: ROOM
+    inputs: Cl=2
+    outputs: Cl2=1
+  chlorine_atomization:
+    name: 염소 분자 분해
+    lab: GENERAL
+    temperature: HEATED
+    inputs: Cl2=1
+    outputs: Cl=2
+  iodine_molecule:
+    name: 아이오딘 분자 생성
+    lab: GENERAL
+    temperature: ROOM
+    inputs: I=2
+    outputs: I2=1
+  iodine_atomization:
+    name: 아이오딘 분자 분해
+    lab: GENERAL
+    temperature: HEATED
+    inputs: I2=1
+    outputs: I=2
+  water_synthesis:
+    name: 물 합성
+    lab: GAS
+    temperature: HEATED
+    inputs: H2=2,O2=1
+    outputs: H2O=2
+  water_electrolysis:
+    name: 물 전기분해
+    lab: ELECTROLYSIS
+    temperature: ROOM
+    inputs: H2O=2
+    outputs: H2=2,O2=1
+    note: 수소와 산소 기체가 생성됨
+  carbon_dioxide:
+    name: 이산화탄소 생성
+    lab: GAS
+    temperature: HEATED
+    inputs: C=1,O2=1
+    outputs: CO2=1
+  carbon_monoxide:
+    name: 일산화탄소 생성
+    lab: GAS
+    temperature: HEATED
+    inputs: C=2,O2=1
+    outputs: CO=2
+  carbon_monoxide_oxidation:
+    name: 일산화탄소 산화
+    lab: GAS
+    temperature: HEATED
+    catalyst: Pt
+    inputs: CO=2,O2=1
+    outputs: CO2=2
+    note: 백금 촉매가 산화를 촉진하는 모델
+  methane:
+    name: 메테인 합성
+    lab: GAS
+    temperature: HEATED
+    pressure: HIGH
+    catalyst: Ni
+    inputs: C=1,H2=2
+    outputs: CH4=1
+    note: 고압·가열 및 니켈 촉매를 사용하는 연구 모델
+  methane_combustion:
+    name: 메테인 연소
+    lab: GAS
+    temperature: HEATED
+    inputs: CH4=1,O2=2
+    outputs: CO2=1,H2O=2
+    note: 연소 후 이산화탄소와 물이 생성됨
+  ammonia:
+    name: 암모니아 합성
+    lab: GAS
+    temperature: HEATED
+    pressure: HIGH
+    catalyst: Fe
+    inputs: N2=1,H2=3
+    outputs: NH3=2
+    note: 고압·가열 조건에서 철 촉매를 사용한 합성 모델
+  ammonia_decomposition:
+    name: 암모니아 분해
+    lab: GAS
+    temperature: HEATED
+    inputs: NH3=2
+    outputs: N2=1,H2=3
+  hydrogen_chloride:
+    name: 염화수소 생성
+    lab: GAS
+    temperature: HEATED
+    inputs: H2=1,Cl2=1
+    outputs: HCl=2
+  hydrochloric_acid:
+    name: 염산 제조(용해 모델)
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: HCl=1,H2O=1
+    outputs: HClAQ=1,H2O=1
+  sulfur_dioxide:
+    name: 이산화황 생성
+    lab: GAS
+    temperature: HEATED
+    inputs: S=1,O2=1
+    outputs: SO2=1
+  sulfur_trioxide:
+    name: 삼산화황 생성
+    lab: GAS
+    temperature: HEATED
+    catalyst: Pt
+    inputs: SO2=2,O2=1
+    outputs: SO3=2
+    note: 백금 촉매를 사용하는 접촉법 모델
+  sulfuric_acid:
+    name: 황산 생성
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: SO3=1,H2O=1
+    outputs: H2SO4=1
+  nitric_oxide:
+    name: 일산화질소 생성
+    lab: GAS
+    temperature: HEATED
+    inputs: N2=1,O2=1
+    outputs: NO=2
+  nitrogen_dioxide:
+    name: 이산화질소 생성
+    lab: GAS
+    temperature: HEATED
+    inputs: NO=2,O2=1
+    outputs: NO2=2
+  nitric_acid:
+    name: 질산 생성
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: NO2=4,O2=1,H2O=2
+    outputs: HNO3=4
+  hydrogen_sulfide:
+    name: 황화수소 생성
+    lab: GAS
+    temperature: ROOM
+    inputs: H2=1,S=1
+    outputs: H2S=1
+  iron_oxide:
+    name: 산화철(III) 생성
+    lab: REDOX
+    temperature: HEATED
+    inputs: Fe=4,O2=3
+    outputs: Fe2O3=2
+  copper_oxide:
+    name: 산화구리(II) 생성
+    lab: REDOX
+    temperature: HEATED
+    inputs: Cu=2,O2=1
+    outputs: CuO=2
+  zinc_oxide:
+    name: 산화아연 생성
+    lab: REDOX
+    temperature: HEATED
+    inputs: Zn=2,O2=1
+    outputs: ZnO=2
+  aluminium_oxide:
+    name: 산화알루미늄 생성
+    lab: REDOX
+    temperature: HEATED
+    inputs: Al=4,O2=3
+    outputs: Al2O3=2
+  silicon_dioxide:
+    name: 이산화규소 생성
+    lab: REDOX
+    temperature: HEATED
+    inputs: Si=1,O2=1
+    outputs: SiO2=1
+  calcium_oxide:
+    name: 산화칼슘 생성
+    lab: REDOX
+    temperature: HEATED
+    inputs: Ca=2,O2=1
+    outputs: CaO=2
+  iron_oxide_reduction:
+    name: 산화철 탄소 환원 모델
+    lab: REDOX
+    temperature: HEATED
+    inputs: Fe2O3=2,C=3
+    outputs: Fe=4,CO2=3
+  copper_oxide_reduction:
+    name: 산화구리 탄소 환원 모델
+    lab: REDOX
+    temperature: HEATED
+    inputs: CuO=2,C=1
+    outputs: Cu=2,CO2=1
+  zinc_oxide_reduction:
+    name: 산화아연 탄소 환원 모델
+    lab: REDOX
+    temperature: HEATED
+    inputs: ZnO=2,C=1
+    outputs: Zn=2,CO2=1
+  silicon_reduction:
+    name: 이산화규소 환원 모델
+    lab: REDOX
+    temperature: HEATED
+    inputs: SiO2=1,C=1
+    outputs: Si=1,CO2=1
+  aluminium_electrolysis:
+    name: 산화알루미늄 전기분해 모델
+    lab: ELECTROLYSIS
+    temperature: HEATED
+    inputs: Al2O3=2
+    outputs: Al=4,O2=3
+  sodium_hydroxide:
+    name: 나트륨과 물 반응
+    lab: ACID_BASE
+    temperature: ROOM
+    inputs: Na=2,H2O=2
+    outputs: NaOH=2,H2=1
+  potassium_hydroxide:
+    name: 칼륨과 물 반응
+    lab: ACID_BASE
+    temperature: ROOM
+    inputs: K=2,H2O=2
+    outputs: KOH=2,H2=1
+  calcium_hydroxide:
+    name: 산화칼슘과 물 반응
+    lab: ACID_BASE
+    temperature: ROOM
+    inputs: CaO=1,H2O=1
+    outputs: CaOH2=1
+  sodium_chloride:
+    name: 염화나트륨 생성
+    lab: GENERAL
+    temperature: HEATED
+    inputs: Na=2,Cl2=1
+    outputs: NaCl=2
+  potassium_iodide:
+    name: 아이오딘화칼륨 생성
+    lab: GENERAL
+    temperature: HEATED
+    inputs: K=2,I2=1
+    outputs: KI=2
+  barium_chloride:
+    name: 염화바륨 생성
+    lab: GENERAL
+    temperature: HEATED
+    inputs: Ba=1,Cl2=1
+    outputs: BaCl2=1
+  calcium_chloride:
+    name: 염화칼슘 생성
+    lab: GENERAL
+    temperature: HEATED
+    inputs: Ca=1,Cl2=1
+    outputs: CaCl2=1
+  iron3_chloride:
+    name: 염화철(III) 생성
+    lab: GENERAL
+    temperature: HEATED
+    inputs: Fe=2,Cl2=3
+    outputs: FeCl3=2
+  iron2_chloride:
+    name: 염화철(II) 생성 모델
+    lab: GENERAL
+    temperature: ROOM
+    inputs: Fe=1,Cl2=1
+    outputs: FeCl2=1
+  zinc_chloride:
+    name: 염화아연 생성
+    lab: GENERAL
+    temperature: HEATED
+    inputs: Zn=1,Cl2=1
+    outputs: ZnCl2=1
+  iron_sulfide:
+    name: 황화철(II) 생성
+    lab: GENERAL
+    temperature: HEATED
+    inputs: Fe=1,S=1
+    outputs: FeS=1
+  ammonium_chloride:
+    name: 염화암모늄 생성
+    lab: GAS
+    temperature: ROOM
+    inputs: NH3=1,HCl=1
+    outputs: NH4Cl=1
+  sodium_sulfite:
+    name: 아황산나트륨 생성
+    lab: ACID_BASE
+    temperature: ROOM
+    inputs: NaOH=2,SO2=1
+    outputs: Na2SO3=1,H2O=1
+  sodium_bicarbonate:
+    name: 탄산수소나트륨 생성
+    lab: ACID_BASE
+    temperature: ROOM
+    inputs: NaOH=1,CO2=1
+    outputs: NaHCO3=1
+  sodium_carbonate:
+    name: 탄산나트륨 생성
+    lab: ACID_BASE
+    temperature: ROOM
+    inputs: NaOH=2,CO2=1
+    outputs: Na2CO3=1,H2O=1
+  sodium_sulfate:
+    name: 황산나트륨 중화
+    lab: ACID_BASE
+    temperature: ROOM
+    inputs: H2SO4=1,NaOH=2
+    outputs: Na2SO4=1,H2O=2
+  potassium_nitrate:
+    name: 질산칼륨 중화
+    lab: ACID_BASE
+    temperature: ROOM
+    inputs: HNO3=1,KOH=1
+    outputs: KNO3=1,H2O=1
+  sodium_nitrate:
+    name: 질산나트륨 중화
+    lab: ACID_BASE
+    temperature: ROOM
+    inputs: HNO3=1,NaOH=1
+    outputs: NaNO3=1,H2O=1
+  copper_sulfate:
+    name: 황산구리(II) 생성
+    lab: ACID_BASE
+    temperature: ROOM
+    inputs: CuO=1,H2SO4=1
+    outputs: CuSO4=1,H2O=1
+  silver_nitrate:
+    name: 질산은 생성
+    lab: REDOX
+    temperature: ROOM
+    inputs: Ag=1,HNO3=2
+    outputs: AgNO3=1,NO2=1,H2O=1
+  lead_nitrate:
+    name: 질산납(II) 생성
+    lab: REDOX
+    temperature: ROOM
+    inputs: Pb=1,HNO3=4
+    outputs: PbNO3_2=1,NO2=2,H2O=2
+  neutralize_hcl_naoh:
+    name: 염산-수산화나트륨 중화
+    lab: ACID_BASE
+    temperature: ROOM
+    inputs: HClAQ=1,NaOH=1
+    outputs: NaClAQ=1,H2O=1
+  dissolve_nacl:
+    name: 염화나트륨 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: NaCl=1,H2O=1
+    outputs: NaClAQ=1,H2O=1
+  evaporate_naclaq:
+    name: 염화나트륨 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: NaClAQ=1
+    outputs: NaCl=1
+  dissolve_agno3:
+    name: 질산은 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: AgNO3=1,H2O=1
+    outputs: AgNO3AQ=1,H2O=1
+  evaporate_agno3aq:
+    name: 질산은 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: AgNO3AQ=1
+    outputs: AgNO3=1
+  dissolve_bacl2:
+    name: 염화바륨 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: BaCl2=1,H2O=1
+    outputs: BaCl2AQ=1,H2O=1
+  evaporate_bacl2aq:
+    name: 염화바륨 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: BaCl2AQ=1
+    outputs: BaCl2=1
+  dissolve_na2so4:
+    name: 황산나트륨 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: Na2SO4=1,H2O=1
+    outputs: Na2SO4AQ=1,H2O=1
+  evaporate_na2so4aq:
+    name: 황산나트륨 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: Na2SO4AQ=1
+    outputs: Na2SO4=1
+  dissolve_pbno3_2:
+    name: 질산납(II) 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: PbNO3_2=1,H2O=1
+    outputs: PbNO3_2AQ=1,H2O=1
+  evaporate_pbno3_2aq:
+    name: 질산납(II) 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: PbNO3_2AQ=1
+    outputs: PbNO3_2=1
+  dissolve_ki:
+    name: 아이오딘화칼륨 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: KI=1,H2O=1
+    outputs: KIAQ=1,H2O=1
+  evaporate_kiaq:
+    name: 아이오딘화칼륨 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: KIAQ=1
+    outputs: KI=1
+  dissolve_kno3:
+    name: 질산칼륨 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: KNO3=1,H2O=1
+    outputs: KNO3AQ=1,H2O=1
+  evaporate_kno3aq:
+    name: 질산칼륨 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: KNO3AQ=1
+    outputs: KNO3=1
+  dissolve_nano3:
+    name: 질산나트륨 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: NaNO3=1,H2O=1
+    outputs: NaNO3AQ=1,H2O=1
+  evaporate_nano3aq:
+    name: 질산나트륨 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: NaNO3AQ=1
+    outputs: NaNO3=1
+  dissolve_cuso4:
+    name: 황산구리(II) 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: CuSO4=1,H2O=1
+    outputs: CuSO4AQ=1,H2O=1
+  evaporate_cuso4aq:
+    name: 황산구리(II) 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: CuSO4AQ=1
+    outputs: CuSO4=1
+  dissolve_fecl3:
+    name: 염화철(III) 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: FeCl3=1,H2O=1
+    outputs: FeCl3AQ=1,H2O=1
+  evaporate_fecl3aq:
+    name: 염화철(III) 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: FeCl3AQ=1
+    outputs: FeCl3=1
+  dissolve_cacl2:
+    name: 염화칼슘 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: CaCl2=1,H2O=1
+    outputs: CaCl2AQ=1,H2O=1
+  evaporate_cacl2aq:
+    name: 염화칼슘 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: CaCl2AQ=1
+    outputs: CaCl2=1
+  dissolve_zncl2:
+    name: 염화아연 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: ZnCl2=1,H2O=1
+    outputs: ZnCl2AQ=1,H2O=1
+  evaporate_zncl2aq:
+    name: 염화아연 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: ZnCl2AQ=1
+    outputs: ZnCl2=1
+  dissolve_na2co3:
+    name: 탄산나트륨 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: Na2CO3=1,H2O=1
+    outputs: Na2CO3AQ=1,H2O=1
+  evaporate_na2co3aq:
+    name: 탄산나트륨 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: Na2CO3AQ=1
+    outputs: Na2CO3=1
+  dissolve_fecl2:
+    name: 염화철(II) 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: FeCl2=1,H2O=1
+    outputs: FeCl2AQ=1,H2O=1
+  evaporate_fecl2aq:
+    name: 염화철(II) 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: FeCl2AQ=1
+    outputs: FeCl2=1
+  dissolve_feso4:
+    name: 황산철(II) 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: FeSO4=1,H2O=1
+    outputs: FeSO4AQ=1,H2O=1
+  evaporate_feso4aq:
+    name: 황산철(II) 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: FeSO4AQ=1
+    outputs: FeSO4=1
+  dissolve_cuno3_2:
+    name: 질산구리(II) 수용액 만들기
+    lab: SOLUTION
+    temperature: ROOM
+    inputs: CuNO3_2=1,H2O=1
+    outputs: CuNO3_2AQ=1,H2O=1
+  evaporate_cuno3_2aq:
+    name: 질산구리(II) 결정 회수
+    lab: THERMAL
+    temperature: HEATED
+    inputs: CuNO3_2AQ=1
+    outputs: CuNO3_2=1
+  precip_agcl:
+    name: 염화은 앙금 생성
+    lab: PRECIPITATION
+    temperature: ROOM
+    inputs: AgNO3AQ=1,NaClAQ=1
+    outputs: AgCl=1,NaNO3AQ=1
+    note: 흰색 앙금
+  precip_baso4:
+    name: 황산바륨 앙금 생성
+    lab: PRECIPITATION
+    temperature: ROOM
+    inputs: BaCl2AQ=1,Na2SO4AQ=1
+    outputs: BaSO4=1,NaClAQ=2
+    note: 흰색 앙금
+  precip_pbi2:
+    name: 아이오딘화납(II) 앙금 생성
+    lab: PRECIPITATION
+    temperature: ROOM
+    inputs: PbNO3_2AQ=1,KIAQ=2
+    outputs: PbI2=1,KNO3AQ=2
+    note: 노란색 앙금
+  precip_cuoh2:
+    name: 수산화구리(II) 앙금 생성
+    lab: PRECIPITATION
+    temperature: ROOM
+    inputs: CuSO4AQ=1,NaOH=2
+    outputs: CuOH2=1,Na2SO4AQ=1
+    note: 파란색 앙금
+  precip_feoh3:
+    name: 수산화철(III) 앙금 생성
+    lab: PRECIPITATION
+    temperature: ROOM
+    inputs: FeCl3AQ=1,NaOH=3
+    outputs: FeOH3=1,NaClAQ=3
+    note: 적갈색 앙금
+  precip_caco3:
+    name: 탄산칼슘 앙금 생성
+    lab: PRECIPITATION
+    temperature: ROOM
+    inputs: CaCl2AQ=1,Na2CO3AQ=1
+    outputs: CaCO3=1,NaClAQ=2
+    note: 흰색 앙금
+  limewater_test:
+    name: 석회수와 이산화탄소
+    lab: PRECIPITATION
+    temperature: ROOM
+    inputs: CaOH2=1,CO2=1
+    outputs: CaCO3=1,H2O=1
+    note: 흰색 앙금
+  gas_hydrogen_metal_acid:
+    name: 아연-염산 수소 발생
+    lab: GAS
+    temperature: ROOM
+    inputs: Zn=1,HClAQ=2
+    outputs: ZnCl2AQ=1,H2=1
+    note: 수소 기체 발생
+  gas_carbon_dioxide_carbonate:
+    name: 탄산칼슘-염산 이산화탄소 발생
+    lab: GAS
+    temperature: ROOM
+    inputs: CaCO3=1,HClAQ=2
+    outputs: CaCl2AQ=1,CO2=1,H2O=1
+    note: 이산화탄소 기체 발생
+  gas_carbon_dioxide_bicarbonate:
+    name: 탄산수소나트륨-염산 이산화탄소 발생
+    lab: GAS
+    temperature: ROOM
+    inputs: NaHCO3=1,HClAQ=1
+    outputs: NaClAQ=1,CO2=1,H2O=1
+    note: 이산화탄소 기체 발생
+  gas_ammonia:
+    name: 염화암모늄-염기 암모니아 발생
+    lab: GAS
+    temperature: HEATED
+    inputs: NH4Cl=1,NaOH=1
+    outputs: NH3=1,NaCl=1,H2O=1
+    note: 암모니아 기체 발생
+  gas_sulfur_dioxide:
+    name: 아황산나트륨-염산 이산화황 발생
+    lab: GAS
+    temperature: ROOM
+    inputs: Na2SO3=1,HClAQ=2
+    outputs: SO2=1,NaClAQ=2,H2O=1
+    note: 이산화황 기체 발생
+  gas_hydrogen_sulfide:
+    name: 황화철-염산 황화수소 발생
+    lab: GAS
+    temperature: ROOM
+    inputs: FeS=1,HClAQ=2
+    outputs: FeCl2AQ=1,H2S=1
+    note: 황화수소 기체 발생
+  thermal_caco3:
+    name: 탄산칼슘 열분해
+    lab: THERMAL
+    temperature: HEATED
+    inputs: CaCO3=1
+    outputs: CaO=1,CO2=1
+    note: 이산화탄소 기체가 방출됨
+  thermal_bicarbonate:
+    name: 탄산수소나트륨 열분해
+    lab: THERMAL
+    temperature: HEATED
+    inputs: NaHCO3=2
+    outputs: Na2CO3=1,CO2=1,H2O=1
+  thermal_cuoh2:
+    name: 수산화구리(II) 열분해
+    lab: THERMAL
+    temperature: HEATED
+    inputs: CuOH2=1
+    outputs: CuO=1,H2O=1
+  thermal_feoh3:
+    name: 수산화철(III) 열분해
+    lab: THERMAL
+    temperature: HEATED
+    inputs: FeOH3=2
+    outputs: Fe2O3=1,H2O=3
+  thermal_nh4cl:
+    name: 염화암모늄 분해 모델
+    lab: THERMAL
+    temperature: HEATED
+    inputs: NH4Cl=1
+    outputs: NH3=1,HCl=1
+  electrolysis_nacl:
+    name: 염화나트륨 전기분해 모델
+    lab: ELECTROLYSIS
+    temperature: HEATED
+    inputs: NaCl=2
+    outputs: Na=2,Cl2=1
+  electrolysis_hcl:
+    name: 염산 전기분해 모델
+    lab: ELECTROLYSIS
+    temperature: ROOM
+    inputs: HClAQ=2
+    outputs: H2=1,Cl2=1
+  electrolysis_kI:
+    name: 아이오딘화칼륨 전기분해 모델
+    lab: ELECTROLYSIS
+    temperature: HEATED
+    inputs: KI=2
+    outputs: K=2,I2=1
+  displacement_fe_cuso4:
+    name: 철-황산구리 치환
+    lab: REDOX
+    temperature: ROOM
+    inputs: Fe=1,CuSO4AQ=1
+    outputs: FeSO4AQ=1,Cu=1
+  displacement_cu_agno3:
+    name: 구리-질산은 치환
+    lab: REDOX
+    temperature: ROOM
+    inputs: Cu=1,AgNO3AQ=2
+    outputs: CuNO3_2AQ=1,Ag=2
+  decompose_h2so4:
+    name: 황산 분해 연구 모델
+    lab: ELECTROLYSIS
+    temperature: HEATED
+    inputs: H2SO4=2
+    outputs: SO3=2,H2O=2
+  decompose_hno3:
+    name: 질산 분해 연구 모델
+    lab: ELECTROLYSIS
+    temperature: HEATED
+    inputs: HNO3=4
+    outputs: NO2=4,O2=1,H2O=2

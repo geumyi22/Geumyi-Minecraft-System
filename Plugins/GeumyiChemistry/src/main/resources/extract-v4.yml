@@ -1,0 +1,138 @@
+# GeumyiChemistry v0.4.0 survival/research extraction routes
+# IMPORTANT: Minecraft materials are gameplay proxies.
+# A mapping does NOT mean the vanilla item literally contains these exact elements,
+# and it is NOT a real-world extraction procedure.
+extractions:
+  # --- Air / water ---
+  GLASS_BOTTLE: N2=3,O2=1,Ar=1
+  WATER_BUCKET: H2O=4
+  ICE: H2O=1
+  PACKED_ICE: H2O=4
+  BLUE_ICE: H2O=9
+  SNOW_BLOCK: H2O=1
+
+  # --- Carbon / ores ---
+  COAL: C=2
+  CHARCOAL: C=2
+  COAL_BLOCK: C=18
+  COAL_ORE: C=2
+  DEEPSLATE_COAL_ORE: C=2
+  DIAMOND: C=8
+  DIAMOND_BLOCK: C=72
+  DIAMOND_ORE: C=8
+  DEEPSLATE_DIAMOND_ORE: C=8
+
+  IRON_INGOT: Fe=1
+  IRON_BLOCK: Fe=9
+  RAW_IRON: Fe=1
+  RAW_IRON_BLOCK: Fe=9
+  IRON_ORE: Fe=1
+  DEEPSLATE_IRON_ORE: Fe=1
+
+  COPPER_INGOT: Cu=1
+  COPPER_BLOCK: Cu=9
+  RAW_COPPER: Cu=1
+  RAW_COPPER_BLOCK: Cu=9
+  COPPER_ORE: Cu=1
+  DEEPSLATE_COPPER_ORE: Cu=1
+
+  GOLD_INGOT: Au=1
+  GOLD_BLOCK: Au=9
+  RAW_GOLD: Au=1
+  RAW_GOLD_BLOCK: Au=9
+  GOLD_ORE: Au=1
+  DEEPSLATE_GOLD_ORE: Au=1
+  NETHER_GOLD_ORE: Au=1
+
+  # --- Rock / ceramic / mineral routes ---
+  SAND: SiO2=1
+  RED_SAND: SiO2=1,Fe=1
+  SANDSTONE: SiO2=4
+  QUARTZ: SiO2=2
+  QUARTZ_BLOCK: SiO2=8
+  NETHER_QUARTZ_ORE: SiO2=2
+  AMETHYST_SHARD: SiO2=2
+  AMETHYST_BLOCK: SiO2=8
+  FLINT: SiO2=1
+  CLAY_BALL: Al=1,SiO2=1
+  CLAY: Al=4,SiO2=4
+  BRICK: Al=1,SiO2=1
+  TERRACOTTA: Al=2,SiO2=2,Fe=1
+  CALCITE: CaCO3=3
+  POINTED_DRIPSTONE: CaCO3=1
+  DRIPSTONE_BLOCK: CaCO3=4
+  BASALT: Mg=1,Fe=1,Ca=1,Si=1
+  SMOOTH_BASALT: Mg=1,Fe=1,Ca=1,Si=1
+  TUFF: Ti=1,Fe=1,Mg=1,Al=1
+  DEEPSLATE: Fe=1,Mn=1,Si=1
+  GRANITE: K=1,Al=1,Si=2
+  DIORITE: Na=1,Ca=1,Al=1,Si=2
+  ANDESITE: Na=1,Ca=1,Al=1,Si=2,Fe=1
+  NETHERRACK: S=1,Fe=1,Si=1
+  MAGMA_BLOCK: Mg=2,Fe=1,S=2
+  SOUL_SAND: P=1,S=1,Ca=1,C=1
+  SOUL_SOIL: P=1,S=1,C=1
+
+  # --- Biological / ocean routes ---
+  BONE: Ca=2,P=1
+  BONE_MEAL: Ca=1,P=1
+  BONE_BLOCK: Ca=8,P=4
+  KELP: I=1,K=1,Na=1,Cl=1
+  DRIED_KELP: I=1,K=2,Na=1,Cl=1
+  DRIED_KELP_BLOCK: I=9,K=18,Na=9,Cl=9
+  PRISMARINE_SHARD: Na=1,Mg=1,Cl=1
+  PRISMARINE_CRYSTALS: Na=1,Mg=1,Cl=2
+  NAUTILUS_SHELL: CaCO3=4,Sr=1
+  SUGAR: C=2,H=2,O=1
+  SLIME_BALL: C=2,H=2,O=1,N=1
+  ROTTEN_FLESH: C=2,H=2,O=1,N=2,P=1,S=1
+  LEATHER: C=2,H=2,O=1,N=1
+  FEATHER: C=2,H=2,O=1,N=1,S=1
+  EGG: Ca=1,C=1,H=2,O=1,N=1,P=1,S=1
+
+  # --- Mixed mineral / chemical proxies ---
+  GUNPOWDER: K=1,N=1,S=1,C=1
+  TNT: K=4,N=4,S=4,C=8
+  LAPIS_LAZULI: Na=1,Al=1,Si=1,S=1
+  LAPIS_BLOCK: Na=9,Al=9,Si=9,S=9
+  EMERALD: Be=1,Cr=1,Al=1,Si=1
+  EMERALD_BLOCK: Be=9,Cr=9,Al=9,Si=9
+  REDSTONE: Hg=1,S=1
+  REDSTONE_BLOCK: Hg=9,S=9
+  GLOWSTONE_DUST: P=1,Ca=1,Sr=1
+  GLOWSTONE: P=4,Ca=4,Sr=4
+  BLAZE_POWDER: Mg=1,S=1,K=1
+  BLAZE_ROD: Mg=2,S=2,K=2
+
+  # --- Advanced transition-metal research ---
+  NETHERITE_SCRAP: Sc=1,Ti=1,V=1,Cr=1,Mn=1,Co=1,Ni=1,Zn=1
+  NETHERITE_INGOT: Sc=2,Ti=2,V=2,Cr=2,Mn=2,Co=2,Ni=2,Zn=2
+  ANCIENT_DEBRIS: Zr=1,Nb=1,Mo=1,Hf=1,Ta=1,W=1,Re=1
+  HEAVY_CORE: Ru=1,Rh=1,Pd=1,Os=1,Ir=1,Pt=1
+  ECHO_SHARD: Ga=1,Ge=1,As=1,Se=1,Cd=1,In=1,Sn=1,Sb=1,Te=1,Tl=1,Pb=1,Bi=1
+  HEART_OF_THE_SEA: Br=1,Rb=1,Sr=1,Y=1,Ag=1,I=1,Cs=1,Ba=1
+  END_STONE: Li=1,B=1,F=1
+  CHORUS_FRUIT: Li=1,Rb=1,Cs=1
+  CHORUS_FLOWER: Be=1,B=1,Ga=1,Ge=1
+
+  # --- Noble gas / rare-earth research ---
+  DRAGON_BREATH: He=1,Ne=1,Ar=1,Kr=1,Xe=1,Rn=1
+  END_CRYSTAL: La=1,Ce=1,Pr=1,Nd=1,Pm=1,Sm=1,Eu=1,Gd=1
+  TOTEM_OF_UNDYING: Tb=1,Dy=1,Ho=1,Er=1,Tm=1,Yb=1,Lu=1
+
+  # --- Radioactive / synthetic-element research ---
+  OMINOUS_TRIAL_KEY: Tc=1,Po=1,At=1,Fr=1,Ra=1
+  NETHER_STAR: Ac=1,Th=1,Pa=1,U=1,Np=1,Pu=1,Am=1,Cm=1
+  SCULK_CATALYST: Bk=1,Cf=1,Es=1,Fm=1,Md=1,No=1,Lr=1
+  BEACON: Rf=1,Db=1,Sg=1,Bh=1,Hs=1,Mt=1,Ds=1,Rg=1
+  ENCHANTED_GOLDEN_APPLE: Cn=1,Nh=1,Fl=1,Mc=1,Lv=1,Ts=1,Og=1
+
+  # --- Additional everyday survival samples (gameplay abstractions) ---
+  SEA_PICKLE: Na=1,Cl=1,Mg=1
+  MILK_BUCKET: Ca=2,P=1,C=2,H=2,O=2,N=1
+  POTATO: K=1,C=2,H=2,O=1
+  BEETROOT: K=1,Fe=1,C=2,H=2,O=1
+  APPLE: K=1,C=2,H=2,O=1
+  HONEY_BOTTLE: C=3,H=4,O=2
+  INK_SAC: C=2,N=1,O=1
+  GLOW_INK_SAC: C=2,N=1,P=1,O=1

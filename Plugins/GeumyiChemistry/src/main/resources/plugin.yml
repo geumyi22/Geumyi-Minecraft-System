@@ -1,0 +1,16 @@
+name: GeumyiChemistry
+version: 0.4.1
+main: kr.geumyi.chemistry.GeumyiChemistry
+api-version: '26.3'
+author: Geumyi Server
+contributors: [OpenAI]
+description: Paper 26.3 chemistry gameplay plugin with survival extraction, installable lab bench, equipment progression, gases, precipitation, acid-base, redox, electrolysis, reaction conditions and JE/BE resource-pack models.
+commands:
+  chem:
+    description: Geumyi Chemistry main command
+    usage: /chem
+    aliases: [chemistry, 화학]
+permissions:
+  geumyi.chem.admin:
+    description: Allows chemistry admin commands and admin sample shortcuts
+    default: op

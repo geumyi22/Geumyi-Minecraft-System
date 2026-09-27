@@ -1,0 +1,33 @@
+# GeumyiChemistry v0.4.1
+show-korean-names: true
+protect-chem-items-from-vanilla-use: true
+migrate-items-on-join: true
+reaction-batch-limit: 16
+extraction-batch-limit: 64
+
+# Resource packs are optional for gameplay, but recommended for distinct JE/BE icons.
+# When enabled, Java items receive minecraft:item_model values in the geumyi_chem namespace.
+resource-pack:
+  use-item-models: true
+
+recipes:
+  lab-kit-enabled: true
+  ph-paper-enabled: true
+
+labs:
+  general:
+    enabled: true
+  solution:
+    enabled: true
+  gas:
+    enabled: true
+  precipitation:
+    enabled: true
+  acid_base:
+    enabled: true
+  redox:
+    enabled: true
+  electrolysis:
+    enabled: true
+  thermal:
+    enabled: true
