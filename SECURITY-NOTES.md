@@ -17,6 +17,17 @@ The repository was changed from Private to Public. A follow-up review was theref
 - The existing 2026-09-26 master release was recursively inspected through nested archives. No real GitHub/Discord token, private key, bearer credential, Korean phone number or resident-registration number was detected. Apparent email/IP/token-like matches reviewed there were third-party metadata, generic examples, loopback/private-network examples or synthetic test fixtures.
 - Recovered server configuration published under `Servers/Wild` and `Servers/Playground` is historical evidence only. RCON/management secrets and historical resource-pack share URLs are explicitly redacted.
 
+## 2026-09-27 full-history follow-up
+
+A 66-commit history pattern audit was run after the repository became public. High-risk patterns checked included GitHub/Discord token forms, private-key headers, bearer credentials, Korean phone numbers, resident-registration-number patterns, Windows user-profile paths and Dropbox share URLs.
+
+- No GitHub/Discord token, private key, bearer credential, Korean phone number or resident-registration-number pattern was found in the reviewed commit diffs.
+- One Windows user-profile example path was found in the GSC client dashboard history and was also still present on `main`. The current file was sanitized to the generic example `C:\\Minecraft\\Server` in commit `0363836f66bd6c335ce794f71365f1bc561432c5`.
+- The old Dropbox release-source URL appears in two historical commit diffs. It is not present in the current tree.
+- 64 of the 66 reviewed commits use a non-GitHub-noreply author email in Git metadata. The address itself is not repeated in this document.
+
+These findings do not imply that pattern matching can prove absolute absence of personal information. The current tree and future commits should continue to be reviewed before publication.
+
 ## Public Git-history caveats
 
 The **current tree being clean does not remove data already present in Git history**.
