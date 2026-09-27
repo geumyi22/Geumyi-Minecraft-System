@@ -1,6 +1,6 @@
 {
   "baseline": "2026-09-26",
-  "note": "Excludes this self-referential manifest; relative provenance names refer to recovery evidence, not required local directories. Day-3 recovered/reconstructed material and public-repository security edits are included.",
+  "note": "Manifest synchronized after Day-3 recovery on 2026-09-27. SOURCE-MANIFEST.json intentionally excludes itself.",
   "files": [
     {
       "path": ".github/workflows/android-build.yml",
@@ -58,39 +58,18 @@
       "source": "Repository documentation or import housekeeping"
     },
     {
-      "path": "GSC/ServerCenter/CHANGELOG-v4.2.3.txt",
-      "bytes": 548,
-      "sha256": "b2545dc7daa2d0e943c0240dc9a0f5e9d850966769e8cfb03adb0fb5d22ecc80",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/CHANGELOG-v4.2.3.txt",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/CONTROL-API-v1.txt",
-      "bytes": 2468,
-      "sha256": "e9db1edc4f835e5a601d4778a0977fd2b0bb75d3ec3b701bc9ea0e37575623c8",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/CONTROL-API-v1.txt",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/README-v4.2.3.txt",
-      "bytes": 5248,
-      "sha256": "ed08f11e6ee369af5acaa11be95513609380df28e88bd0696df36ce9bef07ef6",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/README-v4.2.3.txt",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/ROLE-TRANSITION-MATRIX-v4.2.3.txt",
-      "bytes": 1686,
-      "sha256": "d0b69d5a61731a8af0611241d41500fa8c898304efe6962cbc4229c4ca1def9c",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/ROLE-TRANSITION-MATRIX-v4.2.3.txt",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "GSC/ServerCenter/build.ps1",
       "bytes": 1250,
       "sha256": "291c47558a1a2cc05cfc94875405da94b427417582c406bf9fe7e10e22dc6861",
       "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/build.ps1",
       "modifiedFromRecovered": true
+    },
+    {
+      "path": "GSC/ServerCenter/CHANGELOG-v4.2.3.txt",
+      "bytes": 548,
+      "sha256": "b2545dc7daa2d0e943c0240dc9a0f5e9d850966769e8cfb03adb0fb5d22ecc80",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/CHANGELOG-v4.2.3.txt",
+      "modifiedFromRecovered": false
     },
     {
       "path": "GSC/ServerCenter/cmd/client/app.ico",
@@ -121,13 +100,6 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "GSC/ServerCenter/cmd/host/companion_reconcile.go",
-      "bytes": 12772,
-      "sha256": "1568cd9c2b648d1b9b12bb1453feb3cf5438e582642296b144c8e1c7c0919af5",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/companion_reconcile.go",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "GSC/ServerCenter/cmd/host/companion_reconcile_test.go",
       "bytes": 3789,
       "sha256": "2d7c2203895d53bf76819d3b37af6eafa0b56e29868b8a4cc45d5ec269783e22",
@@ -135,10 +107,10 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "GSC/ServerCenter/cmd/host/countdown.go",
-      "bytes": 16393,
-      "sha256": "f203e4f5359a71e4751b7e96e65b4846e8020c22653fe8e25155c24f5a0e80d2",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/countdown.go",
+      "path": "GSC/ServerCenter/cmd/host/companion_reconcile.go",
+      "bytes": 12772,
+      "sha256": "1568cd9c2b648d1b9b12bb1453feb3cf5438e582642296b144c8e1c7c0919af5",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/companion_reconcile.go",
       "modifiedFromRecovered": false
     },
     {
@@ -149,6 +121,13 @@
       "modifiedFromRecovered": false
     },
     {
+      "path": "GSC/ServerCenter/cmd/host/countdown.go",
+      "bytes": 16393,
+      "sha256": "f203e4f5359a71e4751b7e96e65b4846e8020c22653fe8e25155c24f5a0e80d2",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/countdown.go",
+      "modifiedFromRecovered": false
+    },
+    {
       "path": "GSC/ServerCenter/cmd/host/dashboard.html",
       "bytes": 26996,
       "sha256": "17eab43e95196237ae07d792ab0b942b95b3ffaa1d58ebff2eebeee3fa3709a2",
@@ -156,17 +135,17 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "GSC/ServerCenter/cmd/host/lifecycle.go",
-      "bytes": 17067,
-      "sha256": "222ecf2a04790e61232f1bcc14fe851d9b82a952001cf03fa541f3e8fa798228",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/lifecycle.go",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "GSC/ServerCenter/cmd/host/lifecycle_test.go",
       "bytes": 6992,
       "sha256": "ceaa5676f6b23a6de4c6652d1823e47a3feac968cdcaaf563d11ab11d40b6b20",
       "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/lifecycle_test.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/host/lifecycle.go",
+      "bytes": 17067,
+      "sha256": "222ecf2a04790e61232f1bcc14fe851d9b82a952001cf03fa541f3e8fa798228",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/lifecycle.go",
       "modifiedFromRecovered": false
     },
     {
@@ -184,13 +163,6 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "GSC/ServerCenter/cmd/host/proc_windows.go",
-      "bytes": 10546,
-      "sha256": "041ac36d96c9d51b89484ea4aaa53fe73859b178fb3766a46144bde4effe7190",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/proc_windows.go",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "GSC/ServerCenter/cmd/host/proc_windows_test.go",
       "bytes": 1778,
       "sha256": "cb27845d1aca7369a8d72d9b5f295d0e741b8a83f84e64b1bb8c3d170e516c82",
@@ -198,10 +170,10 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "GSC/ServerCenter/cmd/host/qr_v6.go",
-      "bytes": 6991,
-      "sha256": "3cf759f780b28ae49b109c2027578af421338a0ca34f73af631c190e53e6f279",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/qr_v6.go",
+      "path": "GSC/ServerCenter/cmd/host/proc_windows.go",
+      "bytes": 10546,
+      "sha256": "041ac36d96c9d51b89484ea4aaa53fe73859b178fb3766a46144bde4effe7190",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/proc_windows.go",
       "modifiedFromRecovered": false
     },
     {
@@ -209,6 +181,13 @@
       "bytes": 1053,
       "sha256": "8a53995cb9f3292f19b3d309b39e5f3e1b536e7b177fead2137490feafd2ff0c",
       "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/qr_v6_test.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/host/qr_v6.go",
+      "bytes": 6991,
+      "sha256": "3cf759f780b28ae49b109c2027578af421338a0ca34f73af631c190e53e6f279",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/qr_v6.go",
       "modifiedFromRecovered": false
     },
     {
@@ -233,17 +212,17 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "GSC/ServerCenter/cmd/host/startup_failure.go",
-      "bytes": 6344,
-      "sha256": "963d89caef761d789e4bfae6388356381335ec5e83558e6628c4fcf0c09c8e66",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/startup_failure.go",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "GSC/ServerCenter/cmd/host/startup_failure_test.go",
       "bytes": 2819,
       "sha256": "183fe0284bc047b9effe2c9039a1cf83c1c4658344b2f02774c8e42d34acb347",
       "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/startup_failure_test.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/host/startup_failure.go",
+      "bytes": 6344,
+      "sha256": "963d89caef761d789e4bfae6388356381335ec5e83558e6628c4fcf0c09c8e66",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/startup_failure.go",
       "modifiedFromRecovered": false
     },
     {
@@ -254,66 +233,10 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "GSC/ServerCenter/cmd/host/v41_bridge_test.go",
-      "bytes": 1034,
-      "sha256": "eeb73f057e976b336f6de09ad12cbc4989111e1e7d572af1696e4cf8b32c286f",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_bridge_test.go",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/cmd/host/v41_control.go",
-      "bytes": 31737,
-      "sha256": "fb539bd88ec7a2895c2528b4cd62a005f55fb215ac5bd34a955190fe29f664ca",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_control.go",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/cmd/host/v41_control_test.go",
-      "bytes": 5236,
-      "sha256": "05a68dfa8421377e9e3f5d38b9b52b1dbeb14128d417d490b8cdd2917d1d92e8",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_control_test.go",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/cmd/host/v41_gst.go",
-      "bytes": 3179,
-      "sha256": "bc01e16f915556dce04321806fa2076b58c1fc3cfab097ce9fd720133e5cb349",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_gst.go",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/cmd/host/v41_gst_test.go",
-      "bytes": 1973,
-      "sha256": "a53be5e2f68f8859fb4f54983c9a1ea49ac34f7f3a86fac7186c7884c8c95050",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_gst_test.go",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/cmd/host/v41_ws.go",
-      "bytes": 7126,
-      "sha256": "c31892477591364108479dcfbdcca1a3b2e5affffc502bd87ae6367fa148001c",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_ws.go",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/cmd/host/v41_ws_test.go",
-      "bytes": 464,
-      "sha256": "a384a88412d5919ccb6cb9781066bea67130e3f745e961ee6a26e32a122cbbe8",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_ws_test.go",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/cmd/host/v42_mobile.go",
-      "bytes": 13695,
-      "sha256": "a830de711c8a8b28958bdec9c491c55b14f049bb1ce678dbb53846bc51857944",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v42_mobile.go",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/cmd/host/v42_mobile_test.go",
-      "bytes": 4742,
-      "sha256": "64a43c78696ccf1c39bfef0fcae2d1f7cf89f53e9435b7f20c8a9d1f62a727b6",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v42_mobile_test.go",
+      "path": "GSC/ServerCenter/cmd/host/v4_automation_notify_test.go",
+      "bytes": 1568,
+      "sha256": "7563f96078abf26fec8c4de90ba8905da0033607d52b2c31259881bfedbce1da",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v4_automation_notify_test.go",
       "modifiedFromRecovered": false
     },
     {
@@ -321,13 +244,6 @@
       "bytes": 11252,
       "sha256": "dfe01d48e43494d3d0b0ed4382d37c6ce76795776e32e6d1cf24100e2b538c2f",
       "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v4_automation.go",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/cmd/host/v4_automation_notify_test.go",
-      "bytes": 1568,
-      "sha256": "7563f96078abf26fec8c4de90ba8905da0033607d52b2c31259881bfedbce1da",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v4_automation_notify_test.go",
       "modifiedFromRecovered": false
     },
     {
@@ -366,6 +282,69 @@
       "modifiedFromRecovered": false
     },
     {
+      "path": "GSC/ServerCenter/cmd/host/v41_bridge_test.go",
+      "bytes": 1034,
+      "sha256": "eeb73f057e976b336f6de09ad12cbc4989111e1e7d572af1696e4cf8b32c286f",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_bridge_test.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/host/v41_control_test.go",
+      "bytes": 5236,
+      "sha256": "05a68dfa8421377e9e3f5d38b9b52b1dbeb14128d417d490b8cdd2917d1d92e8",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_control_test.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/host/v41_control.go",
+      "bytes": 31737,
+      "sha256": "fb539bd88ec7a2895c2528b4cd62a005f55fb215ac5bd34a955190fe29f664ca",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_control.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/host/v41_gst_test.go",
+      "bytes": 1973,
+      "sha256": "a53be5e2f68f8859fb4f54983c9a1ea49ac34f7f3a86fac7186c7884c8c95050",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_gst_test.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/host/v41_gst.go",
+      "bytes": 3179,
+      "sha256": "bc01e16f915556dce04321806fa2076b58c1fc3cfab097ce9fd720133e5cb349",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_gst.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/host/v41_ws_test.go",
+      "bytes": 464,
+      "sha256": "a384a88412d5919ccb6cb9781066bea67130e3f745e961ee6a26e32a122cbbe8",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_ws_test.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/host/v41_ws.go",
+      "bytes": 7126,
+      "sha256": "c31892477591364108479dcfbdcca1a3b2e5affffc502bd87ae6367fa148001c",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v41_ws.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/host/v42_mobile_test.go",
+      "bytes": 4742,
+      "sha256": "64a43c78696ccf1c39bfef0fcae2d1f7cf89f53e9435b7f20c8a9d1f62a727b6",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v42_mobile_test.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/host/v42_mobile.go",
+      "bytes": 13695,
+      "sha256": "a830de711c8a8b28958bdec9c491c55b14f049bb1ce678dbb53846bc51857944",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/host/v42_mobile.go",
+      "modifiedFromRecovered": false
+    },
+    {
       "path": "GSC/ServerCenter/cmd/setup/agent.properties.template",
       "bytes": 1748,
       "sha256": "183bddff262f35d3554d40a9bb5dc4eecd14ad090cc4f28b1386aa4769b9eef9",
@@ -384,20 +363,6 @@
       "bytes": 39081,
       "sha256": "981987f219558fbe0a37a98261d94de22fd3e2343f294a0af32138fcb6fd4981",
       "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/main.go",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/cmd/setup/payload/GeumyiServerCenter.ico",
-      "bytes": 121270,
-      "sha256": "7e86a7d577e500299f9daf4aa35356e568da77f7e9979e924f55cd72b294ce38",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/payload/GeumyiServerCenter.ico",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/ServerCenter/cmd/setup/payload/README-v4.2.3.txt",
-      "bytes": 5248,
-      "sha256": "ed08f11e6ee369af5acaa11be95513609380df28e88bd0696df36ce9bef07ef6",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/payload/README-v4.2.3.txt",
       "modifiedFromRecovered": false
     },
     {
@@ -422,10 +387,31 @@
       "modifiedFromRecovered": false
     },
     {
+      "path": "GSC/ServerCenter/cmd/setup/payload/GeumyiServerCenter.ico",
+      "bytes": 121270,
+      "sha256": "7e86a7d577e500299f9daf4aa35356e568da77f7e9979e924f55cd72b294ce38",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/payload/GeumyiServerCenter.ico",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/setup/payload/README-v4.2.3.txt",
+      "bytes": 5248,
+      "sha256": "ed08f11e6ee369af5acaa11be95513609380df28e88bd0696df36ce9bef07ef6",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/payload/README-v4.2.3.txt",
+      "modifiedFromRecovered": false
+    },
+    {
       "path": "GSC/ServerCenter/cmd/setup/roles_windows.go",
       "bytes": 10129,
       "sha256": "055ca0fc0e00d48402ea9030e1f057e0d6e5848451548b5adbeebc4d36046cae",
       "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/roles_windows.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/cmd/setup/server_profile_windows_test.go",
+      "bytes": 522,
+      "sha256": "ff0a82c9dd08075c520959ab60ab0603fdb0deaa1a26d544185166f7ee29ec02",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/server_profile_windows_test.go",
       "modifiedFromRecovered": false
     },
     {
@@ -436,10 +422,10 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "GSC/ServerCenter/cmd/setup/server_profile_windows_test.go",
-      "bytes": 522,
-      "sha256": "ff0a82c9dd08075c520959ab60ab0603fdb0deaa1a26d544185166f7ee29ec02",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/cmd/setup/server_profile_windows_test.go",
+      "path": "GSC/ServerCenter/CONTROL-API-v1.txt",
+      "bytes": 2468,
+      "sha256": "e9db1edc4f835e5a601d4778a0977fd2b0bb75d3ec3b701bc9ea0e37575623c8",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/CONTROL-API-v1.txt",
       "modifiedFromRecovered": false
     },
     {
@@ -464,17 +450,17 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "GSC/ServerCenter/internal/javaruntime/java.go",
-      "bytes": 2968,
-      "sha256": "94db278a1857d7a816682989ddc522fd2401d452ae9441d13b67be34901341e6",
-      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/internal/javaruntime/java.go",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "GSC/ServerCenter/internal/javaruntime/java_test.go",
       "bytes": 575,
       "sha256": "bcce5994c300d75fab67b0775c257dc8fe908142b59ecdd21c389952c811b5ad",
       "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/internal/javaruntime/java_test.go",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/internal/javaruntime/java.go",
+      "bytes": 2968,
+      "sha256": "94db278a1857d7a816682989ddc522fd2401d452ae9441d13b67be34901341e6",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/internal/javaruntime/java.go",
       "modifiedFromRecovered": false
     },
     {
@@ -499,10 +485,38 @@
       "modifiedFromRecovered": false
     },
     {
+      "path": "GSC/ServerCenter/README-v4.2.3.txt",
+      "bytes": 5248,
+      "sha256": "ed08f11e6ee369af5acaa11be95513609380df28e88bd0696df36ce9bef07ef6",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/README-v4.2.3.txt",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/ServerCenter/ROLE-TRANSITION-MATRIX-v4.2.3.txt",
+      "bytes": 1686,
+      "sha256": "d0b69d5a61731a8af0611241d41500fa8c898304efe6962cbc4229c4ca1def9c",
+      "source": "nested/GeumyiServerCenter_v4.2.3-Source/GeumyiServerCenter_v4.2.3_Source/ROLE-TRANSITION-MATRIX-v4.2.3.txt",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSC/StatusAgent/agent.properties.example",
+      "bytes": 1748,
+      "sha256": "aa74437e68d0654e6332ddafa879cb7f319cb8b9666dd3af9eba84f3a91779b6",
+      "source": "source/GeumyiStatusAgent-0.5.4-Source/GeumyiStatusAgent-0.5.4-Source/agent.properties.example",
+      "modifiedFromRecovered": false
+    },
+    {
       "path": "GSC/StatusAgent/BUILD.md",
       "bytes": 600,
       "sha256": "a8243a196164fa318b7221e7eb984f663c2482e70c8eb7b921ef2ad97f5d04ec",
       "source": "source/GeumyiStatusAgent-0.5.4-Source/GeumyiStatusAgent-0.5.4-Source/BUILD.md",
+      "modifiedFromRecovered": true
+    },
+    {
+      "path": "GSC/StatusAgent/build.sh",
+      "bytes": 611,
+      "sha256": "fc6febf623d8baad228c66367e7540e6bdf6130690b664efd54e0349ccd32652",
+      "source": "source/GeumyiStatusAgent-0.5.4-Source/GeumyiStatusAgent-0.5.4-Source/build.sh",
       "modifiedFromRecovered": true
     },
     {
@@ -524,20 +538,6 @@
       "bytes": 1334,
       "sha256": "c64eb4785a63cfe97d393ee6e0170d3682e1347951822c3cd6ed84ca95165714",
       "source": "Day-3 StatusAgent 0.5.4 source reconstruction verified against deployed bytecode"
-    },
-    {
-      "path": "GSC/StatusAgent/agent.properties.example",
-      "bytes": 1748,
-      "sha256": "aa74437e68d0654e6332ddafa879cb7f319cb8b9666dd3af9eba84f3a91779b6",
-      "source": "source/GeumyiStatusAgent-0.5.4-Source/GeumyiStatusAgent-0.5.4-Source/agent.properties.example",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSC/StatusAgent/build.sh",
-      "bytes": 611,
-      "sha256": "fc6febf623d8baad228c66367e7540e6bdf6130690b664efd54e0349ccd32652",
-      "source": "source/GeumyiStatusAgent-0.5.4-Source/GeumyiStatusAgent-0.5.4-Source/build.sh",
-      "modifiedFromRecovered": true
     },
     {
       "path": "GSC/StatusAgent/src/kr/geumyi/statusagent/Codec.java",
@@ -603,48 +603,6 @@
       "sha256": "4d5e7b710e5b17c85966fd7d8896e52ee189e08e51dd91fb9943a9d684ab392f",
       "source": "gscm-original/.metadata",
       "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSCM/BUILD.md",
-      "bytes": 1203,
-      "sha256": "f0b7c1d164d7f2d6be7abb71c4efc28d3450c6522f1c3ec29df3010dc0c8325f",
-      "source": "gscm-original/BUILD.md",
-      "modifiedFromRecovered": true
-    },
-    {
-      "path": "GSCM/BUILD_ANDROID.cmd",
-      "bytes": 48,
-      "sha256": "56c1d60280f7cd768830064beff2f0e51204f87144bbff85085b33b024b35451",
-      "source": "expanded/GSCM_v1.1.2_Android_Builder_CLEAN/GSCM_v1.1.2_Android_Builder_CLEAN/BUILD_ANDROID.cmd",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSCM/CHANGELOG.md",
-      "bytes": 909,
-      "sha256": "3ac9f9240345c677b836488d13672e8cfd36444b202d03902eba7ab038e0a28e",
-      "source": "gscm-original/CHANGELOG.md",
-      "modifiedFromRecovered": false
-    },
-    {
-      "path": "GSCM/GSCM_Build_APK.cmd",
-      "bytes": 790,
-      "sha256": "86487ff5acddfe123c3837678980fe54fa7239003c4da180d081ef14c762deac",
-      "source": "gscm-original/GSCM_Build_APK.cmd",
-      "modifiedFromRecovered": true
-    },
-    {
-      "path": "GSCM/GSCM_Build_APK_Fast.cmd",
-      "bytes": 816,
-      "sha256": "318c1fbdd316e9c2bc592d0a99f7e07e9778c83241edd80aedd07c58754b33ac",
-      "source": "gscm-original/GSCM_Build_APK_Fast.cmd",
-      "modifiedFromRecovered": true
-    },
-    {
-      "path": "GSCM/README.md",
-      "bytes": 806,
-      "sha256": "e9ff0370ad9f51964d771b8a17f509113522758cfedc1d6ea107450e99d27817",
-      "source": "gscm-original/README.md",
-      "modifiedFromRecovered": true
     },
     {
       "path": "GSCM/analysis_options.yaml",
@@ -721,6 +679,41 @@
       "bytes": 739,
       "sha256": "42236aaa249238fc4ad8e7101f48bcf6b55fa535e1c34da7dd7e6f2f31f069ab",
       "source": "gscm-original/android/settings.gradle.kts",
+      "modifiedFromRecovered": true
+    },
+    {
+      "path": "GSCM/BUILD_ANDROID.cmd",
+      "bytes": 48,
+      "sha256": "56c1d60280f7cd768830064beff2f0e51204f87144bbff85085b33b024b35451",
+      "source": "expanded/GSCM_v1.1.2_Android_Builder_CLEAN/GSCM_v1.1.2_Android_Builder_CLEAN/BUILD_ANDROID.cmd",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSCM/BUILD.md",
+      "bytes": 1203,
+      "sha256": "f0b7c1d164d7f2d6be7abb71c4efc28d3450c6522f1c3ec29df3010dc0c8325f",
+      "source": "gscm-original/BUILD.md",
+      "modifiedFromRecovered": true
+    },
+    {
+      "path": "GSCM/CHANGELOG.md",
+      "bytes": 909,
+      "sha256": "3ac9f9240345c677b836488d13672e8cfd36444b202d03902eba7ab038e0a28e",
+      "source": "gscm-original/CHANGELOG.md",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSCM/GSCM_Build_APK_Fast.cmd",
+      "bytes": 816,
+      "sha256": "318c1fbdd316e9c2bc592d0a99f7e07e9778c83241edd80aedd07c58754b33ac",
+      "source": "gscm-original/GSCM_Build_APK_Fast.cmd",
+      "modifiedFromRecovered": true
+    },
+    {
+      "path": "GSCM/GSCM_Build_APK.cmd",
+      "bytes": 790,
+      "sha256": "86487ff5acddfe123c3837678980fe54fa7239003c4da180d081ef14c762deac",
+      "source": "gscm-original/GSCM_Build_APK.cmd",
       "modifiedFromRecovered": true
     },
     {
@@ -857,6 +850,13 @@
       "modifiedFromRecovered": false
     },
     {
+      "path": "GSCM/README.md",
+      "bytes": 806,
+      "sha256": "e9ff0370ad9f51964d771b8a17f509113522758cfedc1d6ea107450e99d27817",
+      "source": "gscm-original/README.md",
+      "modifiedFromRecovered": true
+    },
+    {
       "path": "GSCM/test/gsc_models_test.dart",
       "bytes": 1825,
       "sha256": "02a094fbad5ad07ce341cd34f81e5d59779efa7840387b26a8e8ce0d358616e6",
@@ -899,17 +899,17 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "GSCM/tool/ios/README-iOS.md",
-      "bytes": 1388,
-      "sha256": "cbce3c67bd9bcefbfecd051624036e71a6146f6874fb7e736467cabfb55b6d5c",
-      "source": "gscm-original/tool/ios/README-iOS.md",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "GSCM/tool/ios/patch_ios.sh",
       "bytes": 2113,
       "sha256": "3db0cf14223ffe5d545cccae4db3fa99c0d9155bc0031b750dda7747d52ec3d6",
       "source": "gscm-original/tool/ios/patch_ios.sh",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "GSCM/tool/ios/README-iOS.md",
+      "bytes": 1388,
+      "sha256": "cbce3c67bd9bcefbfecd051624036e71a6146f6874fb7e736467cabfb55b6d5c",
+      "source": "gscm-original/tool/ios/README-iOS.md",
       "modifiedFromRecovered": false
     },
     {
@@ -931,21 +931,15 @@
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
-      "path": "Plugins/GeumyiDiscordStatus/CHANGELOG.md",
-      "bytes": 1630,
-      "sha256": "22dced271917bd3b86fae8b54f7bb82f9d955c859fdb16fd4dbfe7e7ea606238",
-      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
-    },
-    {
-      "path": "Plugins/GeumyiDiscordStatus/README.md",
-      "bytes": 2029,
-      "sha256": "edefb64ae73d7fb0051001889428641f8a6264ef0c74053b799e0b6bd1bb8273",
-      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
-    },
-    {
       "path": "Plugins/GeumyiDiscordStatus/build.sh",
       "bytes": 777,
       "sha256": "64b606f1ea25ca20377b58e06c6c627d7bdd5cdf14d25220ecbd273d3fbf341d",
+      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
+    },
+    {
+      "path": "Plugins/GeumyiDiscordStatus/CHANGELOG.md",
+      "bytes": 1630,
+      "sha256": "22dced271917bd3b86fae8b54f7bb82f9d955c859fdb16fd4dbfe7e7ea606238",
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
@@ -964,6 +958,12 @@
       "path": "Plugins/GeumyiDiscordStatus/docs/PROTOCOL-v4.md",
       "bytes": 1071,
       "sha256": "d56545a4c3ac63bb9550e3b7355db7e5575ec724f638e6774ebed7deba08b716",
+      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
+    },
+    {
+      "path": "Plugins/GeumyiDiscordStatus/README.md",
+      "bytes": 2029,
+      "sha256": "edefb64ae73d7fb0051001889428641f8a6264ef0c74053b799e0b6bd1bb8273",
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
@@ -1081,15 +1081,15 @@
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
-      "path": "Plugins/GeumyiDiscordStatus/src/main/resources/META-INF/geumyi-gscv4.properties",
-      "bytes": 178,
-      "sha256": "dddb9f0a6d8c478e0fb935d73d83ba7c6a3b10ecfd2eecac74a854943c0cb0b7",
-      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
-    },
-    {
       "path": "Plugins/GeumyiDiscordStatus/src/main/resources/config.yml",
       "bytes": 3113,
       "sha256": "91ed95d5ac953be11cc94ca3fda5e78cee919facf7119c7085c0ee70697b3e2c",
+      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
+    },
+    {
+      "path": "Plugins/GeumyiDiscordStatus/src/main/resources/META-INF/geumyi-gscv4.properties",
+      "bytes": 178,
+      "sha256": "dddb9f0a6d8c478e0fb935d73d83ba7c6a3b10ecfd2eecac74a854943c0cb0b7",
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
@@ -1108,24 +1108,6 @@
       "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/Chunk.java",
       "bytes": 46,
       "sha256": "db1929c2e86b0e62e9df9b1bcba73d401d9e0850c562db38ec6ea31c9177af75",
-      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
-    },
-    {
-      "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/GameMode.java",
-      "bytes": 86,
-      "sha256": "4a0e1725e5919d8bba9fdb5e5597a4207a2fb8905625633be26208d40459670b",
-      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
-    },
-    {
-      "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/Server.java",
-      "bytes": 251,
-      "sha256": "2cf906841e294f68f842c97c1cf544b723e513a267f6cb5df29ce4033a0eb4ae",
-      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
-    },
-    {
-      "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/World.java",
-      "bytes": 176,
-      "sha256": "6b5419b7635dc15cd57ef4236391a1a3ce9b2cb74c0411c59036b45068f08bd6",
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
@@ -1171,6 +1153,12 @@
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
+      "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/event/entity/PlayerDeathEvent.java",
+      "bytes": 186,
+      "sha256": "a2cf52945d9bff8d80cae0b8c99890d8acb45b83d0bd7cec007b3e13b0921d83",
+      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
+    },
+    {
       "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/event/EventHandler.java",
       "bytes": 197,
       "sha256": "afa2d4df7c83cf6e8efd7e1eb8194401aafe62cdd887829f64de68c6b8544656",
@@ -1183,12 +1171,6 @@
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
-      "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/event/entity/PlayerDeathEvent.java",
-      "bytes": 186,
-      "sha256": "a2cf52945d9bff8d80cae0b8c99890d8acb45b83d0bd7cec007b3e13b0921d83",
-      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
-    },
-    {
       "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/event/player/PlayerJoinEvent.java",
       "bytes": 139,
       "sha256": "49dd72c9e8a5f4c9d4b2ae63daf693dfc73c63bbdd2484e3be64120ab7729ded",
@@ -1198,6 +1180,18 @@
       "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/event/player/PlayerQuitEvent.java",
       "bytes": 139,
       "sha256": "72cfb2f3cae96ce5199618cf40299a841ad1a6e3017e63bb58ea4e1412450d67",
+      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
+    },
+    {
+      "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/GameMode.java",
+      "bytes": 86,
+      "sha256": "4a0e1725e5919d8bba9fdb5e5597a4207a2fb8905625633be26208d40459670b",
+      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
+    },
+    {
+      "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/plugin/java/JavaPlugin.java",
+      "bytes": 984,
+      "sha256": "31c77a1fe46fdadd181c50771ded86001aca1867b33835b7f0d3030a3ac4e544",
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
@@ -1219,12 +1213,6 @@
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
-      "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/plugin/java/JavaPlugin.java",
-      "bytes": 984,
-      "sha256": "31c77a1fe46fdadd181c50771ded86001aca1867b33835b7f0d3030a3ac4e544",
-      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
-    },
-    {
       "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/scheduler/BukkitScheduler.java",
       "bytes": 303,
       "sha256": "28491cc1e2bcfb8197c2660602268b6649aae68af4781955437d74c670808488",
@@ -1234,6 +1222,18 @@
       "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/scheduler/BukkitTask.java",
       "bytes": 77,
       "sha256": "356d60e706295f7fcd573fd8865e4ffc8b97273b7e96558227dcc963b6efaa4d",
+      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
+    },
+    {
+      "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/Server.java",
+      "bytes": 251,
+      "sha256": "2cf906841e294f68f842c97c1cf544b723e513a267f6cb5df29ce4033a0eb4ae",
+      "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
+    },
+    {
+      "path": "Plugins/GeumyiDiscordStatus/stubs/org/bukkit/World.java",
+      "bytes": 176,
+      "sha256": "6b5419b7635dc15cd57ef4236391a1a3ce9b2cb74c0411c59036b45068f08bd6",
       "source": "Library/GeumyiDiscordStatus-1.1.1-Source.zip"
     },
     {
@@ -1291,17 +1291,22 @@
       "source": "Repository documentation updated after Day-3 recovery 2026-09-27"
     },
     {
-      "path": "ROADMAP.md",
-      "bytes": 2664,
-      "sha256": "c35a6f33f5dd811f5bc4c804284e2116fd464701287d30e224d6fddd876d6165",
-      "source": "Repository roadmap and final-day lobby/transfer design plan added 2026-09-27"
+      "path": "release-sha256.txt",
+      "bytes": 65,
+      "sha256": "fb3ac69986a691c62249d2a894c19637444a5f51bd968aaf4e7250f3270019b4",
+      "source": "Repository documentation or import housekeeping"
     },
     {
-      "path": "ResourcePacks/Playground/Bedrock/README.txt",
-      "bytes": 762,
-      "sha256": "d8e164352205426b562148a0640c95f288b489d38395d469cc559763152893ab",
-      "source": "packs/Geumyi_Server_Bedrock_26.50/README.txt",
-      "modifiedFromRecovered": false
+      "path": "release-source.example.txt",
+      "bytes": 67,
+      "sha256": "254cd475514d5fa01e5f3395c742966f6e5f6aaf8d1cca74b611145bde2cac66",
+      "source": "Repository documentation or import housekeeping"
+    },
+    {
+      "path": "release-tag.txt",
+      "bytes": 17,
+      "sha256": "d38cc8dfc164699c0c50e716e38ead297bf6dbf7c86ea389bd6bc910276a550b",
+      "source": "Repository documentation or import housekeeping"
     },
     {
       "path": "ResourcePacks/Playground/Bedrock/manifest.json",
@@ -1315,6 +1320,13 @@
       "bytes": 12118,
       "sha256": "668eeae597595745c075031ddcb03d134a6eafc96bea3fcba84fd3d0c0388d68",
       "source": "packs/Geumyi_Server_Bedrock_26.50/pack_icon.png",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "ResourcePacks/Playground/Bedrock/README.txt",
+      "bytes": 762,
+      "sha256": "d8e164352205426b562148a0640c95f288b489d38395d469cc559763152893ab",
+      "source": "packs/Geumyi_Server_Bedrock_26.50/README.txt",
       "modifiedFromRecovered": false
     },
     {
@@ -1884,13 +1896,6 @@
       "source": "Repository documentation or import housekeeping"
     },
     {
-      "path": "ResourcePacks/Wild/Bedrock-BACAP/README.txt",
-      "bytes": 1938,
-      "sha256": "bd605504cc0eea797bcdafe6274ad0954749aae9546c3f209fa97b68530a6a04",
-      "source": "packs/Geumyi_Wild_Bedrock_BACAP_Korean/README.txt",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "ResourcePacks/Wild/Bedrock-BACAP/manifest.json",
       "bytes": 525,
       "sha256": "c39770afd2da4c38c49f02ca5b9de20fda5d371cca627f784683827f33273c51",
@@ -1902,6 +1907,13 @@
       "bytes": 902,
       "sha256": "eb993286f3ed3ed9e00293953609734da5a26d1768ca7f63d076a5b438123e10",
       "source": "packs/Geumyi_Wild_Bedrock_BACAP_Korean/pack_icon.png",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "ResourcePacks/Wild/Bedrock-BACAP/README.txt",
+      "bytes": 1938,
+      "sha256": "bd605504cc0eea797bcdafe6274ad0954749aae9546c3f209fa97b68530a6a04",
+      "source": "packs/Geumyi_Wild_Bedrock_BACAP_Korean/README.txt",
       "modifiedFromRecovered": false
     },
     {
@@ -3270,17 +3282,17 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "ResourcePacks/Wild/Bedrock-ChemTech/textures/items/tech_battery_box.png",
-      "bytes": 238,
-      "sha256": "5d62a398bd4c787cd568884b057d879b1a4633abed28676d038077392d4b0f8a",
-      "source": "packs/Geumyi_Wild_Bedrock_ChemTech/textures/items/tech_battery_box.png",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "ResourcePacks/Wild/Bedrock-ChemTech/textures/items/tech_battery_box_mk2.png",
       "bytes": 238,
       "sha256": "507c1c0fe9530b3a673d33a5ed819ba5f756e3d42f8a75f3c62222b75ec84c86",
       "source": "packs/Geumyi_Wild_Bedrock_ChemTech/textures/items/tech_battery_box_mk2.png",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "ResourcePacks/Wild/Bedrock-ChemTech/textures/items/tech_battery_box.png",
+      "bytes": 238,
+      "sha256": "5d62a398bd4c787cd568884b057d879b1a4633abed28676d038077392d4b0f8a",
+      "source": "packs/Geumyi_Wild_Bedrock_ChemTech/textures/items/tech_battery_box.png",
       "modifiedFromRecovered": false
     },
     {
@@ -7715,17 +7727,17 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "ResourcePacks/Wild/Java/assets/geumyi_tech/items/item/battery_box.json",
-      "bytes": 95,
-      "sha256": "53792e0da8fd8214e0e4e5dc4745661fbc55654961baca85dba3458bd631a017",
-      "source": "nested/Geumyi_Wild_Java_26.3_BACAP_ChemTech/assets/geumyi_tech/items/item/battery_box.json",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "ResourcePacks/Wild/Java/assets/geumyi_tech/items/item/battery_box_mk2.json",
       "bytes": 99,
       "sha256": "3fc1c3d33526450e2df40e55f12d778e9f5e665ed6c23268b1f3751e4baea765",
       "source": "nested/Geumyi_Wild_Java_26.3_BACAP_ChemTech/assets/geumyi_tech/items/item/battery_box_mk2.json",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "ResourcePacks/Wild/Java/assets/geumyi_tech/items/item/battery_box.json",
+      "bytes": 95,
+      "sha256": "53792e0da8fd8214e0e4e5dc4745661fbc55654961baca85dba3458bd631a017",
+      "source": "nested/Geumyi_Wild_Java_26.3_BACAP_ChemTech/assets/geumyi_tech/items/item/battery_box.json",
       "modifiedFromRecovered": false
     },
     {
@@ -7869,17 +7881,17 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "ResourcePacks/Wild/Java/assets/geumyi_tech/models/item/battery_box.json",
-      "bytes": 108,
-      "sha256": "23628219fd2498f09d64bab9441fa980d11048b31dd7694cc3956fb693218ddf",
-      "source": "nested/Geumyi_Wild_Java_26.3_BACAP_ChemTech/assets/geumyi_tech/models/item/battery_box.json",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "ResourcePacks/Wild/Java/assets/geumyi_tech/models/item/battery_box_mk2.json",
       "bytes": 112,
       "sha256": "7e0ce8ae12ba4d26eeccc2daa85559abdacd76876426b52504633902933d19d9",
       "source": "nested/Geumyi_Wild_Java_26.3_BACAP_ChemTech/assets/geumyi_tech/models/item/battery_box_mk2.json",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "ResourcePacks/Wild/Java/assets/geumyi_tech/models/item/battery_box.json",
+      "bytes": 108,
+      "sha256": "23628219fd2498f09d64bab9441fa980d11048b31dd7694cc3956fb693218ddf",
+      "source": "nested/Geumyi_Wild_Java_26.3_BACAP_ChemTech/assets/geumyi_tech/models/item/battery_box.json",
       "modifiedFromRecovered": false
     },
     {
@@ -8023,17 +8035,17 @@
       "modifiedFromRecovered": false
     },
     {
-      "path": "ResourcePacks/Wild/Java/assets/geumyi_tech/textures/item/battery_box.png",
-      "bytes": 238,
-      "sha256": "5d62a398bd4c787cd568884b057d879b1a4633abed28676d038077392d4b0f8a",
-      "source": "nested/Geumyi_Wild_Java_26.3_BACAP_ChemTech/assets/geumyi_tech/textures/item/battery_box.png",
-      "modifiedFromRecovered": false
-    },
-    {
       "path": "ResourcePacks/Wild/Java/assets/geumyi_tech/textures/item/battery_box_mk2.png",
       "bytes": 238,
       "sha256": "507c1c0fe9530b3a673d33a5ed819ba5f756e3d42f8a75f3c62222b75ec84c86",
       "source": "nested/Geumyi_Wild_Java_26.3_BACAP_ChemTech/assets/geumyi_tech/textures/item/battery_box_mk2.png",
+      "modifiedFromRecovered": false
+    },
+    {
+      "path": "ResourcePacks/Wild/Java/assets/geumyi_tech/textures/item/battery_box.png",
+      "bytes": 238,
+      "sha256": "5d62a398bd4c787cd568884b057d879b1a4633abed28676d038077392d4b0f8a",
+      "source": "nested/Geumyi_Wild_Java_26.3_BACAP_ChemTech/assets/geumyi_tech/textures/item/battery_box.png",
       "modifiedFromRecovered": false
     },
     {
@@ -8407,6 +8419,12 @@
       "source": "Repository documentation or import housekeeping"
     },
     {
+      "path": "ROADMAP.md",
+      "bytes": 2664,
+      "sha256": "c35a6f33f5dd811f5bc4c804284e2116fd464701287d30e224d6fddd876d6165",
+      "source": "Repository roadmap and final-day lobby/transfer design plan added 2026-09-27"
+    },
+    {
       "path": "SECURITY-NOTES.md",
       "bytes": 4777,
       "sha256": "a72c99f8974345fab77bb9fb59195fcf3dc766627fae31698b65f54f024dd6d6",
@@ -8451,34 +8469,16 @@
       "source": "Sanitized 2026-09-10 operational configuration evidence; secrets and historical share URLs redacted"
     },
     {
-      "path": "VERSION-MATRIX.md",
-      "bytes": 2430,
-      "sha256": "07db62e82727a7cda78ccb2d3a056e670a2f184b306b15a95c3377d6a764809a",
-      "source": "Repository documentation updated after Day-3 recovery 2026-09-27"
-    },
-    {
-      "path": "release-sha256.txt",
-      "bytes": 65,
-      "sha256": "fb3ac69986a691c62249d2a894c19637444a5f51bd968aaf4e7250f3270019b4",
-      "source": "Repository documentation or import housekeeping"
-    },
-    {
-      "path": "release-source.example.txt",
-      "bytes": 67,
-      "sha256": "254cd475514d5fa01e5f3395c742966f6e5f6aaf8d1cca74b611145bde2cac66",
-      "source": "Repository documentation or import housekeeping"
-    },
-    {
-      "path": "release-tag.txt",
-      "bytes": 17,
-      "sha256": "d38cc8dfc164699c0c50e716e38ead297bf6dbf7c86ea389bd6bc910276a550b",
-      "source": "Repository documentation or import housekeeping"
-    },
-    {
       "path": "tools/release/README.md",
       "bytes": 1118,
       "sha256": "106168f96aae869597636599a1ad94fb5b38d73d8b2b33deee674b1445dbd6c3",
       "source": "Repository documentation or import housekeeping"
+    },
+    {
+      "path": "VERSION-MATRIX.md",
+      "bytes": 2430,
+      "sha256": "07db62e82727a7cda78ccb2d3a056e670a2f184b306b15a95c3377d6a764809a",
+      "source": "Repository documentation updated after Day-3 recovery 2026-09-27"
     }
   ],
   "synced": "2026-09-27"
