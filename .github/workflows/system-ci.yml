@@ -118,8 +118,19 @@ jobs:
                   pack = data.get("pack")
                   if not isinstance(pack, dict):
                       raise ValueError("missing object: pack")
-                  if "pack_format" not in pack:
-                      raise ValueError("missing pack.pack_format")
+                  has_legacy_format = "pack_format" in pack
+                  has_range_format = "min_format" in pack and "max_format" in pack
+                  if not (has_legacy_format or has_range_format):
+                      raise ValueError("missing pack format metadata (pack_format or min_format/max_format)")
+                  if has_range_format:
+                      for key in ("min_format", "max_format"):
+                          value = pack[key]
+                          if not (
+                              isinstance(value, list)
+                              and len(value) == 2
+                              and all(isinstance(n, int) for n in value)
+                          ):
+                              raise ValueError(f"invalid pack.{key}: expected [major, minor]")
                   if "description" not in pack:
                       raise ValueError("missing pack.description")
               except Exception as exc:
