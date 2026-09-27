@@ -5,6 +5,7 @@ Confirmed runtime baseline: 2026-09-26. Recovery status updated 2026-09-27.
 CI:
 - System CI run 36299122264: GSC, GDS and ResourcePack validation passed.
 - System CI run 36304228157: follow-up run with StatusAgent JDK 21 source build completed successfully alongside GSC, GDS and ResourcePack validation.
+- System CI run 36305340513: post-security-sanitization verification completed successfully; GSC, StatusAgent, GDS and ResourcePack jobs all passed.
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
