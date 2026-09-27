@@ -1286,9 +1286,9 @@
     },
     {
       "path": "RECOVERY-REPORT.md",
-      "bytes": 9265,
-      "sha256": "b594f03da9f744822d0e2f8d9d5a645a0952b419005e76aa9bd1f133d7194bbe",
-      "source": "Repository documentation updated after Day-3 recovery 2026-09-27"
+      "bytes": 9493,
+      "sha256": "f95c366d79a40529e1c015f2d91ddce90bea0d4ea339ce6a922170941aed74d8",
+      "source": "Repository documentation updated after final Day-3 CI verification 2026-09-27"
     },
     {
       "path": "release-sha256.txt",
@@ -8476,9 +8476,9 @@
     },
     {
       "path": "VERSION-MATRIX.md",
-      "bytes": 2430,
-      "sha256": "07db62e82727a7cda78ccb2d3a056e670a2f184b306b15a95c3377d6a764809a",
-      "source": "Repository documentation updated after Day-3 recovery 2026-09-27"
+      "bytes": 2579,
+      "sha256": "46f8982c8dc2ec8ff0de70a2e23d75349482a2675c8c25fd3ea4f7d6a2fd022e",
+      "source": "Repository documentation updated after final Day-3 CI verification 2026-09-27"
     }
   ],
   "synced": "2026-09-27"
