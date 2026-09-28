@@ -1,6 +1,6 @@
 {
   "baseline": "2026-09-26",
-  "note": "Manifest synchronized through the Day-6 GSCM build 113 hotfix, CI verification, and Android signing caveat on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
+  "note": "Manifest synchronized through Day-6 Android real-device verification completion on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
   "files": [
     {
       "path": ".github/workflows/android-build.yml",
@@ -52,9 +52,9 @@
     },
     {
       "path": "DAY6-DEVICE-TEST.md",
-      "bytes": 8162,
-      "sha256": "13135c8e0a9f8956cf3194f8072219dc4cbb8a7c61dde54ac7ac0211303a7f5d",
-      "source": "Day-6 Android CI signing limitation documented 2026-09-28",
+      "bytes": 8732,
+      "sha256": "5e2334a2341376bd13f8923ac7b10e31b8de05975c7189e43016ea0b8ac785b0",
+      "source": "Day-6 Android real-device verification complete 2026-09-28",
       "modifiedFromRecovered": true
     },
     {
@@ -8973,7 +8973,7 @@
       "path": "VERSION-MATRIX.md",
       "bytes": 3853,
       "sha256": "f2b70d239c455955ad0f68fff98c6017673bd7984827e99c7d3a3567338770a9",
-      "source": "Day-6 Android CI signing limitation documented 2026-09-28",
+      "source": "Day-6 Android real-device verification complete 2026-09-28",
       "modifiedFromRecovered": true
     }
   ],
