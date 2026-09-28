@@ -175,6 +175,7 @@ func registerV4Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/pairing/claim", apiV4PairingClaim)
 	mux.HandleFunc("/api/v4/devices", requireAuth(apiV4Devices))
 	mux.HandleFunc("/api/v4/system", requireAuth(apiV4System))
+	registerUpdateRoutes(mux)
 }
 
 func apiV4Events(w http.ResponseWriter, r *http.Request) {

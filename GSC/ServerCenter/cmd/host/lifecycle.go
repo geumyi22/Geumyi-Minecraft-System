@@ -328,6 +328,13 @@ func startServerLocked(s ServerConfig) (string, error) {
 		if dir == "" {
 			return "서버 폴더를 찾지 못함", errors.New("server directory unavailable")
 		}
+		setLaunchPhase(s.ID, "updating", "서버 시작 전 자체 플러그인 업데이트 확인 중", "")
+		ust := runPreStartUpdater(s)
+		if ust.Error != "" {
+			appendLauncherNote(s.ID, "pre-start updater warning: "+ust.Error)
+		} else if len(ust.Applied) > 0 {
+			appendLauncherNote(s.ID, "pre-start updater applied: "+strings.Join(ust.Applied, ", "))
+		}
 		setLaunchPhase(s.ID, "starting", "기존 start.bat 실행 준비 중", "")
 		if e := runDetachedCommand(s.StartCommand, dir, s.ID); e != nil {
 			return "서버 시작 실패", e

@@ -1,6 +1,21 @@
 name: Build GSCM Android APK
 
 on:
+  workflow_call:
+    inputs:
+      require_release_signing:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      ANDROID_RELEASE_KEYSTORE_B64:
+        required: false
+      ANDROID_RELEASE_STORE_PASSWORD:
+        required: false
+      ANDROID_RELEASE_KEY_ALIAS:
+        required: false
+      ANDROID_RELEASE_KEY_PASSWORD:
+        required: false
   push:
     branches: [ main ]
     paths:
@@ -57,15 +72,48 @@ jobs:
           cp -R GSCM app
           test -f app/pubspec.yaml
 
+      - name: Prepare persistent Android release signing
+        if: ${{ inputs.require_release_signing == true }}
+        shell: bash
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_B64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for name in KEYSTORE_B64 STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Missing required Android release signing secret: $name"
+              exit 1
+            fi
+          done
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > app/android/release.jks
+          test -s app/android/release.jks
+          cat > app/android/key.properties <<EOF
+          storeFile=release.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
       - name: Configure Android Gradle compatibility
         shell: bash
         run: |
           set -euo pipefail
           cat > app/android/app/build.gradle.kts <<'EOF'
+          import java.util.Properties
+
           plugins {
               id("com.android.application")
               id("kotlin-android")
               id("dev.flutter.flutter-gradle-plugin")
+          }
+
+          val releaseKeyPropertiesFile = rootProject.file("key.properties")
+          val releaseKeyProperties = Properties()
+          if (releaseKeyPropertiesFile.exists()) {
+              releaseKeyPropertiesFile.inputStream().use { releaseKeyProperties.load(it) }
           }
 
           android {
@@ -86,9 +134,24 @@ jobs:
                   versionName = flutter.versionName
               }
 
+              signingConfigs {
+                  if (releaseKeyPropertiesFile.exists()) {
+                      create("releasePersistent") {
+                          storeFile = rootProject.file(releaseKeyProperties.getProperty("storeFile"))
+                          storePassword = releaseKeyProperties.getProperty("storePassword")
+                          keyAlias = releaseKeyProperties.getProperty("keyAlias")
+                          keyPassword = releaseKeyProperties.getProperty("keyPassword")
+                      }
+                  }
+              }
+
               buildTypes {
                   release {
-                      signingConfig = signingConfigs.getByName("debug")
+                      signingConfig = if (releaseKeyPropertiesFile.exists()) {
+                          signingConfigs.getByName("releasePersistent")
+                      } else {
+                          signingConfigs.getByName("debug")
+                      }
                   }
               }
           }
@@ -152,6 +215,17 @@ jobs:
       - name: Build release APK
         working-directory: app
         run: flutter build apk --release
+
+      - name: Verify persistent release signer
+        if: ${{ inputs.require_release_signing == true }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="app/build/app/outputs/flutter-apk/app-release.apk"
+          test -s "$APK"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" \( -name apksigner -o -name apksigner.bat \) -type f | sort -V | tail -n 1)"
+          test -n "$APKSIGNER"
+          "$APKSIGNER" verify --verbose --print-certs "$APK"
 
       - name: Stage artifact
         shell: bash

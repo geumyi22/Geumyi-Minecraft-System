@@ -2,6 +2,7 @@ name: Build GSCM iOS unsigned IPA
 # Day 7: upload only the final IPA and checksum.
 
 on:
+  workflow_call:
   push:
     branches: [ main ]
     paths:

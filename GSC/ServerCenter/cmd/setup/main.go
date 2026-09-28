@@ -43,6 +43,13 @@ type AgentConfig struct {
 	JavaPath     string `json:"java_path"`
 	JarName      string `json:"jar_name"`
 }
+type UpdateConfig struct {
+	Enabled        bool   `json:"enabled"`
+	Repository     string `json:"repository"`
+	Channel        string `json:"channel"`
+	PublicKeyPath  string `json:"public_key_path"`
+	TimeoutSeconds int    `json:"timeout_seconds"`
+}
 type ServerConfig struct {
 	Bind                string      `json:"bind"`
 	Port                int         `json:"port"`
@@ -50,9 +57,10 @@ type ServerConfig struct {
 	AllowLoopbackNoAuth bool        `json:"allow_loopback_no_auth"`
 	MobileEnabled       bool        `json:"mobile_enabled"`
 	PairingTTLSeconds   int         `json:"pairing_ttl_seconds"`
-	AutoStartAgent      bool        `json:"auto_start_agent"`
-	Agent               AgentConfig `json:"agent"`
-	Servers             []Server    `json:"servers"`
+	AutoStartAgent      bool         `json:"auto_start_agent"`
+	Agent               AgentConfig  `json:"agent"`
+	Update              UpdateConfig `json:"update"`
+	Servers             []Server     `json:"servers"`
 }
 type Server struct {
 	ID             string `json:"id"`
@@ -432,7 +440,7 @@ func doInstall(o InstallOptions) {
 		installIntegratedAgent(agentDir)
 		installManagedPlugins(dataDir)
 		java := findJavaExecutable()
-		cfg = ServerConfig{Bind: "127.0.0.1", Port: 8787, APIToken: token, AllowLoopbackNoAuth: true, MobileEnabled: o.Remote, PairingTTLSeconds: 300, AutoStartAgent: true, Agent: AgentConfig{HealthURL: "http://127.0.0.1:8877/health", StateURL: "http://127.0.0.1:8877/state", WorkingDir: agentDir, JavaPath: java, JarName: "GeumyiStatusAgent-0.5.4.jar"}, Servers: []Server{{ID: "wild", Name: "금이 야생", JavaPort: 25565, RCONPort: 25575, BedrockPort: 19132, GDSAPIPort: 8766, Path: o.WildPath, PathFile: `C:\ProgramData\MinecraftServer\server_path.txt`, StartCommand: "start.bat", AutoStart: true, RestartOnCrash: true}, {ID: "playground", Name: "금이 놀이터", JavaPort: 25566, RCONPort: 25576, BedrockPort: 19133, GDSAPIPort: 8765, Path: o.PlayPath, PathFile: `C:\ProgramData\MinecraftPlaygroundServer\server_path.txt`, StartCommand: "start.bat", AutoStart: true, RestartOnCrash: true}}}
+		cfg = ServerConfig{Bind: "127.0.0.1", Port: 8787, APIToken: token, AllowLoopbackNoAuth: true, MobileEnabled: o.Remote, PairingTTLSeconds: 300, AutoStartAgent: true, Agent: AgentConfig{HealthURL: "http://127.0.0.1:8877/health", StateURL: "http://127.0.0.1:8877/state", WorkingDir: agentDir, JavaPath: java, JarName: "GeumyiStatusAgent-0.5.4.jar"}, Update: defaultUpdateConfig(dataDir), Servers: []Server{{ID: "wild", Name: "금이 야생", JavaPort: 25565, RCONPort: 25575, BedrockPort: 19132, GDSAPIPort: 8766, Path: o.WildPath, PathFile: `C:\ProgramData\MinecraftServer\server_path.txt`, StartCommand: "start.bat", AutoStart: true, RestartOnCrash: true}, {ID: "playground", Name: "금이 놀이터", JavaPort: 25566, RCONPort: 25576, BedrockPort: 19133, GDSAPIPort: 8765, Path: o.PlayPath, PathFile: `C:\ProgramData\MinecraftPlaygroundServer\server_path.txt`, StartCommand: "start.bat", AutoStart: true, RestartOnCrash: true}}}
 		if len(existing.Servers) > 0 {
 			previous := existing
 			previous.Servers = append([]Server(nil), existing.Servers...)
@@ -471,6 +479,7 @@ func doInstall(o InstallOptions) {
 		if cfg.PairingTTLSeconds < 60 || cfg.PairingTTLSeconds > 3600 {
 			cfg.PairingTTLSeconds = 300
 		}
+		cfg.Update = normalizeUpdateConfig(cfg.Update, dataDir)
 		hostURL = fmt.Sprintf("http://127.0.0.1:%d", cfg.Port)
 		writeServerConfig(filepath.Join(dataDir, "server.json"), cfg)
 
@@ -933,6 +942,33 @@ func apiPickFolder(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimSpace(string(b))
 	writeHTTPJSON(w, map[string]any{"path": path})
 }
+func defaultUpdateConfig(dataDir string) UpdateConfig {
+	return UpdateConfig{
+		Enabled:        false,
+		Repository:     "geumyi22/Geumyi-Minecraft-System",
+		Channel:        "canary",
+		PublicKeyPath:  filepath.Join(dataDir, "deployment-public.pem"),
+		TimeoutSeconds: 12,
+	}
+}
+
+func normalizeUpdateConfig(c UpdateConfig, dataDir string) UpdateConfig {
+	if strings.TrimSpace(c.Repository) == "" {
+		c.Repository = "geumyi22/Geumyi-Minecraft-System"
+	}
+	c.Channel = strings.ToLower(strings.TrimSpace(c.Channel))
+	if c.Channel != "stable" && c.Channel != "beta" && c.Channel != "canary" {
+		c.Channel = "canary"
+	}
+	if strings.TrimSpace(c.PublicKeyPath) == "" {
+		c.PublicKeyPath = filepath.Join(dataDir, "deployment-public.pem")
+	}
+	if c.TimeoutSeconds < 3 || c.TimeoutSeconds > 60 {
+		c.TimeoutSeconds = 12
+	}
+	return c
+}
+
 func writeServerConfig(path string, c ServerConfig) {
 	disk := c
 	protected, err := securestore.ProtectString(c.APIToken, true)
