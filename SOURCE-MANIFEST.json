@@ -1,6 +1,6 @@
 {
   "baseline": "2026-09-26",
-  "note": "Manifest synchronized through Day-6 Android reboot persistence evidence on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
+  "note": "Manifest synchronized through Day-6 Android network recovery evidence and realtime badge issue recording on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
   "files": [
     {
       "path": ".github/workflows/android-build.yml",
@@ -52,9 +52,9 @@
     },
     {
       "path": "DAY6-DEVICE-TEST.md",
-      "bytes": 5590,
-      "sha256": "3437365f868c71213c472b404e02ba4fba3802752a04277711e68fa0a72edf46",
-      "source": "Day-6 Android reboot persistence test recorded 2026-09-28"
+      "bytes": 6507,
+      "sha256": "21797740a1c4ba03c1be78db374442b0285e5b50c463fddea62cb026f2d6d5fa",
+      "source": "Day-6 Android network recovery and realtime badge issue recorded 2026-09-28"
     },
     {
       "path": "GSC/README.md",
