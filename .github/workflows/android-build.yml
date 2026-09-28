@@ -1,7 +1,12 @@
-name: Build GSCM 1.1.2 Android APK
+name: Build GSCM Android APK
 
 on:
   push:
+    branches: [ main ]
+    paths:
+      - 'GSCM/**'
+      - '.github/workflows/android-build.yml'
+  pull_request:
     branches: [ main ]
     paths:
       - 'GSCM/**'
@@ -12,7 +17,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: gscm-android-build
+  group: gscm-android-build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -24,9 +29,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Flutter stable
+      - name: Read app version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          FULL="$(awk '/^version:/ {print $2; exit}' GSCM/pubspec.yaml)"
+          NAME="${FULL%%+*}"
+          BUILD="${FULL##*+}"
+          test -n "$NAME"
+          test -n "$BUILD"
+          echo "version_full=$FULL" >> "$GITHUB_OUTPUT"
+          echo "version_name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "build_number=$BUILD" >> "$GITHUB_OUTPUT"
+
+      - name: Install Flutter 3.47.5
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.47.5'
           channel: stable
           cache: true
 
@@ -135,20 +155,23 @@ jobs:
 
       - name: Stage artifact
         shell: bash
+        env:
+          VERSION_FULL: ${{ steps.version.outputs.version_full }}
         run: |
           set -euo pipefail
-          mkdir -p dist
-          cp app/build/app/outputs/flutter-apk/app-release.apk dist/GSCM-v1.1.2-Android.apk
-          sha256sum dist/GSCM-v1.1.2-Android.apk > dist/GSCM-v1.1.2-Android.apk.sha256
-          ls -lh dist
+          mkdir -p app/dist
+          FILE="GSCM-v${VERSION_FULL}-Android.apk"
+          cp app/build/app/outputs/flutter-apk/app-release.apk "app/dist/$FILE"
+          (
+            cd app/dist
+            sha256sum "$FILE" > "$FILE.sha256"
+          )
+          ls -lh app/dist
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GSCM-1.1.2-Android
-          path: |
-            dist/GSCM-v1.1.2-Android.apk
-            dist/GSCM-v1.1.2-Android.apk.sha256
+          name: GSCM-${{ steps.version.outputs.version_name }}-build${{ steps.version.outputs.build_number }}-Android
+          path: app/dist/*
           if-no-files-found: error
           retention-days: 14
-

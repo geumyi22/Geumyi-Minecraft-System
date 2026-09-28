@@ -6,9 +6,14 @@ BUILD="$ROOT/build-repro"
 if [[ ! -f "$BASE" ]]; then echo "Missing base/reference JAR: $BASE" >&2; exit 2; fi
 OUT="$ROOT/GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar"
 rm -rf "$BUILD"
-mkdir -p "$BUILD/stubs" "$BUILD/classes" "$BUILD/jarroot"
-find "$ROOT/stubs" -name '*.java' -print0 | xargs -0 javac -encoding UTF-8 -d "$BUILD/stubs"
-find "$ROOT/src/main/java" -name '*.java' -print0 | xargs -0 javac -encoding UTF-8 -cp "$BUILD/stubs:$BASE" -d "$BUILD/classes"
+mkdir -p "$BUILD/stubs" "$BUILD/classes" "$BUILD/testclasses" "$BUILD/jarroot"
+
+find "$ROOT/stubs" -name '*.java' -print0 | xargs -0 javac --release 21 -encoding UTF-8 -d "$BUILD/stubs"
+find "$ROOT/src/main/java" -name '*.java' -print0 | xargs -0 javac --release 21 -encoding UTF-8 -cp "$BUILD/stubs:$BASE" -d "$BUILD/classes"
+
+find "$ROOT/tests" -name '*.java' -print0 | xargs -0 javac --release 21 -encoding UTF-8 -cp "$BUILD/stubs:$BUILD/classes:$BASE" -d "$BUILD/testclasses"
+java -cp "$BUILD/stubs:$BUILD/classes:$BUILD/testclasses:$BASE" kr.geumyi.servertools.CoreTests
+
 (cd "$BUILD/jarroot" && jar xf "$BASE")
 cat > "$BUILD/jarroot/META-INF/geumyi-26.3-upgrade.properties" <<'EOF'
 target=Spigot/Paper 26.3
@@ -30,4 +35,9 @@ cp -a "$ROOT/src/main/resources/." "$BUILD/jarroot/"
 find "$BUILD/classes/kr/geumyi/servertools" -type f -name '*.class' ! -name 'CoreTests.class' -exec cp -f {} "$BUILD/jarroot/kr/geumyi/servertools/" \;
 rm -f "$OUT"
 (cd "$BUILD/jarroot" && jar --create --file "$OUT" .)
+unzip -t "$OUT" >/dev/null
+if unzip -Z1 "$OUT" | grep -q '^org/bukkit/'; then
+  echo 'ERROR: compile-only Bukkit stubs leaked into JAR' >&2
+  exit 1
+fi
 echo "$OUT"

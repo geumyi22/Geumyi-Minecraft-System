@@ -2,9 +2,13 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 rm -rf "$ROOT/build"
-mkdir -p "$ROOT/build/stubclasses" "$ROOT/build/classes"
+mkdir -p "$ROOT/build/stubclasses" "$ROOT/build/classes" "$ROOT/build/testclasses"
+
 find "$ROOT/stubs" -name '*.java' -print0 | xargs -0 javac --release 21 -encoding UTF-8 -d "$ROOT/build/stubclasses"
 find "$ROOT/src/main/java" -name '*.java' -print0 | xargs -0 javac --release 21 -encoding UTF-8 -cp "$ROOT/build/stubclasses" -d "$ROOT/build/classes"
+find "$ROOT/tests" -name '*.java' -print0 | xargs -0 javac --release 21 -encoding UTF-8 -cp "$ROOT/build/stubclasses:$ROOT/build/classes" -d "$ROOT/build/testclasses"
+java -cp "$ROOT/build/stubclasses:$ROOT/build/classes:$ROOT/build/testclasses" kr.geumyi.discordstatus.CoreTests
+
 cp -a "$ROOT/src/main/resources/." "$ROOT/build/classes/"
 OUT="$ROOT/GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar"
 rm -f "$OUT"

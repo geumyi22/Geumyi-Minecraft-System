@@ -6,7 +6,10 @@ on:
     paths:
       - 'GSC/ServerCenter/**'
       - 'GSC/StatusAgent/**'
+      - 'Plugins/GeumyiServerTools/**'
       - 'Plugins/GeumyiDiscordStatus/**'
+      - 'Plugins/GeumyiTechnology/**'
+      - 'Plugins/GeumyiChemistry/**'
       - 'ResourcePacks/**'
       - '.github/workflows/system-ci.yml'
   pull_request:
@@ -14,7 +17,10 @@ on:
     paths:
       - 'GSC/ServerCenter/**'
       - 'GSC/StatusAgent/**'
+      - 'Plugins/GeumyiServerTools/**'
       - 'Plugins/GeumyiDiscordStatus/**'
+      - 'Plugins/GeumyiTechnology/**'
+      - 'Plugins/GeumyiChemistry/**'
       - 'ResourcePacks/**'
       - '.github/workflows/system-ci.yml'
   workflow_dispatch:
@@ -28,7 +34,7 @@ concurrency:
 
 jobs:
   gsc:
-    name: GSC / Go test
+    name: GSC 4.2.3 / Go test
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
@@ -44,7 +50,7 @@ jobs:
         run: go test ./...
 
   statusagent:
-    name: StatusAgent / JDK 21 build
+    name: StatusAgent 0.5.4 / build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -59,7 +65,7 @@ jobs:
         working-directory: GSC/StatusAgent
         shell: bash
         run: bash build.sh
-      - name: Verify StatusAgent artifact
+      - name: Verify and stage StatusAgent
         shell: bash
         run: |
           set -euo pipefail
@@ -68,9 +74,20 @@ jobs:
           unzip -t "$JAR" >/dev/null
           COUNT=$(unzip -Z1 "$JAR" | grep -c '^kr/geumyi/statusagent/.*[.]class$')
           test "$COUNT" -ge 9
+          unzip -p "$JAR" META-INF/MANIFEST.MF | grep -q 'Implementation-Version: 0.5.4'
+          mkdir -p dist/statusagent
+          cp "$JAR" dist/statusagent/
+          (cd dist/statusagent && sha256sum GeumyiStatusAgent-0.5.4.jar > GeumyiStatusAgent-0.5.4.jar.sha256)
+      - name: Upload StatusAgent artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: statusagent-0.5.4
+          path: dist/statusagent/*
+          if-no-files-found: error
+          retention-days: 14
 
   gds:
-    name: GDS / JDK 21 build
+    name: GDS 1.1.1 / build + tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -81,11 +98,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Build GDS
+      - name: Build and test GDS
         working-directory: Plugins/GeumyiDiscordStatus
         shell: bash
         run: bash build.sh
-      - name: Verify GDS artifact
+      - name: Verify and stage GDS
         shell: bash
         run: |
           set -euo pipefail
@@ -96,6 +113,148 @@ jobs:
             echo 'ERROR: compile-only Bukkit stubs leaked into JAR' >&2
             exit 1
           fi
+          unzip -p "$JAR" plugin.yml | grep -Eq '^version:[[:space:]]*1[.]1[.]1'
+          mkdir -p dist/gds
+          cp "$JAR" dist/gds/
+          (cd dist/gds && sha256sum GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar > GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256)
+      - name: Upload GDS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gds-1.1.1
+          path: dist/gds/*
+          if-no-files-found: error
+          retention-days: 14
+
+  gst:
+    name: GST 1.1.1 HOTFIX / overlay build + tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Fetch verified deployed GST reference/core
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ci-reference
+          URL="https://github.com/geumyi22/Geumyi-Minecraft-System/releases/download/mc-2026.09.26-v3/GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar"
+          curl --fail --location --retry 3 "$URL" -o ci-reference/gst-reference.jar
+          echo "af0509ea77f49fab6bf4dea48ddc0d030e50fa0880eb9250185b47e5ec696ac7  ci-reference/gst-reference.jar" | sha256sum -c -
+      - name: Build and test GST overlay
+        working-directory: Plugins/GeumyiServerTools
+        shell: bash
+        env:
+          BASE_JAR: ${{ github.workspace }}/ci-reference/gst-reference.jar
+        run: bash build.sh
+      - name: Verify and stage GST
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR="Plugins/GeumyiServerTools/GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar"
+          test -s "$JAR"
+          unzip -t "$JAR" >/dev/null
+          if unzip -Z1 "$JAR" | grep -q '^org/bukkit/'; then
+            echo 'ERROR: compile-only Bukkit stubs leaked into JAR' >&2
+            exit 1
+          fi
+          unzip -p "$JAR" plugin.yml | grep -Eq '^version:[[:space:]]*1[.]1[.]1'
+          mkdir -p dist/gst
+          cp "$JAR" dist/gst/
+          (cd dist/gst && sha256sum GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar > GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256)
+      - name: Upload GST artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gst-1.1.1-hotfix
+          path: dist/gst/*
+          if-no-files-found: error
+          retention-days: 14
+
+  technology:
+    name: Technology 0.1.3 / Gradle build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Set up Gradle 9.1.0
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - name: Build Technology
+        shell: bash
+        run: gradle -p Plugins/GeumyiTechnology --no-daemon clean jar
+      - name: Verify and stage Technology
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="Plugins/GeumyiTechnology/build/libs/GeumyiTechnology-0.1.3.jar"
+          OUT="GeumyiTechnology-0.1.3-Paper26.3.jar"
+          test -s "$SRC"
+          unzip -t "$SRC" >/dev/null
+          unzip -p "$SRC" plugin.yml | grep -Eq '^version:[[:space:]]*0[.]1[.]3'
+          unzip -p "$SRC" plugin.yml | grep -Eq "^api-version:[[:space:]]*'26[.]3'"
+          javap -verbose -classpath "$SRC" kr.geumyi.technology.GeumyiTechnology | grep -q 'major version: 65'
+          mkdir -p dist/technology
+          cp "$SRC" "dist/technology/$OUT"
+          (cd dist/technology && sha256sum "$OUT" > "$OUT.sha256")
+      - name: Upload Technology artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: technology-0.1.3
+          path: dist/technology/*
+          if-no-files-found: error
+          retention-days: 14
+
+  chemistry:
+    name: Chemistry 0.4.1 / Gradle build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Set up Gradle 9.1.0
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - name: Build Chemistry
+        shell: bash
+        run: gradle -p Plugins/GeumyiChemistry --no-daemon clean jar
+      - name: Verify and stage Chemistry
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="Plugins/GeumyiChemistry/build/libs/GeumyiChemistry-0.4.1.jar"
+          OUT="GeumyiChemistry-0.4.1-Paper26.3.jar"
+          test -s "$SRC"
+          unzip -t "$SRC" >/dev/null
+          unzip -p "$SRC" plugin.yml | grep -Eq '^version:[[:space:]]*0[.]4[.]1'
+          unzip -p "$SRC" plugin.yml | grep -Eq "^api-version:[[:space:]]*'26[.]3'"
+          javap -verbose -classpath "$SRC" kr.geumyi.chemistry.GeumyiChemistry | grep -q 'major version: 65'
+          mkdir -p dist/chemistry
+          cp "$SRC" "dist/chemistry/$OUT"
+          (cd dist/chemistry && sha256sum "$OUT" > "$OUT.sha256")
+      - name: Upload Chemistry artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chemistry-0.4.1
+          path: dist/chemistry/*
+          if-no-files-found: error
+          retention-days: 14
 
   resourcepacks:
     name: ResourcePacks / metadata validation
@@ -123,7 +282,6 @@ jobs:
               raise SystemExit("No manifest.json files found")
 
           failures = []
-
           for path in sorted(set(json_files + pack_meta)):
               try:
                   with path.open("r", encoding="utf-8-sig") as fh:
@@ -138,18 +296,14 @@ jobs:
                   pack = data.get("pack")
                   if not isinstance(pack, dict):
                       raise ValueError("missing object: pack")
-                  has_legacy_format = "pack_format" in pack
-                  has_range_format = "min_format" in pack and "max_format" in pack
-                  if not (has_legacy_format or has_range_format):
-                      raise ValueError("missing pack format metadata (pack_format or min_format/max_format)")
-                  if has_range_format:
+                  legacy = "pack_format" in pack
+                  ranged = "min_format" in pack and "max_format" in pack
+                  if not (legacy or ranged):
+                      raise ValueError("missing pack format metadata")
+                  if ranged:
                       for key in ("min_format", "max_format"):
                           value = pack[key]
-                          if not (
-                              isinstance(value, list)
-                              and len(value) == 2
-                              and all(isinstance(n, int) for n in value)
-                          ):
+                          if not (isinstance(value, list) and len(value) == 2 and all(isinstance(n, int) for n in value)):
                               raise ValueError(f"invalid pack.{key}: expected [major, minor]")
                   if "description" not in pack:
                       raise ValueError("missing pack.description")
@@ -163,9 +317,7 @@ jobs:
                   if "format_version" not in data:
                       raise ValueError("missing format_version")
                   header = data.get("header")
-                  if not isinstance(header, dict):
-                      raise ValueError("missing object: header")
-                  if not header.get("uuid"):
+                  if not isinstance(header, dict) or not header.get("uuid"):
                       raise ValueError("missing header.uuid")
                   modules = data.get("modules")
                   if not isinstance(modules, list) or not modules:
@@ -182,9 +334,99 @@ jobs:
                   print(f" - {failure}", file=sys.stderr)
               raise SystemExit(1)
 
-          print(
-              f"Validated {len(json_files)} JSON files, "
-              f"{len(pack_meta)} pack.mcmeta files, "
-              f"and {len(manifests)} manifest.json files."
-          )
+          print(f"Validated {len(json_files)} JSON files, {len(pack_meta)} pack.mcmeta files, and {len(manifests)} manifest.json files.")
           PY
+
+  gsc-package:
+    name: GSC 4.2.3 / assemble CI Setup
+    needs: [gsc, statusagent, gds, gst]
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: GSC/ServerCenter/go.mod
+          cache: false
+      - name: Download StatusAgent
+        uses: actions/download-artifact@v4
+        with:
+          name: statusagent-0.5.4
+          path: ci-artifacts/statusagent
+      - name: Download GDS
+        uses: actions/download-artifact@v4
+        with:
+          name: gds-1.1.1
+          path: ci-artifacts/gds
+      - name: Download GST
+        uses: actions/download-artifact@v4
+        with:
+          name: gst-1.1.1-hotfix
+          path: ci-artifacts/gst
+      - name: Restore installer payloads
+        shell: pwsh
+        run: |
+          $dst = 'GSC/ServerCenter/cmd/setup/payload'
+          Copy-Item 'ci-artifacts/statusagent/GeumyiStatusAgent-0.5.4.jar' "$dst/GeumyiStatusAgent-0.5.4.jar" -Force
+          Copy-Item 'ci-artifacts/gds/GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar' "$dst/GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar" -Force
+          Copy-Item 'ci-artifacts/gst/GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar' "$dst/GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar" -Force
+      - name: Build GSC Setup
+        shell: pwsh
+        working-directory: GSC/ServerCenter
+        run: ./build.ps1
+      - name: Verify and stage GSC binaries
+        shell: pwsh
+        run: |
+          $root = 'GSC/ServerCenter'
+          $files = @(
+            "$root/dist/GeumyiServerCenter-v4.2.3-Setup.exe",
+            "$root/cmd/setup/payload/GeumyiServerHost.exe",
+            "$root/cmd/setup/payload/GeumyiServerCenter.exe"
+          )
+          foreach ($f in $files) {
+            if (-not (Test-Path $f)) { throw "Missing GSC artifact: $f" }
+            if ((Get-Item $f).Length -lt 100000) { throw "Suspiciously small GSC artifact: $f" }
+          }
+          $out = "$root/dist-ci"
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          foreach ($f in $files) { Copy-Item $f $out -Force }
+          $lines = Get-ChildItem $out -File | ForEach-Object {
+            "$( (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant() )  $($_.Name)"
+          }
+          $lines | Set-Content -Encoding ascii "$out/SHA256SUMS.txt"
+      - name: Upload GSC CI package
+        uses: actions/upload-artifact@v4
+        with:
+          name: gsc-4.2.3-ci
+          path: GSC/ServerCenter/dist-ci/*
+          if-no-files-found: error
+          retention-days: 14
+
+  day7-summary:
+    name: Day-7 component CI summary
+    if: always()
+    needs: [gsc, statusagent, gds, gst, technology, chemistry, resourcepacks, gsc-package]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every component job to pass
+        shell: bash
+        env:
+          GSC: ${{ needs.gsc.result }}
+          AGENT: ${{ needs.statusagent.result }}
+          GDS: ${{ needs.gds.result }}
+          GST: ${{ needs.gst.result }}
+          TECHNOLOGY: ${{ needs.technology.result }}
+          CHEMISTRY: ${{ needs.chemistry.result }}
+          RESOURCEPACKS: ${{ needs.resourcepacks.result }}
+          GSC_PACKAGE: ${{ needs.gsc-package.result }}
+        run: |
+          set -euo pipefail
+          failed=0
+          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY RESOURCEPACKS GSC_PACKAGE; do
+            value="${!name}"
+            printf '%-16s %s\n' "$name" "$value"
+            if [[ "$value" != "success" ]]; then failed=1; fi
+          done
+          exit "$failed"

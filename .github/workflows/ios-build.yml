@@ -1,7 +1,12 @@
-name: Build GSCM 1.1.2 iOS unsigned IPA
+name: Build GSCM iOS unsigned IPA
 
 on:
   push:
+    branches: [ main ]
+    paths:
+      - 'GSCM/**'
+      - '.github/workflows/ios-build.yml'
+  pull_request:
     branches: [ main ]
     paths:
       - 'GSCM/**'
@@ -12,7 +17,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: gscm-ios-build
+  group: gscm-ios-build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -24,9 +29,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Flutter stable
+      - name: Read app version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          FULL="$(awk '/^version:/ {print $2; exit}' GSCM/pubspec.yaml)"
+          NAME="${FULL%%+*}"
+          BUILD="${FULL##*+}"
+          test -n "$NAME"
+          test -n "$BUILD"
+          echo "version_full=$FULL" >> "$GITHUB_OUTPUT"
+          echo "version_name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "build_number=$BUILD" >> "$GITHUB_OUTPUT"
+
+      - name: Install Flutter 3.47.5
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.47.5'
           channel: stable
           cache: true
 
@@ -57,6 +77,14 @@ jobs:
         working-directory: app
         run: flutter pub get
 
+      - name: Analyze
+        working-directory: app
+        run: flutter analyze
+
+      - name: Test
+        working-directory: app
+        run: flutter test
+
       - name: Build iOS release without signing
         working-directory: app
         run: flutter build ios --release --no-codesign
@@ -64,6 +92,8 @@ jobs:
       - name: Package unsigned IPA
         shell: bash
         working-directory: app
+        env:
+          VERSION_FULL: ${{ steps.version.outputs.version_full }}
         run: |
           set -euo pipefail
           test -d build/ios/iphoneos/Runner.app
@@ -72,18 +102,16 @@ jobs:
           ditto build/ios/iphoneos/Runner.app dist/Payload/Runner.app
           (
             cd dist
-            /usr/bin/zip -qry GSCM-v1.1.2-unsigned.ipa Payload
-            /usr/bin/shasum -a 256 GSCM-v1.1.2-unsigned.ipa > GSCM-v1.1.2-unsigned.ipa.sha256
+            FILE="GSCM-v${VERSION_FULL}-unsigned.ipa"
+            /usr/bin/zip -qry "$FILE" Payload
+            /usr/bin/shasum -a 256 "$FILE" > "$FILE.sha256"
           )
           ls -lh dist
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GSCM-iOS-unsigned
-          path: |
-            app/dist/GSCM-v1.1.2-unsigned.ipa
-            app/dist/GSCM-v1.1.2-unsigned.ipa.sha256
+          name: GSCM-${{ steps.version.outputs.version_name }}-build${{ steps.version.outputs.build_number }}-iOS-unsigned
+          path: app/dist/*
           if-no-files-found: error
           retention-days: 14
-

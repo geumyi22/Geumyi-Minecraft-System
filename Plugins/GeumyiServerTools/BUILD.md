@@ -1,12 +1,17 @@
 # Build notes — GeumyiServerTools 1.1.1 HOTFIX
 
-This remains a reproducible overlay build because the original 0.1.5 complete source tree is unavailable.
+This remains an overlay/reconstruction build because the original complete 0.1.5 source tree is unavailable.
 
-1. `base/GeumyiServerTools-0.1.5-Paper26.3.jar` supplies the preserved core.
+1. A preserved compatible core/reference JAR supplies classes that are not available as source.
 2. The 1.1.x overlay sources provide GSC integration, maintenance, Diagnostics v2 and lag recording.
-3. The preserved core binary receives the same-length visible version constant replacement `0.1.5` -> `1.1.1`.
-4. The current HOTFIX overlay includes the Spigot/Paper 26.3 compatibility change documented in `HOTFIX-RECOVERY.md`.
-5. Bukkit stubs are compile-time only and are not packaged.
-6. Overlay classes target Java 21 bytecode (class major 65), compatible with the deployed Java 25+/Paper 26.3 runtime.
+3. The current HOTFIX overlay includes the Spigot/Paper 26.3 compatibility change documented in `HOTFIX-RECOVERY.md`.
+4. Bukkit stubs are compile-time only and are never packaged.
+5. Overlay source and tests target Java 21 bytecode.
+6. `build.sh` now compiles and executes `CoreTests` before packaging.
 
-The output name produced by `build.sh` is `GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar`.
+Local historical builds may use the preserved `base/GeumyiServerTools-0.1.5-Paper26.3.jar` when available.
+
+Day-7 CI deliberately fetches the deployed 1.1.1 HOTFIX Release JAR as a verified binary core/reference and checks its pinned SHA-256 before rebuilding the source overlay. This does **not** turn the legacy binary-only core into recovered source and is documented as such.
+
+The output name is:
+`GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar`
