@@ -477,6 +477,19 @@ jobs:
           end
           RB
 
+      - name: Parse GSC dashboard JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib, re
+          html=pathlib.Path("GSC/ServerCenter/cmd/client/dashboard.html").read_text(encoding="utf-8")
+          scripts=re.findall(r"<script>(.*?)</script>", html, flags=re.S|re.I)
+          assert scripts, "dashboard script not found"
+          pathlib.Path("/tmp/gsc-dashboard.js").write_text("\n".join(scripts), encoding="utf-8")
+          PY
+          node --check /tmp/gsc-dashboard.js
+
       - name: Parse signing bootstrap PowerShell
         shell: pwsh
         run: |
