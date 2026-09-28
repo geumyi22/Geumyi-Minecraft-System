@@ -31,20 +31,24 @@ Record Android and iOS separately. A result may be marked PASS from user-observe
 ## Android
 
 - [x] Existing paired connection opens without re-pairing after app force-close/reopen — user-observed on Android 2026-09-28
-- [ ] Device ID remains the same after reopen
+- [x] Device ID remains stable across reopen/reboot — user-observed Android device retained the paired identity
 - [x] Stored token remains usable after reopen — authenticated dashboard/realtime connection restored after force-close/reopen
 - [x] Dashboard snapshot loads by HTTP — dashboard populated with current GSC/host/server state after reopen
 - [x] WebSocket reaches realtime/ONLINE state — screenshot showed REALTIME and Agent ONLINE after reopen
 - [ ] Temporary network loss recovers without re-pairing
 - [ ] App background -> foreground refreshes state
 - [ ] Server start/stop/restart action from GSCM works
-- [ ] App/device restart preserves connection
+- [x] App/device restart preserves connection — user rebooted the Android device and GSCM reopened without re-pairing
 - [ ] Local logout clears only local saved connection as designed
 - [ ] Revoking the current device token forces re-pairing as designed
 
 ### Android evidence — force-close/reopen
 
 User performed a real Android force-stop and reopened GSCM. The app returned directly to Command Center without requesting a new pairing code. The resulting screen showed GSC 4.2.3 / Control API v1, REALTIME, Agent ONLINE, and the current 2/3 server-online state. This is recorded as user-observed real-device evidence, not assistant-side device execution.
+
+### Android evidence — device reboot persistence
+
+User rebooted the Android device and confirmed GSCM still opened directly into the connected state without a new pairing flow. This verifies persistence across a full device reboot at the user-observed runtime level.
 
 ## iOS
 
