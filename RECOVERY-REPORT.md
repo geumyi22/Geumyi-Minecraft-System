@@ -105,3 +105,19 @@ Tracked-file count changed during Day-3 recovery; SOURCE-MANIFEST.json is synchr
 - These results are user-observed physical-device evidence, not assistant-side physical-device execution.
 - Stable Android CI/release signing remains a Day-8 packaging task; it is not treated as a Day-6 runtime failure.
 - Day 6 is closed as **completed**.
+
+
+## Day 7 — 2026-09-28
+
+- Expanded System CI to cover GSC, StatusAgent, GST, GDS, GeumyiTechnology, GeumyiChemistry and ResourcePacks.
+- GST/GDS build scripts now compile and execute their CoreTests before packaging.
+- GST CI verifies the pinned deployed HOTFIX reference/core SHA-256 before overlay compilation; this preserves the documented legacy binary-only boundary rather than claiming full source recovery.
+- Technology/Chemistry initially exposed an incompatible recovered Gradle setting: Paper 26.3 requires JVM 25 dependency compatibility while the builds forced release 21. The build target was aligned with Java 25 and both jobs then passed on Gradle 9.1.0.
+- GSC Setup CI now downloads the fresh Agent/GDS/GST artifacts from the same workflow run and successfully assembles Host, Client and Setup binaries.
+- Final System CI run 36448831023 passed all component jobs and the aggregate Day-7 summary.
+- GSCM workflows were pinned to Flutter 3.47.5, now read 1.1.2+113 from pubspec for artifact naming, and generate directly verifiable checksum sidecars.
+- Android run 36448477722 passed analyze, tests and APK creation.
+- Final iOS run 36449571301 passed analyze, tests, no-codesign build and uploaded only the final IPA plus checksum (temporary Payload packaging files excluded).
+- Downloaded Day-7 artifacts were inspected for archive integrity and checksum consistency. Technology/Chemistry output class major is 69 (Java 25); GST/GDS/StatusAgent output class major is 65 (Java 21).
+- Day 7 is build/CI verification only. None of these CI artifacts are claimed to have been automatically deployed or newly E2E-tested on the live Minecraft servers.
+- Android persistent release signing, deployment manifests/channels and the server pre-start updater remain Day-8 work.

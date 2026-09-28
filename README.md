@@ -25,6 +25,7 @@
 - 리소스팩: [구성 및 패키징](ResourcePacks/README.md)
 - 실제 서버 검증 결과: [DAY4-E2E-REPORT.md](DAY4-E2E-REPORT.md)
 - GSC/GSCM 안정화 검증: [DAY5-STABILITY-REPORT.md](DAY5-STABILITY-REPORT.md)
+- 전체 컴포넌트 자동 빌드/CI 검증: [DAY7-CI-REPORT.md](DAY7-CI-REPORT.md)
 - 이후 작업 순서와 최종 로비/서버 이동 설계 계획: [ROADMAP.md](ROADMAP.md)
 - 자동 빌드/Release/서버 자동 업데이트/rollback 장기 설계: [DEPLOYMENT-ARCHITECTURE.md](DEPLOYMENT-ARCHITECTURE.md)
 

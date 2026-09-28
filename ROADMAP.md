@@ -10,7 +10,7 @@
 | 4 | 실제 Wild/Playground 서버 E2E 부팅 및 플러그인/리소스팩/연동 검증 | 완료 |
 | 5 | GSC/GSCM 통합 안정화: 재연결, Whole Shutdown, 락, 고아 프로세스, 상태 오탐, 네트워크 복구 | 완료 |
 | 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 완료 |
-| 7 | 전체 컴포넌트 CI/자동 빌드 + 검증 artifact 기반 정리 | 예정 |
+| 7 | 전체 컴포넌트 CI/자동 빌드 + 검증 artifact 기반 정리 | 완료 |
 | 8 | 보안 Release/자동 업데이트 기반: manifest·채널·서명·체크섬·고정 Android 서명·pre-start updater | 예정 |
 | 9 | 트랜잭션 배포·백업·원자적 교체·health 검증·자동 rollback·장애 주입 테스트 | 예정 |
 | 10 | 전체 업데이트 E2E + 문서/Release 마감 + Lobby 멀티서버 네트워크 설계 | 예정 |
@@ -45,6 +45,14 @@ Day 5는 **사용자 실사용 검증 통과**로 완료 처리합니다. 시작
 Day 6은 **완료**로 닫습니다. Android와 iOS에서 페어링, 인증정보 지속, 앱 재실행/기기 재부팅, HTTP snapshot, WebSocket realtime, 네트워크 끊김/자동 복구, 백그라운드 복귀, 서버 시작/종료/재시작, 로그아웃/토큰 해제를 사용자 실기기 기준으로 확인했습니다.
 
 Android에서는 오프라인인데 상단이 `REALTIME`으로 남는 표시 문제를 재현했고, GSCM 1.1.2+113에서 수정 후 실기기 재검증까지 통과했습니다. Android CI의 고정 서명키 문제는 Day 8 Release/패키징 범위로 남깁니다.
+
+## Day 7 완료 기준
+
+Day 7은 **완료**로 닫습니다. GSC, StatusAgent, GST, GDS, Technology, Chemistry, ResourcePack, GSCM Android/iOS의 자동 빌드/검증 체계를 실제 GitHub Actions에서 통과시켰습니다. GSC Setup도 같은 run에서 새로 빌드한 Agent/GDS/GST artifact를 받아 자동 조립됩니다.
+
+최종 System CI run `36448831023`, GSCM Android run `36448477722`, 최종 clean iOS run `36449571301`이 성공했습니다. 세부 artifact/체크섬 검증은 `DAY7-CI-REPORT.md`에 기록합니다.
+
+Day 7은 빌드/검증 기반까지만 포함합니다. **실서버 자동 업데이트는 아직 수행하지 않았으며 Day 8부터 시작합니다.**
 
 ## Day 7~12 — 자동 배포/운영 확장
 
