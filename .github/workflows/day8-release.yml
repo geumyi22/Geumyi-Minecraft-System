@@ -1,0 +1,154 @@
+name: Day 8 Secure Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Deployment channel
+        required: true
+        type: choice
+        options:
+          - canary
+          - beta
+          - stable
+        default: canary
+      tag:
+        description: Unique GitHub release tag (for example system-2026.09.29-canary.1)
+        required: true
+        type: string
+      prerelease:
+        description: Mark GitHub Release as prerelease
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: day8-release-${{ inputs.channel }}
+  cancel-in-progress: false
+
+jobs:
+  system:
+    name: Rebuild system artifacts
+    uses: ./.github/workflows/system-ci.yml
+
+  android:
+    name: Build persistently signed Android APK
+    uses: ./.github/workflows/android-build.yml
+    with:
+      require_release_signing: true
+    secrets:
+      ANDROID_RELEASE_KEYSTORE_B64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_B64 }}
+      ANDROID_RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+      ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+      ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+
+  ios:
+    name: Build unsigned iOS IPA
+    uses: ./.github/workflows/ios-build.yml
+
+  publish:
+    name: Sign manifest and publish GitHub Release
+    needs: [system, android, ios]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag }}
+      CHANNEL: ${{ inputs.channel }}
+      DEPLOYMENT_PRIVATE_KEY_B64: ${{ secrets.DEPLOYMENT_ED25519_PRIVATE_KEY_B64 }}
+
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v4
+
+      - name: Validate release inputs and signing secret
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$TAG" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "::error::Invalid release tag"; exit 1; }
+          [[ -n "$DEPLOYMENT_PRIVATE_KEY_B64" ]] || { echo "::error::Missing DEPLOYMENT_ED25519_PRIVATE_KEY_B64"; exit 1; }
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::error::Release/tag already exists: $TAG"
+            exit 1
+          fi
+
+      - name: Download all verified build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          pattern: '*'
+          merge-multiple: true
+
+      - name: Verify checksum sidecars
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t sums < <(find release-assets -type f -name '*.sha256' | sort)
+          ((${#sums[@]} > 0))
+          for sum in "${sums[@]}"; do
+            (
+              cd "$(dirname "$sum")"
+              sha256sum -c "$(basename "$sum")"
+            )
+          done
+          if [[ -f release-assets/SHA256SUMS.txt ]]; then
+            (cd release-assets && sha256sum -c SHA256SUMS.txt)
+          fi
+
+      - name: Generate deployment manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}"
+          python3 tools/release/generate_manifest.py             --catalog deploy/components.json             --assets release-assets             --channel "$CHANNEL"             --tag "$TAG"             --base-url "$BASE_URL"             --output "deployment-${CHANNEL}.json"
+
+      - name: Sign deployment manifest with Ed25519
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' "$DEPLOYMENT_PRIVATE_KEY_B64" | base64 --decode > "$RUNNER_TEMP/deployment-ed25519-private.pem"
+          chmod 600 "$RUNNER_TEMP/deployment-ed25519-private.pem"
+          openssl pkey -in "$RUNNER_TEMP/deployment-ed25519-private.pem" -check -noout
+          openssl pkeyutl -sign -rawin             -inkey "$RUNNER_TEMP/deployment-ed25519-private.pem"             -in "deployment-${CHANNEL}.json"             -out "deployment-${CHANNEL}.json.sig"
+          openssl pkey -in "$RUNNER_TEMP/deployment-ed25519-private.pem" -pubout -out deployment-public.pem
+          openssl pkeyutl -verify -rawin             -pubin -inkey deployment-public.pem             -in "deployment-${CHANNEL}.json"             -sigfile "deployment-${CHANNEL}.json.sig"
+          sha256sum "deployment-${CHANNEL}.json" > "deployment-${CHANNEL}.json.sha256"
+
+      - name: Stage release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "deployment-${CHANNEL}.json" release-assets/
+          cp "deployment-${CHANNEL}.json.sig" release-assets/
+          cp "deployment-${CHANNEL}.json.sha256" release-assets/
+          cp deployment-public.pem release-assets/
+          find release-assets -maxdepth 1 -type f -printf '%f\n' | sort
+
+      - name: Publish immutable-input release payload
+        shell: bash
+        env:
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          set -euo pipefail
+          args=("$TAG" release-assets/* --target "$GITHUB_SHA" --title "Geumyi System $TAG" --notes "Day 8 signed deployment release · channel: $CHANNEL")
+          if [[ "$PRERELEASE" == "true" ]]; then
+            args+=(--prerelease)
+          fi
+          gh release create "${args[@]}"
+
+      - name: Release summary
+        shell: bash
+        run: |
+          {
+            echo "### Day 8 release"
+            echo "- Tag: `$TAG`"
+            echo "- Channel: `$CHANNEL`"
+            echo "- Manifest: `deployment-$CHANNEL.json`"
+            echo "- Signature: Ed25519 detached signature"
+            echo "- Android: persistent release signer required"
+          } >> "$GITHUB_STEP_SUMMARY"
