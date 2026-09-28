@@ -102,6 +102,8 @@ jobs:
         run: |
           set -euo pipefail
           cat > app/android/app/build.gradle.kts <<'EOF'
+          import java.util.Properties
+
           plugins {
               id("com.android.application")
               id("kotlin-android")
@@ -109,7 +111,7 @@ jobs:
           }
 
           val releaseKeyPropertiesFile = rootProject.file("key.properties")
-          val releaseKeyProperties = java.util.Properties()
+          val releaseKeyProperties = Properties()
           if (releaseKeyPropertiesFile.exists()) {
               releaseKeyPropertiesFile.inputStream().use { releaseKeyProperties.load(it) }
           }
