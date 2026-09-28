@@ -89,6 +89,15 @@ User rebooted the Android device and confirmed GSCM still opened directly into t
 - Dashboard state has a 30-second HTTP reconciliation poll while foregrounded.
 - WebSocket reconnect uses progressive delays after loss and a short disconnect grace period to avoid transient UI churn.
 
+## Android CI signing observation
+
+The Android CI workflow currently uses a runner-generated debug signing key. Direct inspection of the APK Signature Scheme v2 signer certificates found different signer certificate SHA-256 values for the pre-hotfix build 112 and hotfix build 113 artifacts:
+
+- build 112: `7a1147d17008be1a7b3a8b6b8c3ef4e0d0099ba3a562da28e294fc0aa18d3b87`
+- build 113: `21ee3524edeee461260589336fcec039967836980d5ad1d7b09ac701286216da`
+
+Therefore a previous CI APK cannot be assumed to support an in-place Android update to build 113. This is a distribution/signing issue, not a realtime-status code failure. Stable signing is deferred to the Day-8 release/packaging work.
+
 ## Completion rule
 
 Day 6 closes only after Android and iOS real-device behavior is recorded, or after an explicit documented scope decision if one platform cannot be tested.
