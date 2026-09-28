@@ -12,6 +12,10 @@ on:
       - 'Plugins/GeumyiTechnology/**'
       - 'Plugins/GeumyiChemistry/**'
       - 'ResourcePacks/**'
+      - 'deploy/**'
+      - 'tools/release/**'
+      - 'DAY8-RUNBOOK.md'
+      - '.github/workflows/day8-release.yml'
       - '.github/workflows/system-ci.yml'
   pull_request:
     branches: [ main ]
@@ -23,6 +27,10 @@ on:
       - 'Plugins/GeumyiTechnology/**'
       - 'Plugins/GeumyiChemistry/**'
       - 'ResourcePacks/**'
+      - 'deploy/**'
+      - 'tools/release/**'
+      - 'DAY8-RUNBOOK.md'
+      - '.github/workflows/day8-release.yml'
       - '.github/workflows/system-ci.yml'
   workflow_dispatch:
 
@@ -405,10 +413,87 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  release-foundation:
+    name: Day 8 / release foundation static test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate deployment catalog and generator
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/release/generate_manifest.py
+          python3 - <<'PY'
+          import json, pathlib
+          c=json.loads(pathlib.Path("deploy/components.json").read_text(encoding="utf-8"))
+          assert c["schema"] == 1
+          required={"gst","gds","technology","chemistry","statusagent","gsc","gscm_android","gscm_ios_unsigned"}
+          assert required <= set(c["components"])
+          for k,v in c["components"].items():
+              assert v["version"]
+              assert v["artifact_glob"]
+              assert v["kind"]
+              assert isinstance(v["targets"], list) and v["targets"]
+          print("catalog OK")
+          PY
+
+      - name: Exercise manifest generator and Ed25519 signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/day8-assets
+          python3 - <<'PY'
+          import json, pathlib
+          c=json.loads(pathlib.Path("deploy/components.json").read_text(encoding="utf-8"))
+          root=pathlib.Path("/tmp/day8-assets")
+          for key,v in c["components"].items():
+              name=v["artifact_glob"]
+              assert not any(ch in name for ch in "*?[")
+              (root/name).write_bytes(("day8-static-"+key).encode())
+          PY
+          python3 tools/release/generate_manifest.py             --catalog deploy/components.json             --assets /tmp/day8-assets             --channel canary             --tag static-canary             --base-url https://github.com/geumyi22/Geumyi-Minecraft-System/releases/download/static-canary             --output /tmp/deployment-canary.json
+          openssl genpkey -algorithm ED25519 -out /tmp/day8-private.pem
+          openssl pkey -in /tmp/day8-private.pem -pubout -out /tmp/day8-public.pem
+          openssl pkeyutl -sign -rawin -inkey /tmp/day8-private.pem -in /tmp/deployment-canary.json -out /tmp/deployment-canary.json.sig
+          openssl pkeyutl -verify -rawin -pubin -inkey /tmp/day8-public.pem -in /tmp/deployment-canary.json -sigfile /tmp/deployment-canary.json.sig
+
+      - name: Parse workflow YAML
+        shell: ruby
+        run: |
+          require 'yaml'
+          %w[
+            .github/workflows/system-ci.yml
+            .github/workflows/android-build.yml
+            .github/workflows/ios-build.yml
+            .github/workflows/day8-release.yml
+          ].each do |path|
+            YAML.load_file(path, aliases: true)
+            puts "YAML OK: #{path}"
+          end
+
+      - name: Parse signing bootstrap PowerShell
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path 'tools/release/bootstrap_day8_signing.ps1'),
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host 'PowerShell syntax OK'
+
   day7-summary:
-    name: Day-7 component CI summary
+    name: Component CI + Day 8 foundation summary
     if: always()
-    needs: [gsc, statusagent, gds, gst, technology, chemistry, resourcepacks, gsc-package]
+    needs: [gsc, statusagent, gds, gst, technology, chemistry, resourcepacks, gsc-package, release-foundation]
     runs-on: ubuntu-latest
     steps:
       - name: Require every component job to pass
@@ -422,10 +507,11 @@ jobs:
           CHEMISTRY: ${{ needs.chemistry.result }}
           RESOURCEPACKS: ${{ needs.resourcepacks.result }}
           GSC_PACKAGE: ${{ needs.gsc-package.result }}
+          RELEASE_FOUNDATION: ${{ needs.release-foundation.result }}
         run: |
           set -euo pipefail
           failed=0
-          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY RESOURCEPACKS GSC_PACKAGE; do
+          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY RESOURCEPACKS GSC_PACKAGE RELEASE_FOUNDATION; do
             value="${!name}"
             printf '%-16s %s\n' "$name" "$value"
             if [[ "$value" != "success" ]]; then failed=1; fi
