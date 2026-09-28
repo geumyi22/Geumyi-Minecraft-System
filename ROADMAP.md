@@ -9,7 +9,7 @@
 | 3 | GST HOTFIX·StatusAgent·Technology·Chemistry 복구, Wild/Playground 설정 근거 회수, Public 보안 점검 | 완료 |
 | 4 | 실제 Wild/Playground 서버 E2E 부팅 및 플러그인/리소스팩/연동 검증 | 완료 |
 | 5 | GSC/GSCM 통합 안정화: 재연결, Whole Shutdown, 락, 고아 프로세스, 상태 오탐, 네트워크 복구 | 완료 |
-| 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 진행 |
+| 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 완료 |
 | 7 | GSC/GST/GDS/Agent/Technology/Chemistry/GSCM 자동 빌드 체계 정리 | 예정 |
 | 8 | 자동 Release/업데이트/체크섬/패키징 표준화 | 예정 |
 | 9 | 서버·설정 백업/복원/롤백 및 실패 복구 테스트 | 예정 |
@@ -38,9 +38,11 @@ Day 5는 **사용자 실사용 검증 통과**로 완료 처리합니다. 시작
 
 새로운 Day-5 로그 재수집이나 별도 assistant-side E2E 재현은 수행하지 않았으므로, 이를 새로 재현된 자동 테스트 결과로 기록하지 않습니다. 세부 경계는 `DAY5-STABILITY-REPORT.md`에 기록합니다.
 
-## Day 6 진행 기준
+## Day 6 완료 기준
 
-Day 6은 GSCM **Android + iOS 실기기 검증** 단계입니다. 페어링, 인증정보 지속, 앱 재실행, WS 재연결 + HTTP 재동기화, 서버 제어, 네트워크 복구, Android/iOS 동작 차이를 실제 기기에서 확인합니다.
+Day 6은 **완료**로 닫습니다. Android와 iOS에서 페어링, 인증정보 지속, 앱 재실행/기기 재부팅, HTTP snapshot, WebSocket realtime, 네트워크 끊김/자동 복구, 백그라운드 복귀, 서버 시작/종료/재시작, 로그아웃/토큰 해제를 사용자 실기기 기준으로 확인했습니다.
+
+Android에서는 오프라인인데 상단이 `REALTIME`으로 남는 표시 문제를 재현했고, GSCM 1.1.2+113에서 수정 후 실기기 재검증까지 통과했습니다. Android CI의 고정 서명키 문제는 Day 8 Release/패키징 범위로 남깁니다.
 
 ## Day 10 — 로비/서버 이동 설계
 

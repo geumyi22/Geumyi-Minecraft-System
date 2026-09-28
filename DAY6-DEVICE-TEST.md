@@ -1,6 +1,6 @@
 # Day 6 GSCM Android+iOS device verification — 2026-09-28
 
-Status: **IN PROGRESS**
+Status: **COMPLETED**
 
 ## Baseline
 
@@ -73,19 +73,31 @@ The user additionally confirmed background/foreground recovery, GSCM server star
 
 ## iOS
 
-- [ ] Pairing/claim succeeds on a real iPhone
-- [ ] Existing paired connection opens without re-pairing after app force-close/reopen
-- [ ] Device ID remains the same after reopen
-- [ ] Keychain token remains usable after reopen
-- [ ] Dashboard snapshot loads by HTTP
-- [ ] WebSocket reaches realtime/ONLINE state
-- [ ] Temporary network loss recovers without re-pairing
-- [ ] App background -> foreground refreshes state
-- [ ] Server start/stop/restart action from GSCM works
-- [ ] iPhone restart preserves connection
-- [ ] Camera permission / QR pairing path works
-- [ ] Local-network access path works on LAN/private VPN
-- [ ] Local logout and token revocation behave as designed
+- [x] Pairing/claim succeeds on a real iPhone — user-observed on iOS 2026-09-28
+- [x] Existing paired connection opens without re-pairing after app force-close/reopen — user-observed on iOS 2026-09-28
+- [x] Device ID remains the same after reopen — user-observed on iOS 2026-09-28
+- [x] Keychain token remains usable after reopen — user-observed on iOS 2026-09-28
+- [x] Dashboard snapshot loads by HTTP — user-observed on iOS 2026-09-28
+- [x] WebSocket reaches realtime/ONLINE state — user-observed on iOS 2026-09-28
+- [x] Temporary network loss recovers without re-pairing — user-observed on iOS 2026-09-28
+- [x] App background -> foreground refreshes state — user-observed on iOS 2026-09-28
+- [x] Server start/stop/restart action from GSCM works — user-observed on iOS 2026-09-28
+- [x] iPhone restart preserves connection — user-observed on iOS 2026-09-28
+- [x] Camera permission / QR pairing path works — user-observed on iOS 2026-09-28
+- [x] Local-network access path works on LAN/private VPN — user-observed on iOS 2026-09-28
+- [x] Local logout and token revocation behave as designed — user-observed on iOS 2026-09-28
+
+### iOS final Day-6 result
+
+**PASS — user-observed real-device verification complete on GSCM 1.1.2+113.**
+
+The user confirmed that pairing/claim, persistence across force-close and iPhone restart, Keychain-backed token reuse, HTTP snapshot loading, realtime WebSocket recovery, temporary network-loss recovery, background/foreground state refresh, server start/stop/restart controls, QR/camera permission flow, LAN/private-network access, logout, and token revocation all worked on the iPhone.
+
+### Day-6 final result
+
+**COMPLETED — Android and iOS user-observed real-device verification passed.**
+
+Android additionally verified the build-113 realtime badge fix after a reproduced offline-status mismatch was found during Day 6. Stable Android release signing remains a Day-8 packaging task and is not a Day-6 runtime blocker.
 
 ## Implementation expectations
 
@@ -106,4 +118,4 @@ Therefore a previous CI APK cannot be assumed to support an in-place Android upd
 
 ## Completion rule
 
-Day 6 closes only after Android and iOS real-device behavior is recorded, or after an explicit documented scope decision if one platform cannot be tested.
+Day 6 is closed: Android and iOS real-device behavior was user-verified. These are user-observed physical-device results, not assistant-side device execution.

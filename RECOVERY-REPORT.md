@@ -13,7 +13,7 @@
 |---|---|---|---|
 | GSC | 4.2.3 | GSC/ServerCenter | Recovered source; installer JAR payloads supplied from Releases |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction recovered; clean JDK 21 build validated; historical JAR overlay assembly documented |
-| GSCM | 1.1.2+112 | GSCM | Recovered Flutter/Android source and iOS generation scripts |
+| GSCM | 1.1.2+113 | GSCM | Recovered Flutter/Android source and iOS generation scripts; Day-6 realtime-status hotfix and Android/iOS real-device verification completed |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | Exact HOTFIX/overlay delta recovered; 31/31 uncompressed JAR entries matched final deployed HOTFIX; legacy 0.1.5 core remains binary-only |
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full plugin source, stubs and tests |
 | GeumyiTechnology | 0.1.3 | Plugins/GeumyiTechnology | Reconstructed source verified against deployed 0.1.3 bytecode/resources; not claimed as untouched original source |
@@ -91,3 +91,17 @@ Tracked-file count changed during Day-3 recovery; SOURCE-MANIFEST.json is synchr
 - No fresh Day-5 diagnostic bundle or replay log was collected, so this is not represented as a newly reproduced assistant-side E2E run.
 - No Day-5 source change was required.
 - Day 6 begins focused Android/iOS GSCM device verification.
+
+
+## Day 6 — 2026-09-28
+
+- GSCM Android and iOS real-device verification was completed from user-observed device behavior.
+- Android passed pairing persistence, force-close/reopen, device reboot persistence, HTTP snapshot loading, realtime WebSocket state, temporary network-loss recovery, background/foreground refresh, server start/stop/restart, logout and token revocation/re-pairing.
+- During Android network-loss testing, the app correctly showed its network-error UI but the header could remain `REALTIME` because the WebSocket had not yet reported TCP teardown.
+- GSCM 1.1.2+113 fixed that status-accuracy issue by allowing confirmed HTTP/WS transport failures to override the short WebSocket grace indicator while preserving the anti-flicker grace for brief unconfirmed handoffs.
+- Build-113 Android Actions run 36441811005 passed analyze, tests, release APK build and artifact upload. iOS Actions run 36441810896 passed release no-codesign build, unsigned IPA packaging and artifact upload.
+- The user then confirmed the corrected Android offline/recovery indicator behavior on-device.
+- iOS user verification passed pairing/claim, force-close/reopen persistence, stable device identity, Keychain token reuse, HTTP snapshot, realtime WebSocket, temporary network-loss recovery, background/foreground refresh, server controls, iPhone restart persistence, QR/camera permission flow, local/private-network access, logout and token revocation.
+- These results are user-observed physical-device evidence, not assistant-side physical-device execution.
+- Stable Android CI/release signing remains a Day-8 packaging task; it is not treated as a Day-6 runtime failure.
+- Day 6 is closed as **completed**.
