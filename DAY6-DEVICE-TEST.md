@@ -35,7 +35,7 @@ Record Android and iOS separately. A result may be marked PASS from user-observe
 - [x] Stored token remains usable after reopen — authenticated dashboard/realtime connection restored after force-close/reopen
 - [x] Dashboard snapshot loads by HTTP — dashboard populated with current GSC/host/server state after reopen
 - [x] WebSocket reaches realtime/ONLINE state — screenshot showed REALTIME and Agent ONLINE after reopen
-- [ ] Temporary network loss recovers without re-pairing
+- [x] Temporary network loss recovers without re-pairing — user disabled both Wi-Fi and mobile data, then restored connectivity; GSCM recovered without pairing again
 - [ ] App background -> foreground refreshes state
 - [ ] Server start/stop/restart action from GSCM works
 - [x] App/device restart preserves connection — user rebooted the Android device and GSCM reopened without re-pairing
@@ -45,6 +45,14 @@ Record Android and iOS separately. A result may be marked PASS from user-observe
 ### Android evidence — force-close/reopen
 
 User performed a real Android force-stop and reopened GSCM. The app returned directly to Command Center without requesting a new pairing code. The resulting screen showed GSC 4.2.3 / Control API v1, REALTIME, Agent ONLINE, and the current 2/3 server-online state. This is recorded as user-observed real-device evidence, not assistant-side device execution.
+
+### Android observation — offline badge accuracy
+
+Network-loss recovery itself passed: with both Wi-Fi and mobile data disabled, GSCM showed its designed network error UI and recovered after connectivity returned without re-pairing.
+
+However, the top realtime badge remained `REALTIME` while the app was already reporting a network error. Source review explains the mismatch: the badge is driven by `realtimeUiHealthy`, which remains true while the existing WebSocket has not yet emitted onDone/onError (or during its disconnect grace interval). Mobile OS TCP teardown can lag behind HTTP failure detection.
+
+Disposition: **Day-6 UX/status-accuracy issue to fix before Android network-loss verification is considered fully clean.** The recovery behavior is PASS; offline badge accuracy is not yet PASS.
 
 ### Android evidence — device reboot persistence
 
