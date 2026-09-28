@@ -1,6 +1,7 @@
 name: System CI
 
 on:
+  workflow_call:
   push:
     branches: [ main ]
     paths:
