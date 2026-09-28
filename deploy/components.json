@@ -3,11 +3,13 @@
   "repository": "geumyi22/Geumyi-Minecraft-System",
   "components": {
     "gst": {
-      "version": "1.1.1-hotfix",
+      "version": "1.1.1",
       "kind": "plugin",
       "plugin_name": "GeumyiServerTools",
       "artifact_glob": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
-      "targets": ["*"],
+      "targets": [
+        "*"
+      ],
       "requires_restart": true,
       "min_paper": "26.3"
     },
@@ -16,7 +18,9 @@
       "kind": "plugin",
       "plugin_name": "GeumyiDiscordStatus",
       "artifact_glob": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
-      "targets": ["*"],
+      "targets": [
+        "*"
+      ],
       "requires_restart": true,
       "min_paper": "26.3"
     },
@@ -25,7 +29,9 @@
       "kind": "plugin",
       "plugin_name": "GeumyiTechnology",
       "artifact_glob": "GeumyiTechnology-0.1.3-Paper26.3.jar",
-      "targets": ["wild"],
+      "targets": [
+        "wild"
+      ],
       "requires_restart": true,
       "min_paper": "26.3"
     },
@@ -34,7 +40,9 @@
       "kind": "plugin",
       "plugin_name": "GeumyiChemistry",
       "artifact_glob": "GeumyiChemistry-0.4.1-Paper26.3.jar",
-      "targets": ["wild"],
+      "targets": [
+        "wild"
+      ],
       "requires_restart": true,
       "min_paper": "26.3"
     },
@@ -42,28 +50,36 @@
       "version": "0.5.4",
       "kind": "agent",
       "artifact_glob": "GeumyiStatusAgent-0.5.4.jar",
-      "targets": ["host"],
+      "targets": [
+        "host"
+      ],
       "requires_restart": true
     },
     "gsc": {
       "version": "4.2.3",
       "kind": "gsc",
       "artifact_glob": "GeumyiServerCenter-v4.2.3-Setup.exe",
-      "targets": ["host"],
+      "targets": [
+        "host"
+      ],
       "requires_restart": true
     },
     "gscm_android": {
       "version": "1.1.2+113",
       "kind": "mobile",
       "artifact_glob": "GSCM-v1.1.2+113-Android.apk",
-      "targets": ["android"],
+      "targets": [
+        "android"
+      ],
       "requires_restart": false
     },
     "gscm_ios_unsigned": {
       "version": "1.1.2+113",
       "kind": "mobile",
       "artifact_glob": "GSCM-v1.1.2+113-unsigned.ipa",
-      "targets": ["ios"],
+      "targets": [
+        "ios"
+      ],
       "requires_restart": false
     }
   }
