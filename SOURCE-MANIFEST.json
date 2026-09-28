@@ -1,6 +1,6 @@
 {
   "baseline": "2026-09-26",
-  "note": "Manifest synchronized through Day-6 Android network recovery evidence and realtime badge issue recording on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
+  "note": "Manifest synchronized through the Day-6 GSCM build 113 realtime-status hotfix and CI verification on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
   "files": [
     {
       "path": ".github/workflows/android-build.yml",
@@ -52,9 +52,9 @@
     },
     {
       "path": "DAY6-DEVICE-TEST.md",
-      "bytes": 6507,
-      "sha256": "21797740a1c4ba03c1be78db374442b0285e5b50c463fddea62cb026f2d6d5fa",
-      "source": "Day-6 Android network recovery and realtime badge issue recorded 2026-09-28"
+      "bytes": 7471,
+      "sha256": "ec908cbdf7ef802a6e030c2681798e3a2d6c0a819e6db5378bf10f98ee429bcd",
+      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28"
     },
     {
       "path": "GSC/README.md",
@@ -709,15 +709,15 @@
     {
       "path": "GSCM/BUILD.md",
       "bytes": 1203,
-      "sha256": "f0b7c1d164d7f2d6be7abb71c4efc28d3450c6522f1c3ec29df3010dc0c8325f",
-      "source": "gscm-original/BUILD.md",
+      "sha256": "e83ae61ffec5e7df03e9a87667f435d99dac1a49a85d2202c4e27d1f03d4ed74",
+      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28",
       "modifiedFromRecovered": true
     },
     {
       "path": "GSCM/CHANGELOG.md",
-      "bytes": 909,
-      "sha256": "3ac9f9240345c677b836488d13672e8cfd36444b202d03902eba7ab038e0a28e",
-      "source": "gscm-original/CHANGELOG.md",
+      "bytes": 1369,
+      "sha256": "5388af3d9bba618a7a686580b3675ee860d01ab7daacf91881bf055c37d5cc9b",
+      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28",
       "modifiedFromRecovered": false
     },
     {
@@ -750,9 +750,9 @@
     },
     {
       "path": "GSCM/lib/core/dashboard_controller.dart",
-      "bytes": 11355,
-      "sha256": "6bbedabf0c5c79662a1d1115dc93ed14c1a990ca577b7d9e98dbe2f50598c27f",
-      "source": "gscm-original/lib/core/dashboard_controller.dart",
+      "bytes": 13172,
+      "sha256": "f6bdd747fe343ffb0e5a529c9ba88cd21f21f4d4918037432d5f925399a6090f",
+      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28",
       "modifiedFromRecovered": false
     },
     {
@@ -863,15 +863,15 @@
     {
       "path": "GSCM/pubspec.yaml",
       "bytes": 307,
-      "sha256": "b55027e0fe733dc73710ac5817f1d24ae14ee34d74cb07ebb0a6be3e07ac2350",
-      "source": "gscm-original/pubspec.yaml",
+      "sha256": "7b2d79d875868d649dc89f49623368c795e7296fb910c72ad3e9e4b2ce3f364c",
+      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28",
       "modifiedFromRecovered": false
     },
     {
       "path": "GSCM/README.md",
-      "bytes": 806,
-      "sha256": "e9ff0370ad9f51964d771b8a17f509113522758cfedc1d6ea107450e99d27817",
-      "source": "gscm-original/README.md",
+      "bytes": 869,
+      "sha256": "df3e0dfeb370f9ddd104065fe95d844d5246ba693da1d1370d63f2b4d0c49e40",
+      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28",
       "modifiedFromRecovered": true
     },
     {
@@ -887,6 +887,12 @@
       "sha256": "cebf05896e56656feb124b145709246e43884fabe67690b87c64421b1b22540e",
       "source": "gscm-original/test/qr_pairing_test.dart",
       "modifiedFromRecovered": true
+    },
+    {
+      "path": "GSCM/test/realtime_status_test.dart",
+      "bytes": 1735,
+      "sha256": "4133ac06777b6b0f1bf79b7593ba7b7972a50f70153439b1245d15fdac9f24f9",
+      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28"
     },
     {
       "path": "GSCM/tool/bootstrap_android.ps1",
@@ -1760,9 +1766,9 @@
     },
     {
       "path": "README.md",
-      "bytes": 2859,
-      "sha256": "aae1cbcb9fb9c89d9cbcc447419574ec82c1a40cfefe7531a4084b1d4cdd1e60",
-      "source": "Repository overview updated with Day-5 stability report 2026-09-28"
+      "bytes": 2897,
+      "sha256": "0edd9de55ea17b12c25a0802c5ed9b9ec46f51b6b35082b8ff36976c6631892f",
+      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28"
     },
     {
       "path": "RECOVERY-REPORT.md",
@@ -8962,9 +8968,9 @@
     },
     {
       "path": "VERSION-MATRIX.md",
-      "bytes": 3597,
-      "sha256": "58d897cbe6e3b7cf790973b82f2ec016948d9f5deace5f98857583af4109d758",
-      "source": "Pre-Day-6 audit and fresh CI verification recorded 2026-09-28"
+      "bytes": 3779,
+      "sha256": "34b6d3dca867879c9d9b942873e71f48484d8a646000a4d29dbdce1248f05e38",
+      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28"
     }
   ],
   "synced": "2026-09-28"
