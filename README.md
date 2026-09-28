@@ -6,7 +6,7 @@
 |---|---|---|---|
 | GSC | 4.2.3 | GSC/ServerCenter | Recovered source; Windows Go tests covered by System CI |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction; JDK 21 clean build succeeds |
-| GSCM | 1.1.2+112 | GSCM | Recovered Flutter/Android source and iOS generation scripts |
+| GSCM | 1.1.2+113 | GSCM | Recovered Flutter/Android source and iOS generation scripts; Day-6 realtime status hotfix applied |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | Exact HOTFIX/overlay delta recovered and matched against final deployed JAR; legacy 0.1.5 core remains binary-only |
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full plugin source, stubs and tests |
 | GeumyiTechnology | 0.1.3 | Plugins/GeumyiTechnology | Reconstructed and semantically verified against deployed 0.1.3; not labeled untouched original source |

@@ -7,6 +7,16 @@ import 'package:flutter/foundation.dart';
 import '../models/gsc_models.dart';
 import 'gsc_api.dart';
 
+bool isRealtimeTransportFailureKind(String kind) =>
+    kind == 'network' || kind == 'refused' || kind == 'timeout';
+
+bool realtimeIndicatorHealthy({
+  required bool realtimeConnected,
+  required bool disconnectGraceActive,
+  required bool transportFailure,
+}) =>
+    !transportFailure && (realtimeConnected || disconnectGraceActive);
+
 class DashboardController extends ChangeNotifier {
   DashboardController(this.api);
   final GscApi api;
@@ -31,6 +41,7 @@ class DashboardController extends ChangeNotifier {
   bool _foreground = true;
   bool _refreshing = false;
   bool _connectingRealtime = false;
+  bool _confirmedTransportFailure = false;
   int _connectGeneration = 0;
   int _reconnectAttempt = 0;
   String _lastFingerprint = '';
@@ -104,6 +115,18 @@ class DashboardController extends ChangeNotifier {
     });
   }
 
+  bool _setConfirmedTransportFailure(bool value) {
+    if (_confirmedTransportFailure == value) return false;
+    _confirmedTransportFailure = value;
+    if (value) {
+      // Once HTTP/WS has positively confirmed a transport failure, the short
+      // WebSocket grace window must no longer keep the header at REALTIME.
+      _disconnectGraceTimer?.cancel();
+      _disconnectGraceTimer = null;
+    }
+    return true;
+  }
+
   String _fingerprint(GscSnapshot s) {
     final b = StringBuffer()
       ..write(s.gscVersion)
@@ -133,14 +156,16 @@ class DashboardController extends ChangeNotifier {
     try {
       final next = await api.snapshot();
       final fp = _fingerprint(next);
-      final changed = fp != _lastFingerprint || error != null || snapshot == null;
+      final transportChanged = _setConfirmedTransportFailure(false);
+      final changed = fp != _lastFingerprint || error != null || snapshot == null || transportChanged;
       snapshot = next;
       _lastFingerprint = fp;
       error = null;
       lastUpdate = DateTime.now();
       if (changed && !_disposed) notifyListeners();
     } on GscApiException catch (e) {
-      final changed = error != e.message;
+      final transportChanged = _setConfirmedTransportFailure(isRealtimeTransportFailureKind(e.kind));
+      final changed = error != e.message || transportChanged;
       error = e.message;
       if (changed && !_disposed) notifyListeners();
     } finally {
@@ -191,11 +216,23 @@ class DashboardController extends ChangeNotifier {
 
       _disconnectGraceTimer?.cancel();
       _disconnectGraceTimer = null;
+      _setConfirmedTransportFailure(false);
       realtimeConnected = true;
       lastRealtimeConnectedAt = DateTime.now();
       _reconnectAttempt = 0;
       error = null;
       if (!_disposed) notifyListeners();
+    } on GscApiException catch (e) {
+      failed = true;
+      final transportChanged = _setConfirmedTransportFailure(isRealtimeTransportFailureKind(e.kind));
+      if (transportChanged && !_disposed) notifyListeners();
+      if (generation == _connectGeneration && identical(_socket, candidate)) {
+        _socket = null;
+        _socketSub = null;
+      }
+      try {
+        await candidate?.close();
+      } catch (_) {}
     } catch (_) {
       failed = true;
       if (generation == _connectGeneration && identical(_socket, candidate)) {
@@ -231,6 +268,7 @@ class DashboardController extends ChangeNotifier {
       final data = envelope['data'];
       if (data is! Map) return;
       final map = Map<String, dynamic>.from(data);
+      final transportRecovered = _setConfirmedTransportFailure(false);
       final current = snapshot;
       if (type == 'servers.status' && current != null && map['servers'] is List) {
         snapshot = current.copyWith(servers: jMapList(map['servers']).map(ServerView.fromJson).toList(growable: false));
@@ -247,7 +285,10 @@ class DashboardController extends ChangeNotifier {
         _lastFingerprint = _fingerprint(snapshot!);
         _coalescedNotify();
       } else if (type == 'server.state' || type == 'job.created' || type == 'job.updated' || type == 'event' || type == 'snapshot') {
+        if (transportRecovered) _coalescedNotify();
         _scheduleRefresh();
+      } else if (transportRecovered) {
+        _coalescedNotify();
       }
     } catch (_) {}
   }
@@ -303,7 +344,11 @@ class DashboardController extends ChangeNotifier {
     });
   }
 
-  bool get realtimeUiHealthy => realtimeConnected || (_disconnectGraceTimer?.isActive ?? false);
+  bool get realtimeUiHealthy => realtimeIndicatorHealthy(
+        realtimeConnected: realtimeConnected,
+        disconnectGraceActive: _disconnectGraceTimer?.isActive ?? false,
+        transportFailure: _confirmedTransportFailure,
+      );
 
   ServerView? serverById(String id) {
     for (final s in snapshot?.servers ?? const <ServerView>[]) {

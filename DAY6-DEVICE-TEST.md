@@ -5,7 +5,7 @@ Status: **IN PROGRESS**
 ## Baseline
 
 - GSC: 4.2.3
-- GSCM: 1.1.2+112
+- GSCM: 1.1.2+112 was the initial device-test build; Day-6 status hotfix target is 1.1.2+113
 - StatusAgent: 0.5.4
 - Day 5 control/reconnection behavior: user operational verification complete
 
@@ -52,7 +52,7 @@ Network-loss recovery itself passed: with both Wi-Fi and mobile data disabled, G
 
 However, the top realtime badge remained `REALTIME` while the app was already reporting a network error. Source review explains the mismatch: the badge is driven by `realtimeUiHealthy`, which remains true while the existing WebSocket has not yet emitted onDone/onError (or during its disconnect grace interval). Mobile OS TCP teardown can lag behind HTTP failure detection.
 
-Disposition: **Day-6 UX/status-accuracy issue to fix before Android network-loss verification is considered fully clean.** The recovery behavior is PASS; offline badge accuracy is not yet PASS.
+Disposition: **Patch implemented in GSCM 1.1.2+113; runtime re-test pending.** Confirmed transport failures now override the WebSocket grace indicator, while unconfirmed short handoffs retain the 5-second anti-flicker grace. The original recovery behavior remains PASS; offline badge accuracy will be marked PASS only after the updated APK is tested on-device.
 
 ### Android evidence — device reboot persistence
 

@@ -2,6 +2,11 @@
 
 ## 1.1.2
 
+### Build 113 — Day-6 realtime status hotfix
+- Confirmed HTTP/WS transport failures now override the short WebSocket disconnect grace window, so the header no longer remains `REALTIME` after the app has already detected that GSC is unreachable.
+- Kept the existing 5-second grace behavior for brief Wi-Fi/radio handoffs when no transport failure has been confirmed.
+- Added unit tests for transport-failure classification and realtime-indicator precedence.
+
 - Fixed WebSocket reconnect storms caused by overlapping connection attempts and stale socket callbacks.
 - Added Android/iOS lifecycle grace handling so short inactive transitions do not tear down realtime.
 - Kept 30-second HTTP reconciliation as the fallback consistency path.
