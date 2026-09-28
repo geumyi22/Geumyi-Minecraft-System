@@ -1,6 +1,6 @@
 {
   "baseline": "2026-09-26",
-  "note": "Manifest synchronized through the pre-Day-6 audit and fresh CI verification on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
+  "note": "Manifest synchronized through Day-6 Android force-close persistence evidence on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
   "files": [
     {
       "path": ".github/workflows/android-build.yml",
@@ -52,9 +52,9 @@
     },
     {
       "path": "DAY6-DEVICE-TEST.md",
-      "bytes": 4520,
-      "sha256": "8b6ded5efc3ee38aa3a6524e275a0d41955b5002d90a29d87dc65e8b1aa249a2",
-      "source": "Pre-Day-6 audit and fresh CI verification recorded 2026-09-28"
+      "bytes": 5178,
+      "sha256": "4b8eb473f8a5df3d2cb3948af4249ac4d77eeb3c37b56540ee20d10d1e53e95e",
+      "source": "Day-6 Android force-close persistence test recorded 2026-09-28"
     },
     {
       "path": "GSC/README.md",
