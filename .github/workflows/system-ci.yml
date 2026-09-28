@@ -461,8 +461,10 @@ jobs:
           openssl pkeyutl -verify -rawin -pubin -inkey /tmp/day8-public.pem -in /tmp/deployment-canary.json -sigfile /tmp/deployment-canary.json.sig
 
       - name: Parse workflow YAML
-        shell: ruby
+        shell: bash
         run: |
+          set -euo pipefail
+          ruby <<'RB'
           require 'yaml'
           %w[
             .github/workflows/system-ci.yml
@@ -473,6 +475,7 @@ jobs:
             YAML.load_file(path, aliases: true)
             puts "YAML OK: #{path}"
           end
+          RB
 
       - name: Parse signing bootstrap PowerShell
         shell: pwsh
