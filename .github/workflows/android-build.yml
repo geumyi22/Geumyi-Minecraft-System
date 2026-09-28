@@ -135,7 +135,7 @@ jobs:
               signingConfigs {
                   if (releaseKeyPropertiesFile.exists()) {
                       create("releasePersistent") {
-                          storeFile = file(releaseKeyProperties.getProperty("storeFile"))
+                          storeFile = rootProject.file(releaseKeyProperties.getProperty("storeFile"))
                           storePassword = releaseKeyProperties.getProperty("storePassword")
                           keyAlias = releaseKeyProperties.getProperty("keyAlias")
                           keyPassword = releaseKeyProperties.getProperty("keyPassword")
