@@ -39,6 +39,7 @@ type Config struct {
 	PairingTTLSeconds   int            `json:"pairing_ttl_seconds"`
 	AutoStartAgent      bool           `json:"auto_start_agent"`
 	Agent               AgentConfig    `json:"agent"`
+	Update              UpdateConfig   `json:"update"`
 	Servers             []ServerConfig `json:"servers"`
 }
 
@@ -185,6 +186,7 @@ func defaultConfig() Config {
 			WorkingDir:   agentDir,
 			JarName:      "GeumyiStatusAgent-0.5.4.jar",
 		},
+		Update: defaultUpdateConfig(filepath.Join(pd, "GeumyiServerCenter")),
 		Servers: []ServerConfig{
 			{ID: "wild", Name: "금이 야생", JavaPort: 25565, RCONPort: 25575, BedrockPort: 19132, GDSAPIPort: 8766,
 				PathFile: `C:\ProgramData\MinecraftServer\server_path.txt`, StartCommand: "start.bat", AutoStart: true, RestartOnCrash: true},
@@ -307,6 +309,7 @@ func loadOrCreateConfig(path string) (Config, error) {
 		if c.PairingTTLSeconds < 60 || c.PairingTTLSeconds > 3600 {
 			c.PairingTTLSeconds = 300
 		}
+		c.Update = normalizeUpdateConfig(c.Update)
 		return c, nil
 	}
 	c := defaultConfig()
