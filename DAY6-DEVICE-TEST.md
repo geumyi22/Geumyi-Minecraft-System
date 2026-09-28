@@ -54,6 +54,13 @@ However, the top realtime badge remained `REALTIME` while the app was already re
 
 Disposition: **Patch implemented in GSCM 1.1.2+113; runtime re-test pending.** Confirmed transport failures now override the WebSocket grace indicator, while unconfirmed short handoffs retain the 5-second anti-flicker grace. The original recovery behavior remains PASS; offline badge accuracy will be marked PASS only after the updated APK is tested on-device.
 
+Patch verification:
+- Source commit: `8a62780c466151bb4bec2c2654ce28a8031ad850`
+- Android Actions run [36441811005](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/36441811005): `flutter analyze`, `flutter test`, release APK build and artifact upload all passed.
+- iOS Actions run [36441810896](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/36441810896): release no-codesign build, unsigned IPA packaging and artifact upload all passed.
+- Android APK SHA-256: `b30d116b15c603bad0654b2683856da4679c042ae8686047fc8afa692e77fb25`
+- The new unit tests verify that confirmed network/refused/timeout failures override both an apparently live WebSocket and the short disconnect grace window.
+
 ### Android evidence — device reboot persistence
 
 User rebooted the Android device and confirmed GSCM still opened directly into the connected state without a new pairing flow. This verifies persistence across a full device reboot at the user-observed runtime level.

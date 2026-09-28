@@ -9,6 +9,8 @@ CI:
 - Pre-Day-6 System CI run 36344295861: GSC, StatusAgent, GDS and ResourcePack jobs all passed on the normalized preflight commit.
 - Pre-Day-6 GSCM Android run 36344295867: analyze, tests, release APK build and artifact upload passed.
 - Pre-Day-6 GSCM iOS run 36344295880: release no-codesign build, unsigned IPA packaging and artifact upload passed.
+- Day-6 GSCM build 113 Android run 36441811005: analyze, tests, release APK build and artifact upload passed.
+- Day-6 GSCM build 113 iOS run 36441810896: release no-codesign build, unsigned IPA packaging and artifact upload passed.
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
