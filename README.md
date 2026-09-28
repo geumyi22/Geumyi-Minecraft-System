@@ -26,6 +26,7 @@
 - 실제 서버 검증 결과: [DAY4-E2E-REPORT.md](DAY4-E2E-REPORT.md)
 - GSC/GSCM 안정화 검증: [DAY5-STABILITY-REPORT.md](DAY5-STABILITY-REPORT.md)
 - 이후 작업 순서와 최종 로비/서버 이동 설계 계획: [ROADMAP.md](ROADMAP.md)
+- 자동 빌드/Release/서버 자동 업데이트/rollback 장기 설계: [DEPLOYMENT-ARCHITECTURE.md](DEPLOYMENT-ARCHITECTURE.md)
 
 완성 EXE/JAR/APK/IPA/ZIP은 [기존 Release](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/mc-2026.09.26-v3)에 유지합니다. 운영 토큰·RCON 비밀번호·키스토어·월드·개인 로그는 Git에 넣지 않습니다.
 

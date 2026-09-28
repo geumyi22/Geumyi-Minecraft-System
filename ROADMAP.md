@@ -10,10 +10,12 @@
 | 4 | 실제 Wild/Playground 서버 E2E 부팅 및 플러그인/리소스팩/연동 검증 | 완료 |
 | 5 | GSC/GSCM 통합 안정화: 재연결, Whole Shutdown, 락, 고아 프로세스, 상태 오탐, 네트워크 복구 | 완료 |
 | 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 완료 |
-| 7 | GSC/GST/GDS/Agent/Technology/Chemistry/GSCM 자동 빌드 체계 정리 | 예정 |
-| 8 | 자동 Release/업데이트/체크섬/패키징 표준화 | 예정 |
-| 9 | 서버·설정 백업/복원/롤백 및 실패 복구 테스트 | 예정 |
-| 10 | 최종 장애/E2E 테스트 + 문서/Release 마감 + 로비 중심 멀티서버 네트워크 설계 | 예정 |
+| 7 | 전체 컴포넌트 CI/자동 빌드 + 검증 artifact 기반 정리 | 예정 |
+| 8 | 보안 Release/자동 업데이트 기반: manifest·채널·서명·체크섬·고정 Android 서명·pre-start updater | 예정 |
+| 9 | 트랜잭션 배포·백업·원자적 교체·health 검증·자동 rollback·장애 주입 테스트 | 예정 |
+| 10 | 전체 업데이트 E2E + 문서/Release 마감 + Lobby 멀티서버 네트워크 설계 | 예정 |
+| 11 | GSC/GSCM Update Center·채널/pin/hold·canary·maintenance window·알림·fleet 운영 UX | 예정 |
+| 12 | GSC/Agent self-update·Resource/DataPack 배포·SBOM/provenance·재현성·DR drill·Lobby 구현 확장 | 예정 |
 
 ## Day 3 완료 기준
 
@@ -43,6 +45,21 @@ Day 5는 **사용자 실사용 검증 통과**로 완료 처리합니다. 시작
 Day 6은 **완료**로 닫습니다. Android와 iOS에서 페어링, 인증정보 지속, 앱 재실행/기기 재부팅, HTTP snapshot, WebSocket realtime, 네트워크 끊김/자동 복구, 백그라운드 복귀, 서버 시작/종료/재시작, 로그아웃/토큰 해제를 사용자 실기기 기준으로 확인했습니다.
 
 Android에서는 오프라인인데 상단이 `REALTIME`으로 남는 표시 문제를 재현했고, GSCM 1.1.2+113에서 수정 후 실기기 재검증까지 통과했습니다. Android CI의 고정 서명키 문제는 Day 8 Release/패키징 범위로 남깁니다.
+
+## Day 7~12 — 자동 배포/운영 확장
+
+Day 7 이후는 단순 CI가 아니라 **소스 수정 → 검증된 artifact → 안전한 자동 배포 → health 확인 → rollback**까지 연결합니다. 세부 설계는 `DEPLOYMENT-ARCHITECTURE.md`를 기준으로 합니다.
+
+핵심 원칙:
+- GitHub `main` 자체를 곧바로 실서버 배포 대상으로 사용하지 않음
+- CI/테스트를 통과한 artifact만 Stable/Beta/Canary manifest에 등록
+- 서버 시작 전 staging + SHA-256/서명 검증 + 백업 + 원자적 교체
+- 인터넷/다운로드/검증 실패 시 기존 정상 버전으로 서버 시작
+- 새 버전 health 실패 시 rollback 가능
+- 자체 플러그인은 자동화, 외부 플러그인/Paper/Java는 정책 기반
+- GSC/GSCM에서 업데이트 상태·channel·pin·rollback·이력 확인
+- Android는 Day 8부터 고정 release signer 사용
+- iOS는 Apple signing/provisioning 제약을 분리해서 관리
 
 ## Day 10 — 로비/서버 이동 설계
 
