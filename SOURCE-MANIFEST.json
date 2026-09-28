@@ -1,6 +1,6 @@
 {
   "baseline": "2026-09-26",
-  "note": "Manifest synchronized through Day-6 Android+iOS user real-device verification completion on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
+  "note": "Manifest synchronized through the Day-7 preflight auto-deployment roadmap baseline on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
   "files": [
     {
       "path": ".github/workflows/android-build.yml",
@@ -55,6 +55,13 @@
       "bytes": 10034,
       "sha256": "6cf801e5fcd8c04f541610edaa2149ec008c484af17ca85cb69deb46061b28ea",
       "source": "Day-6 Android+iOS real-device verification completed 2026-09-28",
+      "modifiedFromRecovered": true
+    },
+    {
+      "path": "DEPLOYMENT-ARCHITECTURE.md",
+      "bytes": 12914,
+      "sha256": "a856da550a3528bafae4535fef0c652c302559f93a37f7ac6767eda931a6f105",
+      "source": "Secure auto-deployment architecture/roadmap planning 2026-09-28",
       "modifiedFromRecovered": true
     },
     {
@@ -1768,9 +1775,9 @@
     },
     {
       "path": "README.md",
-      "bytes": 2897,
-      "sha256": "0edd9de55ea17b12c25a0802c5ed9b9ec46f51b6b35082b8ff36976c6631892f",
-      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28",
+      "bytes": 3029,
+      "sha256": "ceade5e3bdf86b5187ba56c78e0867bf9c604ee49a7801c3950117463a66e956",
+      "source": "Secure auto-deployment architecture/roadmap planning 2026-09-28",
       "modifiedFromRecovered": true
     },
     {
@@ -8904,9 +8911,9 @@
     },
     {
       "path": "ROADMAP.md",
-      "bytes": 4610,
-      "sha256": "7ed1361568f61c227c0d3637ab9e3f2687c578f9b34a48e99aae9b5937e651ea",
-      "source": "Day-6 Android+iOS real-device verification completed 2026-09-28",
+      "bytes": 5885,
+      "sha256": "6b300bcd8016209fff6e789525ea8a03b016a8fcbce571ad0cb814d0898118b1",
+      "source": "Secure auto-deployment architecture/roadmap planning 2026-09-28",
       "modifiedFromRecovered": true
     },
     {
