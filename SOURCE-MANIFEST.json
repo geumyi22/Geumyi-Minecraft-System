@@ -1,6 +1,6 @@
 {
   "baseline": "2026-09-26",
-  "note": "Manifest synchronized through Day-6 Android real-device verification completion on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
+  "note": "Manifest synchronized through Day-6 Android+iOS user real-device verification completion on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
   "files": [
     {
       "path": ".github/workflows/android-build.yml",
@@ -52,9 +52,9 @@
     },
     {
       "path": "DAY6-DEVICE-TEST.md",
-      "bytes": 8732,
-      "sha256": "5e2334a2341376bd13f8923ac7b10e31b8de05975c7189e43016ea0b8ac785b0",
-      "source": "Day-6 Android real-device verification complete 2026-09-28",
+      "bytes": 10034,
+      "sha256": "6cf801e5fcd8c04f541610edaa2149ec008c484af17ca85cb69deb46061b28ea",
+      "source": "Day-6 Android+iOS real-device verification completed 2026-09-28",
       "modifiedFromRecovered": true
     },
     {
@@ -1775,9 +1775,10 @@
     },
     {
       "path": "RECOVERY-REPORT.md",
-      "bytes": 12500,
-      "sha256": "26214f9e8ebc1025d4d28f7237b85be61da6cec8172035440194545c54c4b007",
-      "source": "Repository recovery/verification report updated for Day-5 closure 2026-09-28"
+      "bytes": 14288,
+      "sha256": "c46a84533d1da2e76fd18c944faf60247a7900fb649398baf4a38f38c4c9c7c6",
+      "source": "Day-6 Android+iOS real-device verification completed 2026-09-28",
+      "modifiedFromRecovered": true
     },
     {
       "path": "release-sha256.txt",
@@ -8903,9 +8904,10 @@
     },
     {
       "path": "ROADMAP.md",
-      "bytes": 4259,
-      "sha256": "5c5fa825953fc4eeaf0cb130b4f7d16170e083b8a53c07ef346950e6a8a0d4db",
-      "source": "Repository roadmap updated for Day-5 completion and Day-6 start 2026-09-28"
+      "bytes": 4610,
+      "sha256": "7ed1361568f61c227c0d3637ab9e3f2687c578f9b34a48e99aae9b5937e651ea",
+      "source": "Day-6 Android+iOS real-device verification completed 2026-09-28",
+      "modifiedFromRecovered": true
     },
     {
       "path": "SECURITY-NOTES.md",
@@ -8971,9 +8973,9 @@
     },
     {
       "path": "VERSION-MATRIX.md",
-      "bytes": 3853,
-      "sha256": "f2b70d239c455955ad0f68fff98c6017673bd7984827e99c7d3a3567338770a9",
-      "source": "Day-6 Android real-device verification complete 2026-09-28",
+      "bytes": 3906,
+      "sha256": "4f9c6a72abecc9ce9f6ae391e0197215bf291dc4c81e2072c29d5f4ab57f0c20",
+      "source": "Day-6 Android+iOS real-device verification completed 2026-09-28",
       "modifiedFromRecovered": true
     }
   ],
