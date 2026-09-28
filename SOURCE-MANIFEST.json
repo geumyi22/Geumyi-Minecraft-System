@@ -1,6 +1,6 @@
 {
   "baseline": "2026-09-26",
-  "note": "Manifest synchronized through the Day-6 GSCM build 113 realtime-status hotfix and CI/artifact verification on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
+  "note": "Manifest synchronized through the Day-6 GSCM build 113 hotfix, CI verification, and Android signing caveat on 2026-09-28. SOURCE-MANIFEST.json intentionally excludes itself.",
   "files": [
     {
       "path": ".github/workflows/android-build.yml",
@@ -52,9 +52,9 @@
     },
     {
       "path": "DAY6-DEVICE-TEST.md",
-      "bytes": 7471,
-      "sha256": "ec908cbdf7ef802a6e030c2681798e3a2d6c0a819e6db5378bf10f98ee429bcd",
-      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28",
+      "bytes": 8162,
+      "sha256": "13135c8e0a9f8956cf3194f8072219dc4cbb8a7c61dde54ac7ac0211303a7f5d",
+      "source": "Day-6 Android CI signing limitation documented 2026-09-28",
       "modifiedFromRecovered": true
     },
     {
@@ -709,9 +709,9 @@
     },
     {
       "path": "GSCM/BUILD.md",
-      "bytes": 1203,
-      "sha256": "e83ae61ffec5e7df03e9a87667f435d99dac1a49a85d2202c4e27d1f03d4ed74",
-      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28",
+      "bytes": 1970,
+      "sha256": "bb956dddc53fcfe07699810dc57e43b8057c5a0e636334e5a2ea51e4f21251dd",
+      "source": "Day-6 Android CI signing limitation documented 2026-09-28",
       "modifiedFromRecovered": true
     },
     {
@@ -8971,9 +8971,9 @@
     },
     {
       "path": "VERSION-MATRIX.md",
-      "bytes": 3779,
-      "sha256": "34b6d3dca867879c9d9b942873e71f48484d8a646000a4d29dbdce1248f05e38",
-      "source": "Day-6 GSCM build 113 realtime-status hotfix and verification 2026-09-28",
+      "bytes": 3853,
+      "sha256": "f2b70d239c455955ad0f68fff98c6017673bd7984827e99c7d3a3567338770a9",
+      "source": "Day-6 Android CI signing limitation documented 2026-09-28",
       "modifiedFromRecovered": true
     }
   ],
