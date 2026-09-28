@@ -36,11 +36,11 @@ Record Android and iOS separately. A result may be marked PASS from user-observe
 - [x] Dashboard snapshot loads by HTTP — dashboard populated with current GSC/host/server state after reopen
 - [x] WebSocket reaches realtime/ONLINE state — screenshot showed REALTIME and Agent ONLINE after reopen
 - [x] Temporary network loss recovers without re-pairing — user disabled both Wi-Fi and mobile data, then restored connectivity; GSCM recovered without pairing again
-- [ ] App background -> foreground refreshes state
-- [ ] Server start/stop/restart action from GSCM works
+- [x] App background -> foreground refreshes state — user-observed on Android 2026-09-28
+- [x] Server start/stop/restart action from GSCM works — user-observed on Android 2026-09-28
 - [x] App/device restart preserves connection — user rebooted the Android device and GSCM reopened without re-pairing
-- [ ] Local logout clears only local saved connection as designed
-- [ ] Revoking the current device token forces re-pairing as designed
+- [x] Local logout clears only local saved connection as designed — user-observed on Android 2026-09-28
+- [x] Revoking the current device token forces re-pairing as designed — user-observed on Android 2026-09-28
 
 ### Android evidence — force-close/reopen
 
@@ -52,7 +52,7 @@ Network-loss recovery itself passed: with both Wi-Fi and mobile data disabled, G
 
 However, the top realtime badge remained `REALTIME` while the app was already reporting a network error. Source review explains the mismatch: the badge is driven by `realtimeUiHealthy`, which remains true while the existing WebSocket has not yet emitted onDone/onError (or during its disconnect grace interval). Mobile OS TCP teardown can lag behind HTTP failure detection.
 
-Disposition: **Patch implemented in GSCM 1.1.2+113; runtime re-test pending.** Confirmed transport failures now override the WebSocket grace indicator, while unconfirmed short handoffs retain the 5-second anti-flicker grace. The original recovery behavior remains PASS; offline badge accuracy will be marked PASS only after the updated APK is tested on-device.
+Disposition: **PASS on GSCM 1.1.2+113 real Android device.** User confirmed that disabling Wi-Fi and mobile data changes the top status away from `REALTIME`, and restoring connectivity automatically returns it to `REALTIME` without re-pairing. The original recovery behavior and the corrected offline-badge accuracy both pass.
 
 Patch verification:
 - Source commit: `8a62780c466151bb4bec2c2654ce28a8031ad850`
@@ -64,6 +64,12 @@ Patch verification:
 ### Android evidence — device reboot persistence
 
 User rebooted the Android device and confirmed GSCM still opened directly into the connected state without a new pairing flow. This verifies persistence across a full device reboot at the user-observed runtime level.
+
+### Android final Day-6 result
+
+**PASS — user-observed real-device verification complete on GSCM 1.1.2+113.**
+
+The user additionally confirmed background/foreground recovery, GSCM server start/stop/restart controls, local logout behavior, and current-device token revocation/re-pairing behavior. Android Day-6 verification is therefore closed. This remains user-observed device evidence rather than assistant-side physical-device execution.
 
 ## iOS
 
