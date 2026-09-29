@@ -6,7 +6,11 @@
 - Added persistent Android release-signing path and GSC pre-start updater with fail-open behavior.
 - Added GSC Update Center first-stage UI/API and one-run local/server E2E finalizer.
 - Bumped GeumyiTechnology to **0.1.4** as a metadata-only Wild updater E2E marker; gameplay logic remains the recovered/verified 0.1.3 baseline.
-- Added/updated Day-8 operator documentation. Day 8 remains open until the server-PC finalizer passes real signed-canary and Wild/Playground isolation checks.
+- Added/updated Day-8 operator documentation.
+- Published and verified signed canary Release `system-2026.09.29-222513-canary` via Secure Release run `36574955584`.
+- Completed the server-PC Day-8 finalizer with user-confirmed `DAY 8 RESUME FINALIZER: PASS`: Wild Technology 0.1.4 applied/current and Playground isolation verified.
+- Hardened the Windows finalizer during live E2E: ASCII/no-BOM CMD launcher, correct post-login auth verification, JDK keytool discovery, always-visible failure logs, and installer-process-only waiting with safe Release resume.
+- **Day 8 closed.** Transaction journal, post-start health gate, automatic rollback and failure injection move to Day 9.
 
 ## 2026-09-27 — Recovery completion and Day-4 verification
 

@@ -5,8 +5,8 @@
 ## 상태
 
 **GitHub 구현/CI: 완료**  
-**서버 PC 실제 signed-canary E2E: 대기**  
-**Day 8 전체 종결: 서버 PC E2E PASS 후**
+**서버 PC 실제 signed-canary E2E: PASS**  
+**Day 8 전체 종결: 완료**
 
 ## main 기준 구현
 
@@ -47,6 +47,10 @@
 
 - Day-8 E2E-finalizer PR System CI run `36547936752`: PASS
 - post-merge main System CI run `36548257976`: PASS
+- Windows finalizer/signing preflight System CI run `36574083087`: PASS
+- installer-resume hotfix System CI run `36576774848`: PASS
+- Day-8 Secure Release run `36574955584`: PASS
+- published canary tag: `system-2026.09.29-222513-canary`
 - Technology 0.1.4 Gradle/JDK 25 build: PASS
 - GSC Go tests: PASS
 - GSC Setup assembly: PASS
@@ -57,32 +61,32 @@
   - workflow YAML parse
   - GSC dashboard JavaScript syntax
   - Day-8 PowerShell tool syntax
+  - Windows PowerShell 5.1 compatibility
+  - gh / keytool / OpenSSL discovery
+  - ASCII/no-BOM CMD launcher parser check
 
-## Day 8 최종 서버-PC closure gate
+## 서버 PC 실제 E2E 결과
 
-관리자 PowerShell에서 repository root 기준:
+2026-09-29 서버 PC에서 Day-8 finalizer를 실행했습니다.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\tools\release\finish_day8.ps1 -RunServerE2E
-```
+- 최초 실행 중 Windows CMD UTF-8 BOM 문제를 재현하고 ASCII/no-BOM launcher로 수정
+- GitHub CLI interactive login 성공 후 batch `errorlevel` 오판 문제 수정
+- 서버 PC의 `keytool.exe` 탐색 실패를 재현하고 JDK 자동 탐색 + Windows preflight CI 추가
+- GSC Setup 종료 후 `Start-Process -Wait` descendant wait hang을 재현하고 Setup PID만 기다리도록 수정
+- 이미 성공한 signed canary Release를 `-ReuseExistingRelease`로 재사용하여 중복 Release 빌드 없이 E2E 재개
+- 사용자 화면 확인 기준 최종 결과: `DAY 8 RESUME FINALIZER: PASS`
 
-검증 항목:
+최종 PASS가 의미하는 finalizer 내부 조건:
+1. signed manifest 검증 PASS
+2. 모든 Release artifact SHA-256 / size 검증 PASS
+3. GSC Day-8 Update API PASS
+4. Wild update check 수행
+5. 접속자 0명 상태에서 Wild lifecycle 수행
+6. Wild에 enabled GeumyiTechnology가 정확히 1개이며 버전 0.1.4
+7. Playground에 GeumyiTechnology 없음
+8. updater phase가 `applied` 또는 `current`
 
-1. persistent Android + deployment signing material 준비/재사용
-2. GitHub Actions Secrets 등록
-3. Canary Secure Release 실행
-4. signed manifest 검증
-5. 모든 release artifact SHA-256/size 검증
-6. Day-8 GSC Update API 확인
-7. Wild dry-check
-8. 접속자 0명 확인 후 graceful stop
-9. Wild 시작 전 Technology 0.1.4 실제 교체
-10. Wild 정상 online
-11. Wild inventory에서 Technology 0.1.4 확인
-12. Playground에 Technology가 없는지 확인
-13. 결과 JSON / E2E log 생성
-
-접속자가 있으면 자동 서버 재시작을 거부합니다.
+서버 PC 로그/result 파일 자체는 이 보고서에 커밋하지 않았으므로, 이 항목은 **finalizer PASS 화면에 대한 사용자 확인**과 GitHub Release/CI 기록을 함께 근거로 합니다. 독립적으로 새 서버 PC를 재현한 assistant-side E2E라고 기록하지 않습니다.
 
 ## Android
 

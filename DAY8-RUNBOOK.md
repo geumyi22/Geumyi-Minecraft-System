@@ -119,3 +119,19 @@ Technology 0.1.4는 **Day 8 updater E2E를 실제 교체로 증명하기 위한 
 
 서버에 접속자가 1명이라도 있으면 자동 재시작을 거부합니다. Android 기존 설치본의 signer가 새 영구 signer와 다르면 데이터 손실 방지를 위해 자동 uninstall은 하지 않으며 `SIGNER_TRANSITION_REQUIRED`로 종료합니다.
 
+
+
+## Day 8 closure status
+
+Day 8 is closed as of 2026-09-29.
+
+Final evidence:
+- Secure Release run `36574955584`: PASS
+- Canary tag: `system-2026.09.29-222513-canary`
+- Windows finalizer/signing preflight CI `36574083087`: PASS
+- Installer-resume hotfix CI `36576774848`: PASS
+- Server-PC resume finalizer: user-confirmed `DAY 8 RESUME FINALIZER: PASS`
+
+The finalizer PASS includes signed manifest/hash verification, GSC update API verification, Wild Technology 0.1.4 validation, Wild online confirmation, and Playground Technology isolation. Android ADB signer-transition verification remains optional and is not part of the Day-8 server-side closure gate.
+
+Day 9 owns transaction journaling, post-start health gating, automatic rollback, and failure-injection testing.
