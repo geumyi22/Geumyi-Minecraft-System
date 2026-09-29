@@ -25,10 +25,10 @@
       "min_paper": "26.3"
     },
     "technology": {
-      "version": "0.1.3",
+      "version": "0.1.4",
       "kind": "plugin",
       "plugin_name": "GeumyiTechnology",
-      "artifact_glob": "GeumyiTechnology-0.1.3-Paper26.3.jar",
+      "artifact_glob": "GeumyiTechnology-0.1.4-Paper26.3.jar",
       "targets": [
         "wild"
       ],

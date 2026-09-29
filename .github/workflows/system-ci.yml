@@ -184,7 +184,7 @@ jobs:
           retention-days: 14
 
   technology:
-    name: Technology 0.1.3 / Gradle build
+    name: Technology 0.1.4 / Gradle build
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -206,11 +206,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SRC="Plugins/GeumyiTechnology/build/libs/GeumyiTechnology-0.1.3.jar"
-          OUT="GeumyiTechnology-0.1.3-Paper26.3.jar"
+          SRC="Plugins/GeumyiTechnology/build/libs/GeumyiTechnology-0.1.4.jar"
+          OUT="GeumyiTechnology-0.1.4-Paper26.3.jar"
           test -s "$SRC"
           unzip -t "$SRC" >/dev/null
-          unzip -p "$SRC" plugin.yml | grep -Eq '^version:[[:space:]]*0[.]1[.]3'
+          unzip -p "$SRC" plugin.yml | grep -Eq '^version:[[:space:]]*0[.]1[.]4'
           unzip -p "$SRC" plugin.yml | grep -Eq "^api-version:[[:space:]]*'26[.]3'"
           javap -verbose -classpath "$SRC" kr.geumyi.technology.GeumyiTechnology | grep -q 'major version: 69'
           mkdir -p dist/technology
@@ -219,7 +219,7 @@ jobs:
       - name: Upload Technology artifact
         uses: actions/upload-artifact@v4
         with:
-          name: technology-0.1.3
+          name: technology-0.1.4
           path: dist/technology/*
           if-no-files-found: error
           retention-days: 14
@@ -490,21 +490,26 @@ jobs:
           PY
           node --check /tmp/gsc-dashboard.js
 
-      - name: Parse signing bootstrap PowerShell
+      - name: Parse Day 8 PowerShell tools
         shell: pwsh
         run: |
-          $tokens = $null
-          $errors = $null
-          [System.Management.Automation.Language.Parser]::ParseFile(
-            (Resolve-Path 'tools/release/bootstrap_day8_signing.ps1'),
-            [ref]$tokens,
-            [ref]$errors
-          ) | Out-Null
-          if ($errors.Count -gt 0) {
-            $errors | ForEach-Object { Write-Error $_.Message }
-            exit 1
+          foreach ($path in @(
+            'tools/release/bootstrap_day8_signing.ps1',
+            'tools/release/finish_day8.ps1'
+          )) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $path),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$path : $($_.Message)" }
+              exit 1
+            }
+            Write-Host "PowerShell syntax OK: $path"
           }
-          Write-Host 'PowerShell syntax OK'
 
   day7-summary:
     name: Component CI + Day 8 foundation summary
