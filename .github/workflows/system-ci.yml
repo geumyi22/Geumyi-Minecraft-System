@@ -570,6 +570,21 @@ jobs:
           }
           Write-Host 'Day 9 reserved-variable guard OK'
 
+      - name: Guard Day 9 direct workflow run capture
+        shell: powershell
+        run: |
+          $path = 'tools/release/finish_day9.ps1'
+          $text = Get-Content -LiteralPath $path -Raw
+          if ($text -match 'gh run list') {
+            throw 'Day 9 finalizer must not rediscover a just-dispatched run via gh run list'
+          }
+          $sample = 'https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/36589724562'
+          $m = [regex]::Match($sample, 'actions/runs/(?<id>[0-9]+)')
+          if (-not $m.Success -or $m.Groups['id'].Value -ne '36589724562') {
+            throw 'Direct workflow run URL parser regression'
+          }
+          Write-Host 'Day 9 direct run-id capture guard OK'
+
       - name: Exercise PowerShell 5.1 random-byte API
         shell: powershell
         run: |
