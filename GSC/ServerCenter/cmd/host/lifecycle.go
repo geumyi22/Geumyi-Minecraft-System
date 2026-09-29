@@ -335,6 +335,9 @@ func startServerLocked(s ServerConfig) (string, error) {
 		} else if len(ust.Applied) > 0 {
 			appendLauncherNote(s.ID, "pre-start updater applied: "+strings.Join(ust.Applied, ", "))
 		}
+		if ust.BlockStart {
+			return "업데이트 복구 실패로 서버 시작 차단", errors.New(ust.Error)
+		}
 		setLaunchPhase(s.ID, "starting", "기존 start.bat 실행 준비 중", "")
 		if e := runDetachedCommand(s.StartCommand, dir, s.ID); e != nil {
 			return "서버 시작 실패", e
@@ -352,6 +355,18 @@ func startServerLocked(s ServerConfig) (string, error) {
 		if tcpOpen("127.0.0.1", s.JavaPort, 300*time.Millisecond) {
 			if e := rememberServerProcess(s); e != nil {
 				return "서버 프로세스 확인 실패", e
+			}
+			outcome, e := verifyPendingUpdateAfterStart(s, func() error {
+				if failure := probe.detect(); failure != nil {
+					return fmt.Errorf("%s: %s", failure.Title, failure.Line)
+				}
+				return nil
+			})
+			if e != nil {
+				return "업데이트 health 검증/롤백 실패", e
+			}
+			if outcome == "rolled_back" {
+				return s.Name + " ONLINE · 업데이트 자동 롤백 완료", nil
 			}
 			return s.Name + " ONLINE", nil
 		}
