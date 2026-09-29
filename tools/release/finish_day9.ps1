@@ -88,14 +88,24 @@ $gh = Need "gh"
 & $gh auth status
 if ($LASTEXITCODE -ne 0) { Fail "gh auth login required" }
 
-Log "locating latest successful main System CI"
-$runJson = & $gh run list --repo $Repository --workflow system-ci.yml --branch main --limit 20 --json databaseId,status,conclusion,headSha,createdAt
-if ($LASTEXITCODE -ne 0) { Fail "cannot list System CI runs" }
+Log "dispatching a fresh System CI for current main"
+$mainSha = ((& $gh api "repos/$Repository/commits/main" --jq .sha) -join "").Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($mainSha)) { Fail "cannot resolve current main SHA" }
+
+& $gh workflow run system-ci.yml --repo $Repository --ref main
+if ($LASTEXITCODE -ne 0) { Fail "cannot dispatch System CI" }
+Start-Sleep 5
+
+$runJson = & $gh run list --repo $Repository --workflow system-ci.yml --branch main --event workflow_dispatch --limit 10 --json databaseId,status,conclusion,headSha,createdAt
+if ($LASTEXITCODE -ne 0) { Fail "cannot list dispatched System CI runs" }
 $runs = @(($runJson -join "`n") | ConvertFrom-Json)
-$run = $runs | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "success" } | Select-Object -First 1
-if ($null -eq $run -or -not $run.databaseId) { Fail "no successful main System CI run found" }
+$run = $runs | Where-Object { [string]$_.headSha -eq $mainSha } | Select-Object -First 1
+if ($null -eq $run -or -not $run.databaseId) { Fail "cannot identify fresh System CI run for main=$mainSha" }
 $runId = [string]$run.databaseId
-Log "using System CI run $runId head=$($run.headSha)"
+Log "watching fresh System CI run $runId head=$mainSha"
+& $gh run watch $runId --repo $Repository --exit-status
+if ($LASTEXITCODE -ne 0) { Fail "fresh main System CI failed" }
+Log "fresh main System CI PASS"
 
 $artifact = Join-Path $work "gsc"
 New-Item -ItemType Directory -Force $artifact | Out-Null
