@@ -139,12 +139,17 @@ Log "GSC 4.2.4 installed and API healthy"
 
 $liveResult = "SKIPPED"
 $failOpenPhase = ""
+$wildInitialOnline = $null
+$wildFinalOnline = $null
 if ($RunWildFailOpen) {
     $wild = State "wild"
     if ($null -eq $wild) { Fail "wild server missing" }
     $players = 0
     if ($wild.minecraft -and $null -ne $wild.minecraft.online) { $players = [int]$wild.minecraft.online }
     if ($players -gt 0) { Fail "wild has $players online player(s); refusing restart" }
+
+    $wildInitialOnline = [bool]$wild.online
+    Log ("Wild initial state: online=" + $wildInitialOnline)
 
     $before = Gsc "GET" "/api/v4/update/settings"
     $restore = @{
@@ -154,6 +159,7 @@ if ($RunWildFailOpen) {
         public_key_path = [string]$before.public_key_path
         timeout_seconds = [int]$before.timeout_seconds
     }
+    $restoreErrors = New-Object System.Collections.Generic.List[string]
 
     try {
         if ([bool]$wild.online) {
@@ -179,26 +185,55 @@ if ($RunWildFailOpen) {
             Fail "expected updater error during GitHub failure injection, got phase=$failOpenPhase"
         }
         Log "LIVE FAIL-OPEN PASS: updater failed but Wild returned ONLINE"
-        $liveResult = "PASS"
+
+        $end = (Get-Date).AddSeconds(45)
+        $v4 = $null
+        do {
+            try { $v4 = Gsc "GET" "/api/v4/health?id=wild" } catch {}
+            if ($null -ne $v4 -and [string]$v4.overall -ne "fail") { break }
+            Start-Sleep 3
+        } while ((Get-Date) -lt $end)
+        if ($null -eq $v4 -or [string]$v4.overall -eq "fail") { Fail "Wild v4 health failed after fail-open restart" }
+        Log ("Wild health after fail-open restart: " + [string]$v4.overall)
     }
     finally {
         try {
             Gsc "POST" "/api/v4/update/settings" $restore | Out-Null
             Log "original update settings restored"
         } catch {
-            Log ("WARNING: update settings restore failed: " + $_.Exception.Message)
+            $restoreErrors.Add("update settings restore failed: " + $_.Exception.Message)
+        }
+
+        try {
+            $cur = State "wild"
+            if ($null -eq $cur) {
+                $restoreErrors.Add("cannot read Wild state during restoration")
+            } elseif ($wildInitialOnline -and -not [bool]$cur.online) {
+                Log "restoring original Wild state: ONLINE"
+                Gsc "POST" "/api/server/action" @{id="wild";action="start"} | Out-Null
+                WaitOnline "wild" $true 240 | Out-Null
+            } elseif (-not $wildInitialOnline -and [bool]$cur.online) {
+                Log "restoring original Wild state: OFFLINE"
+                Gsc "POST" "/api/server/action" @{id="wild";action="stop"} | Out-Null
+                WaitOnline "wild" $false 180 | Out-Null
+            }
+        } catch {
+            $restoreErrors.Add("Wild state restore failed: " + $_.Exception.Message)
         }
     }
 
-    $end = (Get-Date).AddSeconds(45)
-    $v4 = $null
-    do {
-        try { $v4 = Gsc "GET" "/api/v4/health?id=wild" } catch {}
-        if ($null -ne $v4 -and [string]$v4.overall -ne "fail") { break }
-        Start-Sleep 3
-    } while ((Get-Date) -lt $end)
-    if ($null -eq $v4 -or [string]$v4.overall -eq "fail") { Fail "Wild v4 health failed after fail-open restart" }
-    Log ("Wild health after restore: " + [string]$v4.overall)
+    if ($restoreErrors.Count -gt 0) {
+        Fail ("post-test restoration failed: " + ($restoreErrors -join " | "))
+    }
+
+    $finalWild = State "wild"
+    if ($null -eq $finalWild) { Fail "cannot read final Wild state" }
+    $wildFinalOnline = [bool]$finalWild.online
+    if ($wildFinalOnline -ne $wildInitialOnline) {
+        Fail "Wild final state does not match initial state"
+    }
+    Log ("Wild original state restored: online=" + $wildFinalOnline)
+    $liveResult = "PASS"
 }
 
 $result = [ordered]@{
@@ -209,6 +244,8 @@ $result = [ordered]@{
     gsc_install_api = "PASS"
     live_fail_open = $liveResult
     fail_open_phase = $failOpenPhase
+    wild_initial_online = $wildInitialOnline
+    wild_final_online = $wildFinalOnline
     log = $script:LogPath
 }
 $out = Join-Path $work "day9-result.json"
