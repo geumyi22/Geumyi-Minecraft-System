@@ -11,7 +11,7 @@
 | 5 | GSC/GSCM 통합 안정화: 재연결, Whole Shutdown, 락, 고아 프로세스, 상태 오탐, 네트워크 복구 | 완료 |
 | 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 완료 |
 | 7 | 전체 컴포넌트 CI/자동 빌드 + 검증 artifact 기반 정리 | 완료 |
-| 8 | 보안 Release/자동 업데이트 기반: manifest·채널·서명·체크섬·고정 Android 서명·pre-start updater | 진행 중 — 구현/CI 완료, 서버 PC 최종 E2E 대기 |
+| 8 | 보안 Release/자동 업데이트 기반: manifest·채널·서명·체크섬·고정 Android 서명·pre-start updater | 완료 |
 | 9 | 트랜잭션 배포·백업·원자적 교체·health 검증·자동 rollback·장애 주입 테스트 | 예정 |
 | 10 | 전체 업데이트 E2E + 문서/Release 마감 + Lobby 멀티서버 네트워크 설계 | 예정 |
 | 11 | GSC/GSCM Update Center·채널/pin/hold·canary·maintenance window·알림·fleet 운영 UX | 예정 |
@@ -54,20 +54,26 @@ Day 7은 **완료**로 닫습니다. GSC, StatusAgent, GST, GDS, Technology, Che
 
 Day 7은 빌드/검증 기반까지만 포함합니다. **실서버 자동 업데이트는 아직 수행하지 않았으며 Day 8부터 시작합니다.**
 
-## Day 8 현재 상태
+## Day 8 완료 기준
 
-Day 8 코드/CI 기반은 `main`에 반영되었습니다.
+Day 8은 **완료**로 닫습니다.
 
+완료된 범위:
 - Secure Release workflow + Stable/Beta/Canary channel
 - SHA-256 artifact verification
 - Ed25519 signed deployment manifest
 - persistent Android release signing path
 - GSC pre-start updater + fail-open server start
 - GSC Update Center 1차 UI/API
-- Wild-only Technology 0.1.4 metadata marker for real updater E2E
-- `tools/release/finish_day8.ps1` one-run finalizer
+- Wild-only Technology 0.1.4 metadata marker
+- 실제 canary Release `system-2026.09.29-222513-canary`
+- 서버 PC finalizer에서 signed manifest / release artifact hashes / GSC update API / Wild pre-start update / Wild online / Playground isolation 검증 PASS
 
-GitHub-side validation is complete. **Day 8 is not closed until the server PC finalizer confirms the real signed canary Release, Wild 0.1.4 replacement, Playground isolation, and server boot.** Android ADB install verification is optional for server-side Day 8 closure but remains useful for the persistent-signer transition.
+GitHub Actions의 Day-8 Secure Release run `36574955584`가 성공했고, 서버 PC에서는 사용자 확인 기준 `DAY 8 RESUME FINALIZER: PASS`가 표시되었습니다. 이 PASS는 finalizer 내부의 Wild Technology 0.1.4 단일 enabled 확인과 Playground 무배포 확인을 포함합니다.
+
+Day-8 finalizer 자체의 Windows 호환성 문제는 Day 8 중 수정했습니다. 주요 검증 run은 `36574083087` 및 `36576774848`이며 둘 다 성공했습니다.
+
+Android ADB install은 서버-side Day 8 closure의 필수 조건이 아니므로 별도 전환 항목으로 남깁니다. Day 9에서는 transaction journal, post-start health gate, 자동 rollback, 장애 주입 검증을 진행합니다.
 
 See `DAY8-RELEASE-REPORT.md` and `DAY8-RUNBOOK.md`.
 
