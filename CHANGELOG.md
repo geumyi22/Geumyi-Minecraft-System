@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-29 — Day 8 secure release / updater foundation
+
+- Added signed Day-8 Secure Release workflow with Stable/Beta/Canary channels, SHA-256 verification and Ed25519 deployment manifests.
+- Added persistent Android release-signing path and GSC pre-start updater with fail-open behavior.
+- Added GSC Update Center first-stage UI/API and one-run local/server E2E finalizer.
+- Bumped GeumyiTechnology to **0.1.4** as a metadata-only Wild updater E2E marker; gameplay logic remains the recovered/verified 0.1.3 baseline.
+- Added/updated Day-8 operator documentation. Day 8 remains open until the server-PC finalizer passes real signed-canary and Wild/Playground isolation checks.
+
 ## 2026-09-27 — Recovery completion and Day-4 verification
 
 - Completed GST 1.1.1 HOTFIX, StatusAgent 0.5.4, GeumyiTechnology 0.1.3 and GeumyiChemistry 0.4.1 source recovery/reconstruction tracking.

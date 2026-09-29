@@ -40,12 +40,12 @@ import java.util.*;
 import java.util.logging.Level;
 
 /**
- * Geumyi Technology v0.1.3
+ * Geumyi Technology v0.1.4
  * Paper 26.3 target, internal Core/Power/Industry modules.
  * Gameplay is server-side. JE/BE resource packs are optional cosmetics; PDC is authoritative.
  */
 public final class GeumyiTechnology extends JavaPlugin implements Listener {
-    public static final String VERSION = "0.1.3";
+    public static final String VERSION = "0.1.4";
     private static final String PREFIX = "§8[§bGT§8] §r";
     private static final String MAIN_TITLE = "§1§lGeumyi Technology";
     private static final String WORKBENCH_TITLE = "§6§lGT 조립 작업대";
