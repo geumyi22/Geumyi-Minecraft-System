@@ -197,6 +197,13 @@ func defaultConfig() Config {
 }
 
 func main() {
+	if day9SelfTestRequested() {
+		if err := runDay9SelfTest(); err != nil {
+			fmt.Fprintf(os.Stderr, "DAY9 SELFTEST FAIL: %v\n", err)
+			os.Exit(2)
+		}
+		return
+	}
 	if serviceModeRequested() {
 		if err := runWindowsService(runHostCore); err != nil {
 			fmt.Fprintf(os.Stderr, "service error: %v\n", err)
