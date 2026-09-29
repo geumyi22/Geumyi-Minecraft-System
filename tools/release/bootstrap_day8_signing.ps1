@@ -3,7 +3,8 @@ param(
     [string]$ExistingAndroidKeystore = "",
     [string]$ExistingStorePassword = "",
     [string]$ExistingKeyAlias = "",
-    [string]$ExistingKeyPassword = ""
+    [string]$ExistingKeyPassword = "",
+    [switch]$PreflightOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -81,6 +82,13 @@ $KEYTOOL = Find-Keytool
 $OPENSSL = Find-Tool "openssl" @(
     "$env:ProgramFiles\Git\usr\bin\openssl.exe"
 )
+
+if ($PreflightOnly) {
+    Write-Host "gh:      $GH"
+    Write-Host "keytool: $KEYTOOL"
+    Write-Host "openssl: $OPENSSL"
+    exit 0
+}
 
 & $GH auth status
 if ($LASTEXITCODE -ne 0) {
