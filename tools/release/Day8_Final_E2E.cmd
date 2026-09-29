@@ -25,14 +25,16 @@ if not "%errorlevel%"=="0" (
 )
 
 gh auth status >nul 2>&1
-if not "%errorlevel%"=="0" (
+if errorlevel 1 (
   echo [Day8] GitHub login is required.
   gh auth login
-  if not "%errorlevel%"=="0" (
-    echo [FAIL] GitHub login failed.
+  gh auth status >nul 2>&1
+  if errorlevel 1 (
+    echo [FAIL] GitHub login failed or credentials were not saved.
     pause
     exit /b 12
   )
+  echo [Day8] GitHub login verified.
 )
 
 set "WORK=%TEMP%\Geumyi-Day8-Final"

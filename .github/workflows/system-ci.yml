@@ -551,6 +551,14 @@ jobs:
           }
           Write-Host 'PowerShell 5.1 RNG API OK'
 
+      - name: Exercise signing-tool discovery
+        shell: powershell
+        run: |
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/release/bootstrap_day8_signing.ps1 -PreflightOnly
+          if ($LASTEXITCODE -ne 0) {
+            throw "Day 8 signing preflight failed with code $LASTEXITCODE"
+          }
+
       - name: Verify Git-for-Windows OpenSSL fallback
         shell: powershell
         run: |
