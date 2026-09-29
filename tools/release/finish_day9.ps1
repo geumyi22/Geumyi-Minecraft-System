@@ -94,13 +94,23 @@ if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($mainSha)) { Fail "cann
 
 & $gh workflow run system-ci.yml --repo $Repository --ref main
 if ($LASTEXITCODE -ne 0) { Fail "cannot dispatch System CI" }
-Start-Sleep 5
 
-$runJson = & $gh run list --repo $Repository --workflow system-ci.yml --branch main --event workflow_dispatch --limit 10 --json databaseId,status,conclusion,headSha,createdAt
-if ($LASTEXITCODE -ne 0) { Fail "cannot list dispatched System CI runs" }
-$runs = @(($runJson -join "`n") | ConvertFrom-Json)
-$run = $runs | Where-Object { [string]$_.headSha -eq $mainSha } | Select-Object -First 1
-if ($null -eq $run -or -not $run.databaseId) { Fail "cannot identify fresh System CI run for main=$mainSha" }
+$run = $null
+$discoverDeadline = (Get-Date).AddSeconds(60)
+do {
+    Start-Sleep 3
+    $runJson = & $gh run list --repo $Repository --workflow system-ci.yml --branch main --event workflow_dispatch --limit 20 --json databaseId,status,conclusion,headSha,createdAt
+    if ($LASTEXITCODE -ne 0) {
+        Log "workflow run list failed during discovery; retrying"
+        continue
+    }
+    $runs = @(($runJson -join "`n") | ConvertFrom-Json)
+    $run = $runs | Where-Object { [string]$_.headSha -eq $mainSha } | Select-Object -First 1
+    if ($null -ne $run -and $run.databaseId) { break }
+    Log "fresh System CI run not visible yet; retrying"
+} while ((Get-Date) -lt $discoverDeadline)
+
+if ($null -eq $run -or -not $run.databaseId) { Fail "cannot identify fresh System CI run for main=$mainSha after 60s" }
 $runId = [string]$run.databaseId
 Log "watching fresh System CI run $runId head=$mainSha"
 & $gh run watch $runId --repo $Repository --exit-status
