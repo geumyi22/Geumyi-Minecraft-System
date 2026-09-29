@@ -114,14 +114,14 @@ if ($LASTEXITCODE -ne 0) { Fail "cannot download gsc-4.2.4-ci artifact" }
 VerifySums $artifact
 Log "GSC 4.2.4 CI artifact hashes PASS"
 
-$host = Join-Path $artifact "GeumyiServerHost.exe"
+$hostExe = Join-Path $artifact "GeumyiServerHost.exe"
 $setup = Join-Path $artifact "GeumyiServerCenter-v4.2.4-Setup.exe"
-foreach ($p in @($host,$setup)) {
+foreach ($p in @($hostExe,$setup)) {
     if (-not (Test-Path -LiteralPath $p)) { Fail "missing artifact: $p" }
 }
 
 Log "running deployed Host transaction/rollback self-test"
-$self = Start-Process -FilePath $host -ArgumentList "--day9-selftest" -PassThru -Wait
+$self = Start-Process -FilePath $hostExe -ArgumentList "--day9-selftest" -PassThru -Wait
 if ($self.ExitCode -ne 0) { Fail "Host --day9-selftest failed with exit code $($self.ExitCode)" }
 Log "HOST DAY9 SELFTEST PASS"
 

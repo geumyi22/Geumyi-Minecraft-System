@@ -542,6 +542,34 @@ jobs:
             Write-Host "Windows PowerShell syntax OK: $path"
           }
 
+      - name: Guard Day 9 PowerShell reserved variables
+        shell: powershell
+        run: |
+          $path = 'tools/release/finish_day9.ps1'
+          $tokens = $null
+          $errors = $null
+          $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $path),
+            [ref]$tokens,
+            [ref]$errors
+          )
+          if ($errors.Count -gt 0) { throw "Cannot inspect $path because it has parse errors" }
+
+          $reserved = @('host','home','pid','pshome','pwd','shellid','true','false','null')
+          $bad = $ast.FindAll({
+            param($node)
+            if ($node -isnot [System.Management.Automation.Language.AssignmentStatementAst]) { return $false }
+            $left = $node.Left
+            if ($left -isnot [System.Management.Automation.Language.VariableExpressionAst]) { return $false }
+            return $reserved -contains $left.VariablePath.UserPath.ToLowerInvariant()
+          }, $true)
+
+          if (@($bad).Count -gt 0) {
+            $bad | ForEach-Object { Write-Error ("Reserved variable assignment: " + $_.Extent.Text) }
+            throw "Reserved PowerShell variable assignment detected in $path"
+          }
+          Write-Host 'Day 9 reserved-variable guard OK'
+
       - name: Exercise PowerShell 5.1 random-byte API
         shell: powershell
         run: |
