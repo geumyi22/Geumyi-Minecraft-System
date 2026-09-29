@@ -1,4 +1,5 @@
-name: Publish Geumyi System Release
+# LEGACY: historical 2026-09-26 bundle publisher. Day 8+ releases use day8-release.yml.
+name: LEGACY - Publish 2026-09-26 System Bundle
 
 on:
   workflow_dispatch:
