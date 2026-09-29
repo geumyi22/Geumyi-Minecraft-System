@@ -495,7 +495,8 @@ jobs:
         run: |
           foreach ($path in @(
             'tools/release/bootstrap_day8_signing.ps1',
-            'tools/release/finish_day8.ps1'
+            'tools/release/finish_day8.ps1',
+            'tools/release/finish_day9.ps1'
           )) {
             $tokens = $null
             $errors = $null
@@ -524,7 +525,8 @@ jobs:
         run: |
           foreach ($path in @(
             'tools/release/bootstrap_day8_signing.ps1',
-            'tools/release/finish_day8.ps1'
+            'tools/release/finish_day8.ps1',
+            'tools/release/finish_day9.ps1'
           )) {
             $tokens = $null
             $errors = $null
@@ -571,19 +573,23 @@ jobs:
       - name: Verify ASCII-only CMD launcher
         shell: powershell
         run: |
-          $path = 'tools/release/Day8_Final_E2E.cmd'
-          $bytes = [IO.File]::ReadAllBytes((Resolve-Path $path))
-          if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
-            throw 'CMD launcher must not contain UTF-8 BOM'
+          foreach ($path in @(
+            'tools/release/Day8_Final_E2E.cmd',
+            'tools/release/Day9_Final_E2E.cmd'
+          )) {
+            $bytes = [IO.File]::ReadAllBytes((Resolve-Path $path))
+            if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
+              throw "$path must not contain UTF-8 BOM"
+            }
+            if (($bytes | Where-Object { $_ -gt 127 }).Count -gt 0) {
+              throw "$path must remain ASCII-only"
+            }
+            & cmd.exe /d /c "call $path --selftest"
+            if ($LASTEXITCODE -ne 0) {
+              throw "$path parser self-test failed with code $LASTEXITCODE"
+            }
+            Write-Host "ASCII CMD launcher OK: $path"
           }
-          if (($bytes | Where-Object { $_ -gt 127 }).Count -gt 0) {
-            throw 'CMD launcher must remain ASCII-only'
-          }
-          & cmd.exe /d /c "call $path --selftest"
-          if ($LASTEXITCODE -ne 0) {
-            throw "CMD parser self-test failed with code $LASTEXITCODE"
-          }
-          Write-Host 'ASCII CMD launcher OK'
 
   day7-summary:
     name: Component CI + Day 8 foundation summary
