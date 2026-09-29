@@ -59,6 +59,17 @@ New-Item -ItemType Directory -Force $work|Out-Null
 $script:LogPath=Join-Path $work "day8-e2e.log"
 Log "Day 8 E2E finalizer start"
 
+trap {
+    try {
+        Log ("UNHANDLED: " + $_.Exception.Message)
+    }
+    catch {}
+    Write-Host ""
+    Write-Host "DAY 8 FINALIZER STOPPED"
+    Write-Host "Log: $script:LogPath"
+    exit 1
+}
+
 $gh=Need "gh"
 $openssl=Need "openssl" @(
     "$env:ProgramFiles\Git\usr\bin\openssl.exe"
