@@ -87,7 +87,7 @@ jobs:
           if [ -n "$GSC" ]; then
             mkdir -p extra/gsc
             unzip -q "$GSC" -d extra/gsc
-            find extra/gsc -type f -name 'GeumyiServerCenter-v4.2.4-Setup.exe' -exec cp {} dist/ \;
+            find extra/gsc -type f -name 'GeumyiServerCenter-v4.2.3-Setup.exe' -exec cp {} dist/ \;
           fi
 
           (cd dist && sha256sum * > SHA256SUMS.txt)
