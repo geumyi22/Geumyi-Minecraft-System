@@ -42,10 +42,13 @@ function WaitOnline([string]$id,[bool]$want,[int]$sec=240) {
     } while((Get-Date)-lt $end)
     throw "server $id online=$want timeout"
 }
-function Need([string]$name) {
+function Need([string]$name,[string[]]$candidates=@()) {
     $c=Get-Command $name -ErrorAction SilentlyContinue
-    if(-not $c){ throw "$name not found" }
-    $c.Source
+    if($c){ return $c.Source }
+    foreach($candidate in $candidates) {
+        if($candidate -and (Test-Path -LiteralPath $candidate)) { return $candidate }
+    }
+    throw "$name not found"
 }
 
 if(-not (IsAdmin)){ throw "관리자 PowerShell에서 실행하세요." }
@@ -57,7 +60,9 @@ $script:LogPath=Join-Path $work "day8-e2e.log"
 Log "Day 8 E2E finalizer start"
 
 $gh=Need "gh"
-$openssl=Need "openssl"
+$openssl=Need "openssl" @(
+    "$env:ProgramFiles\Git\usr\bin\openssl.exe"
+)
 & $gh auth status
 if($LASTEXITCODE-ne 0){ Fail "gh auth login required" }
 
