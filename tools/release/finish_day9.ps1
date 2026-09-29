@@ -92,26 +92,23 @@ Log "dispatching a fresh System CI for current main"
 $mainSha = ((& $gh api "repos/$Repository/commits/main" --jq .sha) -join "").Trim()
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($mainSha)) { Fail "cannot resolve current main SHA" }
 
-& $gh workflow run system-ci.yml --repo $Repository --ref main
-if ($LASTEXITCODE -ne 0) { Fail "cannot dispatch System CI" }
+$dispatchLines = @(& $gh workflow run system-ci.yml --repo $Repository --ref main 2>&1)
+$dispatchExit = $LASTEXITCODE
+$dispatchLines | ForEach-Object { Write-Host $_ }
+if ($dispatchExit -ne 0) { Fail "cannot dispatch System CI" }
 
-$run = $null
-$discoverDeadline = (Get-Date).AddSeconds(60)
-do {
-    Start-Sleep 3
-    $runJson = & $gh run list --repo $Repository --workflow system-ci.yml --branch main --event workflow_dispatch --limit 20 --json databaseId,status,conclusion,headSha,createdAt
-    if ($LASTEXITCODE -ne 0) {
-        Log "workflow run list failed during discovery; retrying"
-        continue
-    }
-    $runs = @(($runJson -join "`n") | ConvertFrom-Json)
-    $run = $runs | Where-Object { [string]$_.headSha -eq $mainSha } | Select-Object -First 1
-    if ($null -ne $run -and $run.databaseId) { break }
-    Log "fresh System CI run not visible yet; retrying"
-} while ((Get-Date) -lt $discoverDeadline)
+$dispatchText = ($dispatchLines -join "`n")
+$runMatch = [regex]::Match($dispatchText, 'actions/runs/(?<id>[0-9]+)')
+if (-not $runMatch.Success) { Fail "workflow dispatch succeeded but run URL was not returned" }
+$runId = [string]$runMatch.Groups['id'].Value
 
-if ($null -eq $run -or -not $run.databaseId) { Fail "cannot identify fresh System CI run for main=$mainSha after 60s" }
-$runId = [string]$run.databaseId
+$runViewJson = @(& $gh run view $runId --repo $Repository --json databaseId,headSha,event,status,conclusion,url,workflowName)
+if ($LASTEXITCODE -ne 0) { Fail "cannot read dispatched System CI run $runId" }
+$runView = (($runViewJson -join "`n") | ConvertFrom-Json)
+if ([string]$runView.headSha -ne $mainSha) { Fail "dispatched run SHA mismatch: run=$($runView.headSha) main=$mainSha" }
+if ([string]$runView.event -ne "workflow_dispatch") { Fail "unexpected run event: $($runView.event)" }
+if ([string]$runView.workflowName -ne "System CI") { Fail "unexpected workflow: $($runView.workflowName)" }
+Log "captured fresh System CI run directly: $runId head=$mainSha"
 Log "watching fresh System CI run $runId head=$mainSha"
 & $gh run watch $runId --repo $Repository --exit-status
 if ($LASTEXITCODE -ne 0) { Fail "fresh main System CI failed" }
