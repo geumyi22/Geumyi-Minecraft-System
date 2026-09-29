@@ -51,7 +51,7 @@ function Need([string]$name,[string[]]$candidates=@()) {
     throw "$name not found"
 }
 
-if(-not (IsAdmin)){ throw "관리자 PowerShell에서 실행하세요." }
+if(-not (IsAdmin)){ throw "Run this script from an Administrator PowerShell." }
 
 $stamp=Get-Date -Format "yyyyMMdd-HHmmss"
 $work=Join-Path $env:TEMP "Geumyi-Day8-$stamp"
