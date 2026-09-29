@@ -511,10 +511,59 @@ jobs:
             Write-Host "PowerShell syntax OK: $path"
           }
 
+  release-foundation-windows:
+    name: Day 8 / Windows PowerShell 5.1 compatibility
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse Day 8 scripts with Windows PowerShell
+        shell: powershell
+        run: |
+          foreach ($path in @(
+            'tools/release/bootstrap_day8_signing.ps1',
+            'tools/release/finish_day8.ps1'
+          )) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $path),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$path : $($_.Message)" }
+              exit 1
+            }
+            Write-Host "Windows PowerShell syntax OK: $path"
+          }
+
+      - name: Exercise PowerShell 5.1 random-byte API
+        shell: powershell
+        run: |
+          $buf = New-Object byte[] 32
+          $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
+          try { $rng.GetBytes($buf) } finally { $rng.Dispose() }
+          if (($buf | Where-Object { $_ -ne 0 }).Count -eq 0) {
+            throw 'RandomNumberGenerator returned only zero bytes'
+          }
+          Write-Host 'PowerShell 5.1 RNG API OK'
+
+      - name: Verify Git-for-Windows OpenSSL fallback
+        shell: powershell
+        run: |
+          $candidate = "$env:ProgramFiles\Git\usr\bin\openssl.exe"
+          if (-not (Test-Path -LiteralPath $candidate)) {
+            throw "Git OpenSSL fallback missing: $candidate"
+          }
+          & $candidate version
+
   day7-summary:
     name: Component CI + Day 8 foundation summary
     if: always()
-    needs: [gsc, statusagent, gds, gst, technology, chemistry, resourcepacks, gsc-package, release-foundation]
+    needs: [gsc, statusagent, gds, gst, technology, chemistry, resourcepacks, gsc-package, release-foundation, release-foundation-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Require every component job to pass
@@ -529,10 +578,11 @@ jobs:
           RESOURCEPACKS: ${{ needs.resourcepacks.result }}
           GSC_PACKAGE: ${{ needs.gsc-package.result }}
           RELEASE_FOUNDATION: ${{ needs.release-foundation.result }}
+          RELEASE_WINDOWS: ${{ needs.release-foundation-windows.result }}
         run: |
           set -euo pipefail
           failed=0
-          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY RESOURCEPACKS GSC_PACKAGE RELEASE_FOUNDATION; do
+          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY RESOURCEPACKS GSC_PACKAGE RELEASE_FOUNDATION RELEASE_WINDOWS; do
             value="${!name}"
             printf '%-16s %s\n' "$name" "$value"
             if [[ "$value" != "success" ]]; then failed=1; fi
