@@ -17,15 +17,18 @@ CI:
 - Day-8 foundation PR CI: secure release/updater, Android release build, iOS unsigned build and GSC setup all passed before merge.
 - Day-8 E2E-finalizer PR System CI run 36547936752: Technology 0.1.4, GSC tests/setup, release foundation static tests and PowerShell parser all passed.
 - Day-8 post-merge main System CI run 36548257976: all component jobs and aggregate summary passed.
+- Day-8 Windows finalizer/signing preflight System CI run 36574083087: Windows PowerShell 5.1, gh/keytool/OpenSSL discovery and ASCII/no-BOM CMD launcher checks passed.
+- Day-8 installer-resume hotfix System CI run 36576774848: all component jobs and aggregate summary passed.
+- Day-8 Secure Release run 36574955584: signed canary Release `system-2026.09.29-222513-canary` published successfully.
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
 | GSC | 4.2.3 | GSC/ServerCenter | Recovered source; Windows Go tests pass; Day-7 CI also assembles Setup from freshly built Agent/GDS/GST artifacts |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction present; Day-7 JDK 21 clean build/artifact succeeds; byte-identical historical rebuild is not claimed |
-| GSCM | 1.1.2+113 | GSCM | Day-6 device verification complete; Day-8 persistent Android release-signing path and signed Release workflow implemented/CI-verified; local signer transition/install E2E remains pending |
+| GSCM | 1.1.2+113 | GSCM | Day-6 device verification complete; Day-8 persistent Android release-signing path and signed Release workflow implemented/CI-verified; Android ADB signer-transition install remains optional/pending |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | HOTFIX overlay source tracked; Day-7 JDK 21 overlay build + CoreTests + artifact passes; legacy core remains binary-only and uses a pinned verified reference in CI |
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full source/stubs/tests; Day-7 JDK 21 build + CoreTests + artifact passes |
-| GeumyiTechnology | 0.1.4 | Plugins/GeumyiTechnology | Gameplay logic remains reconstructed/verified 0.1.3 baseline; Day-8 metadata-only bump to 0.1.4 provides a real Wild-only updater E2E marker; JDK 25 / Gradle 9.1.0 CI passes |
+| GeumyiTechnology | 0.1.4 | Plugins/GeumyiTechnology | Gameplay logic remains reconstructed/verified 0.1.3 baseline; Day-8 metadata-only 0.1.4 marker was actually deployed/verified on Wild by the server-PC finalizer; Playground remained without Technology; JDK 25 / Gradle 9.1.0 CI passes |
 | GeumyiChemistry | 0.4.1 | Plugins/GeumyiChemistry | Reconstructed source tracked; Day-7 JDK 25 / Gradle 9.1.0 build produces Paper 26.3 artifact (class major 69); original-source claim unchanged |
 | Wild server | Paper 26.3 | Servers/Wild | 2026-09-27 live E2E evidence captured; sanitized current server.properties tracked; GSC/GST/GDS runtime healthy; Day-4 milestone closed |
 | Playground server | Paper 26.3 | Servers/Playground | 2026-09-27 live E2E evidence captured; sanitized current server.properties tracked; GSC/GST/GDS runtime healthy; Day-4 milestone closed |
@@ -52,4 +55,4 @@ See `DAY7-CI-REPORT.md`. Final System CI run 36448831023 and mobile runs 3644847
 
 ## Day-8 secure release / updater
 
-See `DAY8-RELEASE-REPORT.md` and `DAY8-RUNBOOK.md`. GitHub-side implementation and CI are complete. Server-PC signed-canary / real pre-start replacement E2E remains the closure gate.
+See `DAY8-RELEASE-REPORT.md` and `DAY8-RUNBOOK.md`. Day 8 is closed. Secure Release run `36574955584` published `system-2026.09.29-222513-canary`, and the server-PC resume finalizer displayed PASS after verifying the real Wild Technology 0.1.4 pre-start update and Playground isolation. Android ADB signer-transition install remains optional/pending.
