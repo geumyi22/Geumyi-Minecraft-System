@@ -1,0 +1,209 @@
+param(
+    [string]$Repository = "geumyi22/Geumyi-Minecraft-System",
+    [switch]$RunWildFailOpen
+)
+
+$ErrorActionPreference = "Stop"
+Set-StrictMode -Version Latest
+
+function Log([string]$m) {
+    $line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $m
+    Write-Host $line
+    Add-Content -LiteralPath $script:LogPath -Value $line -Encoding UTF8
+}
+function Fail([string]$m) { Log "FAIL: $m"; throw $m }
+function IsAdmin {
+    $id = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $p = [Security.Principal.WindowsPrincipal]::new($id)
+    return $p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+function Need([string]$name) {
+    $c = Get-Command $name -ErrorAction SilentlyContinue
+    if ($c) { return $c.Source }
+    throw "$name not found"
+}
+function Gsc([string]$Method,[string]$Path,$Body=$null) {
+    $u = "http://127.0.0.1:8787$Path"
+    if ($null -eq $Body) {
+        return Invoke-RestMethod -Method $Method -Uri $u -TimeoutSec 20
+    }
+    return Invoke-RestMethod -Method $Method -Uri $u -TimeoutSec 20 -ContentType "application/json" -Body ($Body | ConvertTo-Json -Depth 8 -Compress)
+}
+function WaitGsc([int]$sec=120) {
+    $end = (Get-Date).AddSeconds($sec)
+    do {
+        try {
+            $h = Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:8787/api/health" -TimeoutSec 5
+            if ($h.ok) { return $h }
+        } catch {}
+        Start-Sleep 2
+    } while ((Get-Date) -lt $end)
+    throw "GSC :8787 readiness timeout"
+}
+function State([string]$id) {
+    $s = Gsc "GET" "/api/status"
+    return @($s.servers) | Where-Object { $_.id -eq $id } | Select-Object -First 1
+}
+function WaitOnline([string]$id,[bool]$want,[int]$sec=240) {
+    $end = (Get-Date).AddSeconds($sec)
+    do {
+        $s = State $id
+        if ($null -ne $s -and [bool]$s.online -eq $want) { return $s }
+        Start-Sleep 3
+    } while ((Get-Date) -lt $end)
+    throw "server $id online=$want timeout"
+}
+function VerifySums([string]$dir) {
+    $sum = Join-Path $dir "SHA256SUMS.txt"
+    if (-not (Test-Path -LiteralPath $sum)) { Fail "SHA256SUMS.txt missing" }
+    foreach ($line in Get-Content -LiteralPath $sum) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        if ($line -notmatch '^([0-9a-fA-F]{64})\s+(.+)$') { Fail "bad checksum line: $line" }
+        $want = $Matches[1].ToLowerInvariant()
+        $name = $Matches[2].Trim()
+        $p = Join-Path $dir $name
+        if (-not (Test-Path -LiteralPath $p)) { Fail "artifact missing: $name" }
+        $got = (Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($got -ne $want) { Fail "SHA256 mismatch: $name" }
+    }
+}
+
+if (-not (IsAdmin)) { throw "Run from Administrator PowerShell." }
+
+$stamp = Get-Date -Format "yyyyMMdd-HHmmss"
+$work = Join-Path $env:TEMP "Geumyi-Day9-$stamp"
+New-Item -ItemType Directory -Force $work | Out-Null
+$script:LogPath = Join-Path $work "day9-e2e.log"
+Log "Day 9 finalizer start"
+
+trap {
+    try { Log ("UNHANDLED: " + $_.Exception.Message) } catch {}
+    Write-Host ""
+    Write-Host "DAY 9 FINALIZER STOPPED"
+    Write-Host "Log: $script:LogPath"
+    exit 1
+}
+
+$gh = Need "gh"
+& $gh auth status
+if ($LASTEXITCODE -ne 0) { Fail "gh auth login required" }
+
+Log "locating latest successful main System CI"
+$runJson = & $gh run list --repo $Repository --workflow system-ci.yml --branch main --limit 20 --json databaseId,status,conclusion,headSha,createdAt
+if ($LASTEXITCODE -ne 0) { Fail "cannot list System CI runs" }
+$runs = @(($runJson -join "`n") | ConvertFrom-Json)
+$run = $runs | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "success" } | Select-Object -First 1
+if ($null -eq $run -or -not $run.databaseId) { Fail "no successful main System CI run found" }
+$runId = [string]$run.databaseId
+Log "using System CI run $runId head=$($run.headSha)"
+
+$artifact = Join-Path $work "gsc"
+New-Item -ItemType Directory -Force $artifact | Out-Null
+& $gh run download $runId --repo $Repository -n "gsc-4.2.4-ci" -D $artifact
+if ($LASTEXITCODE -ne 0) { Fail "cannot download gsc-4.2.4-ci artifact" }
+VerifySums $artifact
+Log "GSC 4.2.4 CI artifact hashes PASS"
+
+$host = Join-Path $artifact "GeumyiServerHost.exe"
+$setup = Join-Path $artifact "GeumyiServerCenter-v4.2.4-Setup.exe"
+foreach ($p in @($host,$setup)) {
+    if (-not (Test-Path -LiteralPath $p)) { Fail "missing artifact: $p" }
+}
+
+Log "running deployed Host transaction/rollback self-test"
+$self = Start-Process -FilePath $host -ArgumentList "--day9-selftest" -PassThru -Wait
+if ($self.ExitCode -ne 0) { Fail "Host --day9-selftest failed with exit code $($self.ExitCode)" }
+Log "HOST DAY9 SELFTEST PASS"
+
+$health = $null
+try { $health = WaitGsc 15 } catch {}
+if ($null -eq $health -or [string]$health.version -ne "4.2.4") {
+    Log "GSC 4.2.4 is not active. Installer will open; keep the existing role and server paths."
+    $p = Start-Process -FilePath $setup -PassThru
+    if (-not $p.WaitForExit(900000)) { Fail "GSC 4.2.4 Setup did not exit within 15 minutes" }
+    if ($p.ExitCode -ne 0) { Fail "GSC Setup exit=$($p.ExitCode)" }
+    $health = WaitGsc 120
+}
+if ([string]$health.version -ne "4.2.4") { Fail "GSC API version is $($health.version), expected 4.2.4" }
+Log "GSC 4.2.4 installed and API healthy"
+
+$liveResult = "SKIPPED"
+$failOpenPhase = ""
+if ($RunWildFailOpen) {
+    $wild = State "wild"
+    if ($null -eq $wild) { Fail "wild server missing" }
+    $players = 0
+    if ($wild.minecraft -and $null -ne $wild.minecraft.online) { $players = [int]$wild.minecraft.online }
+    if ($players -gt 0) { Fail "wild has $players online player(s); refusing restart" }
+
+    $before = Gsc "GET" "/api/v4/update/settings"
+    $restore = @{
+        enabled = [bool]$before.enabled
+        repository = [string]$before.repository
+        channel = [string]$before.channel
+        public_key_path = [string]$before.public_key_path
+        timeout_seconds = [int]$before.timeout_seconds
+    }
+
+    try {
+        if ([bool]$wild.online) {
+            Log "gracefully stopping Wild"
+            Gsc "POST" "/api/server/action" @{id="wild";action="stop"} | Out-Null
+            WaitOnline "wild" $false 180 | Out-Null
+        }
+
+        Log "injecting GitHub lookup failure; existing server files must still boot"
+        Gsc "POST" "/api/v4/update/settings" @{
+            enabled = $true
+            repository = "geumyi22/Geumyi-Minecraft-System-day9-offline-test"
+            channel = [string]$before.channel
+            public_key_path = [string]$before.public_key_path
+            timeout_seconds = 3
+        } | Out-Null
+
+        Gsc "POST" "/api/server/action" @{id="wild";action="start"} | Out-Null
+        WaitOnline "wild" $true 240 | Out-Null
+        $us = Gsc "GET" "/api/v4/update/status?id=wild"
+        $failOpenPhase = [string]$us.phase
+        if ($failOpenPhase -ne "error") {
+            Fail "expected updater error during GitHub failure injection, got phase=$failOpenPhase"
+        }
+        Log "LIVE FAIL-OPEN PASS: updater failed but Wild returned ONLINE"
+        $liveResult = "PASS"
+    }
+    finally {
+        try {
+            Gsc "POST" "/api/v4/update/settings" $restore | Out-Null
+            Log "original update settings restored"
+        } catch {
+            Log ("WARNING: update settings restore failed: " + $_.Exception.Message)
+        }
+    }
+
+    $end = (Get-Date).AddSeconds(45)
+    $v4 = $null
+    do {
+        try { $v4 = Gsc "GET" "/api/v4/health?id=wild" } catch {}
+        if ($null -ne $v4 -and [string]$v4.overall -ne "fail") { break }
+        Start-Sleep 3
+    } while ((Get-Date) -lt $end)
+    if ($null -eq $v4 -or [string]$v4.overall -eq "fail") { Fail "Wild v4 health failed after fail-open restart" }
+    Log ("Wild health after restore: " + [string]$v4.overall)
+}
+
+$result = [ordered]@{
+    gsc_version = "4.2.4"
+    system_ci_run = $runId
+    artifact_hashes = "PASS"
+    host_transaction_selftest = "PASS"
+    gsc_install_api = "PASS"
+    live_fail_open = $liveResult
+    fail_open_phase = $failOpenPhase
+    log = $script:LogPath
+}
+$out = Join-Path $work "day9-result.json"
+$result | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $out -Encoding UTF8
+$result | Format-List | Out-Host
+Write-Host "Result: $out"
+Write-Host "Log:    $script:LogPath"
+exit 0

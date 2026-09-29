@@ -1,0 +1,1 @@
+{"version":"4.2.4","platform":"windows/amd64","control_api":1,"mobile_backend":true,"pairing_qr":true,"day9_transactional_updates":true,"post_start_health_gate":true,"automatic_rollback":true,"deployment_dependencies":true,"server_tools":"1.1.1-HOTFIX","discord_status":"1.1.1","status_agent":"0.5.4"}

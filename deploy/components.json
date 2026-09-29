@@ -11,7 +11,8 @@
         "*"
       ],
       "requires_restart": true,
-      "min_paper": "26.3"
+      "min_paper": "26.3",
+      "release_group": "server-core"
     },
     "gds": {
       "version": "1.1.1",
@@ -22,7 +23,8 @@
         "*"
       ],
       "requires_restart": true,
-      "min_paper": "26.3"
+      "min_paper": "26.3",
+      "release_group": "server-core"
     },
     "technology": {
       "version": "0.1.4",
@@ -33,7 +35,11 @@
         "wild"
       ],
       "requires_restart": true,
-      "min_paper": "26.3"
+      "min_paper": "26.3",
+      "release_group": "server-core",
+      "requires": {
+        "gst": ">=1.1.1"
+      }
     },
     "chemistry": {
       "version": "0.4.1",
@@ -44,7 +50,11 @@
         "wild"
       ],
       "requires_restart": true,
-      "min_paper": "26.3"
+      "min_paper": "26.3",
+      "release_group": "server-core",
+      "requires": {
+        "technology": ">=0.1.4"
+      }
     },
     "statusagent": {
       "version": "0.5.4",
@@ -56,9 +66,9 @@
       "requires_restart": true
     },
     "gsc": {
-      "version": "4.2.3",
+      "version": "4.2.4",
       "kind": "gsc",
-      "artifact_glob": "GeumyiServerCenter-v4.2.3-Setup.exe",
+      "artifact_glob": "GeumyiServerCenter-v4.2.4-Setup.exe",
       "targets": [
         "host"
       ],

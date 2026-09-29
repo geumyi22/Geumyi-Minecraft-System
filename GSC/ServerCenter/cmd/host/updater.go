@@ -47,7 +47,9 @@ type DeploymentComponent struct {
 	Size            int64    `json:"size"`
 	Targets         []string `json:"targets"`
 	RequiresRestart bool     `json:"requires_restart"`
-	MinPaper        string   `json:"min_paper,omitempty"`
+	MinPaper        string            `json:"min_paper,omitempty"`
+	ReleaseGroup    string            `json:"release_group,omitempty"`
+	Requires        map[string]string `json:"requires,omitempty"`
 }
 
 type UpdateStatus struct {
@@ -58,8 +60,11 @@ type UpdateStatus struct {
 	Message   string   `json:"message"`
 	Error     string   `json:"error,omitempty"`
 	Available []string `json:"available,omitempty"`
-	Applied   []string `json:"applied,omitempty"`
-	Updated   string   `json:"updated"`
+	Applied       []string `json:"applied,omitempty"`
+	Transaction   string   `json:"transaction,omitempty"`
+	RollbackReason string  `json:"rollback_reason,omitempty"`
+	BlockStart    bool     `json:"block_start,omitempty"`
+	Updated       string   `json:"updated"`
 }
 
 type githubRelease struct {
@@ -265,6 +270,13 @@ func checkServerUpdates(s ServerConfig) UpdateStatus {
 		return setUpdateStatus(st)
 	}
 	st.Release = release
+	if rejected, reason := rejectedUpdateForRelease(s, release); rejected {
+		st.Phase = "held"
+		st.Message = "직전 health 실패 release 자동 보류 · 기존 버전으로 서버 시작"
+		st.Error = reason
+		appendV4Event("warn", "update", s.ID, st.Message, "release="+release+" reason="+reason)
+		return setUpdateStatus(st)
+	}
 	plan, err := buildUpdatePlan(s, manifest)
 	if err != nil {
 		st.Phase = "error"
@@ -302,6 +314,14 @@ func runPreStartUpdater(s ServerConfig) UpdateStatus {
 	defer updateApplyMu.Unlock()
 
 	setUpdateStatus(st)
+	if _, err := recoverInterruptedUpdate(s); err != nil {
+		st.Phase = "blocked"
+		st.Message = "미완료 업데이트 복구 실패 · 안전을 위해 서버 시작 차단"
+		st.Error = err.Error()
+		st.BlockStart = true
+		appendV4Event("error", "update", s.ID, st.Message, st.Error)
+		return setUpdateStatus(st)
+	}
 	manifest, manifestHash, release, err := fetchVerifiedManifest(c)
 	if err != nil {
 		st.Phase = "error"
@@ -332,6 +352,7 @@ func runPreStartUpdater(s ServerConfig) UpdateStatus {
 	st.Message = fmt.Sprintf("%d개 업데이트 검증/적용 중", len(plan))
 	setUpdateStatus(st)
 
+	cachePaths := make(map[string]string, len(plan))
 	for _, item := range plan {
 		cachePath, err := downloadVerifiedArtifact(c, release, item.Component)
 		if err != nil {
@@ -341,20 +362,29 @@ func runPreStartUpdater(s ServerConfig) UpdateStatus {
 			appendV4Event("warn", "update", s.ID, st.Message, st.Error)
 			return setUpdateStatus(st)
 		}
-		if err := replaceManagedPluginPreStart(s, item, cachePath); err != nil {
-			st.Phase = "error"
-			st.Message = "업데이트 설치 실패 · 기존 파일로 서버 시작"
-			st.Error = item.Component.PluginName + ": " + err.Error()
-			appendV4Event("warn", "update", s.ID, st.Message, st.Error)
-			return setUpdateStatus(st)
-		}
-		st.Applied = append(st.Applied, item.Component.PluginName+" "+item.Component.Version)
+		cachePaths[item.Key] = cachePath
 	}
 
-	st.Phase = "applied"
-	st.Message = fmt.Sprintf("%d개 업데이트 적용 완료", len(st.Applied))
-	writeUpdateState(s, st, manifestHash)
-	appendV4Event("info", "update", s.ID, st.Message, strings.Join(st.Applied, ", "))
+	tx, err := applyUpdateTransaction(s, plan, cachePaths, c.Channel, release, manifestHash)
+	if err != nil {
+		st.Phase = "error"
+		st.Message = "업데이트 트랜잭션 실패 · 이전 파일 복구 후 서버 시작"
+		st.Error = err.Error()
+		st.BlockStart = hasPendingUpdate(s)
+		if st.BlockStart {
+			st.Phase = "blocked"
+			st.Message = "업데이트 트랜잭션 복구 미완료 · 안전을 위해 서버 시작 차단"
+		}
+		appendV4Event("warn", "update", s.ID, st.Message, st.Error)
+		return setUpdateStatus(st)
+	}
+	st.Transaction = tx.ID
+	for _, item := range tx.Items {
+		st.Applied = append(st.Applied, item.PluginName+" "+item.ToVersion)
+	}
+	st.Phase = "pending_health"
+	st.Message = fmt.Sprintf("%d개 업데이트 적용 · 서버 시작 후 health 검증 대기", len(st.Applied))
+	appendV4Event("info", "update", s.ID, st.Message, "transaction="+tx.ID+" "+strings.Join(st.Applied, ", "))
 	return setUpdateStatus(st)
 }
 
@@ -545,6 +575,9 @@ func buildUpdatePlan(s ServerConfig, m DeploymentManifest) ([]updatePlanItem, er
 			return nil, fmt.Errorf("%s has non-HTTPS artifact URL", comp.PluginName)
 		}
 		plan = append(plan, updatePlanItem{Key: key, Component: comp, Installed: current[0]})
+	}
+	if err := validateUpdatePlan(s, m, plan); err != nil {
+		return nil, err
 	}
 	return plan, nil
 }

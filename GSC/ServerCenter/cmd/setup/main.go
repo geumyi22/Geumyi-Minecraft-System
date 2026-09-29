@@ -25,7 +25,7 @@ import (
 	"unsafe"
 )
 
-const version = "4.2.3"
+const version = "4.2.4"
 const hostTaskName = "Geumyi Server Center Host"
 const hostServiceName = "Geumyi Server Center Host"
 
@@ -416,7 +416,7 @@ func doInstall(o InstallOptions) {
 	_ = os.MkdirAll(o.InstallDir, 0755)
 	setProgress(18, "Geumyi Server Center v4 프로그램 설치 중...", "")
 	mustExtract("payload/GeumyiServerCenter.ico", filepath.Join(o.InstallDir, "GeumyiServerCenter.ico"))
-	mustExtract("payload/README-v4.2.3.txt", filepath.Join(o.InstallDir, "README-v4.2.3.txt"))
+	mustExtract("payload/README-v4.2.4.txt", filepath.Join(o.InstallDir, "README-v4.2.4.txt"))
 	if hasClientRole(o.Role) {
 		mustExtract("payload/GeumyiServerCenter.exe", filepath.Join(o.InstallDir, "GeumyiServerCenter.exe"))
 	}
@@ -470,7 +470,7 @@ func doInstall(o InstallOptions) {
 		if data, e := os.ReadFile(cfgFile); e == nil {
 			backupDir := filepath.Join(dataDir, "Backup")
 			_ = os.MkdirAll(backupDir, 0755)
-			if e = os.WriteFile(filepath.Join(backupDir, "server-before-v4.2.3-"+time.Now().Format("20060102-150405")+".json"), data, 0600); e != nil {
+			if e = os.WriteFile(filepath.Join(backupDir, "server-before-v4.2.4-"+time.Now().Format("20060102-150405")+".json"), data, 0600); e != nil {
 				finishInstall(e)
 				return
 			}
