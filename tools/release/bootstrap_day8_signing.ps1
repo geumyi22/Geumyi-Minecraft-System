@@ -14,7 +14,7 @@ function Find-Tool([string]$Name, [string[]]$Candidates) {
     foreach ($p in $Candidates) {
         if ($p -and (Test-Path $p)) { return $p }
     }
-    throw "$Name 을(를) 찾지 못했습니다."
+    throw "$Name was not found."
 }
 
 function New-RandomSecret([int]$Bytes = 32) {
@@ -31,7 +31,7 @@ function New-RandomSecret([int]$Bytes = 32) {
 
 function Set-GitHubSecret([string]$Name, [string]$Value) {
     & $script:GH secret set $Name --repo $Repository --body $Value
-    if ($LASTEXITCODE -ne 0) { throw "GitHub secret 등록 실패: $Name" }
+    if ($LASTEXITCODE -ne 0) { throw "GitHub secret registration failed: $Name" }
 }
 
 $GH = Find-Tool "gh" @()
@@ -44,7 +44,7 @@ $OPENSSL = Find-Tool "openssl" @(
 
 & $GH auth status
 if ($LASTEXITCODE -ne 0) {
-    throw "GitHub CLI 로그인이 필요합니다. 먼저 gh auth login 을 실행하세요."
+    throw "GitHub CLI login is required. Run gh auth login first."
 }
 
 $root = Join-Path $env:USERPROFILE ".geumyi-signing"
@@ -57,23 +57,23 @@ $androidKeyPass = ""
 
 if ($ExistingAndroidKeystore) {
     if (-not (Test-Path $ExistingAndroidKeystore)) {
-        throw "기존 Android keystore 파일이 없습니다: $ExistingAndroidKeystore"
+        throw "Existing Android keystore was not found: $ExistingAndroidKeystore"
     }
     if (-not $ExistingStorePassword -or -not $ExistingKeyAlias -or -not $ExistingKeyPassword) {
-        throw "기존 keystore 사용 시 StorePassword/KeyAlias/KeyPassword를 모두 지정해야 합니다."
+        throw "Existing keystore mode requires StorePassword, KeyAlias, and KeyPassword."
     }
     Copy-Item $ExistingAndroidKeystore $androidKey -Force
     $androidStorePass = $ExistingStorePassword
     $androidKeyAlias = $ExistingKeyAlias
     $androidKeyPass = $ExistingKeyPassword
-    Write-Host "기존 Android signing key를 사용합니다." -ForegroundColor Green
+    Write-Host "Using the existing Android signing key." -ForegroundColor Green
 }
 elseif (-not (Test-Path $androidKey)) {
     $androidStorePass = New-RandomSecret 24
     $androidKeyPass = $androidStorePass
     $androidKeyAlias = "gscm-release"
     & $KEYTOOL -genkeypair -v         -keystore $androidKey         -storetype JKS         -storepass $androidStorePass         -keypass $androidKeyPass         -alias $androidKeyAlias         -keyalg RSA         -keysize 3072         -validity 10000         -dname "CN=Geumyi GSCM, OU=Release, O=Geumyi, C=KR"
-    if ($LASTEXITCODE -ne 0) { throw "Android release keystore 생성 실패" }
+    if ($LASTEXITCODE -ne 0) { throw "Android release keystore generation failed" }
 
     $cred = @{
         storePassword = $androidStorePass
@@ -82,19 +82,19 @@ elseif (-not (Test-Path $androidKey)) {
     } | ConvertTo-Json
     $credPath = Join-Path $root "gscm-release-credentials.json"
     [IO.File]::WriteAllText($credPath, $cred, [Text.UTF8Encoding]::new($false))
-    Write-Host "새 Android release key를 생성했습니다." -ForegroundColor Yellow
-    Write-Host "주의: 현재 설치된 GSCM이 다른 signer라면 이번 전환 때 한 번 삭제/재설치가 필요합니다." -ForegroundColor Yellow
+    Write-Host "Created a new persistent Android release key." -ForegroundColor Yellow
+    Write-Host "Warning: if the installed GSCM uses another signer, one uninstall/reinstall may be required for this transition." -ForegroundColor Yellow
 }
 else {
     $credPath = Join-Path $root "gscm-release-credentials.json"
     if (-not (Test-Path $credPath)) {
-        throw "기존 $androidKey 는 있지만 credentials 파일이 없습니다. 기존 keystore 매개변수로 다시 실행하세요."
+        throw "The keystore exists but its credentials file is missing. Re-run with the existing-keystore parameters."
     }
     $cred = Get-Content $credPath -Raw | ConvertFrom-Json
     $androidStorePass = [string]$cred.storePassword
     $androidKeyAlias = [string]$cred.keyAlias
     $androidKeyPass = [string]$cred.keyPassword
-    Write-Host "기존 Day 8 Android release key를 재사용합니다." -ForegroundColor Green
+    Write-Host "Reusing the existing Day 8 Android release key." -ForegroundColor Green
 }
 
 & $KEYTOOL -list -v -keystore $androidKey -storepass $androidStorePass -alias $androidKeyAlias |
@@ -104,15 +104,15 @@ $manifestPrivate = Join-Path $root "deployment-ed25519-private.pem"
 $manifestPublic = Join-Path $root "deployment-public.pem"
 if (-not (Test-Path $manifestPrivate)) {
     & $OPENSSL genpkey -algorithm ED25519 -out $manifestPrivate
-    if ($LASTEXITCODE -ne 0) { throw "Ed25519 private key 생성 실패" }
+    if ($LASTEXITCODE -ne 0) { throw "Ed25519 private key generation failed" }
 }
 & $OPENSSL pkey -in $manifestPrivate -pubout -out $manifestPublic
-if ($LASTEXITCODE -ne 0) { throw "Ed25519 public key 생성 실패" }
+if ($LASTEXITCODE -ne 0) { throw "Ed25519 public key generation failed" }
 
 $androidB64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($androidKey))
 $manifestPrivateB64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes($manifestPrivate))
 
-Write-Host "GitHub Actions secrets 등록 중..." -ForegroundColor Cyan
+Write-Host "Registering GitHub Actions secrets..." -ForegroundColor Cyan
 Set-GitHubSecret "ANDROID_RELEASE_KEYSTORE_B64" $androidB64
 Set-GitHubSecret "ANDROID_RELEASE_STORE_PASSWORD" $androidStorePass
 Set-GitHubSecret "ANDROID_RELEASE_KEY_ALIAS" $androidKeyAlias
@@ -124,19 +124,19 @@ $trustedPublic = Join-Path $programDataRoot "deployment-public.pem"
 try {
     New-Item -ItemType Directory -Force -Path $programDataRoot | Out-Null
     Copy-Item $manifestPublic $trustedPublic -Force
-    Write-Host "GSC trusted public key 설치: $trustedPublic" -ForegroundColor Green
+    Write-Host "Installed GSC trusted public key: $trustedPublic" -ForegroundColor Green
 }
 catch {
-    Write-Warning "ProgramData에 public key를 복사하지 못했습니다. 관리자 PowerShell에서 다음 파일을 복사하세요:"
+    Write-Warning "Could not copy the public key into ProgramData. Copy this file from an Administrator shell:"
     Write-Host "$manifestPublic -> $trustedPublic"
 }
 
 Write-Host ""
-Write-Host "Day 8 signing bootstrap 완료" -ForegroundColor Green
+Write-Host "Day 8 signing bootstrap complete" -ForegroundColor Green
 Write-Host "Android keystore: $androidKey"
 Write-Host "Manifest public key: $manifestPublic"
 Write-Host "GitHub repository: $Repository"
 Write-Host ""
-Write-Host "Day 6 CI APK build 113의 알려진 signer SHA-256:" -ForegroundColor Yellow
+Write-Host "Known signer SHA-256 for the Day 6 CI APK build 113:" -ForegroundColor Yellow
 Write-Host "21ee3524edeee461260589336fcec039967836980d5ad1d7b09ac701286216da"
-Write-Host "새 signer가 이 값과 다르고 현재 휴대폰에 그 CI APK가 설치되어 있다면 최초 1회 삭제/재설치 후부터 정상 in-place update가 가능합니다." -ForegroundColor Yellow
+Write-Host "If the new signer differs and that CI APK is installed, a one-time uninstall/reinstall is required before future in-place updates." -ForegroundColor Yellow
