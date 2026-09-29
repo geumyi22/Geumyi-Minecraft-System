@@ -2,7 +2,8 @@ param(
     [string]$Repository = "geumyi22/Geumyi-Minecraft-System",
     [string]$Tag = "",
     [switch]$RunServerE2E,
-    [switch]$TryAndroidADB
+    [switch]$TryAndroidADB,
+    [switch]$ReuseExistingRelease
 )
 
 $ErrorActionPreference = "Stop"
@@ -85,23 +86,30 @@ if($LASTEXITCODE-ne 0){ Fail "signing bootstrap failed" }
 $trusted=Join-Path $env:ProgramData "GeumyiServerCenter\deployment-public.pem"
 if(-not(Test-Path $trusted)){ Fail "trusted deployment public key missing" }
 
-if([string]::IsNullOrWhiteSpace($Tag)){
-    $Tag="system-"+(Get-Date -Format "yyyy.MM.dd-HHmmss")+"-canary"
-}
-Log "release tag=$Tag"
+if($ReuseExistingRelease){
+    if([string]::IsNullOrWhiteSpace($Tag)){ Fail "ReuseExistingRelease requires -Tag" }
+    & $gh release view $Tag --repo $Repository --json tagName,isPrerelease,publishedAt | Out-Null
+    if($LASTEXITCODE-ne 0){ Fail "existing release not found: $Tag" }
+    Log "reusing existing secure release tag=$Tag"
+} else {
+    if([string]::IsNullOrWhiteSpace($Tag)){
+        $Tag="system-"+(Get-Date -Format "yyyy.MM.dd-HHmmss")+"-canary"
+    }
+    Log "release tag=$Tag"
 
-& $gh workflow run day8-release.yml --repo $Repository --ref main -f channel=canary -f "tag=$Tag" -f prerelease=true
-if($LASTEXITCODE-ne 0){ Fail "workflow dispatch failed" }
-Start-Sleep 5
-$runJson=& $gh run list --repo $Repository --workflow day8-release.yml --branch main --event workflow_dispatch --limit 1 --json databaseId,status,conclusion,createdAt,headSha
-if($LASTEXITCODE-ne 0){ Fail "cannot list release workflow" }
-$run=(($runJson -join "`n")|ConvertFrom-Json|Select-Object -First 1)
-if(-not $run.databaseId){ Fail "cannot identify release workflow run" }
-$runId=[string]$run.databaseId
-Log "watching workflow run $runId"
-& $gh run watch $runId --repo $Repository --exit-status
-if($LASTEXITCODE-ne 0){ Fail "secure release workflow failed" }
-Log "secure release workflow PASS"
+    & $gh workflow run day8-release.yml --repo $Repository --ref main -f channel=canary -f "tag=$Tag" -f prerelease=true
+    if($LASTEXITCODE-ne 0){ Fail "workflow dispatch failed" }
+    Start-Sleep 5
+    $runJson=& $gh run list --repo $Repository --workflow day8-release.yml --branch main --event workflow_dispatch --limit 1 --json databaseId,status,conclusion,createdAt,headSha
+    if($LASTEXITCODE-ne 0){ Fail "cannot list release workflow" }
+    $run=(($runJson -join "`n")|ConvertFrom-Json|Select-Object -First 1)
+    if(-not $run.databaseId){ Fail "cannot identify release workflow run" }
+    $runId=[string]$run.databaseId
+    Log "watching workflow run $runId"
+    & $gh run watch $runId --repo $Repository --exit-status
+    if($LASTEXITCODE-ne 0){ Fail "secure release workflow failed" }
+    Log "secure release workflow PASS"
+}
 
 $rel=Join-Path $work "release"
 New-Item -ItemType Directory -Force $rel|Out-Null
@@ -140,7 +148,8 @@ if(-not $gscOk){
     $setup=Join-Path $rel "GeumyiServerCenter-v4.2.3-Setup.exe"
     if(-not(Test-Path $setup)){ Fail "GSC setup asset missing" }
     Log "Day 8 GSC not active. Installer will open; complete the existing-role upgrade."
-    $p=Start-Process $setup -PassThru -Wait
+    $p=Start-Process $setup -PassThru
+    if(-not $p.WaitForExit(900000)){ Fail "GSC setup did not exit within 15 minutes" }
     if($p.ExitCode-ne 0){ Fail "GSC setup exit=$($p.ExitCode)" }
     Copy-Item $pub $trusted -Force
     WaitGsc 120|Out-Null
