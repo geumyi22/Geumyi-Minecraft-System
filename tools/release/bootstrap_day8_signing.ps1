@@ -19,7 +19,13 @@ function Find-Tool([string]$Name, [string[]]$Candidates) {
 
 function New-RandomSecret([int]$Bytes = 32) {
     $buf = New-Object byte[] $Bytes
-    [Security.Cryptography.RandomNumberGenerator]::Fill($buf)
+    $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
+    try {
+        $rng.GetBytes($buf)
+    }
+    finally {
+        $rng.Dispose()
+    }
     return [Convert]::ToBase64String($buf).Replace("+","A").Replace("/","B").Replace("=","")
 }
 
