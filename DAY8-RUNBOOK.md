@@ -86,3 +86,36 @@ GSC는:
 을 수행합니다.
 
 Day 8은 pre-start update foundation입니다. 전체 트랜잭션 journal, release-group 원자성, post-start health rollback 및 장애 주입 시험은 Day 9 범위입니다.
+
+## 6. Day 8 one-run final E2E
+
+Day 8 최종 종결 검증은 관리자 PowerShell에서 repository root 기준으로 실행합니다.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\release\finish_day8.ps1 -RunServerE2E
+```
+
+Android 기기를 USB 디버깅/ADB로 연결해 설치 업데이트까지 같이 확인하려면:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\release\finish_day8.ps1 -RunServerE2E -TryAndroidADB
+```
+
+이 스크립트는 순서대로:
+
+1. 영구 Android signing key + Ed25519 deployment key 준비/재사용
+2. GitHub Actions Secrets 등록
+3. Canary Secure Release 실행 및 성공 대기
+4. Release manifest Ed25519 서명 검증
+5. Release 모든 관리 artifact의 SHA-256/size 검증
+6. 필요한 경우 Day 8 GSC Setup 실행
+7. GSC Canary updater 활성화 및 dry-check
+8. Wild에만 `GeumyiTechnology 0.1.4`가 실제 pre-start update 되는지 확인
+9. Playground에 Technology가 생기지 않았는지 확인
+10. 선택 시 Android `adb install -r` 검증
+11. `day8-result.json`과 `day8-e2e.log` 생성
+
+Technology 0.1.4는 **Day 8 updater E2E를 실제 교체로 증명하기 위한 메타데이터 버전 증가**이며, 0.1.3의 게임 로직은 변경하지 않습니다.
+
+서버에 접속자가 1명이라도 있으면 자동 재시작을 거부합니다. Android 기존 설치본의 signer가 새 영구 signer와 다르면 데이터 손실 방지를 위해 자동 uninstall은 하지 않으며 `SIGNER_TRANSITION_REQUIRED`로 종료합니다.
+
