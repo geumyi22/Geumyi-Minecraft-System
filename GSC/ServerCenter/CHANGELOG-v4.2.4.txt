@@ -1,0 +1,10 @@
+Geumyi Server Center v4.2.4 — Day 9 Transaction / Rollback Update
+
+- Added server-scoped update transactions with backup and staging before activation.
+- Added durable transaction journal and pending-state recovery.
+- Added post-start Java/GST/GDS health verification before commit.
+- Added automatic rollback and restart on update health failure.
+- Added rejected-release hold to prevent automatic retry loops.
+- Added release-group and dependency validation.
+- Added failure-injection and interrupted-transaction recovery tests.
+- Retains Day 8 Ed25519 manifest verification, SHA-256 artifact verification, and fail-open network behavior.
