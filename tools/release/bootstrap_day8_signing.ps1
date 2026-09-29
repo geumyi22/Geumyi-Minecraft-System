@@ -34,10 +34,50 @@ function Set-GitHubSecret([string]$Name, [string]$Value) {
     if ($LASTEXITCODE -ne 0) { throw "GitHub secret registration failed: $Name" }
 }
 
+function Find-Keytool {
+    $cmd = Get-Command "keytool.exe" -ErrorAction SilentlyContinue
+    if ($cmd) { return $cmd.Source }
+
+    $candidates = New-Object System.Collections.Generic.List[string]
+
+    if ($env:JAVA_HOME) {
+        $candidates.Add((Join-Path $env:JAVA_HOME "bin\keytool.exe"))
+    }
+
+    $java = Get-Command "java.exe" -ErrorAction SilentlyContinue
+    if ($java -and $java.Source) {
+        $candidates.Add((Join-Path (Split-Path $java.Source -Parent) "keytool.exe"))
+    }
+
+    $candidates.Add("$env:ProgramFiles\Android\Android Studio\jbr\bin\keytool.exe")
+
+    foreach ($candidate in $candidates) {
+        if ($candidate -and (Test-Path -LiteralPath $candidate)) {
+            return $candidate
+        }
+    }
+
+    $roots = @(
+        "$env:ProgramFiles\Java",
+        "$env:ProgramFiles\Eclipse Adoptium",
+        "$env:ProgramFiles\Microsoft",
+        "$env:ProgramFiles\Amazon Corretto",
+        "$env:ProgramFiles\Zulu",
+        "$env:ProgramFiles\BellSoft"
+    )
+
+    foreach ($root in $roots) {
+        if (-not $root -or -not (Test-Path -LiteralPath $root)) { continue }
+        $found = Get-ChildItem -LiteralPath $root -Filter "keytool.exe" -File -Recurse -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+        if ($found) { return $found.FullName }
+    }
+
+    throw "keytool.exe was not found. Install a JDK or expose its bin directory through JAVA_HOME/PATH."
+}
+
 $GH = Find-Tool "gh" @()
-$KEYTOOL = Find-Tool "keytool" @(
-    $(if ($env:JAVA_HOME) { Join-Path $env:JAVA_HOME "bin\keytool.exe" } else { "" })
-)
+$KEYTOOL = Find-Keytool
 $OPENSSL = Find-Tool "openssl" @(
     "$env:ProgramFiles\Git\usr\bin\openssl.exe"
 )
