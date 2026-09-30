@@ -405,7 +405,7 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
     }
 
     private boolean booleanField(String json, String key) {
-        Pattern p = Pattern.compile("\\"" + Pattern.quote(key) + "\\"\\s*:\\s*(true|false)");
+        Pattern p = Pattern.compile(Pattern.quote("\"" + key + "\"") + "\\s*:\\s*(true|false)");
         Matcher m = p.matcher(json);
         if (!m.find()) {
             throw new IllegalArgumentException("missing boolean field: " + key);
@@ -414,7 +414,7 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
     }
 
     private String stringField(String json, String key) {
-        Pattern p = Pattern.compile("\\"" + Pattern.quote(key) + "\\"\\s*:\\s*\\"([^\\"]*)\\"");
+        Pattern p = Pattern.compile(Pattern.quote("\"" + key + "\"") + "\\s*:\\s*\"([^\"]*)\"");
         Matcher m = p.matcher(json);
         return m.find() ? m.group(1) : "";
     }
