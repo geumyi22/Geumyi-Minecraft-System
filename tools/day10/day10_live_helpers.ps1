@@ -176,7 +176,7 @@ function Day10-SetYamlChild {
     $sectionIndex = -1
     $sectionIndent = -1
     for ($i = 0; $i -lt $lines.Count; $i++) {
-        if ($lines[$i].Trim() -eq "$Section:") {
+        if ($lines[$i].Trim() -eq ($Section + ":")) {
             $sectionIndex = $i
             $sectionIndent = $lines[$i].Length - $lines[$i].TrimStart().Length
             break
@@ -195,15 +195,15 @@ function Day10-SetYamlChild {
     $childIndent = $sectionIndent + 2
     for ($i = $sectionIndex + 1; $i -lt $end; $i++) {
         $indent = $lines[$i].Length - $lines[$i].TrimStart().Length
-        if ($indent -eq $childIndent -and $lines[$i].Trim().StartsWith("$Key:")) {
-            $lines[$i] = (" " * $childIndent) + "$Key: $Value"
+        if ($indent -eq $childIndent -and $lines[$i].Trim().StartsWith($Key + ":")) {
+            $lines[$i] = (" " * $childIndent) + $Key + ": " + $Value
             return ($lines -join [Environment]::NewLine)
         }
     }
     $before = @($lines[0..($end - 1)])
     $after = @()
     if ($end -lt $lines.Count) { $after = @($lines[$end..($lines.Count - 1)]) }
-    return (@($before + ((" " * $childIndent) + "$Key: $Value") + $after) -join [Environment]::NewLine)
+    return (@($before + ((" " * $childIndent) + $Key + ": " + $Value) + $after) -join [Environment]::NewLine)
 }
 
 function Day10-SetGeyserConfig {
