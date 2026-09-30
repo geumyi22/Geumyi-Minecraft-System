@@ -1,0 +1,15 @@
+name: GeumyiLobby
+version: 0.1.0
+main: kr.geumyi.lobby.GeumyiLobby
+api-version: '26.3'
+author: Geumyi Server
+contributors: [OpenAI]
+description: Lightweight Day 10 lobby world, protection and Velocity server selector.
+commands:
+  lobbyadmin:
+    description: Geumyi Lobby administration
+    usage: /lobbyadmin <rebuild|spawn>
+    permission: geumyi.lobby.admin
+permissions:
+  geumyi.lobby.admin:
+    default: op
