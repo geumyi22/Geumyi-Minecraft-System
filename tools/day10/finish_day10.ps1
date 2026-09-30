@@ -7,6 +7,12 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 Set-StrictMode -Version Latest
 
+# Initialize rollback guards before SelfTest so the script-level trap is safe
+# even when a self-test assertion throws under StrictMode.
+$backupRoot = ""
+$cutover = $false
+$finished = $false
+
 $helpers = Join-Path $PSScriptRoot "day10_live_helpers.ps1"
 if (-not (Test-Path -LiteralPath $helpers)) {
     throw "helper library missing: $helpers"
