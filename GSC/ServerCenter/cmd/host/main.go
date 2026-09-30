@@ -197,6 +197,13 @@ func defaultConfig() Config {
 }
 
 func main() {
+	if day10SelfTestRequested() {
+		if err := runDay10SelfTest(); err != nil {
+			fmt.Fprintf(os.Stderr, "DAY10 SELFTEST FAIL: %v\n", err)
+			os.Exit(3)
+		}
+		return
+	}
 	if day9SelfTestRequested() {
 		if err := runDay9SelfTest(); err != nil {
 			fmt.Fprintf(os.Stderr, "DAY9 SELFTEST FAIL: %v\n", err)

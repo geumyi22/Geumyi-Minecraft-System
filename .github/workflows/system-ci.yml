@@ -405,6 +405,16 @@ jobs:
             "$( (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant() )  $($_.Name)"
           }
           $lines | Set-Content -Encoding ascii "$out/SHA256SUMS.txt"
+      - name: Run Day 10 non-destructive E2E self-test
+        shell: pwsh
+        run: |
+          $hostExe = (Resolve-Path 'GSC/ServerCenter/cmd/setup/payload/GeumyiServerHost.exe').Path
+          $proc = Start-Process -FilePath $hostExe -ArgumentList '--day10-selftest' -Wait -PassThru -NoNewWindow
+          if ($proc.ExitCode -ne 0) {
+            throw "Day 10 self-test failed with exit code $($proc.ExitCode)"
+          }
+          Write-Host 'DAY10 BUILT HOST SELFTEST PASS'
+
       - name: Upload GSC CI package
         uses: actions/upload-artifact@v4
         with:
