@@ -91,6 +91,31 @@
         "ios"
       ],
       "requires_restart": false
+    },
+    "lobby": {
+      "version": "0.1.0",
+      "kind": "plugin",
+      "plugin_name": "GeumyiLobby",
+      "artifact_glob": "GeumyiLobby-0.1.0-Paper26.3.jar",
+      "targets": [
+        "role:lobby"
+      ],
+      "requires_restart": true,
+      "min_paper": "26.3",
+      "release_group": "lobby-core"
+    },
+    "network": {
+      "version": "0.1.0",
+      "kind": "plugin",
+      "plugin_name": "GeumyiNetwork",
+      "artifact_glob": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+      "targets": [
+        "role:wild",
+        "role:playground"
+      ],
+      "requires_restart": true,
+      "min_paper": "26.3",
+      "release_group": "network-core"
     }
   }
 }
