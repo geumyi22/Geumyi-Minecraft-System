@@ -1,0 +1,11 @@
+world: world
+spawn:
+  x: 0.5
+  y: 81.0
+  z: 0.5
+  yaw: 0.0
+  pitch: 0.0
+build-on-start: true
+wild-server: wild
+playground-server: playground
+portal-trigger: true
