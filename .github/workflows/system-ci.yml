@@ -12,6 +12,7 @@ on:
       - 'Plugins/GeumyiTechnology/**'
       - 'Plugins/GeumyiChemistry/**'
       - 'Plugins/GeumyiLobby/**'
+      - 'Plugins/GeumyiNetwork/**'
       - 'Servers/Lobby/**'
       - 'ResourcePacks/**'
       - 'deploy/**'
@@ -31,6 +32,7 @@ on:
       - 'Plugins/GeumyiTechnology/**'
       - 'Plugins/GeumyiChemistry/**'
       - 'Plugins/GeumyiLobby/**'
+      - 'Plugins/GeumyiNetwork/**'
       - 'Servers/Lobby/**'
       - 'ResourcePacks/**'
       - 'deploy/**'
@@ -323,6 +325,48 @@ jobs:
         with:
           name: lobby-0.1.0
           path: dist/lobby/*
+          if-no-files-found: error
+          retention-days: 14
+
+  network:
+    name: GeumyiNetwork 0.1.0 / Gradle build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Set up Gradle 9.1.0
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - name: Build GeumyiNetwork
+        shell: bash
+        run: gradle -p Plugins/GeumyiNetwork --no-daemon clean jar
+      - name: Verify and stage GeumyiNetwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="Plugins/GeumyiNetwork/build/libs/GeumyiNetwork-0.1.0.jar"
+          OUT="GeumyiNetwork-0.1.0-Paper26.3.jar"
+          test -s "$SRC"
+          unzip -t "$SRC" >/dev/null
+          unzip -p "$SRC" plugin.yml | grep -Eq '^name:[[:space:]]*GeumyiNetwork'
+          unzip -p "$SRC" plugin.yml | grep -Eq '^version:[[:space:]]*0[.]1[.]0'
+          unzip -p "$SRC" plugin.yml | grep -Eq "^api-version:[[:space:]]*'26[.]3'"
+          javap -verbose -classpath "$SRC" kr.geumyi.network.GeumyiNetwork | grep -q 'major version: 69'
+          mkdir -p dist/network
+          cp "$SRC" "dist/network/$OUT"
+          (cd dist/network && sha256sum "$OUT" > "$OUT.sha256")
+      - name: Upload GeumyiNetwork artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: network-0.1.0
+          path: dist/network/*
           if-no-files-found: error
           retention-days: 14
 
@@ -755,7 +799,7 @@ jobs:
   day7-summary:
     name: Component CI + Day 8 foundation summary
     if: always()
-    needs: [gsc, statusagent, gds, gst, technology, chemistry, lobby, resourcepacks, gsc-package, release-foundation, release-foundation-windows]
+    needs: [gsc, statusagent, gds, gst, technology, chemistry, lobby, network, resourcepacks, gsc-package, release-foundation, release-foundation-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Require every component job to pass
@@ -768,6 +812,7 @@ jobs:
           TECHNOLOGY: ${{ needs.technology.result }}
           CHEMISTRY: ${{ needs.chemistry.result }}
           LOBBY: ${{ needs.lobby.result }}
+          NETWORK: ${{ needs.network.result }}
           RESOURCEPACKS: ${{ needs.resourcepacks.result }}
           GSC_PACKAGE: ${{ needs.gsc-package.result }}
           RELEASE_FOUNDATION: ${{ needs.release-foundation.result }}
@@ -775,7 +820,7 @@ jobs:
         run: |
           set -euo pipefail
           failed=0
-          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY LOBBY RESOURCEPACKS GSC_PACKAGE RELEASE_FOUNDATION RELEASE_WINDOWS; do
+          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY LOBBY NETWORK RESOURCEPACKS GSC_PACKAGE RELEASE_FOUNDATION RELEASE_WINDOWS; do
             value="${!name}"
             printf '%-16s %s\n' "$name" "$value"
             if [[ "$value" != "success" ]]; then failed=1; fi

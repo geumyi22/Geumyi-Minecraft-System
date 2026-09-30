@@ -163,6 +163,7 @@ func registerV4Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/fs", requireAuth(apiV4Filesystem))
 	mux.HandleFunc("/api/v4/server-profile", requireAuth(apiV4ServerProfile))
 	mux.HandleFunc("/api/v4/server-catalog", requireAuth(apiV4ServerCatalog))
+	mux.HandleFunc("/api/v4/player-location", requireAuth(apiV4PlayerLocation))
 	mux.HandleFunc("/api/v4/inventory", requireAuth(apiV4Inventory))
 	mux.HandleFunc("/api/v4/companion/sync", requireAuth(apiV4CompanionSync))
 	mux.HandleFunc("/api/v4/maintain/toggle", requireAuth(apiV4MaintainToggle))
