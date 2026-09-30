@@ -1,0 +1,14 @@
+name: GeumyiNetwork
+version: 0.1.0
+main: kr.geumyi.network.GeumyiNetwork
+api-version: '26.3'
+author: Geumyi Server
+contributors: [OpenAI]
+description: Backend routing and per-server last-location restore for the Day 10 Lobby network.
+commands:
+  lobby:
+    description: Save the current backend location and return to Lobby.
+    usage: /lobby
+permissions:
+  geumyi.network.lobby:
+    default: true
