@@ -1,6 +1,6 @@
 server-id: wild
 lobby-server: lobby
-location-api: http://127.0.0.1:8787/api/v4/player-location
+location-api: http://127.0.0.1:8787/api/v4/network/player-location
 restore-on-join: true
 save-on-quit: true
 save-interval-seconds: 60
