@@ -380,7 +380,7 @@ Day10-Gsc "POST" "/api/v4/server-profile" @{ action = "update"; server = $wildTe
 Day10-Gsc "POST" "/api/v4/server-profile" @{ action = "update"; server = $playTemp } | Out-Null
 $lobbyProfile = @{
     id = "lobby"
-    name = "금이 로비"
+    name = "Geumyi Lobby"
     role = "lobby"
     update_policy = "managed"
     java_port = 25569
@@ -465,24 +465,24 @@ Log "automatic live network checks PASS"
 
 Write-Host ""
 Write-Host "============================================================"
-Write-Host " JAVA E2E - 직접 확인"
+Write-Host " JAVA E2E - MANUAL CHECK"
 Write-Host "============================================================"
-Write-Host "1) Java 25565 접속 -> Lobby 중앙"
+Write-Host "1) Connect Java to 25565 -> Lobby center"
 Write-Host "2) Lobby -> Wild"
-Write-Host "3) Wild에서 이동 -> /lobby -> 다시 Wild -> 이전 위치"
-Write-Host "4) Playground도 같은 방식으로 마지막 위치 복원"
-Write-Host "5) Java 25566으로 직접 접속해도 Lobby 중앙"
-$javaPass = Read-Host "전부 맞으면 JAVA PASS 입력"
+Write-Host "3) Move in Wild -> /lobby -> return to Wild -> previous location restored"
+Write-Host "4) Verify the same last-location restore in Playground"
+Write-Host "5) Connect Java to legacy 25566 -> Lobby center"
+$javaPass = Read-Host "Type JAVA PASS if every Java check passed"
 if ($javaPass -ne "JAVA PASS") { Fail "Java E2E not confirmed" }
 
 Write-Host ""
 Write-Host "============================================================"
-Write-Host " BEDROCK E2E - 직접 확인"
+Write-Host " BEDROCK E2E - MANUAL CHECK"
 Write-Host "============================================================"
-Write-Host "1) Bedrock UDP 19132 접속 -> Lobby 중앙"
+Write-Host "1) Connect Bedrock to UDP 19132 -> Lobby center"
 Write-Host "2) Lobby -> Wild / Playground"
-Write-Host "3) /lobby 복귀 후 다시 이동 확인"
-$bedrockPass = Read-Host "전부 맞으면 BEDROCK PASS 입력"
+Write-Host "3) Use /lobby and verify moving back to each backend"
+$bedrockPass = Read-Host "Type BEDROCK PASS if every Bedrock check passed"
 if ($bedrockPass -ne "BEDROCK PASS") { Fail "Bedrock E2E not confirmed" }
 
 if (-not [bool]$wildState.online) {
