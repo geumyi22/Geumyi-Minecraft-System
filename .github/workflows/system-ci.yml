@@ -528,6 +528,56 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  bedrock-foundation:
+    name: Day 10 / Bedrock dependency staging
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Parse and self-test Bedrock staging
+        shell: powershell
+        run: |
+          $path = 'tools/day10/prepare_bedrock_foundation.ps1'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $path),
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error "$path : $($_.Message)" }
+            exit 1
+          }
+          & $path -SelfTest
+      - name: Resolve and verify official Bedrock dependencies
+        shell: powershell
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'day10-bedrock'
+          & 'tools/day10/prepare_bedrock_foundation.ps1' -OutputRoot $out -Download
+          $required = @(
+            (Join-Path $out 'proxy-plugins/Geyser-Velocity.jar'),
+            (Join-Path $out 'proxy-plugins/floodgate-velocity.jar'),
+            (Join-Path $out 'backend-plugins/ViaVersion-5.12.0.jar'),
+            (Join-Path $out 'backend-plugins/ViaBackwards-5.12.0.jar'),
+            (Join-Path $out 'geyser-required-overrides.yml'),
+            (Join-Path $out 'bedrock-plan.json')
+          )
+          foreach ($file in $required) {
+            if (-not (Test-Path -LiteralPath $file)) { throw "Missing staged dependency: $file" }
+          }
+          foreach ($jar in $required | Where-Object { $_ -like '*.jar' }) {
+            if ((Get-Item -LiteralPath $jar).Length -lt 100000) { throw "Suspiciously small JAR: $jar" }
+          }
+          $plan = Get-Content -LiteralPath (Join-Path $out 'bedrock-plan.json') -Raw | ConvertFrom-Json
+          if ($plan.destructive_changes_applied -ne $false) { throw 'Bedrock staging must remain non-destructive' }
+          if ($plan.bedrock.geyser_java_emulation -ne '26.2') { throw 'Unexpected Geyser Java protocol baseline' }
+          if (@($plan.backend_targets).Count -ne 3) { throw 'Expected Lobby/Wild/Playground Via targets' }
+          if ($null -eq $plan.resolved.geyser -or $null -eq $plan.resolved.floodgate) {
+            throw 'Geyser/Floodgate build metadata was not locked'
+          }
+
   release-foundation:
     name: Day 8 / release foundation static test
     runs-on: ubuntu-latest
@@ -799,7 +849,7 @@ jobs:
   day7-summary:
     name: Component CI + Day 8 foundation summary
     if: always()
-    needs: [gsc, statusagent, gds, gst, technology, chemistry, lobby, network, resourcepacks, gsc-package, release-foundation, release-foundation-windows]
+    needs: [gsc, statusagent, gds, gst, technology, chemistry, lobby, network, resourcepacks, gsc-package, bedrock-foundation, release-foundation, release-foundation-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Require every component job to pass
@@ -815,12 +865,13 @@ jobs:
           NETWORK: ${{ needs.network.result }}
           RESOURCEPACKS: ${{ needs.resourcepacks.result }}
           GSC_PACKAGE: ${{ needs.gsc-package.result }}
+          BEDROCK_FOUNDATION: ${{ needs.bedrock-foundation.result }}
           RELEASE_FOUNDATION: ${{ needs.release-foundation.result }}
           RELEASE_WINDOWS: ${{ needs.release-foundation-windows.result }}
         run: |
           set -euo pipefail
           failed=0
-          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY LOBBY NETWORK RESOURCEPACKS GSC_PACKAGE RELEASE_FOUNDATION RELEASE_WINDOWS; do
+          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY LOBBY NETWORK RESOURCEPACKS GSC_PACKAGE BEDROCK_FOUNDATION RELEASE_FOUNDATION RELEASE_WINDOWS; do
             value="${!name}"
             printf '%-16s %s\n' "$name" "$value"
             if [[ "$value" != "success" ]]; then failed=1; fi
