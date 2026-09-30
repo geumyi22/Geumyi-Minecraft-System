@@ -54,7 +54,7 @@ public final class GeumyiNetwork extends JavaPlugin implements Listener {
 
         String api = getConfig().getString(
                 "location-api",
-                "http://127.0.0.1:8787/api/v4/player-location"
+                "http://127.0.0.1:8787/api/v4/network/player-location"
         ).trim();
         locationApi = URI.create(api);
         if (!"http".equalsIgnoreCase(locationApi.getScheme())

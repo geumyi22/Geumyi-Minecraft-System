@@ -34,10 +34,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class GeumyiLobby extends JavaPlugin implements Listener {
     private static final String MENU_TITLE = "§0서버 선택";
@@ -49,6 +59,9 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
     private String wildServer;
     private String playgroundServer;
     private boolean portalTrigger;
+    private HttpClient http;
+    private URI serverStateApi;
+    private Duration requestTimeout;
 
     @Override
     public void onEnable() {
@@ -56,6 +69,23 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         wildServer = getConfig().getString("wild-server", "wild");
         playgroundServer = getConfig().getString("playground-server", "playground");
         portalTrigger = getConfig().getBoolean("portal-trigger", true);
+
+        int timeoutMillis = Math.max(500, Math.min(10000, getConfig().getInt("request-timeout-millis", 2000)));
+        requestTimeout = Duration.ofMillis(timeoutMillis);
+        String stateApi = getConfig().getString(
+                "gsc-state-api",
+                "http://127.0.0.1:8787/api/v4/network/server-state"
+        ).trim();
+        serverStateApi = URI.create(stateApi);
+        if (!"http".equalsIgnoreCase(serverStateApi.getScheme()) || !isLoopbackHost(serverStateApi.getHost())) {
+            getLogger().severe("gsc-state-api must use loopback HTTP (127.0.0.1/localhost/::1).");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        http = HttpClient.newBuilder()
+                .connectTimeout(requestTimeout)
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getPluginManager().registerEvents(this, this);
@@ -65,6 +95,15 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         }
 
         getServer().getScheduler().runTask(this, this::initializeLobby);
+    }
+
+    private boolean isLoopbackHost(String host) {
+        if (host == null) {
+            return false;
+        }
+        String h = host.toLowerCase();
+        return h.equals("127.0.0.1") || h.equals("localhost") || h.equals("::1")
+                || h.equals("0:0:0:0:0:0:0:1");
     }
 
     private void initializeLobby() {
@@ -314,7 +353,7 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         player.openInventory(inv);
     }
 
-    private void sendServer(Player player, String server) {
+    private void requestServer(Player player, String server) {
         long now = System.currentTimeMillis();
         long last = portalCooldown.getOrDefault(player.getUniqueId(), 0L);
         if (now - last < 1500L) {
@@ -322,6 +361,73 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         }
         portalCooldown.put(player.getUniqueId(), now);
 
+        UUID uuid = player.getUniqueId();
+        checkServerAsync(server).whenComplete((result, error) -> {
+            getServer().getScheduler().runTask(this, () -> {
+                Player live = Bukkit.getPlayer(uuid);
+                if (live == null || !live.isOnline()) {
+                    return;
+                }
+                if (error != null) {
+                    live.sendMessage("§c서버 상태를 확인하지 못했습니다. 잠시 후 다시 시도해주세요.");
+                    getLogger().warning("GSC server-state check failed for " + server + ": " + rootMessage(error));
+                    return;
+                }
+                if (!result.allowed()) {
+                    String reason = result.reason().isBlank() ? result.state() : result.reason();
+                    live.sendMessage("§e현재 해당 서버로 이동할 수 없습니다. §7(" + reason + ")");
+                    return;
+                }
+                sendServerNow(live, server);
+            });
+        });
+    }
+
+    private CompletableFuture<ServerAvailability> checkServerAsync(String server) {
+        String query = "id=" + URLEncoder.encode(server, StandardCharsets.UTF_8);
+        URI uri = URI.create(serverStateApi.toString() + "?" + query);
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                .timeout(requestTimeout)
+                .GET()
+                .build();
+
+        return http.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
+                .thenApply(response -> {
+                    if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                        throw new IllegalStateException("GSC server-state HTTP " + response.statusCode());
+                    }
+                    String body = response.body();
+                    boolean allowed = booleanField(body, "move_allowed");
+                    String state = stringField(body, "state");
+                    String reason = stringField(body, "blocked_reason");
+                    return new ServerAvailability(allowed, state, reason);
+                });
+    }
+
+    private boolean booleanField(String json, String key) {
+        Pattern p = Pattern.compile(Pattern.quote("\"" + key + "\"") + "\\s*:\\s*(true|false)");
+        Matcher m = p.matcher(json);
+        if (!m.find()) {
+            throw new IllegalArgumentException("missing boolean field: " + key);
+        }
+        return Boolean.parseBoolean(m.group(1));
+    }
+
+    private String stringField(String json, String key) {
+        Pattern p = Pattern.compile(Pattern.quote("\"" + key + "\"") + "\\s*:\\s*\"([^\"]*)\"");
+        Matcher m = p.matcher(json);
+        return m.find() ? m.group(1) : "";
+    }
+
+    private String rootMessage(Throwable error) {
+        Throwable cursor = error;
+        while (cursor.getCause() != null) {
+            cursor = cursor.getCause();
+        }
+        return cursor.getMessage() == null ? cursor.getClass().getSimpleName() : cursor.getMessage();
+    }
+
+    private void sendServerNow(Player player, String server) {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             DataOutputStream out = new DataOutputStream(bytes);
@@ -334,6 +440,8 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
             getLogger().warning("Server transfer failed: " + e.getMessage());
         }
     }
+
+    private record ServerAvailability(boolean allowed, String state, String reason) {}
 
     private boolean isLobbyPlayer(Player player) {
         return lobbyWorld != null && player.getWorld().equals(lobbyWorld);
@@ -382,10 +490,10 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         }
         if (event.getRawSlot() == 3) {
             player.closeInventory();
-            sendServer(player, wildServer);
+            requestServer(player, wildServer);
         } else if (event.getRawSlot() == 5) {
             player.closeInventory();
-            sendServer(player, playgroundServer);
+            requestServer(player, playgroundServer);
         }
     }
 
@@ -415,9 +523,9 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
             return;
         }
         if (dx <= -26.0 && dx >= -33.0) {
-            sendServer(player, wildServer);
+            requestServer(player, wildServer);
         } else if (dx >= 26.0 && dx <= 33.0) {
-            sendServer(player, playgroundServer);
+            requestServer(player, playgroundServer);
         }
     }
 

@@ -9,3 +9,5 @@ build-on-start: true
 wild-server: wild
 playground-server: playground
 portal-trigger: true
+gsc-state-api: http://127.0.0.1:8787/api/v4/network/server-state
+request-timeout-millis: 2000
