@@ -595,7 +595,7 @@ jobs:
           import json, pathlib
           c=json.loads(pathlib.Path("deploy/components.json").read_text(encoding="utf-8"))
           assert c["schema"] == 1
-          required={"gst","gds","technology","chemistry","statusagent","gsc","gscm_android","gscm_ios_unsigned"}
+          required={"gst","gds","technology","chemistry","lobby","network","statusagent","gsc","gscm_android","gscm_ios_unsigned"}
           assert required <= set(c["components"])
           for k,v in c["components"].items():
               assert v["version"]
