@@ -12,8 +12,8 @@
 | 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 완료 |
 | 7 | 전체 컴포넌트 CI/자동 빌드 + 검증 artifact 기반 정리 | 완료 |
 | 8 | 보안 Release/자동 업데이트 기반: manifest·채널·서명·체크섬·고정 Android 서명·pre-start updater | 완료 |
-| 9 | 트랜잭션 배포·백업·원자적 교체·health 검증·자동 rollback·장애 주입 테스트 | 예정 |
-| 10 | 전체 업데이트 E2E + 문서/Release 마감 + Lobby 멀티서버 네트워크 설계 | 예정 |
+| 9 | 트랜잭션 배포·백업·원자적 교체·health 검증·자동 rollback·장애 주입 테스트 | 완료 |
+| 10 | 전체 업데이트 E2E + Lobby/Proxy + 서버별 마지막 위치 복원 + Java/Bedrock 이동 | 진행 중 |
 | 11 | GSC/GSCM Update Center·채널/pin/hold·canary·maintenance window·알림·fleet 운영 UX | 예정 |
 | 12 | GSC/Agent self-update·Resource/DataPack 배포·SBOM/provenance·재현성·DR drill·Lobby 구현 확장 | 예정 |
 
@@ -77,6 +77,25 @@ Android ADB install은 서버-side Day 8 closure의 필수 조건이 아니므�
 
 See `DAY8-RELEASE-REPORT.md` and `DAY8-RUNBOOK.md`.
 
+## Day 9 완료 기준
+
+Day 9는 **완료**로 닫습니다.
+
+완료된 범위:
+- GSC 4.2.4 transaction backup/staging/commit
+- release-group 단위 실패 복구
+- interrupted transaction recovery
+- post-start health gate
+- automatic rollback
+- rejected release hold
+- GitHub/update lookup 실패 시 known-good fail-open 부팅
+- Host 임시 테스트 서버의 transaction/rollback self-test
+- 서버 PC 실제 Final E2E 사용자 확인 PASS
+
+Day 9 종료 시점의 main에는 finalizer hotfix까지 반영되어 있으며, 실제 서버 PC에서 `DAY 9 FINALIZER: PASS`가 확인되었습니다. 이 실서버 PASS는 사용자 실행 결과이며 assistant가 서버 PC를 직접 실행한 것으로 기록하지 않습니다.
+
+Day 10에서는 이 기반 위에 full deployment E2E와 Lobby/Proxy 네트워크를 추가합니다. 상세 고정 계획은 `DAY10-PLAN.md`를 기준으로 합니다.
+
 ## Day 7~12 — 자동 배포/운영 확장
 
 Day 7 이후는 단순 CI가 아니라 **소스 수정 → 검증된 artifact → 안전한 자동 배포 → health 확인 → rollback**까지 연결합니다. 세부 설계는 `DEPLOYMENT-ARCHITECTURE.md`를 기준으로 합니다.
@@ -92,28 +111,15 @@ Day 7 이후는 단순 CI가 아니라 **소스 수정 → 검증된 artifact �
 - Android는 Day 8부터 고정 release signer 사용
 - iOS는 Apple signing/provisioning 제약을 분리해서 관리
 
-## Day 10 — 로비/서버 이동 설계
+## Day 10 — Full E2E + Lobby 네트워크
 
-목표 구조:
+상세 사양과 완료 조건은 `DAY10-PLAN.md`를 기준으로 합니다.
 
-```text
-                    Lobby
-              /       |       \
-           Wild   Playground   Other
-              \       |       /
-                 Lobby return
-```
-
-설계 시 확인할 항목:
-
-- Paper 26.3의 `accepts-transfers` / Minecraft Transfer 기능을 실제 운영에 사용할지 검증
-- 필요 시 Velocity 등 프록시 방식과 Transfer 방식 비교
-- Java + Bedrock(Geyser/Floodgate) 이동 호환성 확인
-- 로비 NPC / 아이템 메뉴 / 명령어 중 서버 선택 UX 결정
-- GSC의 서버 상태와 연결해 OFFLINE 서버 이동 차단 또는 시작 요청 흐름 검토
-- Lobby / Wild / Playground / Other를 하나의 서버군으로 관리하는 GSC 모델 검토
-- 서버별 인벤토리·월드·플러그인·권한 분리 정책 결정
-- 다른 서버에서 Lobby로 되돌아오는 흐름 포함
-- 실제 네트워크 구성도와 장애 시 fallback 동작 작성
-
-현재 회수된 Wild/Playground 2026-09-10 설정 근거에는 `accepts-transfers=true`가 이미 존재하지만, **최종 방식은 실제 서버 E2E와 Java/Bedrock 호환성 검증 후 확정**합니다.
+고정 핵심:
+- 외부 Java/Bedrock 접속은 Proxy를 거쳐 항상 Lobby 중앙으로 진입
+- Wild/Playground backend 포트는 직접 공개하지 않음
+- Lobby -> Wild/Playground 이동 시 서버별 마지막 위치 복원
+- Lobby 자체 위치는 복원하지 않고 항상 중앙 Spawn
+- Wild/Playground 기존 월드와 gameplay는 변경하지 않음
+- Technology/Chemistry는 계속 Wild only
+- 실제 Java/Bedrock + Day10 Final E2E PASS 전에는 Day 10 완료 선언 금지
