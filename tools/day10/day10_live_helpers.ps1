@@ -139,8 +139,8 @@ function Day10-SetPaperVelocity {
         $found = $false
         for ($i = $velocity + 1; $i -lt $end; $i++) {
             $indent = $lines[$i].Length - $lines[$i].TrimStart().Length
-            if ($indent -eq 4 -and $lines[$i].Trim().StartsWith("$key:")) {
-                $lines[$i] = "    $key: " + $wanted[$key]
+            if ($indent -eq 4 -and $lines[$i].Trim().StartsWith("${key}:")) {
+                $lines[$i] = "    ${key}: " + $wanted[$key]
                 $found = $true
                 break
             }
@@ -149,7 +149,7 @@ function Day10-SetPaperVelocity {
             $before = @($lines[0..($end - 1)])
             $after = @()
             if ($end -lt $lines.Count) { $after = @($lines[$end..($lines.Count - 1)]) }
-            $lines = @($before + ("    $key: " + $wanted[$key]) + $after)
+            $lines = @($before + ("    ${key}: " + $wanted[$key]) + $after)
             $end++
         }
     }
