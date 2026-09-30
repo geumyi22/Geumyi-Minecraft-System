@@ -13,6 +13,8 @@ on:
       - 'Plugins/GeumyiChemistry/**'
       - 'ResourcePacks/**'
       - 'deploy/**'
+      - 'Network/**'
+      - 'tools/day10/**'
       - 'tools/release/**'
       - 'DAY8-RUNBOOK.md'
       - '.github/workflows/day8-release.yml'
@@ -28,6 +30,8 @@ on:
       - 'Plugins/GeumyiChemistry/**'
       - 'ResourcePacks/**'
       - 'deploy/**'
+      - 'Network/**'
+      - 'tools/day10/**'
       - 'tools/release/**'
       - 'DAY8-RUNBOOK.md'
       - '.github/workflows/day8-release.yml'
@@ -487,6 +491,35 @@ jobs:
           end
           RB
 
+      - name: Validate Day 10 proxy foundation
+        shell: pwsh
+        run: |
+          $path = 'tools/day10/prepare_proxy_foundation.ps1'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $path),
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error "$path : $($_.Message)" }
+            exit 1
+          }
+          & $path -SelfTest
+          if ($LASTEXITCODE -ne 0) { throw 'Day 10 proxy foundation self-test failed' }
+
+          $template = Get-Content 'Network/Velocity/velocity.toml.template' -Raw
+          foreach ($needle in @(
+            'player-info-forwarding-mode = "modern"',
+            'lobby = "127.0.0.1:__LOBBY_PORT__"',
+            'wild = "127.0.0.1:__WILD_PORT__"',
+            'playground = "127.0.0.1:__PLAYGROUND_PORT__"',
+            'try = ['
+          )) {
+            if (-not $template.Contains($needle)) { throw "Velocity template missing: $needle" }
+          }
+
       - name: Parse GSC dashboard JavaScript
         shell: bash
         run: |
@@ -551,6 +584,24 @@ jobs:
             }
             Write-Host "Windows PowerShell syntax OK: $path"
           }
+
+      - name: Day 10 proxy foundation on Windows PowerShell
+        shell: powershell
+        run: |
+          $path = 'tools/day10/prepare_proxy_foundation.ps1'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $path),
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error "$path : $($_.Message)" }
+            exit 1
+          }
+          & $path -SelfTest
+          if ($LASTEXITCODE -ne 0) { throw 'Day 10 proxy foundation self-test failed on Windows PowerShell' }
 
       - name: Guard Day 9 PowerShell reserved variables
         shell: powershell
