@@ -4,7 +4,7 @@
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
-| GSC | 4.2.3 | GSC/ServerCenter | Recovered source; Windows Go tests covered by System CI |
+| GSC | 4.2.4 | GSC/ServerCenter | Recovered source; Day 9 transaction/health/rollback baseline; Windows Go tests covered by System CI |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction; JDK 21 clean build succeeds |
 | GSCM | 1.1.2+113 | GSCM | Recovered Flutter/Android source and iOS generation scripts; Day-6 realtime status hotfix applied |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | Exact HOTFIX/overlay delta recovered and matched against final deployed JAR; legacy 0.1.5 core remains binary-only |
@@ -27,7 +27,7 @@
 - GSC/GSCM 안정화 검증: [DAY5-STABILITY-REPORT.md](DAY5-STABILITY-REPORT.md)
 - 전체 컴포넌트 자동 빌드/CI 검증: [DAY7-CI-REPORT.md](DAY7-CI-REPORT.md)
 - Day 8 보안 Release/자동 업데이트 진행 상태: [DAY8-RELEASE-REPORT.md](DAY8-RELEASE-REPORT.md)
-- 이후 작업 순서와 최종 로비/서버 이동 설계 계획: [ROADMAP.md](ROADMAP.md)
+- Day 10 Full E2E/Lobby 네트워크 고정 계획: [DAY10-PLAN.md](DAY10-PLAN.md)\n- 이후 작업 순서와 장기 계획: [ROADMAP.md](ROADMAP.md)
 - 자동 빌드/Release/서버 자동 업데이트/rollback 장기 설계: [DEPLOYMENT-ARCHITECTURE.md](DEPLOYMENT-ARCHITECTURE.md)
 
 완성 EXE/JAR/APK/IPA/ZIP은 [기존 Release](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/mc-2026.09.26-v3)에 유지합니다. 운영 토큰·RCON 비밀번호·키스토어·월드·개인 로그는 Git에 넣지 않습니다.
