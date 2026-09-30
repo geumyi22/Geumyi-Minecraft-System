@@ -11,6 +11,8 @@ on:
       - 'Plugins/GeumyiDiscordStatus/**'
       - 'Plugins/GeumyiTechnology/**'
       - 'Plugins/GeumyiChemistry/**'
+      - 'Plugins/GeumyiLobby/**'
+      - 'Servers/Lobby/**'
       - 'ResourcePacks/**'
       - 'deploy/**'
       - 'Network/**'
@@ -28,6 +30,8 @@ on:
       - 'Plugins/GeumyiDiscordStatus/**'
       - 'Plugins/GeumyiTechnology/**'
       - 'Plugins/GeumyiChemistry/**'
+      - 'Plugins/GeumyiLobby/**'
+      - 'Servers/Lobby/**'
       - 'ResourcePacks/**'
       - 'deploy/**'
       - 'Network/**'
@@ -266,6 +270,59 @@ jobs:
         with:
           name: chemistry-0.4.1
           path: dist/chemistry/*
+          if-no-files-found: error
+          retention-days: 14
+
+  lobby:
+    name: GeumyiLobby 0.1.0 / Gradle build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Set up Gradle 9.1.0
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - name: Build GeumyiLobby
+        shell: bash
+        run: gradle -p Plugins/GeumyiLobby --no-daemon clean jar
+      - name: Verify and stage GeumyiLobby
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="Plugins/GeumyiLobby/build/libs/GeumyiLobby-0.1.0.jar"
+          OUT="GeumyiLobby-0.1.0-Paper26.3.jar"
+          test -s "$SRC"
+          unzip -t "$SRC" >/dev/null
+          unzip -p "$SRC" plugin.yml | grep -Eq '^name:[[:space:]]*GeumyiLobby'
+          unzip -p "$SRC" plugin.yml | grep -Eq '^version:[[:space:]]*0[.]1[.]0'
+          unzip -p "$SRC" plugin.yml | grep -Eq "^api-version:[[:space:]]*'26[.]3'"
+          javap -verbose -classpath "$SRC" kr.geumyi.lobby.GeumyiLobby | grep -q 'major version: 69'
+          mkdir -p dist/lobby
+          cp "$SRC" "dist/lobby/$OUT"
+          (cd dist/lobby && sha256sum "$OUT" > "$OUT.sha256")
+      - name: Validate Lobby templates stay private/backend-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROPS="Servers/Lobby/server.properties.template"
+          grep -Eq '^server-ip=127[.]0[.]0[.]1$' "$PROPS"
+          grep -Eq '^server-port=25569$' "$PROPS"
+          grep -Eq '^online-mode=false$' "$PROPS"
+          grep -Eq '^gamemode=adventure$' "$PROPS"
+          grep -Eq '^level-type=minecraft:flat$' "$PROPS"
+          grep -Eq '^pvp=false$' "$PROPS"
+      - name: Upload GeumyiLobby artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lobby-0.1.0
+          path: dist/lobby/*
           if-no-files-found: error
           retention-days: 14
 
@@ -698,7 +755,7 @@ jobs:
   day7-summary:
     name: Component CI + Day 8 foundation summary
     if: always()
-    needs: [gsc, statusagent, gds, gst, technology, chemistry, resourcepacks, gsc-package, release-foundation, release-foundation-windows]
+    needs: [gsc, statusagent, gds, gst, technology, chemistry, lobby, resourcepacks, gsc-package, release-foundation, release-foundation-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Require every component job to pass
@@ -710,6 +767,7 @@ jobs:
           GST: ${{ needs.gst.result }}
           TECHNOLOGY: ${{ needs.technology.result }}
           CHEMISTRY: ${{ needs.chemistry.result }}
+          LOBBY: ${{ needs.lobby.result }}
           RESOURCEPACKS: ${{ needs.resourcepacks.result }}
           GSC_PACKAGE: ${{ needs.gsc-package.result }}
           RELEASE_FOUNDATION: ${{ needs.release-foundation.result }}
@@ -717,7 +775,7 @@ jobs:
         run: |
           set -euo pipefail
           failed=0
-          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY RESOURCEPACKS GSC_PACKAGE RELEASE_FOUNDATION RELEASE_WINDOWS; do
+          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY LOBBY RESOURCEPACKS GSC_PACKAGE RELEASE_FOUNDATION RELEASE_WINDOWS; do
             value="${!name}"
             printf '%-16s %s\n' "$name" "$value"
             if [[ "$value" != "success" ]]; then failed=1; fi
