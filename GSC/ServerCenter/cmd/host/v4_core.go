@@ -162,6 +162,7 @@ func registerV4Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/events", requireAuth(apiV4Events))
 	mux.HandleFunc("/api/v4/fs", requireAuth(apiV4Filesystem))
 	mux.HandleFunc("/api/v4/server-profile", requireAuth(apiV4ServerProfile))
+	mux.HandleFunc("/api/v4/server-catalog", requireAuth(apiV4ServerCatalog))
 	mux.HandleFunc("/api/v4/inventory", requireAuth(apiV4Inventory))
 	mux.HandleFunc("/api/v4/companion/sync", requireAuth(apiV4CompanionSync))
 	mux.HandleFunc("/api/v4/maintain/toggle", requireAuth(apiV4MaintainToggle))
@@ -460,8 +461,20 @@ func apiV4ServerProfile(w http.ResponseWriter, r *http.Request) {
 	q.Server.ID = strings.ToLower(strings.TrimSpace(q.Server.ID))
 	q.Server.Name = strings.TrimSpace(q.Server.Name)
 	q.Server.Path = strings.TrimSpace(q.Server.Path)
+	q.Server.Role = strings.ToLower(strings.TrimSpace(q.Server.Role))
+	q.Server.UpdatePolicy = strings.ToLower(strings.TrimSpace(q.Server.UpdatePolicy))
 	if !serverIDRE.MatchString(q.Server.ID) {
 		http.Error(w, "서버 ID는 영문 소문자/숫자/_/- 2~32자", 400)
+		return
+	}
+	if q.Server.Role != "" && !validServerRole(q.Server.Role) {
+		http.Error(w, "role must be lobby, wild, playground, or other", 400)
+		return
+	}
+	switch q.Server.UpdatePolicy {
+	case "", serverUpdateManaged, serverUpdateManual, serverUpdateHold:
+	default:
+		http.Error(w, "update_policy must be managed, manual, or hold", 400)
 		return
 	}
 	c := configSnapshot()
@@ -484,6 +497,7 @@ func apiV4ServerProfile(w http.ResponseWriter, r *http.Request) {
 		if q.Server.StartCommand == "" {
 			q.Server.StartCommand = "start.bat"
 		}
+		q.Server = normalizeServerConfig(q.Server)
 		// Preserve the values submitted by the profile form. v4.0.1 forced
 		// AutoStart=false and RestartOnCrash=true here, ignoring the user's choices.
 		c.Servers = append(c.Servers, q.Server)
@@ -505,6 +519,13 @@ func apiV4ServerProfile(w http.ResponseWriter, r *http.Request) {
 		if q.Server.StartCommand == "" {
 			q.Server.StartCommand = old.StartCommand
 		}
+		if q.Server.Role == "" {
+			q.Server.Role = old.Role
+		}
+		if q.Server.UpdatePolicy == "" {
+			q.Server.UpdatePolicy = old.UpdatePolicy
+		}
+		q.Server = normalizeServerConfig(q.Server)
 		c.Servers[idx] = q.Server
 	case "delete":
 		if idx < 0 {
