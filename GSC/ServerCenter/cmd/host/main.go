@@ -55,6 +55,8 @@ type AgentConfig struct {
 type ServerConfig struct {
 	ID             string `json:"id"`
 	Name           string `json:"name"`
+	Role           string `json:"role,omitempty"`
+	UpdatePolicy   string `json:"update_policy,omitempty"`
 	JavaPort       int    `json:"java_port"`
 	RCONPort       int    `json:"rcon_port"`
 	BedrockPort    int    `json:"bedrock_port"`
@@ -105,6 +107,8 @@ type MCStatus struct {
 type ServerStatus struct {
 	ID                  string                  `json:"id"`
 	Name                string                  `json:"name"`
+	Role                string                  `json:"role"`
+	UpdatePolicy        string                  `json:"update_policy"`
 	Online              bool                    `json:"online"`
 	JavaPortOpen        bool                    `json:"java_port_open"`
 	RCONPortOpen        bool                    `json:"rcon_port_open"`
@@ -188,9 +192,9 @@ func defaultConfig() Config {
 		},
 		Update: defaultUpdateConfig(filepath.Join(pd, "GeumyiServerCenter")),
 		Servers: []ServerConfig{
-			{ID: "wild", Name: "금이 야생", JavaPort: 25565, RCONPort: 25575, BedrockPort: 19132, GDSAPIPort: 8766,
+			{ID: "wild", Name: "금이 야생", Role: serverRoleWild, UpdatePolicy: serverUpdateManaged, JavaPort: 25565, RCONPort: 25575, BedrockPort: 19132, GDSAPIPort: 8766,
 				PathFile: `C:\ProgramData\MinecraftServer\server_path.txt`, StartCommand: "start.bat", AutoStart: true, RestartOnCrash: true},
-			{ID: "playground", Name: "금이 놀이터", JavaPort: 25566, RCONPort: 25576, BedrockPort: 19133, GDSAPIPort: 8765,
+			{ID: "playground", Name: "금이 놀이터", Role: serverRolePlayground, UpdatePolicy: serverUpdateManaged, JavaPort: 25566, RCONPort: 25576, BedrockPort: 19133, GDSAPIPort: 8765,
 				PathFile: `C:\ProgramData\MinecraftPlaygroundServer\server_path.txt`, StartCommand: "start.bat", AutoStart: true, RestartOnCrash: true},
 		},
 	}
@@ -324,6 +328,7 @@ func loadOrCreateConfig(path string) (Config, error) {
 			c.PairingTTLSeconds = 300
 		}
 		c.Update = normalizeUpdateConfig(c.Update)
+		c.Servers = normalizeServerCatalog(c.Servers)
 		return c, nil
 	}
 	c := defaultConfig()
@@ -385,12 +390,13 @@ func writeJSON(w http.ResponseWriter, v any) {
 func apiPublicSettings(w http.ResponseWriter, r *http.Request) {
 	cfg := configSnapshot()
 	type s struct {
-		ID, Name                                    string
+		ID, Name, Role, UpdatePolicy                string
 		JavaPort, RCONPort, BedrockPort, GDSAPIPort int
 	}
 	out := make([]s, 0, len(cfg.Servers))
-	for _, x := range cfg.Servers {
-		out = append(out, s{x.ID, x.Name, x.JavaPort, x.RCONPort, x.BedrockPort, x.GDSAPIPort})
+	for _, raw := range cfg.Servers {
+		x := normalizeServerConfig(raw)
+		out = append(out, s{x.ID, x.Name, x.Role, x.UpdatePolicy, x.JavaPort, x.RCONPort, x.BedrockPort, x.GDSAPIPort})
 	}
 	writeJSON(w, map[string]any{"bind": cfg.Bind, "port": cfg.Port, "mobile_enabled": cfg.MobileEnabled, "pairing_ttl_seconds": cfg.PairingTTLSeconds, "servers": out, "version": appVersion})
 }
@@ -416,6 +422,8 @@ func apiSettings(w http.ResponseWriter, r *http.Request) {
 		type ss struct {
 			ID             string `json:"id"`
 			Name           string `json:"name"`
+			Role           string `json:"role"`
+			UpdatePolicy   string `json:"update_policy"`
 			Path           string `json:"path"`
 			PathFile       string `json:"path_file"`
 			StartCommand   string `json:"start_command"`
@@ -427,8 +435,9 @@ func apiSettings(w http.ResponseWriter, r *http.Request) {
 			GDSAPIPort     int    `json:"gds_api_port"`
 		}
 		out := make([]ss, 0, len(cfg.Servers))
-		for _, x := range cfg.Servers {
-			out = append(out, ss{ID: x.ID, Name: x.Name, Path: configuredServerDir(x), PathFile: x.PathFile, StartCommand: x.StartCommand, AutoStart: x.AutoStart, RestartOnCrash: x.RestartOnCrash, JavaPort: x.JavaPort, RCONPort: x.RCONPort, BedrockPort: x.BedrockPort, GDSAPIPort: x.GDSAPIPort})
+		for _, raw := range cfg.Servers {
+			x := normalizeServerConfig(raw)
+			out = append(out, ss{ID: x.ID, Name: x.Name, Role: x.Role, UpdatePolicy: x.UpdatePolicy, Path: configuredServerDir(x), PathFile: x.PathFile, StartCommand: x.StartCommand, AutoStart: x.AutoStart, RestartOnCrash: x.RestartOnCrash, JavaPort: x.JavaPort, RCONPort: x.RCONPort, BedrockPort: x.BedrockPort, GDSAPIPort: x.GDSAPIPort})
 		}
 		writeJSON(w, map[string]any{"bind": cfg.Bind, "port": cfg.Port, "mobile_enabled": cfg.MobileEnabled, "pairing_ttl_seconds": cfg.PairingTTLSeconds, "auto_start_agent": cfg.AutoStartAgent, "servers": out, "version": appVersion})
 		return
@@ -477,6 +486,7 @@ func apiSettings(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveHostConfig(next Config) error {
+	next.Servers = normalizeServerCatalog(next.Servers)
 	configMu.Lock()
 	defer configMu.Unlock()
 	disk := next
@@ -1352,7 +1362,8 @@ func readServerProperty(dir, key string) (string, error) {
 }
 
 func getServerStatus(s ServerConfig) ServerStatus {
-	st := ServerStatus{ID: s.ID, Name: s.Name}
+	s = normalizeServerConfig(s)
+	st := ServerStatus{ID: s.ID, Name: s.Name, Role: s.Role, UpdatePolicy: s.UpdatePolicy}
 	st.JavaPortOpen = tcpOpen("127.0.0.1", s.JavaPort, 400*time.Millisecond)
 	st.Online = st.JavaPortOpen
 

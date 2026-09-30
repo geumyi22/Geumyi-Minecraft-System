@@ -768,7 +768,7 @@ func validateUpdatePlan(s ServerConfig, m DeploymentManifest, plan []updatePlanI
 	groupNeedsUpdate := map[string]bool{}
 
 	for key, comp := range m.Components {
-		if strings.ToLower(comp.Kind) != "plugin" || !targetIncludes(comp.Targets, s.ID) {
+		if strings.ToLower(comp.Kind) != "plugin" || !targetIncludesServer(comp.Targets, s) {
 			continue
 		}
 		if comp.ReleaseGroup != "" {
@@ -799,7 +799,7 @@ func validateUpdatePlan(s ServerConfig, m DeploymentManifest, plan []updatePlanI
 	}
 
 	for key, comp := range m.Components {
-		if strings.ToLower(comp.Kind) != "plugin" || !targetIncludes(comp.Targets, s.ID) || effective[key] == "" {
+		if strings.ToLower(comp.Kind) != "plugin" || !targetIncludesServer(comp.Targets, s) || effective[key] == "" {
 			continue
 		}
 		for depKey, requirement := range comp.Requires {

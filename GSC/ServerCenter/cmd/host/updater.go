@@ -507,15 +507,6 @@ func loadDeploymentPublicKey(path string) (ed25519.PublicKey, error) {
 	return pub, nil
 }
 
-func targetIncludes(targets []string, id string) bool {
-	for _, t := range targets {
-		t = strings.ToLower(strings.TrimSpace(t))
-		if t == "*" || t == strings.ToLower(id) {
-			return true
-		}
-	}
-	return false
-}
 
 func buildUpdatePlan(s ServerConfig, m DeploymentManifest) ([]updatePlanItem, error) {
 	dir := resolveServerDir(s)
@@ -540,7 +531,7 @@ func buildUpdatePlan(s ServerConfig, m DeploymentManifest) ([]updatePlanItem, er
 	plan := []updatePlanItem{}
 	for _, key := range keys {
 		comp := m.Components[key]
-		if strings.ToLower(comp.Kind) != "plugin" || !targetIncludes(comp.Targets, s.ID) {
+		if strings.ToLower(comp.Kind) != "plugin" || !targetIncludesServer(comp.Targets, s) {
 			continue
 		}
 		if !strings.HasPrefix(strings.ToLower(comp.PluginName), "geumyi") {
