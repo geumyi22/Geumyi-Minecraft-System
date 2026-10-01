@@ -115,12 +115,13 @@ api:
         [IO.File]::WriteAllText((Join-Path $pluginDir "ViaVersion-5.12.1-SNAPSHOT.jar"), "existing-via")
         [IO.File]::WriteAllText((Join-Path $pluginDir "ViaBackwards-5.12.1-SNAPSHOT.jar"), "existing-back")
         [IO.File]::WriteAllText((Join-Path $pluginDir "ViaVersionStatus-4.01.jar"), "status")
+        [IO.File]::WriteAllText((Join-Path $pluginDir "Geyser-Spigot.jar"), "original-geyser")
         $baseline = Day10-GetViaBaseline $root
         if (-not $baseline.Installed -or $baseline.Version -ne "5.12.1-SNAPSHOT") {
             throw "Existing snapshot Via pair was not recognized"
         }
         $saved = @(Day10-BackupBackendPlugins $root $root "wild")
-        if ($saved.Count -ne 3) { throw "Original plugin backup count regression" }
+        if ($saved.Count -ne 4) { throw "Original plugin backup count regression" }
         $viaPinned = Join-Path $root "pinned-via.jar"
         $backPinned = Join-Path $root "pinned-back.jar"
         [IO.File]::WriteAllText($viaPinned, "pinned-via")
@@ -133,6 +134,24 @@ api:
         $incompleteRejected = $false
         try { [void](Day10-GetViaBaseline $root) } catch { $incompleteRejected = $true }
         if (-not $incompleteRejected) { throw "Incomplete Via pair was not rejected" }
+        Move-Item -LiteralPath (Join-Path $pluginDir "Geyser-Spigot.jar") -Destination (Join-Path $pluginDir "Geyser-Spigot.jar.day10-disabled")
+        [IO.File]::WriteAllText((Join-Path $pluginDir "ViaVersion-5.12.0.jar"), "pinned-via")
+        [IO.File]::WriteAllText((Join-Path $pluginDir "ViaBackwards-5.12.0.jar"), "pinned-back")
+        [IO.File]::WriteAllText((Join-Path $pluginDir "GeumyiNetwork-0.1.0-Paper26.3.jar"), "new-network")
+        Day10-RestoreBackendPlugins $root $root "wild"
+        if ((Day10-GetViaBaseline $root).Version -ne "5.12.1-SNAPSHOT") {
+            throw "Rollback did not restore the original Via pair"
+        }
+        if ((Test-Path -LiteralPath (Join-Path $pluginDir "ViaVersion-5.12.0.jar")) -or
+            (Test-Path -LiteralPath (Join-Path $pluginDir "GeumyiNetwork-0.1.0-Paper26.3.jar")) -or
+            (Test-Path -LiteralPath (Join-Path $pluginDir "Geyser-Spigot.jar.day10-disabled"))) {
+            throw "Rollback left injected or disabled plugin JARs"
+        }
+        if (-not (Test-Path -LiteralPath (Join-Path $pluginDir "ViaVersionStatus-4.01.jar")) -or
+            -not (Test-Path -LiteralPath (Join-Path $pluginDir "Geyser-Spigot.jar"))) {
+            throw "Rollback lost existing Status/Geyser plugins"
+        }
+
 
         Write-Host "DAY10 FINALIZER SELFTEST PASS"
     } finally {
