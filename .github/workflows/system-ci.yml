@@ -764,6 +764,20 @@ jobs:
           & $path -SelfTest
           if ($LASTEXITCODE -ne 0) { throw 'Day 10 proxy foundation self-test failed on Windows PowerShell' }
 
+      - name: Day 10 Phase 2 staging launcher safety gate
+        shell: powershell
+        run: |
+          & '.\tools\day10\Day10_Phase2_Stage.cmd' --selftest
+          if ($LASTEXITCODE -ne 0) { throw 'Phase 2 stage launcher selftest failed' }
+          $cmd = Get-Content -LiteralPath 'tools/day10/Day10_Phase2_Stage.cmd' -Raw
+          foreach ($needle in @('stage_four_server_network.ps1', '-DownloadDependencies', 'STAGING ONLY', 'four-server-network-plan.json')) {
+            if (-not $cmd.Contains($needle)) { throw "Phase 2 launcher missing: $needle" }
+          }
+          if ($cmd.Contains('Day10_Final_E2E.cmd"') -or $cmd.Contains('finish_day10.ps1"')) {
+            throw 'Retired three-server finalizer must never be executed by Phase 2'
+          }
+          Write-Host 'DAY10 PHASE 2 STAGING LAUNCHER SAFETY PASS'
+
       - name: Day 10 four-server port snapshot, cutover and rollback self-test
         shell: powershell
         run: |
