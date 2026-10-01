@@ -151,6 +151,18 @@ class GscApi {
     return PairingResult.fromJson(json);
   }
 
+  // Day 10: these actions are per-server and never restart Minecraft on their own.
+  Future<Map<String, dynamic>> updateStatus(String id) =>
+      _request('GET', '/api/v4/update/status', query: {'id': id});
+
+  Future<Map<String, dynamic>> checkUpdates(String id) =>
+      _request('POST', '/api/v4/update/check', body: {'id': id},
+          timeout: const Duration(seconds: 30));
+
+  Future<Map<String, dynamic>> updateDecision(String id, String decision) =>
+      _request('POST', '/api/v4/update/decision',
+          body: {'id': id, 'decision': decision});
+
   Future<Map<String, dynamic>> server(String id) => _request('GET', '/api/v1/servers/$id');
   Future<Map<String, dynamic>> serverHealth(String id) => _request('GET', '/api/v1/servers/$id/health');
   Future<List<String>> players(String id) async {
