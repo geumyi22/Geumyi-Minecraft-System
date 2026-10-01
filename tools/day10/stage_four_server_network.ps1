@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$OutputRoot = "",
     [string]$ServerRoot = "",
     [switch]$DownloadDependencies,
@@ -133,8 +133,8 @@ $plan = [ordered]@{
     internal_java = [ordered]@{wild=25570;playground=25571;other=25572;lobby=25573}
     rcon = [ordered]@{wild=25575;playground=25576;other=25577;lobby=25579}
     instances = @(
-        [ordered]@{id="wild";java_tcp=25565;bedrock_udp=19132;initial_server="lobby"},
-        [ordered]@{id="playground";java_tcp=25566;bedrock_udp=19133;initial_server="lobby"},
+        [ordered]@{id="wild";java_tcp=25565;bedrock_udp=19132;initial_server="lobby"}
+        [ordered]@{id="playground";java_tcp=25566;bedrock_udp=19133;initial_server="lobby"}
         [ordered]@{id="other";java_tcp=25567;bedrock_udp=19134;initial_server="lobby"}
     )
     shared_forwarding_secret = "same local secret for all proxies; value omitted"
