@@ -143,6 +143,7 @@ func registerUpdateRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/update/status", requireAuth(apiV4UpdateStatus))
 	mux.HandleFunc("/api/v4/update/settings", requireAuth(apiV4UpdateSettings))
 	mux.HandleFunc("/api/v4/update/check", requireAuth(apiV4UpdateCheck))
+	mux.HandleFunc("/api/v4/update/decision", requireAuth(apiV4UpdateDecision))
 }
 
 func apiV4UpdateStatus(w http.ResponseWriter, r *http.Request) {
@@ -253,6 +254,67 @@ func apiV4UpdateCheck(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, st)
 }
 
+// updatePolicyForDecision only changes a server's future pre-start update policy.
+// No running Minecraft process is stopped or restarted by this API.
+func updatePolicyForDecision(decision string) (string, bool) {
+	switch strings.ToLower(strings.TrimSpace(decision)) {
+	case "defer":
+		return serverUpdateHold, true
+	case "manual":
+		return serverUpdateManual, true
+	case "enable-managed":
+		return serverUpdateManaged, true
+	default:
+		return "", false
+	}
+}
+
+func apiV4UpdateDecision(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST required", http.StatusMethodNotAllowed)
+		return
+	}
+	var q struct {
+		ID string `json:"id"`
+		Decision string `json:"decision"`
+	}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q); err != nil {
+		http.Error(w, "bad json", http.StatusBadRequest)
+		return
+	}
+	id := strings.ToLower(strings.TrimSpace(q.ID))
+	policy, ok := updatePolicyForDecision(q.Decision)
+	if !ok {
+		http.Error(w, "decision must be defer, manual, or enable-managed", http.StatusBadRequest)
+		return
+	}
+	c := configSnapshot()
+	found := false
+	for i := range c.Servers {
+		if strings.EqualFold(c.Servers[i].ID, id) {
+			c.Servers[i].UpdatePolicy = policy
+			found = true
+			break
+		}
+	}
+	if !found {
+		http.Error(w, "unknown server", http.StatusBadRequest)
+		return
+	}
+	if err := saveHostConfig(c); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	appendV4Event("info", "update", id, "업데이트 실행 정책 변경", "policy="+policy)
+	writeJSON(w, map[string]any{
+		"ok": true,
+		"server_id": id,
+		"update_policy": policy,
+		"requires_server_restart": policy == serverUpdateManaged,
+		"server_restarted": false,
+	})
+}
+
 func checkServerUpdates(s ServerConfig) UpdateStatus {
 	c := normalizeUpdateConfig(configSnapshot().Update)
 	st := UpdateStatus{ServerID: s.ID, Phase: "checking", Channel: c.Channel, Message: "배포 manifest 확인 중"}
@@ -320,6 +382,18 @@ func runPreStartUpdater(s ServerConfig) UpdateStatus {
 		st.Error = err.Error()
 		st.BlockStart = true
 		appendV4Event("error", "update", s.ID, st.Message, st.Error)
+		return setUpdateStatus(st)
+	}
+	// A deferred/manual policy preserves the existing plugin set on startup.
+	// Interrupted transaction recovery above still runs before this decision.
+	switch normalizeServerUpdatePolicy(s.UpdatePolicy) {
+	case serverUpdateHold:
+		st.Phase = "held"
+		st.Message = "사용자가 업데이트를 보류했습니다 · 기존 파일로 서버 시작"
+		return setUpdateStatus(st)
+	case serverUpdateManual:
+		st.Phase = "manual"
+		st.Message = "수동 업데이트 정책 · 기존 파일로 서버 시작"
 		return setUpdateStatus(st)
 	}
 	manifest, manifestHash, release, err := fetchVerifiedManifest(c)

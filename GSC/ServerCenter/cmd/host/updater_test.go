@@ -158,3 +158,37 @@ func TestTargetIncludes(t *testing.T) {
 		t.Fatal("different server target must not match")
 	}
 }
+
+func TestDay10UpdateDecisionMapsToSafePolicies(t *testing.T) {
+	tests := []struct {
+		choice string
+		want string
+		ok bool
+	}{
+		{"defer", serverUpdateHold, true},
+		{"manual", serverUpdateManual, true},
+		{"enable-managed", serverUpdateManaged, true},
+		{"  DEFER  ", serverUpdateHold, true},
+		{"restart-now", "", false},
+		{"", "", false},
+	}
+	for _, tc := range tests {
+		got, ok := updatePolicyForDecision(tc.choice)
+		if got != tc.want || ok != tc.ok {
+			t.Fatalf("decision %q: policy=%q ok=%v want=%q ok=%v", tc.choice, got, ok, tc.want, tc.ok)
+		}
+	}
+}
+
+func TestDay10OtherReceivesWildTechnologyChemistryTargets(t *testing.T) {
+	targets := []string{"wild", "other"}
+	if !targetIncludesServer(targets, ServerConfig{ID:"other", Role:serverRoleOther}) ||
+		!targetIncludesServer(targets, ServerConfig{ID:"wild", Role:serverRoleWild}) {
+		t.Fatal("Technology/Chemistry must target both Wild and Other")
+	}
+	for _, id := range []string{"lobby", "playground"} {
+		if targetIncludesServer(targets, ServerConfig{ID:id}) {
+			t.Fatalf("Technology/Chemistry target leaked into %s", id)
+		}
+	}
+}
