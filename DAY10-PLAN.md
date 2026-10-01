@@ -1,3 +1,36 @@
+# Day 10 revised baseline — four-server rollout (2026-10-02)
+
+> This section supersedes the older three-server live cutover below. The older `tools/day10/Day10_Final_E2E.cmd` is blocked to prevent accidental deployment. Do not use it until the four-server finalizer is built and tested.
+
+## Approved filesystem and topology
+
+- Existing Paper servers, unchanged unless separately backed up and explicitly deployed: `<user profile>/OneDrive/Documentos/MC/Server/야생`, `놀이터`, `기타`.
+- New Paper server to create: `<same Server directory>/로비` (not ProgramData).
+- Java public listeners: 25565 (wild alias), 25566 (playground alias), 25567 (other alias); **all first enter Lobby**.
+- Bedrock UDP public listeners: 19132 (wild alias), 19133 (playground alias), 19134 (other alias); **all first enter Lobby**.
+- Existing backend RCON: wild 25575, playground 25576, other 25577; Lobby 25579.
+- Proposed internal Java backends: wild 25570, playground 25571, other 25572, Lobby 25573; subject to live port inventory.
+- Velocity owns public Java listeners; Bedrock needs separately tested UDP forwarding/listeners, not TCP portproxy.
+- GeumyiTechnology and GeumyiChemistry remain **wild only**; neither is automatically installed elsewhere.
+- GSC must manage all four Paper servers and monitor Proxy/Geyser.
+- Pre-start updates for signed Geumyi plugin releases, plus separately verified official Geyser/Floodgate and Via releases. Manual GSC check offers keep-running or update-and-restart; Proxy updates must disclose affected sessions. These are approved requirements, **not yet implemented or host-verified**.
+- Preserve previous per-backend positions/dimensions on transfer and always place new external connections in Lobby.
+- Existing worlds, plugin configuration, and unrelated plugins are never overwritten or removed implicitly.
+
+## Revised implementation stages
+
+1. Read-only inspection: `tools/day10/Day10_Phase1_Preflight.cmd`, `preflight_four_servers.ps1`, collect report from actual server PC. No host mutation.
+2. Reconcile existing servers, port occupancy, plugins, and GSC Other profile from report.
+3. Implement four-server public/loopback networking and safe UDP forwarding with rollback.
+4. Add Lobby alongside existing folders, three backend route choices and original-location restoration.
+5. Implement newest official Geyser/Floodgate update, Via compatibility management, pre-start updates and GSC's manual update decision flow.
+6. Extend GSC/GSCM and create tested all-component CI plus a revised four-server cutover script.
+7. Host-only E2E: backup, graceful shutdown, install, Java/Bedrock per-port entry, Lobby, movement, location, GSC control and rollback rehearsal.
+
+**Day 10 is not complete until live Java/Bedrock E2E and recovery tests pass.**
+
+---
+
 # Day 10 — Full E2E + Lobby Network Plan
 
 기준일: 2026-09-30
