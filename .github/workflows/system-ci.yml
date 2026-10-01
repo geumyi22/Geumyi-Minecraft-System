@@ -764,6 +764,23 @@ jobs:
           & $path -SelfTest
           if ($LASTEXITCODE -ne 0) { throw 'Day 10 proxy foundation self-test failed on Windows PowerShell' }
 
+      - name: Day 10 four-server port snapshot, cutover and rollback self-test
+        shell: powershell
+        run: |
+          $path = 'tools/day10/four_server_port_transaction.ps1'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $path), [ref]$tokens, [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error ("Port transaction syntax line " + $_.Extent.StartLineNumber + ": " + $_.Message) }
+            exit 1
+          }
+          & $path -SelfTest
+          if ($LASTEXITCODE -ne 0) { throw 'Day 10 four-server port transaction failed' }
+          Write-Host 'DAY 10 FOUR SERVER PORT TRANSACTION PASS'
+
       - name: Day 10 four-server proxy staging on Windows PowerShell 5.1
         shell: powershell
         run: |
