@@ -35,6 +35,7 @@ decompressed-bytes-per-second = 5242880
 lobby = "127.0.0.1:__LOBBY_PORT__"
 wild = "127.0.0.1:__WILD_PORT__"
 playground = "127.0.0.1:__PLAYGROUND_PORT__"
+other = "127.0.0.1:__OTHER_PORT__"
 try = [
   "lobby"
 ]
