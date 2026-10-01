@@ -29,7 +29,7 @@ class ServerDetailScreen extends StatefulWidget {
 class _ServerDetailScreenState extends State<ServerDetailScreen> {
   int section = 0;
   bool busy = false;
-  final labels = const ['개요', '콘솔', '플레이어', '성능', '진단', '백업', '구성'];
+  final labels = const ['개요', '콘솔', '플레이어', '성능', '진단', '백업', '구성', '업데이트'];
 
   ServerView? get server => widget.controller.serverById(widget.serverId);
 
@@ -255,13 +255,132 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
                   3 => _MetricsSection(api: widget.api, server: s),
                   4 => _DiagnosticsSection(api: widget.api, server: s),
                   5 => _BackupsSection(api: widget.api, server: s, confirm: _confirm),
-                  _ => _InventorySection(api: widget.api, server: s),
+                  6 => _InventorySection(api: widget.api, server: s),
+                  _ => _UpdateSection(api: widget.api, server: s, onRestart: () => _action('restart')),
                 },
               ),
             ]),
           );
         },
       );
+}
+
+class _UpdateSection extends StatefulWidget {
+  const _UpdateSection({required this.api, required this.server, required this.onRestart});
+  final GscApi api;
+  final ServerView server;
+  final Future<void> Function() onRestart;
+
+  @override
+  State<_UpdateSection> createState() => _UpdateSectionState();
+}
+
+class _UpdateSectionState extends State<_UpdateSection> {
+  Map<String, dynamic> status = const {};
+  bool busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future<void> _refresh({bool check = false}) async {
+    if (busy) return;
+    setState(() => busy = true);
+    try {
+      final next = check
+          ? await widget.api.checkUpdates(widget.server.id)
+          : await widget.api.updateStatus(widget.server.id);
+      if (mounted) setState(() => status = next);
+    } on GscApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> _decide(String choice) async {
+    if (busy) return;
+    setState(() => busy = true);
+    try {
+      final result = await widget.api.updateDecision(widget.server.id, choice);
+      if (!mounted) return;
+      final policy = result['update_policy']?.toString() ?? choice;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('업데이트 정책이 $policy(으)로 저장됐습니다. 서버는 재시작하지 않았습니다.')),
+      );
+      final next = await widget.api.updateStatus(widget.server.id);
+      if (mounted) setState(() => status = next);
+    } on GscApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final available = status['available'];
+    final pending = available is List ? available.map((e) => e.toString()).toList() : const <String>[];
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      children: [
+        SectionCard(
+          title: '서버 업데이트',
+          icon: Icons.system_update_alt,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('상태: ${status['phase'] ?? '확인 전'}'),
+              Text('안내: ${status['message'] ?? '상태 확인을 눌러주세요.'}'),
+              if (pending.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                for (final line in pending) Text('• $line'),
+              ],
+              const SizedBox(height: 12),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                OutlinedButton(
+                  onPressed: busy ? null : () => _refresh(),
+                  child: const Text('상태 확인'),
+                ),
+                FilledButton.tonal(
+                  onPressed: busy ? null : () => _refresh(check: true),
+                  child: const Text('업데이트 확인'),
+                ),
+              ]),
+              const SizedBox(height: 12),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                OutlinedButton(
+                  onPressed: busy ? null : () => _decide('defer'),
+                  child: const Text('보류'),
+                ),
+                OutlinedButton(
+                  onPressed: busy ? null : () => _decide('manual'),
+                  child: const Text('수동 관리'),
+                ),
+                FilledButton.tonal(
+                  onPressed: busy ? null : () => _decide('enable-managed'),
+                  child: const Text('다음 시작 시 자동 적용'),
+                ),
+              ]),
+              const SizedBox(height: 8),
+              const Text('업데이트는 서명·해시를 검증한 Geumyi 배포에만 적용됩니다. '
+                  '보류와 정책 변경은 서버를 재시작하지 않습니다.'),
+              if (widget.server.online) ...[
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: busy ? null : widget.onRestart,
+                  icon: const Icon(Icons.restart_alt),
+                  label: const Text('별도로 재시작 요청'),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _OverviewSection extends StatelessWidget {
