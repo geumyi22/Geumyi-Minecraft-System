@@ -35,6 +35,13 @@ function Day10-FourBackupServer {
     New-Item -ItemType Directory -Path $To -Force | Out-Null
     & robocopy.exe $From $To /E /COPY:DAT /DCOPY:DAT /R:1 /W:1 /XJ /NP /NFL /NDL
     if ($LASTEXITCODE -ge 4) { throw "Full server backup returned a mismatch/error: $From code=$LASTEXITCODE" }
+    $sourceFiles=@(Get-ChildItem -LiteralPath $From -File -Recurse -Force -ErrorAction Stop)
+    $copiedFiles=@(Get-ChildItem -LiteralPath $To -File -Recurse -Force -ErrorAction Stop)
+    if($sourceFiles.Count -ne $copiedFiles.Count){throw "Full backup file count mismatch: $From"}
+    $sourceBytes=[long]0; $copiedBytes=[long]0
+    foreach($file in $sourceFiles){$sourceBytes += [long]$file.Length}
+    foreach($file in $copiedFiles){$copiedBytes += [long]$file.Length}
+    if($sourceBytes -ne $copiedBytes){throw "Full backup size mismatch: $From"}
     $manifest = Day10-FourManifest $From
     foreach ($file in $manifest.files) {
         $saved = Join-Path $To ([string]$file.relative)
