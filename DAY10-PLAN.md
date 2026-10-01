@@ -17,6 +17,22 @@
 - Preserve previous per-backend positions/dimensions on transfer and always place new external connections in Lobby.
 - Existing worlds, plugin configuration, and unrelated plugins are never overwritten or removed implicitly.
 
+## Four-server live-cutover installer (host E2E pending)
+
+Four-server-only scripts: Day10_FourServer_Live.cmd, finish_four_servers.ps1, four_cutover_helpers.ps1, rollback_four_servers.ps1. The retired three-server Day10_Final_E2E.cmd remains blocked.
+
+Prerequisites: verified Phase 2 stage, Git for Windows, authenticated GitHub CLI, Java, Windows PowerShell 5.1, administrator access, latest Day 10-compatible GSC Host already installed, zero players, enough disk space for full offline copies plus 4 GiB, and free ports.
+
+The finalizer fetches successful System CI artifacts that exactly match current main for Lobby, Network, GST and GDS before stopping any server. After explicit DEPLOY FOUR confirmation, it gracefully stops the three existing backends, verifies the old ports have closed, and makes full offline copies of the three entire server folders. It verifies file counts and sizes plus SHA-256 of configs and enabled plugin JARs, and records original GSC profiles and online states.
+
+Only after backup succeeds does it stage three Velocity/Geyser/Floodgate processes, create Lobby as a sibling of existing servers, install GeumyiNetwork and preserve Wild+Other Technology/Chemistry, configure four private Paper ports, update GSC profiles and assign separate Geyser UDP ports. A locally generated Floodgate key is shared across the three instances. Existing self-managed plugin updates are held during the initial cutover.
+
+On failure the four-server rollback verifies backups, stops identified Day 10 Java processes and servers, quarantines generated Lobby/proxy files, restores original config and plugin directories with hash checks, restores original GSC profiles and initial online states, and removes only Day 10 firewall rules and scheduled tasks. Existing world files are never deleted during rollback. Full offline world backups are retained.
+
+Actual users must verify all three Java aliases and three Bedrock UDP listeners enter Lobby; every server destination, /lobby and last-position restoration must be tested. Separate JAVA PASS and BEDROCK PASS confirmations are required before at-boot proxy tasks are registered.
+
+Limits: CI can check syntax and synthetic gates, not actual Java/Bedrock client login, server plugin compatibility, device behavior, public router forwarding, OneDrive behavior, Windows startup ordering, or live rollback rehearsal. Recurring updates for third-party Geyser/Floodgate/Via are not yet implemented. Do not call Day 10 complete until live E2E and rollback are verified on the host.
+
 ## Phase 2 single-click staging and cutover readiness
 
 `tools/day10/Day10_Phase2_Stage.cmd` clones current `main`, downloads and SHA-256-verifies official Velocity/Geyser/Floodgate/Via dependencies into an isolated temp stage, then runs `validate_four_server_cutover.ps1`. The read-only validator checks staging metadata/artifact hashes, three public proxy bind addresses, the shared Velocity forwarding secret, Wild/Playground/Other Paper files, Wild+Other Technology/Chemistry presence, original Java/RCON ports, GSC profiles, the absence of a previously created Lobby and conflicts on the four private ports. It produces `four-server-readiness.json` with blocker reasons and explicitly marks `live_cutover_verified=false`.
