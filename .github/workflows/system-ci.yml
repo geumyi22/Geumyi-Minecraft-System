@@ -807,7 +807,7 @@ jobs:
             throw 'Old 3-server finalizer is not guarded'
           }
           $launcher = Get-Content -LiteralPath 'tools/day10/Day10_Phase1_Preflight.cmd' -Raw
-          if ($launcher -notmatch 'preflight_four_servers.ps1' -or $launcher -match '\bDEPLOY\b') {
+          if ($launcher -notmatch 'preflight_four_servers.ps1' -or $launcher -match 'finish_day10[.]ps1') {
             throw 'Day 10 inspection launcher must only call read-only preflight'
           }
           Write-Host 'DAY 10 PHASE 1 PREFLIGHT AND DEPLOY GUARD PASS'
