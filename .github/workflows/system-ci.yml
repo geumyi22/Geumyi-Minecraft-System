@@ -787,6 +787,31 @@ jobs:
           }
           & 'tools/day10/finish_day10.ps1' -SelfTest
 
+      - name: Day 10 four-server read-only preflight and retired deployment guard
+        shell: powershell
+        run: |
+          $path = 'tools/day10/preflight_four_servers.ps1'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $path), [ref]$tokens, [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error ("Day 10 preflight syntax at line " + $_.Extent.StartLineNumber + ":" + $_.Extent.StartColumnNumber + ": " + $_.Message + "; around: " + $_.Extent.Text) }
+            exit 1
+          }
+          & $path -SelfTest
+          if ($LASTEXITCODE -ne 0) { throw 'Day 10 four-server preflight self-test failed' }
+          $retired = Get-Content -LiteralPath 'tools/day10/Day10_Final_E2E.cmd' -Raw
+          if ($retired -notmatch 'retired 3-server topology' -or $retired -notmatch 'exit /b 60') {
+            throw 'Old 3-server finalizer is not guarded'
+          }
+          $launcher = Get-Content -LiteralPath 'tools/day10/Day10_Phase1_Preflight.cmd' -Raw
+          if ($launcher -notmatch 'preflight_four_servers.ps1' -or $launcher -match 'finish_day10[.]ps1') {
+            throw 'Day 10 inspection launcher must only call read-only preflight'
+          }
+          Write-Host 'DAY 10 PHASE 1 PREFLIGHT AND DEPLOY GUARD PASS'
+
       - name: Guard Day 9 PowerShell reserved variables
         shell: powershell
         run: |
