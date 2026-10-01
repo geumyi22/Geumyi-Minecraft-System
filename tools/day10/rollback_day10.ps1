@@ -67,7 +67,9 @@ foreach ($id in @("lobby", "wild", "playground")) {
             Day10-Gsc "POST" "/api/server/action" @{ id = $id; action = "stop" } | Out-Null
             Day10-WaitOnline $id $false 180 | Out-Null
         }
-    } catch {}
+    } catch {
+        throw ("Cannot verify graceful shutdown of " + $id + "; refusing to overwrite active server files: " + $_.Exception.Message)
+    }
 }
 
 $restorePairs = @(
