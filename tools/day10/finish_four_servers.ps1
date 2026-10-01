@@ -1,11 +1,12 @@
 ﻿param([Parameter(Mandatory=$true)][string]$StageRoot,[string]$ServerRoot="",[switch]$SelfTest)
+$isSelfTest=[bool]$SelfTest
 $ErrorActionPreference="Stop"
 $ProgressPreference="SilentlyContinue"
 Set-StrictMode -Version Latest
 . (Join-Path $PSScriptRoot "day10_live_helpers.ps1")
 . (Join-Path $PSScriptRoot "four_server_port_transaction.ps1")
 . (Join-Path $PSScriptRoot "four_cutover_helpers.ps1")
-if($SelfTest){
+if($isSelfTest){
     foreach($file in @("rollback_four_servers.ps1","validate_four_server_cutover.ps1","four_cutover_helpers.ps1")){
         if(-not(Test-Path -LiteralPath (Join-Path $PSScriptRoot $file) -PathType Leaf)){throw "Missing: $file"}
     }
