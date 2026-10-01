@@ -218,7 +218,7 @@ function Day10-SetGeyserConfig {
 }
 
 function Day10-ConfigureLobbyGds {
-    param([string]$TemplatePath, [string]$DestinationPath)
+    param([string]$TemplatePath, [string]$DestinationPath, [int]$APIPort = 8767)
     if (-not (Test-Path -LiteralPath $TemplatePath)) {
         throw "GDS config template missing: $TemplatePath"
     }
@@ -229,7 +229,7 @@ function Day10-ConfigureLobbyGds {
     $text = Day10-SetYamlChild $text "agent" "enabled" "false"
     $text = Day10-SetYamlChild $text "api" "enabled" "true"
     $text = Day10-SetYamlChild $text "api" "bind" '"127.0.0.1"'
-    $text = Day10-SetYamlChild $text "api" "port" "8767"
+    $text = Day10-SetYamlChild $text "api" "port" ([string]$APIPort)
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $DestinationPath) | Out-Null
     [IO.File]::WriteAllText($DestinationPath, $text, (New-Object Text.UTF8Encoding($false)))
 }
