@@ -109,6 +109,31 @@ api:
             throw "Lobby GDS config isolation regression"
         }
 
+        # Existing snapshot pair must be retained. ViaVersionStatus is separate.
+        $pluginDir = Join-Path $root "plugins"
+        New-Item -ItemType Directory -Path $pluginDir -Force | Out-Null
+        [IO.File]::WriteAllText((Join-Path $pluginDir "ViaVersion-5.12.1-SNAPSHOT.jar"), "existing-via")
+        [IO.File]::WriteAllText((Join-Path $pluginDir "ViaBackwards-5.12.1-SNAPSHOT.jar"), "existing-back")
+        [IO.File]::WriteAllText((Join-Path $pluginDir "ViaVersionStatus-4.01.jar"), "status")
+        $baseline = Day10-GetViaBaseline $root
+        if (-not $baseline.Installed -or $baseline.Version -ne "5.12.1-SNAPSHOT") {
+            throw "Existing snapshot Via pair was not recognized"
+        }
+        $saved = @(Day10-BackupBackendPlugins $root $root "wild")
+        if ($saved.Count -ne 3) { throw "Original plugin backup count regression" }
+        $viaPinned = Join-Path $root "pinned-via.jar"
+        $backPinned = Join-Path $root "pinned-back.jar"
+        [IO.File]::WriteAllText($viaPinned, "pinned-via")
+        [IO.File]::WriteAllText($backPinned, "pinned-back")
+        Day10-InstallViaIfMissing $root $viaPinned $backPinned
+        if (Test-Path -LiteralPath (Join-Path $pluginDir "ViaVersion-5.12.0.jar")) {
+            throw "Installed duplicate pinned Via over existing snapshot"
+        }
+        Remove-Item -LiteralPath (Join-Path $pluginDir "ViaBackwards-5.12.1-SNAPSHOT.jar")
+        $incompleteRejected = $false
+        try { [void](Day10-GetViaBaseline $root) } catch { $incompleteRejected = $true }
+        if (-not $incompleteRejected) { throw "Incomplete Via pair was not rejected" }
+
         Write-Host "DAY10 FINALIZER SELFTEST PASS"
     } finally {
         Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
@@ -265,9 +290,13 @@ if (Get-ScheduledTask -TaskName "Geumyi Minecraft Velocity" -ErrorAction Silentl
 }
 
 foreach ($serverDir in @($wildPath,$playPath)) {
-    $pluginDir = Join-Path $serverDir "plugins"
-    if (Get-ChildItem -LiteralPath $pluginDir -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '(?i)^GeumyiNetwork.*[.]jar$|^ViaVersion.*[.]jar$|^ViaBackwards.*[.]jar$' }) {
-        Fail "Network/Via plugin already exists in $serverDir; manual reconciliation required"
+    # Existing aligned Via pairs are retained, not overwritten or duplicated.
+    # Reject unknown versions, unpaired JARs, duplicate versions and existing Network installs.
+    $baseline = Day10-GetViaBaseline $serverDir
+    if ($baseline.Installed) {
+        Log ("Existing Via pair will be preserved: " + $baseline.Version + " in " + $serverDir)
+    } else {
+        Log ("No Via pair in " + $serverDir + "; verified pinned 5.12.0 will be installed")
     }
 }
 
@@ -323,7 +352,13 @@ foreach ($entry in @(
     }
 }
 
+# Back up the original Via, ViaVersionStatus, Geyser and Floodgate JARs/configurations
+# before marking cutover as started. A hash mismatch stops deployment.
+$wildOriginalPlugins = @(Day10-BackupBackendPlugins $wildPath $backupRoot "wild")
+$playOriginalPlugins = @(Day10-BackupBackendPlugins $playPath $backupRoot "playground")
 $rollbackState = [ordered]@{
+    wild_original_plugins = $wildOriginalPlugins
+    playground_original_plugins = $playOriginalPlugins
     wild_path = $wildPath
     playground_path = $playPath
     lobby_path = $lobbyPath
@@ -388,9 +423,10 @@ Day10-ConfigureLobbyGds (Join-Path $PSScriptRoot "..\..\Plugins\GeumyiDiscordSta
 
 $via = Join-Path $bedrockRoot "backend-plugins\ViaVersion-5.12.0.jar"
 $back = Join-Path $bedrockRoot "backend-plugins\ViaBackwards-5.12.0.jar"
+# Wild/Playground keep their pre-existing matched Via pair. Only an empty
+# backend or the newly created Lobby receives the pinned 5.12.0 pair.
 foreach ($serverDir in @($wildPath,$playPath,$lobbyPath)) {
-    Copy-Item -LiteralPath $via -Destination (Join-Path $serverDir "plugins\ViaVersion-5.12.0.jar") -Force
-    Copy-Item -LiteralPath $back -Destination (Join-Path $serverDir "plugins\ViaBackwards-5.12.0.jar") -Force
+    Day10-InstallViaIfMissing $serverDir $via $back
 }
 Day10-CopyArtifactJar (Join-Path $artifactRoot "network-0.1.0") (Join-Path $wildPath "plugins\GeumyiNetwork-0.1.0-Paper26.3.jar")
 Day10-CopyArtifactJar (Join-Path $artifactRoot "network-0.1.0") (Join-Path $playPath "plugins\GeumyiNetwork-0.1.0-Paper26.3.jar")
