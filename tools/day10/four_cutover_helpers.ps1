@@ -34,7 +34,7 @@ function Day10-FourBackupServer {
     if (Test-Path -LiteralPath $To) { throw "Backup destination exists: $To" }
     New-Item -ItemType Directory -Path $To -Force | Out-Null
     & robocopy.exe $From $To /E /COPY:DAT /DCOPY:DAT /R:1 /W:1 /XJ /NP /NFL /NDL
-    if ($LASTEXITCODE -gt 7) { throw "Full server backup failed: $From" }
+    if ($LASTEXITCODE -ge 4) { throw "Full server backup returned a mismatch/error: $From code=$LASTEXITCODE" }
     $manifest = Day10-FourManifest $From
     foreach ($file in $manifest.files) {
         $saved = Join-Path $To ([string]$file.relative)
