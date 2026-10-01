@@ -189,4 +189,4 @@ function Day10-TestFourConfig {
     }
 }
 
-if ($SelfTest) { Day10-TestFourConfig }
+if ($SelfTest) { Day10-TestFourConfig; exit 0 }
