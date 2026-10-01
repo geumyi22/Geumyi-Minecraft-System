@@ -792,8 +792,8 @@ jobs:
           foreach ($required in @('otherServer', 'buildOtherGate()', 'requestServer(player, otherServer)', 'event.getRawSlot() == 6')) {
             if (-not $lobbyJava.Contains($required)) { throw "Lobby missing Other routing: $required" }
           }
-          if ($lobbyYaml -notmatch '(?m)^other-server: other$' -or
-              $lobbyProps -notmatch '(?m)^server-port=25573$') {
+          if (-not $lobbyYaml.Contains('other-server: other') -or
+              -not $lobbyProps.Contains('server-port=25573')) {
             throw 'Lobby config or backend private port regression'
           }
           Write-Host 'DAY 10 FOUR-SERVER TARGETS AND STAGING PASS'
