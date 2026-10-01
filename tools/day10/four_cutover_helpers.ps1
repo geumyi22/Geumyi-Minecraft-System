@@ -85,7 +85,7 @@ function Day10-FourGetArtifacts {
     return [pscustomobject]@{Commit=$mainSHA;Run=$selected.databaseId}
 }
 function Day10-FourCreateLobby {
-    param([string]$Path,[string]$Wild,[string]$Artifacts,[string]$Bedrock)
+    param([string]$Path,[string]$Wild,[string]$Artifacts,[string]$Bedrock,[int]$GdsPort)
     if (Test-Path -LiteralPath $Path) { throw "Lobby folder already exists" }
     New-Item -ItemType Directory -Path (Join-Path $Path "plugins") -Force | Out-Null
     New-Item -ItemType Directory -Path (Join-Path $Path "config") -Force | Out-Null
@@ -100,7 +100,7 @@ function Day10-FourCreateLobby {
     Day10-CopyArtifactJar (Join-Path $Artifacts "lobby-0.1.0") (Join-Path $Path "plugins\GeumyiLobby-0.1.0.jar")
     Day10-CopyArtifactJar (Join-Path $Artifacts "gst-1.1.1-hotfix") (Join-Path $Path "plugins\GeumyiServerTools-1.1.1.jar")
     Day10-CopyArtifactJar (Join-Path $Artifacts "gds-1.1.1") (Join-Path $Path "plugins\GeumyiDiscordStatus-1.1.1.jar")
-    Day10-ConfigureLobbyGds (Join-Path $PSScriptRoot "..\..\Plugins\GeumyiDiscordStatus\src\main\resources\config.yml") (Join-Path $Path "plugins\GeumyiDiscordStatus\config.yml")
+    Day10-ConfigureLobbyGds (Join-Path $PSScriptRoot "..\..\Plugins\GeumyiDiscordStatus\src\main\resources\config.yml") (Join-Path $Path "plugins\GeumyiDiscordStatus\config.yml") $GdsPort
     $bytes = New-Object byte[] 32
     $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
     try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
