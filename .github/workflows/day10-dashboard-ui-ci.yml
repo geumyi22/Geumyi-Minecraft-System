@@ -1,0 +1,41 @@
+name: Day 10 GSC Dashboard UI
+on:
+  push:
+    paths:
+      - 'GSC/ServerCenter/cmd/client/dashboard.html'
+      - '.github/workflows/day10-dashboard-ui-ci.yml'
+  pull_request:
+    paths:
+      - 'GSC/ServerCenter/cmd/client/dashboard.html'
+      - '.github/workflows/day10-dashboard-ui-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dashboard-javascript:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract dashboard JavaScript and verify Day 10 controls
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          p = pathlib.Path('GSC/ServerCenter/cmd/client/dashboard.html')
+          content = p.read_text('utf-8')
+          scripts = re.findall(r'<script\s*>(.*?)</script\s*>', content, flags=re.I|re.S)
+          if len(scripts) != 1:
+              raise SystemExit(f'expected one dashboard inline script, got {len(scripts)}')
+          script = scripts[0]
+          required = ('async function updateDecision(', 'async function applyUpdateAndRestart(',
+                      'async function loadNetworkEntryStatus(', '/api/v4/update/decision',
+                      '/api/v4/network/entry-status')
+          for needle in required:
+              if needle not in script:
+                  raise SystemExit(f'Day 10 UI required control missing: {needle}')
+          pathlib.Path('/tmp/day10-gsc-dashboard.js').write_text(script, encoding='utf-8')
+          PY
+          node --check /tmp/day10-gsc-dashboard.js
