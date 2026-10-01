@@ -797,7 +797,7 @@ jobs:
             (Resolve-Path $path), [ref]$tokens, [ref]$errors
           ) | Out-Null
           if ($errors.Count -gt 0) {
-            $errors | ForEach-Object { Write-Error ("Day 10 preflight syntax: " + $_.Message) }
+            $errors | ForEach-Object { Write-Error ("Day 10 preflight syntax at line " + $_.Extent.StartLineNumber + ":" + $_.Extent.StartColumnNumber + ": " + $_.Message + "; around: " + $_.Extent.Text) }
             exit 1
           }
           & $path -SelfTest
