@@ -217,6 +217,23 @@ function Day10-SetGeyserConfig {
     [IO.File]::WriteAllText($Path, $text, (New-Object Text.UTF8Encoding($false)))
 }
 
+function Day10-ConfigureLobbyGds {
+    param([string]$TemplatePath, [string]$DestinationPath)
+    if (-not (Test-Path -LiteralPath $TemplatePath)) {
+        throw "GDS config template missing: $TemplatePath"
+    }
+    $text = Get-Content -LiteralPath $TemplatePath -Raw -Encoding UTF8
+    $text = Day10-SetYamlChild $text "server" "id" "lobby"
+    $text = Day10-SetYamlChild $text "server" "name" '"Geumyi Lobby"'
+    $text = Day10-SetYamlChild $text "bridge" "enabled" "false"
+    $text = Day10-SetYamlChild $text "agent" "enabled" "false"
+    $text = Day10-SetYamlChild $text "api" "enabled" "true"
+    $text = Day10-SetYamlChild $text "api" "bind" '"127.0.0.1"'
+    $text = Day10-SetYamlChild $text "api" "port" "8767"
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $DestinationPath) | Out-Null
+    [IO.File]::WriteAllText($DestinationPath, $text, (New-Object Text.UTF8Encoding($false)))
+}
+
 function Day10-CopyArtifactJar {
     param([string]$ArtifactDir, [string]$Destination, [string]$Pattern = "*.jar")
     $jar = Get-ChildItem -LiteralPath $ArtifactDir -File | Where-Object { $_.Name -like $Pattern } | Select-Object -First 1
