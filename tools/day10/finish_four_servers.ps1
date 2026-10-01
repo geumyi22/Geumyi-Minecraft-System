@@ -30,6 +30,16 @@ try{
     & (Join-Path $PSScriptRoot "validate_four_server_cutover.ps1") -StageRoot $StageRoot -ServerRoot $ServerRoot
     Day10-FourRequireSuccess "Read-only cutover preflight"
     if(Test-Path -LiteralPath $proxyRoot){throw "Proxy root already exists; first-time deployment only"}
+    foreach($id in @("wild","playground","other")){
+        if(Get-ScheduledTask -TaskName ("Geumyi Day10 Velocity "+$id) -ErrorAction SilentlyContinue){
+            throw "An existing Day10 Velocity startup task needs reconciliation"
+        }
+    }
+    foreach($rule in @("Geumyi Day10 Velocity Java","Geumyi Day10 Geyser UDP")){
+        if(Get-NetFirewallRule -DisplayName $rule -ErrorAction SilentlyContinue){
+            throw "Existing Day10 firewall rule needs reconciliation: $rule"
+        }
+    }
     $ci=Day10-FourGetArtifacts $artifacts "geumyi22/Geumyi-Minecraft-System"
     # The already installed Host must contain Day10 role/update/network APIs.
     # Never change backend files using an old GSC host binary.
@@ -119,6 +129,7 @@ try{
         $key=Day10-FourBootstrapProxy $dir $java $e.udp $shared $state $statePath
         if($shared -eq ""){$shared=$key}
     }
+    Day10-FourProtectProxySecrets $proxyRoot
     foreach($e in $entries){
         $dir=Join-Path $proxyRoot $e.id
         $proc=Start-Process -FilePath $java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $dir "velocity.jar")) -WorkingDirectory $dir -PassThru
