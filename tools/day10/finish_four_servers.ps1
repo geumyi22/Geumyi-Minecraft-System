@@ -70,6 +70,11 @@ try{
         }
     }
     $stopped=$true
+    foreach($port in @(25565,25566,25567)){
+        if(Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue){
+            throw "Original Java port still listening after graceful shutdown: $port"
+        }
+    }
     New-Item -ItemType Directory -Path $backup -Force | Out-Null
     foreach($p in $profiles){Day10-FourBackupServer $p.path (Join-Path $backup ("servers\"+$p.id))}
     $state=[ordered]@{
