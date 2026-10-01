@@ -100,7 +100,7 @@ function Day10-SetServerProperty {
 function Day10-SetPaperVelocity {
     param([string]$Path, [string]$Secret)
     if (-not (Test-Path -LiteralPath $Path)) { throw "paper-global.yml missing: $Path" }
-    $lines = @((Get-Content -LiteralPath $Path -Raw).Replace([Environment]::NewLine, [char]10).Split([char]10))
+    $lines = @((Get-Content -LiteralPath $Path -Raw).Replace([Environment]::NewLine, "`n").Split([char]10))
     $proxies = -1
     $velocity = -1
     for ($i = 0; $i -lt $lines.Count; $i++) {
@@ -172,7 +172,7 @@ function Day10-SetSpigotBungeeFalse {
 
 function Day10-SetYamlChild {
     param([string]$Text, [string]$Section, [string]$Key, [string]$Value)
-    $lines = @($Text.Replace([Environment]::NewLine, [char]10).Split([char]10))
+    $lines = @($Text.Replace([Environment]::NewLine, "`n").Split([char]10))
     $sectionIndex = -1
     $sectionIndent = -1
     for ($i = 0; $i -lt $lines.Count; $i++) {
