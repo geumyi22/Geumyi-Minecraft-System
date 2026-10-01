@@ -1,9 +1,10 @@
 param(
     [string]$OutputRoot = "",
     [int]$PublicJavaPort = 25565,
-    [int]$LobbyPort = 25569,
-    [int]$WildPort = 25567,
-    [int]$PlaygroundPort = 25568,
+    [int]$LobbyPort = 25573,
+    [int]$WildPort = 25570,
+    [int]$PlaygroundPort = 25571,
+    [int]$OtherPort = 25572,
     [switch]$DownloadVelocity,
     [switch]$SelfTest
 )
@@ -42,7 +43,8 @@ function Render-VelocityConfig {
         [int]$PublicPort,
         [int]$LobbyBackendPort,
         [int]$WildBackendPort,
-        [int]$PlaygroundBackendPort
+        [int]$PlaygroundBackendPort,
+        [int]$OtherBackendPort
     )
     return $Template.
         Replace('__PUBLIC_JAVA_PORT__', [string]$PublicPort).
@@ -206,14 +208,16 @@ player-info-forwarding-mode = "modern"
 lobby = "127.0.0.1:__LOBBY_PORT__"
 wild = "127.0.0.1:__WILD_PORT__"
 playground = "127.0.0.1:__PLAYGROUND_PORT__"
+other = "127.0.0.1:__OTHER_PORT__"
 bind = "0.0.0.0:__PUBLIC_JAVA_PORT__"
 '@
-    $rendered = Render-VelocityConfig $template 25565 25569 25567 25568
+    $rendered = Render-VelocityConfig $template 25565 25573 25570 25571 25572
     foreach ($needle in @(
         'player-info-forwarding-mode = "modern"',
-        '127.0.0.1:25569',
-        '127.0.0.1:25567',
-        '127.0.0.1:25568',
+        '127.0.0.1:25573',
+        '127.0.0.1:25570',
+        '127.0.0.1:25571',
+        '127.0.0.1:25572',
         '0.0.0.0:25565'
     )) {
         if (-not $rendered.Contains($needle)) {
@@ -238,8 +242,9 @@ Assert-Port $PublicJavaPort 'PublicJavaPort'
 Assert-Port $LobbyPort 'LobbyPort'
 Assert-Port $WildPort 'WildPort'
 Assert-Port $PlaygroundPort 'PlaygroundPort'
+Assert-Port $OtherPort 'OtherPort'
 
-$ports = @($PublicJavaPort,$LobbyPort,$WildPort,$PlaygroundPort)
+$ports = @($PublicJavaPort,$LobbyPort,$WildPort,$PlaygroundPort,$OtherPort)
 if (@($ports | Select-Object -Unique).Count -ne $ports.Count) {
     throw 'Public and backend Java ports must be unique'
 }
@@ -260,7 +265,7 @@ if (-not (Test-Path -LiteralPath $templatePath)) {
 
 New-Item -ItemType Directory -Force -Path $OutputRoot | Out-Null
 $template = Get-Content -LiteralPath $templatePath -Raw
-$config = Render-VelocityConfig $template $PublicJavaPort $LobbyPort $WildPort $PlaygroundPort
+$config = Render-VelocityConfig $template $PublicJavaPort $LobbyPort $WildPort $PlaygroundPort $OtherPort
 
 $configPath = Join-Path $OutputRoot 'velocity.toml'
 [System.IO.File]::WriteAllText($configPath, $config, (New-Object System.Text.UTF8Encoding($false)))
@@ -304,6 +309,7 @@ $plan = [ordered]@{
         lobby = "127.0.0.1:$LobbyPort"
         wild = "127.0.0.1:$WildPort"
         playground = "127.0.0.1:$PlaygroundPort"
+        other = "127.0.0.1:$OtherPort"
     }
     forwarding = [ordered]@{
         mode = 'modern'
@@ -316,4 +322,4 @@ $plan | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $OutputRoo
 
 Write-Host "DAY10 PROXY FOUNDATION STAGED"
 Write-Host "Root: $OutputRoot"
-Write-Host "No Wild/Playground live configuration was modified."
+Write-Host "No Wild/Playground/Other live configuration was modified."
