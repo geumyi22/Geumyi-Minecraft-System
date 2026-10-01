@@ -12,6 +12,7 @@ Set-StrictMode -Version Latest
 $backupRoot = ""
 $cutover = $false
 $finished = $false
+$logPath = ""
 
 $helpers = Join-Path $PSScriptRoot "day10_live_helpers.ps1"
 if (-not (Test-Path -LiteralPath $helpers)) {
@@ -111,7 +112,9 @@ function Log {
     param([string]$Message)
     $line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message
     Write-Host $line
-    Add-Content -LiteralPath $logPath -Value $line -Encoding UTF8
+    if (-not [string]::IsNullOrWhiteSpace($logPath)) {
+        Add-Content -LiteralPath $logPath -Value $line -Encoding UTF8
+    }
 }
 
 function Fail {
@@ -133,7 +136,7 @@ trap {
     }
     Write-Host ""
     Write-Host "DAY 10 FINALIZER STOPPED"
-    Write-Host "Log: $logPath"
+    if (-not [string]::IsNullOrWhiteSpace($logPath)) { Write-Host "Log: $logPath" }
     if (-not [string]::IsNullOrWhiteSpace($backupRoot)) {
         Write-Host "Backup: $backupRoot"
     }
