@@ -20,7 +20,7 @@ if($ServerRoot -eq ""){$ServerRoot=Join-Path $env:USERPROFILE "OneDrive\Document
 $java=(Get-Command java.exe -ErrorAction Stop).Source
 $backup=Join-Path $env:PROGRAMDATA ("GeumyiServerCenter\Backups\Day10-Four-"+(Get-Date -Format "yyyyMMdd-HHmmss"))
 $proxyRoot=Join-Path $env:PROGRAMDATA "GeumyiServerCenter\Network\FourServer"
-$artifacts=Join-Path $StageRoot "day10-ci-artifacts"
+$artifacts=Join-Path $env:TEMP ("Geumyi-Day10-FourCI-"+[guid]::NewGuid().ToString("N"))
 $statePath=Join-Path $backup "four-rollback-state.json"
 $phase="preflight"
 $profiles=@()
@@ -45,11 +45,15 @@ try{
             throw "Existing Day10 firewall rule needs reconciliation: $rule"
         }
     }
+    # Fail before downloading any CI artifacts if the installed GSC is outdated.
+    # An old 4.2.4 binary can share the version number without Day10 APIs.
+    try {
+        $versionGate=Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 8
+        if($versionGate.StatusCode -ne 200){throw "unexpected HTTP status"}
+    } catch {
+        throw "Install the newest GSC Host from successful main System CI before live cutover. No server files were changed."
+    }
     $ci=Day10-FourGetArtifacts $artifacts "geumyi22/Geumyi-Minecraft-System"
-    # The already installed Host must contain Day10 role/update/network APIs.
-    # Never change backend files using an old GSC host binary.
-    $versionGate=Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 8
-    if($versionGate.StatusCode -ne 200){throw "Upgrade GSC from latest main CI before live cutover"}
     $settings=Day10-Gsc "GET" "/api/settings"
     $entries=@(
       @{id="wild";name="야생";port=25570;udp=19132},
