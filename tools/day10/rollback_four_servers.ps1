@@ -41,7 +41,7 @@ function Day10-FourStopProxies {
         if ($proc.Name -notin @("java.exe","javaw.exe") -or
             [string]::IsNullOrWhiteSpace([string]$proc.CommandLine) -or
             $proc.CommandLine.IndexOf([string]$State.proxy_install_root,[StringComparison]::OrdinalIgnoreCase) -lt 0) {
-            throw "PID $id is not the expected Day10 proxy; refusing to kill it"
+            continue # PID recycled or unrelated; never kill it. Check public listeners below.
         }
         Stop-Process -Id $id -Force -ErrorAction Stop
     }
@@ -68,6 +68,12 @@ function Day10-FourRestore {
     if ($null -ne $lobby -and [bool]$lobby.online) {
         Day10-Gsc "POST" "/api/server/action" @{id="lobby";action="stop"} | Out-Null
         Day10-WaitOnline "lobby" $false 180 | Out-Null
+    }
+    foreach($id in @("wild","playground","other")){
+        $taskName="Geumyi Day10 Velocity "+$id
+        $task=Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+        if($task){Stop-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+            Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction Stop}
     }
     Day10-FourStopProxies $state
     foreach ($entry in $state.servers) {
