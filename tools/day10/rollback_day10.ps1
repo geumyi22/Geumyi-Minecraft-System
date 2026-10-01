@@ -90,24 +90,11 @@ foreach ($pair in $restorePairs) {
     }
 }
 
-foreach ($serverDir in @([string]$state.wild_path, [string]$state.playground_path)) {
-    if ([string]::IsNullOrWhiteSpace($serverDir)) { continue }
-    $pluginDir = Join-Path $serverDir "plugins"
-    foreach ($name in @(
-        "GeumyiNetwork-0.1.0-Paper26.3.jar",
-        "ViaVersion-5.12.0.jar",
-        "ViaBackwards-5.12.0.jar"
-    )) {
-        Remove-Item -LiteralPath (Join-Path $pluginDir $name) -Force -ErrorAction SilentlyContinue
-    }
-    Remove-Item -LiteralPath (Join-Path $pluginDir "GeumyiNetwork") -Recurse -Force -ErrorAction SilentlyContinue
-    if (Test-Path -LiteralPath $pluginDir) {
-        Get-ChildItem -LiteralPath $pluginDir -File -Filter "*.day10-disabled" -ErrorAction SilentlyContinue | ForEach-Object {
-            $suffix = ".day10-disabled"
-            $original = $_.FullName.Substring(0, $_.FullName.Length - $suffix.Length)
-            Move-Item -LiteralPath $_.FullName -Destination $original -Force
-        }
-    }
+foreach ($entry in @(
+    @{ id = "wild"; path = [string]$state.wild_path },
+    @{ id = "playground"; path = [string]$state.playground_path }
+)) {
+    Day10-RestoreBackendPlugins $entry.path $BackupRoot $entry.id
 }
 
 if ($state.lobby_created -and (Test-Path -LiteralPath $state.lobby_path)) {
