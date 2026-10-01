@@ -754,6 +754,29 @@ jobs:
           & $path -SelfTest
           if ($LASTEXITCODE -ne 0) { throw 'Day 10 proxy foundation self-test failed on Windows PowerShell' }
 
+      - name: Validate Day 10 finalizer with Windows PowerShell
+        shell: powershell
+        run: |
+          foreach ($path in @(
+            'tools/day10/day10_live_helpers.ps1',
+            'tools/day10/rollback_day10.ps1',
+            'tools/day10/finish_day10.ps1'
+          )) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $path),
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$path : $($_.Message)" }
+              exit 1
+            }
+            Write-Host "Day 10 PowerShell syntax OK: $path"
+          }
+          & 'tools/day10/finish_day10.ps1' -SelfTest
+
       - name: Guard Day 9 PowerShell reserved variables
         shell: powershell
         run: |
@@ -830,7 +853,8 @@ jobs:
         run: |
           foreach ($path in @(
             'tools/release/Day8_Final_E2E.cmd',
-            'tools/release/Day9_Final_E2E.cmd'
+            'tools/release/Day9_Final_E2E.cmd',
+            'tools/day10/Day10_Final_E2E.cmd'
           )) {
             $bytes = [IO.File]::ReadAllBytes((Resolve-Path $path))
             if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {

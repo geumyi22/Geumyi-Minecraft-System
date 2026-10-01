@@ -226,7 +226,7 @@ if (-not (Test-Path -LiteralPath $secretPath)) {
 }
 
 $startPath = Join-Path $OutputRoot 'start.bat'
-$start = "@echo off@@setlocal@@cd /d ""%~dp0""@@java -Xms256M -Xmx512M -jar velocity.jar@@"
+$start = "@echo off@@setlocal@@cd /d ""%~dp0""@@java -Xms256M -Xmx512M -jar ""%~dp0velocity.jar""@@"
 $start = $start.Replace('@@', [Environment]::NewLine)
 Write-Ascii $startPath $start
 
