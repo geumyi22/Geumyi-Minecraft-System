@@ -50,7 +50,8 @@ function Render-VelocityConfig {
         Replace('__PUBLIC_JAVA_PORT__', [string]$PublicPort).
         Replace('__LOBBY_PORT__', [string]$LobbyBackendPort).
         Replace('__WILD_PORT__', [string]$WildBackendPort).
-        Replace('__PLAYGROUND_PORT__', [string]$PlaygroundBackendPort)
+        Replace('__PLAYGROUND_PORT__', [string]$PlaygroundBackendPort).
+        Replace('__OTHER_PORT__', [string]$OtherBackendPort)
 }
 
 function Get-StableVelocityVersions {
