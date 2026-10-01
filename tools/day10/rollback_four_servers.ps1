@@ -141,10 +141,36 @@ function Day10-FourRestore {
 }
 
 if ($SelfTest) {
-    $a = $PSCommandPath
-    if (-not (Test-Path -LiteralPath $a -PathType Leaf)) { throw "Rollback script missing" }
-    if ($a -eq (Join-Path $PSScriptRoot "rollback_day10.ps1")) { throw "Retired rollback script chosen" }
-    Write-Host "DAY10 FOUR-SERVER ROLLBACK SOURCE SELFTEST PASS"
+    $testRoot=Join-Path $env:TEMP ("Day10-RollbackSynthetic-"+[guid]::NewGuid().ToString("N"))
+    try {
+        New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
+        $servers=@()
+        foreach($id in @("wild","playground","other")){
+            $original=Join-Path $testRoot ("servers\"+$id)
+            New-Item -ItemType Directory -Path (Join-Path $original "config") -Force | Out-Null
+            [IO.File]::WriteAllText((Join-Path $original "server.properties"),("server-port="+$id))
+            [IO.File]::WriteAllText((Join-Path $original "config\paper-global.yml"),"proxies:")
+            $files=@()
+            foreach($relative in @("server.properties","config\paper-global.yml")){
+                $file=Join-Path $original $relative
+                $files += @{relative=$relative;sha256=(Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash}
+            }
+            @{files=$files} | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $original "backup-manifest.json")
+            $servers += @{id=$id;path=(Join-Path $testRoot $id)}
+        }
+        @{schema=1;servers=$servers} | ConvertTo-Json -Depth 8 |
+            Set-Content -LiteralPath (Join-Path $testRoot "four-rollback-state.json")
+        $null=Day10-FourRollbackAssert $testRoot
+        [IO.File]::AppendAllText((Join-Path $testRoot "servers\other\server.properties"),"tampered")
+        $tamperCaught=$false
+        try { $null=Day10-FourRollbackAssert $testRoot } catch { $tamperCaught=$true }
+        if(-not $tamperCaught){throw "Corrupt backup must block rollback before any host writes"}
+        Write-Host "DAY10 FOUR-SERVER ROLLBACK HASH/TAMPER SELFTEST PASS"
+    } finally {
+        if(Test-Path -LiteralPath $testRoot){
+            Remove-Item -LiteralPath $testRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
     exit 0
 }
 Day10-FourRestore $BackupRoot
