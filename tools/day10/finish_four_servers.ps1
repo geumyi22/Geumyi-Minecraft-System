@@ -30,6 +30,10 @@ try{
     Day10-FourRequireSuccess "Read-only cutover preflight"
     if(Test-Path -LiteralPath $proxyRoot){throw "Proxy root already exists; first-time deployment only"}
     $ci=Day10-FourGetArtifacts $artifacts "geumyi22/Geumyi-Minecraft-System"
+    # The already installed Host must contain Day10 role/update/network APIs.
+    # Never change backend files using an old GSC host binary.
+    $versionGate=Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 8
+    if($versionGate.StatusCode -ne 200){throw "Upgrade GSC from latest main CI before live cutover"}
     $settings=Day10-Gsc "GET" "/api/settings"
     $entries=@(
       @{id="wild";name="야생";port=25570;udp=19132},
@@ -89,6 +93,7 @@ try{
         Day10-DisableBackendProxyPlugins $p.path
         Day10-SetSpigotBungeeFalse (Join-Path $p.path "spigot.yml")
         $private=Day10-ProfileFromSettings $p.profile $p.port 0 $false
+        $private.update_policy="hold"
         Day10-Gsc "POST" "/api/v4/server-profile" @{action="update";server=$private} | Out-Null
     }
     Day10-ApplyFourConfig $paths (Join-Path $backup "port-transaction") (Join-Path $proxyRoot "wild\forwarding.secret")
@@ -132,14 +137,25 @@ try{
             Day10-WaitOnline $p.id $false 180 | Out-Null
         }
     }
-    $lobby.auto_start=$true
+        # Install three durable startup tasks only after both Java and Bedrock tests.
+    foreach($e in $entries){
+        $name="Geumyi Day10 Velocity "+$e.id
+        if(Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue){throw "Unexpected scheduled task already exists: $name"}
+        $workDir=Join-Path $proxyRoot $e.id
+        $action=New-ScheduledTaskAction -Execute $java -Argument "-Xms256M -Xmx512M -jar velocity.jar" -WorkingDirectory $workDir
+        $trigger=New-ScheduledTaskTrigger -AtStartup
+        $principal=New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+        $taskSettings=New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero) -StartWhenAvailable
+        Register-ScheduledTask -TaskName $name -Action $action -Trigger $trigger -Principal $principal -Settings $taskSettings -ErrorAction Stop | Out-Null
+    }
+$lobby.auto_start=$true
     Day10-Gsc "POST" "/api/v4/server-profile" @{action="update";server=$lobby} | Out-Null
-    $phase="verified"
     $result=[ordered]@{
         main_sha=$ci.Commit;ci_run=$ci.Run;java_manual_e2e="PASS";bedrock_manual_e2e="PASS"
         backup=$backup;proxy_root=$proxyRoot;rollback_rehearsal="NOT EXECUTED"
     }
     $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $backup "four-server-result.json") -Encoding UTF8
+    $phase="verified"
     Write-Host "JAVA/BEDROCK MANUAL E2E REPORTED PASS; backup retained: $backup"
 }catch{
     Write-Host ("Cutover stopped in "+$phase+": "+$_.Exception.Message)
