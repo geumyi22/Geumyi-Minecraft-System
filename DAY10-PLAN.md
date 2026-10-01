@@ -17,6 +17,12 @@
 - Preserve previous per-backend positions/dimensions on transfer and always place new external connections in Lobby.
 - Existing worlds, plugin configuration, and unrelated plugins are never overwritten or removed implicitly.
 
+## Phase 2 single-click staging and cutover readiness
+
+`tools/day10/Day10_Phase2_Stage.cmd` clones current `main`, downloads and SHA-256-verifies official Velocity/Geyser/Floodgate/Via dependencies into an isolated temp stage, then runs `validate_four_server_cutover.ps1`. The read-only validator checks staging metadata/artifact hashes, three public proxy bind addresses, the shared Velocity forwarding secret, Wild/Playground/Other Paper files, Wild+Other Technology/Chemistry presence, original Java/RCON ports, GSC profiles, the absence of a previously created Lobby and conflicts on the four private ports. It produces `four-server-readiness.json` with blocker reasons and explicitly marks `live_cutover_verified=false`.
+
+A passing preflight is **not** live cutover authorization: full backups, shared Floodgate identity, GSC profile/state transitions, proxy startup, live Java/Bedrock login tests, and rollback rehearsal remain required.
+
 ## Four-server port transaction (implementation foundation)
 
 The host-side module `tools/day10/four_server_port_transaction.ps1` now provides `Day10-SnapshotFourConfig`, `Day10-ApplyFourConfig` and `Day10-RestoreFourConfig` for all four Paper backends. It enforces offline status for the three existing servers, rejects occupied target private Java ports, verifies SHA-256 backups of `server.properties` and `config/paper-global.yml`, applies localhost/private Java port and Paper Velocity-modern forwarding, preserves RCON values, and restores the exact original bytes on failure. Its synthetic Windows PowerShell 5.1 self-test exercises application and hash-exact rollback without touching host servers.
