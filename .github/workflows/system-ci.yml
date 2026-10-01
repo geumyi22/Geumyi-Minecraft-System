@@ -683,6 +683,16 @@ jobs:
           pathlib.Path("/tmp/gsc-dashboard.js").write_text("\n".join(scripts), encoding="utf-8")
           PY
           node --check /tmp/gsc-dashboard.js
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path('GSC/ServerCenter/cmd/client/dashboard.html').read_text(encoding='utf-8')
+          assert 'id="clientVersionHeader"' in html
+          assert 'id="clientVersionFooter"' in html
+          assert "req('/client/config')" in html
+          assert "'v4.2.3'" not in html and 'v4.2.3' not in html, 'Stale hard-coded client version'
+          assert "s.id==='lobby'?'🏠'" in html
+          print('GSC runtime client version and Lobby UI regression checks PASS')
+          PY
 
       - name: Parse Day 8 PowerShell tools
         shell: pwsh
