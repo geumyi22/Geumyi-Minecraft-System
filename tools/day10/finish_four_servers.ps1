@@ -115,7 +115,7 @@ try{
     }
     foreach($e in $entries){
         $dir=Join-Path $proxyRoot $e.id
-        $proc=Start-Process -FilePath $java -ArgumentList @("-Xms256M","-Xmx512M","-jar","velocity.jar") -WorkingDirectory $dir -PassThru
+        $proc=Start-Process -FilePath $java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $dir "velocity.jar")) -WorkingDirectory $dir -PassThru
         Day10-FourTrackProcess $statePath $state $proc.Id
     }
     Day10-FourCheckPorts
