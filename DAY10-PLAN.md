@@ -17,6 +17,12 @@
 - Preserve previous per-backend positions/dimensions on transfer and always place new external connections in Lobby.
 - Existing worlds, plugin configuration, and unrelated plugins are never overwritten or removed implicitly.
 
+## Four-server port transaction (implementation foundation)
+
+The host-side module `tools/day10/four_server_port_transaction.ps1` now provides `Day10-SnapshotFourConfig`, `Day10-ApplyFourConfig` and `Day10-RestoreFourConfig` for all four Paper backends. It enforces offline status for the three existing servers, rejects occupied target private Java ports, verifies SHA-256 backups of `server.properties` and `config/paper-global.yml`, applies localhost/private Java port and Paper Velocity-modern forwarding, preserves RCON values, and restores the exact original bytes on failure. Its synthetic Windows PowerShell 5.1 self-test exercises application and hash-exact rollback without touching host servers.
+
+**Not yet a live installer.** The final cutover must additionally orchestrate GSC profiles and process states, create Lobby, stage and start all three Velocity/Geyser instances with a safely shared Floodgate key, disable old per-backend Geyser/Floodgate with their own verified backups, restore all services on rollback, and confirm real Java/Bedrock E2E. The retired `Day10_Final_E2E.cmd` remains blocked.
+
 ## Revised implementation stages
 
 1. Read-only inspection: `tools/day10/Day10_Phase1_Preflight.cmd`, `preflight_four_servers.ps1`, collect report from actual server PC. No host mutation.
