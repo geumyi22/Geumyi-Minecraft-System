@@ -174,3 +174,5 @@ if ($SelfTest) {
     exit 0
 }
 Day10-FourRestore $BackupRoot
+
+exit 0
