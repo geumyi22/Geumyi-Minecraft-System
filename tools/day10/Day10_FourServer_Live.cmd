@@ -24,6 +24,7 @@ if errorlevel 1 (
   exit /b 12
 )
 set "STAGE=%TEMP%\Geumyi-Day10-FourServer-Assets-10865-16858"
+if not "%~1"=="" set "STAGE=%~1"
 if not exist "%STAGE%\four-server-network-plan.json" (
   echo [BLOCKED] Previously validated Phase 2 stage was not found:
   echo "%STAGE%"
@@ -44,11 +45,11 @@ git -C "%WORK%" rev-parse HEAD
 
 net session >nul 2>&1
 if errorlevel 1 (
-  echo Requesting Administrator permission for port and firewall changes...
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%~f0' -ArgumentList '\"%STAGE%\"' -Verb RunAs"
-  exit /b
+  echo [BLOCKED] Right-click this CMD and choose Run as administrator.
+  echo No live server files were changed.
+  pause
+  exit /b 16
 )
-if not "%~1"=="" set "STAGE=%~1"
 echo.
 echo Stage: "%STAGE%"
 echo Full backup and cutover will require confirmation in PowerShell.
