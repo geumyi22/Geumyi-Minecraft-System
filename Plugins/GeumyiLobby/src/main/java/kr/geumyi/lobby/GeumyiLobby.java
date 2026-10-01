@@ -58,6 +58,7 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
     private Location lobbySpawn;
     private String wildServer;
     private String playgroundServer;
+    private String otherServer;
     private boolean portalTrigger;
     private HttpClient http;
     private URI serverStateApi;
@@ -68,6 +69,7 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         saveDefaultConfig();
         wildServer = getConfig().getString("wild-server", "wild");
         playgroundServer = getConfig().getString("playground-server", "playground");
+        otherServer = getConfig().getString("other-server", "other");
         portalTrigger = getConfig().getBoolean("portal-trigger", true);
 
         int timeoutMillis = Math.max(500, Math.min(10000, getConfig().getInt("request-timeout-millis", 2000)));
@@ -216,6 +218,7 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         buildCenter();
         buildWildGate();
         buildPlaygroundGate();
+        buildOtherGate();
         buildTree(-18, -18);
         buildTree(-18, 18);
         buildTree(18, -18);
@@ -283,6 +286,25 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         setRelative(29, 1, 0, Material.SEA_LANTERN);
     }
 
+    private void buildOtherGate() {
+        // North gate: a third portal without changing the two existing gates.
+        for (int x : new int[]{-4, 4}) {
+            for (int y = 1; y <= 6; y++) {
+                setRelative(x, y, -27, Material.DEEPSLATE_BRICKS);
+            }
+        }
+        for (int x = -4; x <= 4; x++) {
+            setRelative(x, 7, -27, Material.POLISHED_DEEPSLATE);
+        }
+        for (int z = -31; z <= -27; z++) {
+            for (int x = -3; x <= 3; x++) {
+                setRelative(x, 0, z, ((x + z) & 1) == 0 ? Material.POLISHED_DEEPSLATE : Material.STONE_BRICKS);
+            }
+        }
+        setRelative(0, 0, -29, Material.AMETHYST_BLOCK);
+        setRelative(0, 1, -29, Material.SEA_LANTERN);
+    }
+
     private void buildTree(int x, int z) {
         for (int y = 1; y <= 5; y++) {
             setRelative(x, y, z, Material.OAK_LOG);
@@ -340,14 +362,19 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
 
     private void openServerMenu(Player player) {
         Inventory inv = Bukkit.createInventory(null, 9, MENU_TITLE);
-        inv.setItem(3, menuItem(
+        inv.setItem(2, menuItem(
                 Material.GRASS_BLOCK,
                 "§a§l야생 서버",
                 List.of("§7마지막으로 있던 위치로 이동", "§e클릭하여 이동")
         ));
-        inv.setItem(5, menuItem(
+        inv.setItem(4, menuItem(
                 Material.DIAMOND,
                 "§b§l놀이터",
+                List.of("§7마지막으로 있던 위치로 이동", "§e클릭하여 이동")
+        ));
+        inv.setItem(6, menuItem(
+                Material.AMETHYST_SHARD,
+                "§d§l기타 서버",
                 List.of("§7마지막으로 있던 위치로 이동", "§e클릭하여 이동")
         ));
         player.openInventory(inv);
@@ -488,12 +515,15 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) {
             return;
         }
-        if (event.getRawSlot() == 3) {
+        if (event.getRawSlot() == 2) {
             player.closeInventory();
             requestServer(player, wildServer);
-        } else if (event.getRawSlot() == 5) {
+        } else if (event.getRawSlot() == 4) {
             player.closeInventory();
             requestServer(player, playgroundServer);
+        } else if (event.getRawSlot() == 6) {
+            player.closeInventory();
+            requestServer(player, otherServer);
         }
     }
 
@@ -519,13 +549,15 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
             return;
         }
 
-        if (!portalTrigger || Math.abs(dz) > 4.5) {
+        if (!portalTrigger) {
             return;
         }
-        if (dx <= -26.0 && dx >= -33.0) {
+        if (Math.abs(dz) <= 4.5 && dx <= -26.0 && dx >= -33.0) {
             requestServer(player, wildServer);
-        } else if (dx >= 26.0 && dx <= 33.0) {
+        } else if (Math.abs(dz) <= 4.5 && dx >= 26.0 && dx <= 33.0) {
             requestServer(player, playgroundServer);
+        } else if (Math.abs(dx) <= 4.5 && dz <= -26.0 && dz >= -33.0) {
+            requestServer(player, otherServer);
         }
     }
 

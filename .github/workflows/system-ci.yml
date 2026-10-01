@@ -315,7 +315,7 @@ jobs:
           set -euo pipefail
           PROPS="Servers/Lobby/server.properties.template"
           grep -Eq '^server-ip=127[.]0[.]0[.]1$' "$PROPS"
-          grep -Eq '^server-port=25569$' "$PROPS"
+          grep -Eq '^server-port=25573$' "$PROPS"
           grep -Eq '^online-mode=false$' "$PROPS"
           grep -Eq '^gamemode=adventure$' "$PROPS"
           grep -Eq '^level-type=minecraft:flat$' "$PROPS"
@@ -785,6 +785,16 @@ jobs:
             if ($actual.Count -ne 2 -or $actual[0] -ne 'other' -or $actual[1] -ne 'wild') {
               throw "$component must target Wild and Other only"
             }
+          }
+          $lobbyJava = Get-Content -LiteralPath 'Plugins/GeumyiLobby/src/main/java/kr/geumyi/lobby/GeumyiLobby.java' -Raw
+          $lobbyYaml = Get-Content -LiteralPath 'Plugins/GeumyiLobby/src/main/resources/config.yml' -Raw
+          $lobbyProps = Get-Content -LiteralPath 'Servers/Lobby/server.properties.template' -Raw
+          foreach ($required in @('otherServer', 'buildOtherGate()', 'requestServer(player, otherServer)', 'event.getRawSlot() == 6')) {
+            if (-not $lobbyJava.Contains($required)) { throw "Lobby missing Other routing: $required" }
+          }
+          if (-not $lobbyYaml.Contains('other-server: other') -or
+              -not $lobbyProps.Contains('server-port=25573')) {
+            throw 'Lobby config or backend private port regression'
           }
           Write-Host 'DAY 10 FOUR-SERVER TARGETS AND STAGING PASS'
 

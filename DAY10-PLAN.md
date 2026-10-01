@@ -22,7 +22,7 @@
 1. Read-only inspection: `tools/day10/Day10_Phase1_Preflight.cmd`, `preflight_four_servers.ps1`, collect report from actual server PC. No host mutation.
 2. Reconcile existing servers, port occupancy, plugins, and GSC Other profile from report.
 3. Implement four-server public/loopback networking and safe UDP forwarding with rollback.
-4. Add Lobby alongside existing folders, three backend route choices and original-location restoration.
+4. Add Lobby alongside existing folders; its server selector and three physical gates route to Wild, Playground and Other. Restore previous locations via GeumyiNetwork on each backend.
 5. Implement newest official Geyser/Floodgate update, Via compatibility management, pre-start updates and GSC's manual update decision flow.
 6. Extend GSC/GSCM and create tested all-component CI plus a revised four-server cutover script.
 7. Host-only E2E: backup, graceful shutdown, install, Java/Bedrock per-port entry, Lobby, movement, location, GSC control and rollback rehearsal.
