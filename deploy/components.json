@@ -32,7 +32,8 @@
       "plugin_name": "GeumyiTechnology",
       "artifact_glob": "GeumyiTechnology-0.1.4-Paper26.3.jar",
       "targets": [
-        "wild"
+        "wild",
+        "other"
       ],
       "requires_restart": true,
       "min_paper": "26.3",
@@ -47,7 +48,8 @@
       "plugin_name": "GeumyiChemistry",
       "artifact_glob": "GeumyiChemistry-0.4.1-Paper26.3.jar",
       "targets": [
-        "wild"
+        "wild",
+        "other"
       ],
       "requires_restart": true,
       "min_paper": "26.3",
