@@ -115,7 +115,7 @@ function Day10-FourBootstrapProxy {
         New-Item -ItemType Directory -Path (Split-Path -Parent $key) -Force | Out-Null
         Copy-Item -LiteralPath $SharedKey -Destination $key
     }
-    $process = Start-Process -FilePath $Java -ArgumentList @("-Xms256M","-Xmx512M","-jar","velocity.jar") -WorkingDirectory $Dir -PassThru
+    $process = Start-Process -FilePath $Java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $Dir "velocity.jar")) -WorkingDirectory $Dir -PassThru
     Day10-FourTrackProcess $StatePath $State $process.Id
     $end = (Get-Date).AddSeconds(90)
     do {
