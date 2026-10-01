@@ -394,6 +394,65 @@ function Day10-InstallViaIfMissing {
     Copy-Item -LiteralPath $BackSource -Destination $backDest -ErrorAction Stop
 }
 
+function Day10-RestoreBackendPlugins {
+    param([string]$ServerDir, [string]$BackupRoot, [string]$Id)
+    if ([string]::IsNullOrWhiteSpace($serverDir)) { throw "Missing rollback server path" }
+    $pluginDir = Join-Path $serverDir "plugins"
+    $originalDir = Join-Path $BackupRoot ($Id + "\plugins-original")
+    if (-not (Test-Path -LiteralPath $originalDir -PathType Container)) {
+        throw "Original plugin backup is missing: $originalDir"
+    }
+
+    # Remove only artifacts that the finalizer added and that were not
+    # present in the original backup. Never remove an existing Via pair.
+    foreach ($name in @(
+        "GeumyiNetwork-0.1.0-Paper26.3.jar",
+        "ViaVersion-5.12.0.jar",
+        "ViaBackwards-5.12.0.jar"
+    )) {
+        $original = Join-Path $originalDir $name
+        $installed = Join-Path $pluginDir $name
+        if (-not (Test-Path -LiteralPath $original) -and (Test-Path -LiteralPath $installed)) {
+            Remove-Item -LiteralPath $installed -Force -ErrorAction Stop
+        }
+    }
+    Remove-Item -LiteralPath (Join-Path $pluginDir "GeumyiNetwork") -Recurse -Force -ErrorAction SilentlyContinue
+
+    # On cutover Geyser/Floodgate JARs are renamed to .day10-disabled.
+    # Copy the verified original JAR bytes back, then remove the disabled copy.
+    if (Test-Path -LiteralPath $pluginDir) {
+        foreach ($disabled in @(Get-ChildItem -LiteralPath $pluginDir -File -Filter "*.day10-disabled")) {
+            $suffix = ".day10-disabled"
+            $name = $disabled.Name.Substring(0, $disabled.Name.Length - $suffix.Length)
+            $original = Join-Path $originalDir $name
+            $target = Join-Path $pluginDir $name
+            if (Test-Path -LiteralPath $original) {
+                Copy-Item -LiteralPath $original -Destination $target -Force -ErrorAction Stop
+                if ((Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash -ne
+                    (Get-FileHash -LiteralPath $original -Algorithm SHA256).Hash) {
+                    throw "Original plugin restoration failed: $target"
+                }
+                Remove-Item -LiteralPath $disabled.FullName -Force -ErrorAction Stop
+            } else {
+                if (Test-Path -LiteralPath $target) {
+                    throw "Plugin rollback name collision: $target"
+                }
+                Move-Item -LiteralPath $disabled.FullName -Destination $target -ErrorAction Stop
+            }
+        }
+    }
+    # Restore all original Via/Status/Geyser/Floodgate JARs by exact filename
+    # and verify the resulting SHA-256 rather than guessing file versions.
+    foreach ($file in @(Get-ChildItem -LiteralPath $originalDir -File)) {
+        $target = Join-Path $pluginDir $file.Name
+        Copy-Item -LiteralPath $file.FullName -Destination $target -Force -ErrorAction Stop
+        if ((Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash -ne
+            (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash) {
+            throw "Plugin hash mismatch after rollback: $target"
+        }
+    }
+}
+
 function Day10-AssertLoopbackListener {
     param([int]$Port)
     $listeners = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
