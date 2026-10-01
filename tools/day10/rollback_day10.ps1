@@ -64,8 +64,8 @@ foreach ($id in @("lobby", "wild", "playground")) {
     try {
         $s = Day10-State $id
         if ($null -ne $s -and [bool]$s.online) {
-            Day10-Gsc "POST" "/api/server/action" @{ id = $id; action = "force-stop" } | Out-Null
-            Start-Sleep -Seconds 3
+            Day10-Gsc "POST" "/api/server/action" @{ id = $id; action = "stop" } | Out-Null
+            Day10-WaitOnline $id $false 180 | Out-Null
         }
     } catch {}
 }
