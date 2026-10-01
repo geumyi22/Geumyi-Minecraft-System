@@ -130,6 +130,13 @@ function Day10-CheckServerRoot {
             $issues.Add("Unexpected original Java/RCON port; do not attempt first cutover: $($entry.id)")
         }
         $plugins = Join-Path $folder "plugins"
+        if ($entry.id -eq "playground") {
+            foreach ($plugin in @("GeumyiTechnology","GeumyiChemistry")) {
+                if (@(Get-ChildItem -LiteralPath $plugins -File -Filter "$plugin*.jar" -ErrorAction SilentlyContinue).Count -gt 0) {
+                    $issues.Add("$plugin is not permitted in Playground")
+                }
+            }
+        }
         if ($entry.id -in @("wild","other")) {
             foreach ($plugin in @("GeumyiTechnology","GeumyiChemistry")) {
                 if (@(Get-ChildItem -LiteralPath $plugins -File -Filter "$plugin*.jar" -ErrorAction SilentlyContinue).Count -eq 0) {
