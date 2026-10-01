@@ -133,7 +133,7 @@ function Day10-SetPaperVelocity {
     $wanted = @{
         "enabled" = "true"
         "online-mode" = "true"
-        "secret" = ([char]34 + $Secret.Replace([char]34, "") + [char]34)
+        "secret" = ([char]34 + $Secret.Replace([string][char]34, [string]::Empty) + [char]34)
     }
     foreach ($key in @("enabled", "online-mode", "secret")) {
         $found = $false
