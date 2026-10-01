@@ -10,8 +10,8 @@
 - Bedrock UDP public listeners: 19132 (wild alias), 19133 (playground alias), 19134 (other alias); **all first enter Lobby**.
 - Existing backend RCON: wild 25575, playground 25576, other 25577; Lobby 25579.
 - Proposed internal Java backends: wild 25570, playground 25571, other 25572, Lobby 25573; subject to live port inventory.
-- Velocity owns public Java listeners; Bedrock needs separately tested UDP forwarding/listeners, not TCP portproxy.
-- GeumyiTechnology and GeumyiChemistry remain **wild only**; neither is automatically installed elsewhere.
+- Use three isolated Velocity proxy instances, each with its own Java TCP listener and Geyser UDP listener: Java 25565/Bedrock 19132, Java 25566/Bedrock 19133, Java 25567/Bedrock 19134. All three share the same backend list, forwarding secret, Floodgate key and Lobby-first routing. A single versioned Geyser/Floodgate release is staged for all three. This avoids false UDP portproxy assumptions and retains real client address. Proxy resource use and shared-key handoff require actual host E2E.
+- GeumyiTechnology and GeumyiChemistry target **wild and other**; they must not be installed on playground or lobby. Existing Other data/configs must be preserved.
 - GSC must manage all four Paper servers and monitor Proxy/Geyser.
 - Pre-start updates for signed Geumyi plugin releases, plus separately verified official Geyser/Floodgate and Via releases. Manual GSC check offers keep-running or update-and-restart; Proxy updates must disclose affected sessions. These are approved requirements, **not yet implemented or host-verified**.
 - Preserve previous per-backend positions/dimensions on transfer and always place new external connections in Lobby.
@@ -30,6 +30,8 @@
 **Day 10 is not complete until live Java/Bedrock E2E and recovery tests pass.**
 
 ---
+
+> Historical three-server design below was retired on 2026-10-02. The four-server plan above takes precedence; consult current deployment manifests, not historical port/target values.
 
 # Day 10 — Full E2E + Lobby Network Plan
 
