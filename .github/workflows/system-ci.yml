@@ -776,6 +776,21 @@ jobs:
           if ($cmd.Contains('Day10_Final_E2E.cmd"') -or $cmd.Contains('finish_day10.ps1"')) {
             throw 'Retired three-server finalizer must never be executed by Phase 2'
           }
+          $validator = 'tools/day10/validate_four_server_cutover.ps1'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $validator), [ref]$tokens, [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error ("Cutover preflight syntax: " + $_.Message) }
+            exit 1
+          }
+          & $validator -SelfTest
+          if ($LASTEXITCODE -ne 0) { throw 'Cutover readiness synthetic selftest failed' }
+          if (-not $cmd.Contains('validate_four_server_cutover.ps1')) {
+            throw 'Phase2 must execute the read-only readiness validator'
+          }
           Write-Host 'DAY10 PHASE 2 STAGING LAUNCHER SAFETY PASS'
 
       - name: Day 10 four-server port snapshot, cutover and rollback self-test
