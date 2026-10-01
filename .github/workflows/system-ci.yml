@@ -764,6 +764,42 @@ jobs:
           & $path -SelfTest
           if ($LASTEXITCODE -ne 0) { throw 'Day 10 proxy foundation self-test failed on Windows PowerShell' }
 
+      - name: Day 10 four-server finalizer and rollback static tests
+        shell: powershell
+        run: |
+          $paths = @(
+            'tools/day10/finish_four_servers.ps1',
+            'tools/day10/four_cutover_helpers.ps1',
+            'tools/day10/rollback_four_servers.ps1'
+          )
+          foreach ($path in $paths) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $path), [ref]$tokens, [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error ("$path PS5.1 syntax line " + $_.Extent.StartLineNumber + ": " + $_.Message) }
+              exit 1
+            }
+          }
+          & 'tools/day10/finish_four_servers.ps1' -StageRoot $env:TEMP -SelfTest
+          if ($LASTEXITCODE -ne 0) { throw 'Four-server finalizer selftest failed' }
+          & 'tools/day10/rollback_four_servers.ps1' -BackupRoot $env:TEMP -SelfTest
+          if ($LASTEXITCODE -ne 0) { throw 'Four-server rollback selftest failed' }
+          & 'tools/day10/Day10_FourServer_Live.cmd' --selftest
+          if ($LASTEXITCODE -ne 0) { throw 'Four-server launcher selftest failed' }
+          $runner = Get-Content -LiteralPath 'tools/day10/finish_four_servers.ps1' -Raw
+          foreach ($safety in @('Day10-FourBackupServer', 'Day10-ApplyFourConfig', 'rollback_four_servers.ps1',
+                               'DEPLOY FOUR', 'JAVA PASS', 'BEDROCK PASS', '25565,25566,25567', '19132,19133,19134')) {
+            if (-not $runner.Contains($safety)) { throw "Missing four-server guard: $safety" }
+          }
+          $launcher = Get-Content -LiteralPath 'tools/day10/Day10_FourServer_Live.cmd' -Raw
+          if ($launcher.Contains('finish_day10.ps1') -or $launcher.Contains('call Day10_Final_E2E.cmd')) {
+            throw 'Retired three-server finalizer must not be invoked'
+          }
+          Write-Host 'DAY10 FOUR-SERVER FINALIZER STATIC GATES PASS (LIVE E2E UNVERIFIED)'
+
       - name: Day 10 Phase 2 staging launcher safety gate
         shell: powershell
         run: |
