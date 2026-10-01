@@ -28,6 +28,34 @@ try {
     }
 } catch {}
 
+# Stop only the Java process running the Velocity JAR from this Day 10 install.
+# Unregistering a Windows scheduled task alone does not stop its child Java process.
+$velocityJar = Join-Path ([string]$state.velocity_root) "velocity.jar"
+$velocityProcesses = @(Get-CimInstance Win32_Process -ErrorAction Stop |
+    Where-Object {
+        $_.Name -in @("java.exe", "javaw.exe") -and
+        $null -ne $_.CommandLine -and
+        $_.CommandLine.IndexOf($velocityJar, [StringComparison]::OrdinalIgnoreCase) -ge 0
+    })
+foreach ($proc in $velocityProcesses) {
+    Write-Host ("Stopping Day 10 Velocity PID " + $proc.ProcessId)
+    Stop-Process -Id $proc.ProcessId -Force -ErrorAction Stop
+}
+$deadline = (Get-Date).AddSeconds(15)
+do {
+    $stillRunning = @(Get-CimInstance Win32_Process -ErrorAction Stop |
+        Where-Object {
+            $_.Name -in @("java.exe", "javaw.exe") -and
+            $null -ne $_.CommandLine -and
+            $_.CommandLine.IndexOf($velocityJar, [StringComparison]::OrdinalIgnoreCase) -ge 0
+        })
+    if ($stillRunning.Count -eq 0) { break }
+    Start-Sleep -Seconds 1
+} while ((Get-Date) -lt $deadline)
+if ($stillRunning.Count -gt 0) {
+    throw "Velocity is still running; refusing to delete install files or restore old ports."
+}
+
 try { & netsh.exe interface portproxy delete v4tov4 listenport=25566 listenaddress=0.0.0.0 | Out-Null } catch {}
 try { Remove-NetFirewallRule -DisplayName "Geumyi Velocity Java" -ErrorAction SilentlyContinue } catch {}
 try { Remove-NetFirewallRule -DisplayName "Geumyi Geyser Bedrock" -ErrorAction SilentlyContinue } catch {}
