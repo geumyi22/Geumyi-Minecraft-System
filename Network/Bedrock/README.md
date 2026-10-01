@@ -1,3 +1,11 @@
+# Day 10 revised four-server design (2026-10-02)
+
+Three Velocity processes each run one Geyser-Velocity and Floodgate-Velocity instance, bound to Java TCP/Bedrock UDP pairs `25565/19132`, `25566/19133` and `25567/19134` respectively. Every instance routes to the same Lobby (`127.0.0.1:25573`) first, with Wild (`25570`), Playground (`25571`) and Other (`25572`) as private backends. All instances must use identical Velocity forwarding secrets and the same Floodgate key to keep authentication consistent across entrypoints. The same verified latest official Geyser/Floodgate artifacts are staged to all three proxy processes. This is one centrally version-managed release, but three runtime processes. A shared Floodgate key must be distributed only locally after it is generated, never committed.
+
+`tools/day10/stage_four_server_network.ps1` stages configs and an explicit checklist without changing live servers, firewall, router or Windows services. It does not yet start instances, generate Floodgate credentials or establish E2E connectivity. The historical single-proxy description below is superseded.
+
+---
+
 # Day 10 Bedrock foundation
 
 This phase stages the Bedrock entrypoint without changing live firewall/router
