@@ -437,7 +437,7 @@ Day10-Gsc "POST" "/api/v4/server-profile" @{ action = "add"; server = $lobbyProf
 Log "GSC profiles moved to private backend ports"
 
 Log "bootstrapping Velocity plugins"
-$bootstrap = Start-Process -FilePath $java -ArgumentList @("-Xms256M","-Xmx512M","-jar","velocity.jar") -WorkingDirectory $velocityRoot -PassThru -WindowStyle Hidden
+$bootstrap = Start-Process -FilePath $java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $velocityRoot "velocity.jar")) -WorkingDirectory $velocityRoot -PassThru -WindowStyle Hidden
 $geyserConfig = Join-Path $velocityRoot "plugins\Geyser-Velocity\config.yml"
 $deadline = (Get-Date).AddSeconds(90)
 while (-not (Test-Path -LiteralPath $geyserConfig) -and (Get-Date) -lt $deadline) {
