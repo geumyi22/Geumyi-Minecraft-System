@@ -149,3 +149,15 @@ function Day10-FourCheckPorts {
         }
     }
 }
+
+function Day10-FourProtectProxySecrets {
+    param([string]$ProxyRoot)
+    foreach($id in @("wild","playground","other")){
+        foreach($relative in @("forwarding.secret","plugins\floodgate\key.pem")){
+            $path=Join-Path (Join-Path $ProxyRoot $id) $relative
+            if(-not(Test-Path -LiteralPath $path -PathType Leaf)){throw "Missing proxy secret: $id/$relative"}
+            & icacls.exe $path /inheritance:r /grant:r "*S-1-5-18:(F)" "*S-1-5-32-544:(F)" | Out-Null
+            if($LASTEXITCODE -ne 0){throw "Could not restrict local secret ACL: $id/$relative"}
+        }
+    }
+}
