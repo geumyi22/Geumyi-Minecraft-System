@@ -69,15 +69,39 @@ function Get-StableVelocityVersions {
 
 function Get-BuildArray {
     param($Data)
-    if ($null -ne $Data.builds) {
-        return @($Data.builds)
+    if ($null -eq $Data) { return @() }
+    # PaperMC Fill v3 /builds returns an array, not {builds:[...]}.
+    # Keep support for the wrapped shape without StrictMode property errors.
+    if ($Data -is [array]) { return $Data }
+    if ($Data.PSObject.Properties['builds']) { return @($Data.builds) }
+    if ($Data.PSObject.Properties['id'] -or $Data.PSObject.Properties['build']) {
+        return @($Data)
     }
-    return @($Data)
+    throw 'Unexpected PaperMC builds response shape'
+}
+
+function Get-BuildNumber {
+    param($Build)
+    if ($Build.PSObject.Properties['id']) { return [int]$Build.id }
+    if ($Build.PSObject.Properties['build']) { return [int]$Build.build }
+    throw 'Velocity build lacks id/build number'
+}
+
+function Select-VelocityBuilds {
+    param($Response)
+    $items = @(Get-BuildArray $Response)
+    # Velocity releases use RECOMMENDED; support STABLE when available.
+    return @($items | Where-Object {
+        $_.PSObject.Properties['channel'] -and
+        [string]$_.channel -in @('RECOMMENDED', 'STABLE')
+    } | Sort-Object -Property @{ Expression = {
+        if ([string]$_.channel -eq 'RECOMMENDED') { 1 } else { 0 }
+    }; Descending = $true }, @{ Expression = { Get-BuildNumber $_ }; Descending = $true })
 }
 
 function Get-BuildDownload {
     param($Build)
-    if ($null -eq $Build.downloads) {
+    if (-not $Build.PSObject.Properties['downloads'] -or $null -eq $Build.downloads) {
         return $null
     }
     $props = @($Build.downloads.PSObject.Properties)
@@ -105,8 +129,8 @@ function Resolve-StableVelocity {
     foreach ($version in $versions) {
         $uri = "https://fill.papermc.io/v3/projects/velocity/versions/$version/builds"
         $data = Invoke-RestMethod -UseBasicParsing -Headers $headers -Uri $uri
-        $stable = @(Get-BuildArray $data | Where-Object { [string]$_.channel -eq 'STABLE' } | Sort-Object build -Descending)
-        foreach ($build in $stable) {
+        $candidates = @(Select-VelocityBuilds $data)
+        foreach ($build in $candidates) {
             $download = Get-BuildDownload $build
             if ($null -eq $download) {
                 continue
@@ -117,7 +141,7 @@ function Resolve-StableVelocity {
             }
             return [pscustomobject]@{
                 Version = [string]$version
-                Build = [int]$build.build
+                Build = Get-BuildNumber $build
                 Url = $download.Url
                 UpstreamSha256 = $download.Sha256
                 DownloadKey = $download.Name
@@ -154,6 +178,27 @@ function Run-SelfTest {
     if ($null -eq $picked -or $picked.Name -ne 'server:default') {
         throw 'Velocity download selection regression'
     }
+    # Fill v3 returns an array with id (not build), and Velocity releases
+    # can use the RECOMMENDED channel. Verify all cases under StrictMode.
+    $modern = [pscustomobject]@{ id = 42; channel = 'RECOMMENDED'; downloads = $downloads }
+    $legacy = [pscustomobject]@{ build = 30; channel = 'STABLE'; downloads = $downloads }
+    $fromArray = @(Select-VelocityBuilds @($legacy, $modern))
+    if ($fromArray.Count -ne 2 -or (Get-BuildNumber $fromArray[0]) -ne 42) {
+        throw 'Fill v3 array/channel selection regression'
+    }
+    $wrapped = [pscustomobject]@{ builds = @($legacy) }
+    $fromWrapped = @(Select-VelocityBuilds $wrapped)
+    if ($fromWrapped.Count -ne 1 -or (Get-BuildNumber $fromWrapped[0]) -ne 30) {
+        throw 'Wrapped builds backward compatibility regression'
+    }
+    $unsupportedRejected = $false
+    try { [void](Get-BuildArray ([pscustomobject]@{ notBuilds = @() })) } catch {
+        $unsupportedRejected = $true
+    }
+    if (-not $unsupportedRejected) {
+        throw 'Unexpected Fill v3 response shape was silently accepted'
+    }
+
 
     $template = @'
 player-info-forwarding-mode = "modern"
