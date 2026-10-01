@@ -144,10 +144,18 @@ function Day10-FourCheckPorts {
     foreach ($port in @(25570,25571,25572,25573)) { Day10-AssertLoopbackListener $port }
     foreach ($port in @(25565,25566,25567)) { Day10-WaitTcp $port $true 45 }
     foreach ($port in @(19132,19133,19134)) {
-        if (@(Get-NetUDPEndpoint -LocalPort $port -ErrorAction SilentlyContinue).Count -ne 1) {
-            throw "Bedrock UDP listener not unique or unavailable: $port"
+        if (@(Get-NetUDPEndpoint -LocalPort $port -ErrorAction SilentlyContinue).Count -lt 1) {
+            throw "Bedrock UDP listener missing: $port"
         }
     }
+    # A bound UDP socket is not proof that Geyser can answer RakNet.
+    $result=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 12
+    foreach($point in @($result.endpoints)){
+        if(-not [bool]$point.java_responding -or -not [bool]$point.bedrock_raknet_pong){
+            throw "Java/RakNet response failed: $($point.id) TCP $($point.java_tcp), UDP $($point.bedrock_udp)"
+        }
+    }
+    if(@($result.endpoints).Count -ne 3){throw "Missing Java/Bedrock network endpoint results"}
 }
 
 function Day10-FourProtectProxySecrets {
