@@ -309,6 +309,91 @@ function Day10-ProfileFromSettings {
     }
 }
 
+
+# The existing 5.12.1-SNAPSHOT pair is already deployed by this host.
+# Retain it on Wild/Playground. ViaVersionStatus is a separate plugin, not ViaVersion.
+function Day10-GetViaBaseline {
+    param([string]$ServerDir)
+    $pluginDir = Join-Path $ServerDir "plugins"
+    if (-not (Test-Path -LiteralPath $pluginDir -PathType Container)) {
+        throw "Plugin directory missing: $pluginDir"
+    }
+    $files = @(Get-ChildItem -LiteralPath $pluginDir -File)
+    $via = @($files | Where-Object { $_.Name -match '^ViaVersion-(.+)[.]jar$' })
+    $back = @($files | Where-Object { $_.Name -match '^ViaBackwards-(.+)[.]jar$' })
+    $net = @($files | Where-Object { $_.Name -match '^GeumyiNetwork.*[.]jar$' })
+    if ($net.Count -ne 0 -or (Test-Path -LiteralPath (Join-Path $pluginDir "GeumyiNetwork"))) {
+        throw "Existing GeumyiNetwork installation needs manual reconciliation: $ServerDir"
+    }
+    if ($via.Count -gt 1 -or $back.Count -gt 1) {
+        throw "Multiple ViaVersion/ViaBackwards JARs found: $ServerDir"
+    }
+    if ($via.Count -ne $back.Count) {
+        throw "Incomplete ViaVersion/ViaBackwards pair: $ServerDir"
+    }
+    if ($via.Count -eq 0) {
+        return [pscustomobject]@{ Installed = $false; Version = ""; ViaName = ""; BackName = "" }
+    }
+    $viaVersion = [regex]::Match($via[0].Name, '^ViaVersion-(.+)[.]jar$').Groups[1].Value
+    $backVersion = [regex]::Match($back[0].Name, '^ViaBackwards-(.+)[.]jar$').Groups[1].Value
+    if ($viaVersion -ne $backVersion) {
+        throw "Via pair versions differ: $viaVersion vs $backVersion in $ServerDir"
+    }
+    if ($viaVersion -notin @("5.12.1-SNAPSHOT", "5.12.0")) {
+        throw "Via pair $viaVersion not reviewed for Day 10: $ServerDir"
+    }
+    return [pscustomobject]@{
+        Installed = $true
+        Version = $viaVersion
+        ViaName = $via[0].Name
+        BackName = $back[0].Name
+    }
+}
+
+function Day10-BackupBackendPlugins {
+    param([string]$ServerDir, [string]$BackupRoot, [string]$Id)
+    $pluginDir = Join-Path $ServerDir "plugins"
+    $dest = Join-Path $BackupRoot ($Id + "\plugins-original")
+    New-Item -ItemType Directory -Force -Path $dest | Out-Null
+    $names = @()
+    foreach ($file in @(Get-ChildItem -LiteralPath $pluginDir -File)) {
+        if ($file.Name -match '^(ViaVersion-|ViaBackwards-|ViaVersionStatus-|Geyser-Spigot|floodgate-spigot).*([.]jar)$') {
+            $copy = Join-Path $dest $file.Name
+            Copy-Item -LiteralPath $file.FullName -Destination $copy -ErrorAction Stop
+            $hash = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash
+            if ((Get-FileHash -LiteralPath $copy -Algorithm SHA256).Hash -ne $hash) {
+                throw "Plugin backup hash mismatch: $($file.FullName)"
+            }
+            $names += $file.Name
+        }
+    }
+    $dataFolders = @("ViaVersion", "ViaBackwards", "ViaVersionStatus", "Geyser-Spigot", "floodgate")
+    foreach ($name in $dataFolders) {
+        $source = Join-Path $pluginDir $name
+        if (Test-Path -LiteralPath $source -PathType Container) {
+            Copy-Item -LiteralPath $source -Destination (Join-Path $dest $name) -Recurse -ErrorAction Stop
+        }
+    }
+    return @($names)
+}
+
+function Day10-InstallViaIfMissing {
+    param([string]$ServerDir, [string]$ViaSource, [string]$BackSource)
+    $baseline = Day10-GetViaBaseline $ServerDir
+    if ($baseline.Installed) {
+        Write-Host ("Keeping existing Via pair " + $baseline.Version + " in " + $ServerDir)
+        return
+    }
+    $pluginDir = Join-Path $ServerDir "plugins"
+    $viaDest = Join-Path $pluginDir "ViaVersion-5.12.0.jar"
+    $backDest = Join-Path $pluginDir "ViaBackwards-5.12.0.jar"
+    if ((Test-Path -LiteralPath $viaDest) -or (Test-Path -LiteralPath $backDest)) {
+        throw "Via installation target already exists: $ServerDir"
+    }
+    Copy-Item -LiteralPath $ViaSource -Destination $viaDest -ErrorAction Stop
+    Copy-Item -LiteralPath $BackSource -Destination $backDest -ErrorAction Stop
+}
+
 function Day10-AssertLoopbackListener {
     param([int]$Port)
     $listeners = @(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
