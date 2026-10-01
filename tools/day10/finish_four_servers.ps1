@@ -28,7 +28,12 @@ $state=$null
 $stopped=$false
 try{
     & (Join-Path $PSScriptRoot "validate_four_server_cutover.ps1") -StageRoot $StageRoot -ServerRoot $ServerRoot
-    Day10-FourRequireSuccess "Read-only cutover preflight"
+    $readinessFile=Join-Path $StageRoot "four-server-readiness.json"
+    if(-not(Test-Path -LiteralPath $readinessFile -PathType Leaf)){throw "Readiness report was not generated"}
+    $readinessResult=Get-Content -LiteralPath $readinessFile -Raw | ConvertFrom-Json
+    if(-not [bool]$readinessResult.staging_and_first_deploy_preflight_pass){
+        throw ("Read-only cutover preflight blocked: "+(@($readinessResult.errors) -join "; "))
+    }
     if(Test-Path -LiteralPath $proxyRoot){throw "Proxy root already exists; first-time deployment only"}
     foreach($id in @("wild","playground","other")){
         if(Get-ScheduledTask -TaskName ("Geumyi Day10 Velocity "+$id) -ErrorAction SilentlyContinue){
