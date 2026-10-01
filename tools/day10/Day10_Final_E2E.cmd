@@ -3,6 +3,16 @@ setlocal EnableExtensions
 
 if /I "%~1"=="--selftest" exit /b 0
 
+echo.
+echo [BLOCKED] This Day 10 finalizer targets the retired 3-server topology.
+echo The approved 4-server deployment includes Wild, Playground, Other and Lobby.
+echo Java 25565/25566/25567 and Bedrock UDP 19132/19133/19134 must all start at Lobby.
+echo Do NOT use this old cutover script. Run Day10_Phase1_Preflight.cmd first.
+echo No server files or settings were changed.
+echo.
+pause
+exit /b 60
+
 net session >nul 2>&1
 if not "%errorlevel%"=="0" (
   echo [Day10] Requesting Administrator privileges...
