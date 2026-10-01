@@ -92,8 +92,13 @@ remote:
 }
 
 if ($SelfTest) {
-    Day10-SelfTest
-    exit 0
+    try {
+        Day10-SelfTest
+        exit 0
+    } catch {
+        Write-Host ("DAY10 FINALIZER SELFTEST FAIL: " + $_.Exception.ToString())
+        exit 2
+    }
 }
 
 if (-not (Day10-IsAdmin)) {
@@ -124,6 +129,7 @@ function Fail {
 }
 
 trap {
+    Write-Host ("DAY10 ERROR: " + $_.Exception.ToString())
     try { Log ("UNHANDLED: " + $_.Exception.Message) } catch {}
     if ($cutover -and -not $finished -and -not [string]::IsNullOrWhiteSpace($backupRoot)) {
         try {
