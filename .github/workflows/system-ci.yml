@@ -791,12 +791,20 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Four-server launcher selftest failed' }
           $runner = Get-Content -LiteralPath 'tools/day10/finish_four_servers.ps1' -Raw
           foreach ($safety in @('Day10-FourBackupServer', 'Day10-ApplyFourConfig', 'rollback_four_servers.ps1',
-                               'DEPLOY FOUR', 'JAVA PASS', 'BEDROCK PASS', '25565,25566,25567', '19132,19133,19134')) {
+                               'DEPLOY FOUR', 'JAVA PASS', 'BEDROCK PASS', '25565,25566,25567', '19132,19133,19134',
+                               'gscNeedsUpgrade', 'ci.Setup', 'gsc-server-before-live-cutover.json')) {
             if (-not $runner.Contains($safety)) { throw "Missing four-server guard: $safety" }
+          }
+          $helpers = Get-Content -LiteralPath 'tools/day10/four_cutover_helpers.ps1' -Raw
+          foreach ($safety in @('gsc-4.2.4-ci', 'Day10-VerifySums', 'GeumyiServerCenter-v4.2.4-Setup.exe')) {
+            if (-not $helpers.Contains($safety)) { throw "Missing verified GSC artifact guard: $safety" }
           }
           $launcher = Get-Content -LiteralPath 'tools/day10/Day10_FourServer_Live.cmd' -Raw
           if ($launcher.Contains('finish_day10.ps1') -or $launcher.Contains('call Day10_Final_E2E.cmd')) {
             throw 'Retired three-server finalizer must not be invoked'
+          }
+          foreach ($safety in @('Geumyi-Day10-FourServer-Assets-*', 'Requesting Administrator permission', 'four-server-readiness.json')) {
+            if (-not $launcher.Contains($safety)) { throw "Missing one-click launcher guard: $safety" }
           }
           Write-Host 'DAY10 FOUR-SERVER FINALIZER STATIC GATES PASS (LIVE E2E UNVERIFIED)'
 
