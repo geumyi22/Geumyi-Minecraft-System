@@ -89,7 +89,16 @@ function Day10-FourGetArtifacts {
             throw "Unexpected JAR artifact contents: $name"
         }
     }
-    return [pscustomobject]@{Commit=$mainSHA;Run=$selected.databaseId}
+    $gscFolder = Join-Path $Destination "gsc-4.2.4-ci"
+    New-Item -ItemType Directory -Path $gscFolder -Force | Out-Null
+    & $gh run download $selected.databaseId --repo $Repository --name "gsc-4.2.4-ci" --dir $gscFolder
+    Day10-FourRequireSuccess "Download current-main GSC CI package"
+    Day10-VerifySums $gscFolder
+    $setup = Join-Path $gscFolder "GeumyiServerCenter-v4.2.4-Setup.exe"
+    if (-not (Test-Path -LiteralPath $setup -PathType Leaf) -or (Get-Item -LiteralPath $setup).Length -lt 100000) {
+        throw "Current-main GSC Setup missing from verified CI artifact"
+    }
+    return [pscustomobject]@{Commit=$mainSHA;Run=$selected.databaseId;Setup=$setup}
 }
 function Day10-FourCreateLobby {
     param([string]$Path,[string]$Wild,[string]$Artifacts,[string]$Bedrock,[int]$GdsPort)
