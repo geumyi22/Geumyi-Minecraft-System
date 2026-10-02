@@ -45,13 +45,15 @@ try{
             throw "Existing Day10 firewall rule needs reconciliation: $rule"
         }
     }
-    # Fail before downloading any CI artifacts if the installed GSC is outdated.
-    # An old 4.2.4 binary can share the version number without Day10 APIs.
+    # Check whether the installed GSC contains the new Day 10 APIs. The exact
+    # current-main setup is already downloaded/verified below, but no install
+    # occurs until DEPLOY FOUR is explicitly confirmed.
+    $gscNeedsUpgrade=$false
     try {
         $versionGate=Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 8
-        if($versionGate.StatusCode -ne 200){throw "unexpected HTTP status"}
+        if($versionGate.StatusCode -ne 200){$gscNeedsUpgrade=$true}
     } catch {
-        throw "Install the newest GSC Host from successful main System CI before live cutover. No server files were changed."
+        $gscNeedsUpgrade=$true
     }
     $ci=Day10-FourGetArtifacts $artifacts "geumyi22/Geumyi-Minecraft-System"
     $settings=Day10-Gsc "GET" "/api/settings"
@@ -82,7 +84,35 @@ try{
     Day10-FourCheckBackupSpace ($profiles | ForEach-Object {$_.path}) $backup
     Write-Host "Four-server cutover: Java 25565/66/67; Bedrock 19132/33/34; Lobby first."
     Write-Host "Existing three servers will stop for FULL offline backups. Backup: $backup"
+    if($gscNeedsUpgrade){Write-Host "The installed GSC is older than today's Day10 API build and will be upgraded first."}
     if((Read-Host "Type DEPLOY FOUR to continue") -cne "DEPLOY FOUR"){throw "Cancelled before modifications"}
+    if($gscNeedsUpgrade){
+        $gscConfig=Join-Path $env:PROGRAMDATA "GeumyiServerCenter\server.json"
+        $gscPreBackup=Join-Path $StageRoot "gsc-server-before-live-cutover.json"
+        if(Test-Path -LiteralPath $gscConfig -PathType Leaf){
+            Copy-Item -LiteralPath $gscConfig -Destination $gscPreBackup -Force -ErrorAction Stop
+        }
+        Write-Host "Updating GSC from SHA-verified current-main CI package before stopping Minecraft servers..."
+        $setup=Start-Process -FilePath $ci.Setup -PassThru
+        if(-not $setup.WaitForExit(900000)){throw "GSC Setup timeout. Minecraft servers were not stopped."}
+        if($setup.ExitCode -ne 0){throw "GSC Setup failed with exit code $($setup.ExitCode). Minecraft servers were not stopped."}
+        Day10-WaitGsc 120 | Out-Null
+        try {
+            $newGate=Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 8
+            if($newGate.StatusCode -ne 200){throw "unexpected HTTP status"}
+        } catch {
+            throw "Updated GSC still lacks the Day10 network API. Minecraft servers were not stopped."
+        }
+        $afterSettings=Day10-Gsc "GET" "/api/settings"
+        foreach($p in $profiles){
+            $after=@($afterSettings.servers | Where-Object {$_.id -eq $p.id}) | Select-Object -First 1
+            if($null -eq $after -or [string]$after.path -ne [string]$p.path -or
+               [int]$after.java_port -ne [int]$p.profile.java_port -or
+               [int]$after.rcon_port -ne [int]$p.profile.rcon_port){
+                throw "GSC upgrade changed the existing $($p.id) profile. Minecraft servers were not stopped."
+            }
+        }
+    }
     foreach($p in $profiles){
         if($p.was_online){
             Day10-Gsc "POST" "/api/server/action" @{id=$p.id;action="stop"} | Out-Null
