@@ -23,17 +23,24 @@ if errorlevel 1 (
   pause
   exit /b 12
 )
-set "STAGE=%TEMP%\Geumyi-Day10-FourServer-Assets-10865-16858"
+set "STAGE="
 if not "%~1"=="" set "STAGE=%~1"
+if not defined STAGE (
+  for /f "delims=" %%I in ('powershell.exe -NoProfile -Command "$d=Get-ChildItem -LiteralPath $env:TEMP -Directory -Filter ''Geumyi-Day10-FourServer-Assets-*'' -ErrorAction SilentlyContinue ^| Where-Object { (Test-Path -LiteralPath (Join-Path $_.FullName ''four-server-network-plan.json'')) -and (Test-Path -LiteralPath (Join-Path $_.FullName ''four-server-readiness.json'')) } ^| Sort-Object LastWriteTime -Descending ^| Select-Object -First 1; if($d){$d.FullName}"') do set "STAGE=%%I"
+)
+if not defined STAGE (
+  echo [BLOCKED] No validated Phase 2 stage was found in TEMP.
+  echo Run Day10_Phase2_Stage.cmd once, or pass the stage folder as the first argument.
+  pause
+  exit /b 13
+)
 if not exist "%STAGE%\four-server-network-plan.json" (
-  echo [BLOCKED] Previously validated Phase 2 stage was not found:
-  echo "%STAGE%"
-  echo Specify the stage folder as the first command argument.
+  echo [BLOCKED] four-server-network-plan.json is missing in "%STAGE%".
   pause
   exit /b 13
 )
 if not exist "%STAGE%\four-server-readiness.json" (
-  echo [BLOCKED] The Phase 2 readiness report is missing.
+  echo [BLOCKED] four-server-readiness.json is missing in "%STAGE%".
   pause
   exit /b 14
 )
@@ -45,10 +52,14 @@ git -C "%WORK%" rev-parse HEAD
 
 net session >nul 2>&1
 if errorlevel 1 (
-  echo [BLOCKED] Right-click this CMD and choose Run as administrator.
-  echo No live server files were changed.
-  pause
-  exit /b 16
+  echo Requesting Administrator permission...
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%~f0' -ArgumentList '"%STAGE%"' -Verb RunAs"
+  if errorlevel 1 (
+    echo [BLOCKED] Administrator elevation was declined or failed.
+    pause
+    exit /b 16
+  )
+  exit /b 0
 )
 echo.
 echo Stage: "%STAGE%"
