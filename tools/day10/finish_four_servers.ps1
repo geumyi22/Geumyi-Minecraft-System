@@ -46,10 +46,6 @@ try{
         }
     }
     $ci=Day10-FourGetArtifacts $artifacts "geumyi22/Geumyi-Minecraft-System"
-    # The already installed Host must contain Day10 role/update/network APIs.
-    # Never change backend files using an old GSC host binary.
-    $versionGate=Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 8
-    if($versionGate.StatusCode -ne 200){throw "Upgrade GSC from latest main CI before live cutover"}
     $settings=Day10-Gsc "GET" "/api/settings"
     $entries=@(
       @{id="wild";name="야생";port=25570;udp=19132},
@@ -79,6 +75,26 @@ try{
     Write-Host "Four-server cutover: Java 25565/66/67; Bedrock 19132/33/34; Lobby first."
     Write-Host "Existing three servers will stop for FULL offline backups. Backup: $backup"
     if((Read-Host "Type DEPLOY FOUR to continue") -cne "DEPLOY FOUR"){throw "Cancelled before modifications"}
+    # Update the management Host from the exact current-main CI package before any backend is stopped.
+    # This may briefly restart GSC itself, but it does not intentionally stop Minecraft Java processes.
+    $gscConfig = Join-Path $env:PROGRAMDATA "GeumyiServerCenter\server.json"
+    $preGsc = Join-Path $StageRoot "gsc-server-before-day10.json"
+    if (Test-Path -LiteralPath $gscConfig -PathType Leaf) { Copy-Item -LiteralPath $gscConfig -Destination $preGsc -Force }
+    Write-Host "Installing verified current-main GSC before server cutover..."
+    $setupProc=Start-Process -FilePath $ci.Setup -PassThru
+    if(-not $setupProc.WaitForExit(900000)){throw "GSC Setup timeout; existing servers were not stopped"}
+    if($setupProc.ExitCode -ne 0){throw "GSC Setup failed with exit $($setupProc.ExitCode); existing servers were not stopped"}
+    Day10-WaitGsc 120 | Out-Null
+    $versionGate=Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 8
+    if($versionGate.StatusCode -ne 200){throw "Updated GSC is missing Day10 network API; existing servers were not stopped"}
+    $postSettings=Day10-Gsc "GET" "/api/settings"
+    foreach($p in $profiles){
+        $after=@($postSettings.servers | Where-Object {$_.id -eq $p.id}) | Select-Object -First 1
+        if($null -eq $after -or [string]$after.path -ne [string]$p.path -or
+           [int]$after.java_port -ne [int]$p.profile.java_port -or [int]$after.rcon_port -ne [int]$p.profile.rcon_port){
+            throw "GSC setup changed the existing $($p.id) profile; existing servers were not stopped"
+        }
+    }
     foreach($p in $profiles){
         if($p.was_online){
             Day10-Gsc "POST" "/api/server/action" @{id=$p.id;action="stop"} | Out-Null
