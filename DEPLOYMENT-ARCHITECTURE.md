@@ -1,6 +1,6 @@
 # Geumyi Minecraft System — Build, Release & Auto-Deployment Architecture
 
-기준일: 2026-09-28
+기준일: 2026-10-04
 
 ## 목표
 
@@ -50,7 +50,7 @@ Source change
 - 기타 외부 플러그인
 - Java Runtime
 
-외부 구성요소는 버전 감지/업데이트 알림은 가능하지만, 기본 정책은 `notify` 또는 `manual-approve`입니다. 특정 항목만 allowlist로 자동 업데이트를 허용합니다.
+외부 구성요소는 자체 플러그인과 정책을 분리합니다. Day 11에서는 Geyser/Floodgate/ViaVersion/ViaBackwards를 공식 metadata·checksum·호환성 기준으로 관리하는 경로를 추가하되, 무조건 최신 파일을 설치하지 않습니다. Paper/Java/고위험 외부 플러그인은 기본적으로 `notify` 또는 `manual-approve`를 유지하고, 자동 업데이트는 명시적 allowlist/호환성 규칙이 있는 항목만 허용합니다.
 
 ## 2. Release channel
 
@@ -404,21 +404,20 @@ Health FAIL   -> rollback + 알림
 
 ## 구현 단계
 
-### Day 7 status — COMPLETED
+일차 번호/상태의 단일 기준은 `DAY-TIMELINE.md`입니다.
 
-Final System CI run `36448831023`, Android run `36448477722`, and final clean iOS run `36449571301` passed. See `DAY7-CI-REPORT.md`.
-
-### Day 7 — Build foundation
+### Day 7 — Build foundation — COMPLETED
 
 - GST/GDS/Technology/Chemistry/Agent/GSC/GSCM component CI
 - path filters
 - build/test artifact naming
 - toolchain version 정리
 - component version metadata
-- CI status 명확화
 - verified artifact 생성
 
-### Day 8 — Secure Release & Update foundation
+Final System CI run `36448831023`, Android run `36448477722`, final clean iOS run `36449571301` passed.
+
+### Day 8 — Secure Release & Update foundation — COMPLETED
 
 - Release artifact 표준
 - deployment manifest
@@ -429,50 +428,78 @@ Final System CI run `36448831023`, Android run `36448477722`, and final clean iO
 - staging/lock/cache
 - GSC Update Center 1차
 - 자체 플러그인 next-start auto-update
+- Wild Technology 0.1.4 real host update + Playground isolation E2E
 
-### Day 9 — Transaction / Backup / Rollback
+### Day 9 — Transaction / Backup / Rollback — COMPLETED
 
 - automatic backup
-- atomic replacement
-- journal
+- staging + atomic replacement
+- transaction journal
 - post-start health verification
 - automatic rollback
 - dependency/release group
+- interrupted transaction recovery
+- rejected release hold
 - failure injection tests
-- offline/GitHub outage tests
+- offline/GitHub outage fail-open
+- server-PC Final E2E PASS
 
-### Day 10 — Full E2E + Lobby architecture
+### Day 10 — Full E2E + Lobby / Proxy Network — PARTIAL
 
-- clean install -> update -> rollback E2E
-- Wild/Playground/Other cross-server deployment test
-- final docs/release
-- Lobby transfer architecture decision
-- Java + Bedrock transfer compatibility
-- update/restart behavior during Lobby routing
+Completed:
+- Wild/Playground/Other private Paper backend conversion
+- Lobby Paper server
+- three Velocity proxy aliases
+- Java public entry -> Lobby
+- Lobby routing to Wild/Playground/Other
+- `/lobby`
+- per-backend last-position restore
+- reboot persistence / proxy startup
 
-### Day 11 — Operations UX & Fleet management
+Pending:
+- one real Bedrock client E2E covering Lobby entry, all three backend routes, `/lobby`, and last-position restoration
 
+Infrastructure readiness or a new upstream Geyser build alone is not a Bedrock PASS.
+
+### Day 11 — Operations UX & Fleet Management — PLANNED
+
+Target:
+- GSC **4.3**
+- GSCM **1.1.5**
+
+Scope:
+- GSC/GSCM startup latest-verified-build check
+- GSC self-update flow
+- Android GSCM update flow; iOS update UX respecting Apple signing/provisioning
 - GSC full Update Center
 - GSCM update controls
 - per-server policy/channel/pin/hold
 - maintenance windows
-- player-aware restart
+- player-aware restart/update
 - canary promotion
 - notifications
 - update history/audit
-- external plugin notify/manual policy
 - dry-run
+- Geyser/Floodgate/ViaVersion/ViaBackwards managed external policy
+- Paper kept under separate compatibility/manual-approval policy
 
-### Day 12 — Extended automation & production hardening
+Operational fixes:
+- suppress false RCON `management limited` when RCON is actually usable
+- intentional normal stop must resolve to OFFLINE, not RECOVERING
+- console `stop` must update desired-running state
+- real crash with desired-running=true remains RECOVERING and auto-restarts
 
-- GSC/Agent self-update
+### Day 12 — Extended Automation & Production Hardening — PLANNED
+
 - ResourcePack/DataPack managed deployment
-- resource-pack SHA/UUID automation
+- resource-pack SHA/UUID/property automation
+- StatusAgent/extended self-update
 - SBOM/provenance/dependency/security scans
 - reproducibility hardening
 - shared artifact cache
+- stronger offline operation
 - disaster-recovery drill
-- Lobby implementation/fleet integration if Day-10 design is approved
+- final fleet integration of the already-implemented Day-10 Lobby/Proxy topology
 
 ## 완료 기준
 
