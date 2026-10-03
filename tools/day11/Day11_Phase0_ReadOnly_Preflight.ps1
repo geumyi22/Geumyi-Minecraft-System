@@ -197,6 +197,11 @@ if (Test-Path -LiteralPath $updatesRoot -PathType Container) {
         })
 }
 
+$javaVersion = ""
+try {
+    $javaVersion = (& java.exe -version 2>&1 | Select-Object -First 1).ToString()
+} catch {}
+
 $result = [ordered]@{
     schema = 1
     phase = "Day11-Phase0-READ-ONLY"
@@ -213,7 +218,7 @@ $result = [ordered]@{
         computer_name = $env:COMPUTERNAME
         windows = [Environment]::OSVersion.VersionString
         powershell = $PSVersionTable.PSVersion.ToString()
-        java = try { (& java.exe -version 2>&1 | Select-Object -First 1).ToString() } catch { "" }
+        java = $javaVersion
         gsc_root_exists = Test-Path -LiteralPath $gscRoot -PathType Container
         config_exists = Test-Path -LiteralPath $configPath -PathType Leaf
         config_sha256 = Safe-FileHash $configPath
