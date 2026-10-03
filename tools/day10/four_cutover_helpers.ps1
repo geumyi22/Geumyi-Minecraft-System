@@ -141,56 +141,176 @@ function Day10-FourCreateLobby {
     Day10-SetServerProperty (Join-Path $Path "server.properties") "rcon.password" (Day10-NewPlainRconPassword)
     [IO.File]::WriteAllText((Join-Path $Path "eula.txt"),("eula=true" + [Environment]::NewLine),[Text.Encoding]::ASCII)
 }
+function Day10-FourGetFreeLoopbackTcpPort {
+    $listener = New-Object Net.Sockets.TcpListener([Net.IPAddress]::Loopback, 0)
+    try {
+        $listener.Start()
+        return ([Net.IPEndPoint]$listener.LocalEndpoint).Port
+    } finally {
+        $listener.Stop()
+    }
+}
+
+function Day10-FourProxyProcessesInDir {
+    param([string]$Dir)
+    $matches=@()
+    foreach($proc in @(Get-CimInstance Win32_Process -Filter "Name='java.exe' OR Name='javaw.exe'" -ErrorAction SilentlyContinue)){
+        $cmd=[string]$proc.CommandLine
+        if(-not [string]::IsNullOrWhiteSpace($cmd) -and
+           $cmd.IndexOf($Dir,[StringComparison]::OrdinalIgnoreCase) -ge 0){
+            $matches += $proc
+        }
+    }
+    return @($matches)
+}
+
+function Day10-FourStopProxyProcessesInDir {
+    param([string]$Dir,[int]$TimeoutSeconds=20)
+    $deadline=(Get-Date).AddSeconds($TimeoutSeconds)
+    do {
+        $found=@(Day10-FourProxyProcessesInDir $Dir)
+        if($found.Count -eq 0){ return }
+        foreach($proc in $found){
+            Write-Host "Stopping Day10 proxy bootstrap/final process PID $($proc.ProcessId) in $Dir"
+            Stop-Process -Id ([int]$proc.ProcessId) -Force -ErrorAction SilentlyContinue
+        }
+        Start-Sleep -Milliseconds 500
+    } while((Get-Date) -lt $deadline)
+    $left=@(Day10-FourProxyProcessesInDir $Dir)
+    if($left.Count -gt 0){
+        throw "Day10 proxy processes did not exit in $Dir: $(@($left | ForEach-Object {$_.ProcessId}) -join ',')"
+    }
+}
+
+function Day10-FourWaitUdpFree {
+    param([int]$Port,[int]$TimeoutSeconds=20)
+    $deadline=(Get-Date).AddSeconds($TimeoutSeconds)
+    do {
+        if(@(Get-NetUDPEndpoint -LocalPort $Port -ErrorAction SilentlyContinue).Count -eq 0){ return }
+        Start-Sleep -Milliseconds 500
+    } while((Get-Date) -lt $deadline)
+    throw "UDP port did not become free after proxy bootstrap: $Port"
+}
+
 function Day10-FourBootstrapProxy {
-    param([string]$Dir,[string]$Java,[int]$BedrockPort,[string]$SharedKey,$State,[string]$StatePath)
+    param([string]$Dir,[string]$Java,[int]$BedrockPort,$State,[string]$StatePath)
     $geyser = Join-Path $Dir "plugins\Geyser-Velocity\config.yml"
     $key = Join-Path $Dir "plugins\floodgate\key.pem"
-    if ($SharedKey -ne "") {
-        New-Item -ItemType Directory -Path (Split-Path -Parent $key) -Force | Out-Null
-        Copy-Item -LiteralPath $SharedKey -Destination $key
+    $velocity = Join-Path $Dir "velocity.toml"
+    $originalVelocity = Day10-ReadUtf8Strict $velocity
+    $bootstrapPort = Day10-FourGetFreeLoopbackTcpPort
+
+    $lines=@($originalVelocity.Replace([Environment]::NewLine,[string][char]10).Split([char]10))
+    $bindIndex=-1
+    for($i=0;$i -lt $lines.Count;$i++){
+        if($lines[$i].TrimStart().StartsWith("bind = ")){ $bindIndex=$i; break }
     }
-    $process = Start-Process -FilePath $Java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $Dir "velocity.jar")) -WorkingDirectory $Dir -PassThru
-    Day10-FourTrackProcess $StatePath $State $process.Id
-    $end = (Get-Date).AddSeconds(90)
-    $stableLength = -1L
-    $stableCount = 0
-    $configReady = $false
-    do {
-        if ($process.HasExited) { throw "Velocity exited early during bootstrap: $Dir" }
-        if ((Test-Path -LiteralPath $geyser -PathType Leaf) -and
-            (Test-Path -LiteralPath $key -PathType Leaf)) {
-            $length = (Get-Item -LiteralPath $geyser).Length
-            if (Day10-GeyserConfigComplete $geyser) {
-                if ($length -eq $stableLength) {
-                    $stableCount++
+    if($bindIndex -lt 0){ throw "Velocity bind setting missing: $velocity" }
+    $lines[$bindIndex]='bind = "127.0.0.1:' + [string]$bootstrapPort + '"'
+    Day10-WriteUtf8NoBom $velocity ($lines -join [Environment]::NewLine)
+
+    $process=$null
+    try {
+        Day10-FourStopProxyProcessesInDir $Dir 5
+        $process = Start-Process -FilePath $Java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $Dir "velocity.jar")) -WorkingDirectory $Dir -PassThru
+        Day10-FourTrackProcess $StatePath $State $process.Id
+        $end = (Get-Date).AddSeconds(90)
+        $stableLength = -1L
+        $stableCount = 0
+        $configReady = $false
+        do {
+            if ($process.HasExited) { throw "Velocity exited early during bootstrap: $Dir" }
+            if ((Test-Path -LiteralPath $geyser -PathType Leaf) -and
+                (Test-Path -LiteralPath $key -PathType Leaf)) {
+                $length = (Get-Item -LiteralPath $geyser).Length
+                if (Day10-GeyserConfigComplete $geyser) {
+                    if ($length -eq $stableLength) { $stableCount++ }
+                    else { $stableLength=$length; $stableCount=1 }
+                    if ($stableCount -ge 2) { $configReady=$true; break }
                 } else {
-                    $stableLength = $length
-                    $stableCount = 1
+                    $stableCount=0
+                    $stableLength=$length
                 }
-                if ($stableCount -ge 2) {
-                    $configReady = $true
-                    break
-                }
-            } else {
-                $stableCount = 0
-                $stableLength = $length
             }
+            Start-Sleep -Seconds 2
+        } while ((Get-Date) -lt $end)
+        if (-not $configReady) {
+            throw "Velocity/Geyser/Floodgate configuration generation did not reach a complete stable config: $Dir"
         }
-        Start-Sleep -Seconds 2
-    } while ((Get-Date) -lt $end)
-    if (-not $configReady) {
-        throw "Velocity/Geyser/Floodgate configuration generation did not reach a complete stable config: $Dir"
+    } finally {
+        Day10-FourStopProxyProcessesInDir $Dir 20
+        Day10-WriteUtf8NoBom $velocity $originalVelocity
     }
-    Stop-Process -Id $process.Id -Force
-    $process.WaitForExit(20000) | Out-Null
+
+    Day10-FourWaitUdpFree 19132 20
+
     Day10-SetGeyserConfig $geyser $BedrockPort
     $geyserText=Day10-ReadUtf8Strict $geyser
     $expectedPortLine="  port: " + [string]$BedrockPort
     if($geyserText.IndexOf($expectedPortLine,[StringComparison]::Ordinal) -lt 0){
         throw "Geyser UDP port verification failed for $Dir; expected $BedrockPort"
     }
-    Write-Host "Configured Geyser UDP $BedrockPort for $Dir"
+    Write-Host "Bootstrapped Geyser/Floodgate safely; production TCP was never used. UDP $BedrockPort configured for $Dir"
     return $key
+}
+
+function Day10-FourSeedProxyRuntime {
+    param([string]$SourceDir,[string]$TargetDir,[int]$BedrockPort)
+    $sourceGeyser=Join-Path $SourceDir "plugins\Geyser-Velocity\config.yml"
+    $sourceKey=Join-Path $SourceDir "plugins\floodgate\key.pem"
+    if(-not(Test-Path -LiteralPath $sourceGeyser -PathType Leaf)){throw "Source Geyser config missing: $sourceGeyser"}
+    if(-not(Test-Path -LiteralPath $sourceKey -PathType Leaf)){throw "Source Floodgate key missing: $sourceKey"}
+
+    $targetGeyser=Join-Path $TargetDir "plugins\Geyser-Velocity\config.yml"
+    $targetKey=Join-Path $TargetDir "plugins\floodgate\key.pem"
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $targetGeyser) | Out-Null
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $targetKey) | Out-Null
+    Copy-Item -LiteralPath $sourceGeyser -Destination $targetGeyser -Force
+    Copy-Item -LiteralPath $sourceKey -Destination $targetKey -Force
+    Day10-SetGeyserConfig $targetGeyser $BedrockPort
+
+    $text=Day10-ReadUtf8Strict $targetGeyser
+    $expectedPortLine="  port: " + [string]$BedrockPort
+    if($text.IndexOf($expectedPortLine,[StringComparison]::Ordinal) -lt 0){
+        throw "Seeded Geyser UDP port verification failed for $TargetDir; expected $BedrockPort"
+    }
+    Write-Host "Seeded shared Geyser/Floodgate runtime; UDP $BedrockPort configured for $TargetDir"
+}
+
+function Day10-FourAssertPublicPortFree {
+    param([int]$TcpPort,[int]$UdpPort)
+    $tcp=@(Get-NetTCPConnection -LocalPort $TcpPort -State Listen -ErrorAction SilentlyContinue)
+    if($tcp.Count -gt 0){ throw "Public TCP port already occupied before final proxy start: $TcpPort" }
+    $udp=@(Get-NetUDPEndpoint -LocalPort $UdpPort -ErrorAction SilentlyContinue)
+    if($udp.Count -gt 0){ throw "Public UDP port already occupied before final proxy start: $UdpPort" }
+}
+
+function Day10-FourStartProxy {
+    param([string]$Dir,[string]$Java,[int]$PublicJavaPort,[int]$BedrockPort,$State,[string]$StatePath)
+    Day10-FourStopProxyProcessesInDir $Dir 10
+    Day10-FourAssertPublicPortFree $PublicJavaPort $BedrockPort
+
+    $proc=Start-Process -FilePath $Java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $Dir "velocity.jar")) -WorkingDirectory $Dir -PassThru
+    Day10-FourTrackProcess $StatePath $State $proc.Id
+    $deadline=(Get-Date).AddSeconds(90)
+    do {
+        if($proc.HasExited){
+            $log=Join-Path $Dir "logs\latest.log"
+            $tail=""
+            if(Test-Path -LiteralPath $log -PathType Leaf){
+                $tail=(@(Get-Content -LiteralPath $log -Tail 30 -ErrorAction SilentlyContinue) -join " | ")
+            }
+            throw "Velocity exited during final start for TCP $PublicJavaPort / UDP $BedrockPort. $tail"
+        }
+        $tcpReady=@(Get-NetTCPConnection -LocalPort $PublicJavaPort -State Listen -ErrorAction SilentlyContinue).Count -gt 0
+        $udpReady=@(Get-NetUDPEndpoint -LocalPort $BedrockPort -ErrorAction SilentlyContinue).Count -gt 0
+        if($tcpReady -and $udpReady){
+            Write-Host "Final proxy ready: TCP $PublicJavaPort / UDP $BedrockPort (PID $($proc.Id))"
+            return
+        }
+        Start-Sleep -Seconds 2
+    } while((Get-Date) -lt $deadline)
+    throw "Final proxy did not bind TCP $PublicJavaPort and UDP $BedrockPort within 90s"
 }
 function Day10-FourCheckPorts {
     foreach ($port in @(25570,25571,25572,25573)) { Day10-AssertLoopbackListener $port }
