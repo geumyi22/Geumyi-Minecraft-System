@@ -157,6 +157,113 @@ func TestRCONStopHandlesExtraAuthPacketAndNoStopReply(t *testing.T) {
 		t.Fatal(e)
 	}
 }
+func TestIntentionalStopCommandExactness(t *testing.T) {
+	for _, cmd := range []string{"stop", " STOP ", "/stop", " /STOP "} {
+		if !isIntentionalStopCommand(cmd) {
+			t.Fatalf("expected intentional stop for %q", cmd)
+		}
+	}
+	for _, cmd := range []string{"", "stop now", "stopping", "/stop now", "say stop"} {
+		if isIntentionalStopCommand(cmd) {
+			t.Fatalf("must not treat %q as intentional stop", cmd)
+		}
+	}
+}
+
+func TestConsoleStopKeepsServerStoppedAfterSuccessfulRCON(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+	port := ln.Addr().(*net.TCPAddr).Port
+	serverID := "console-stop-success"
+	setDesired(serverID, true)
+	defer setDesired(serverID, false)
+
+	result := make(chan error, 1)
+	go func() {
+		conn, e := ln.Accept()
+		if e != nil {
+			result <- e
+			return
+		}
+		defer conn.Close()
+		_ = conn.SetDeadline(time.Now().Add(3 * time.Second))
+		id, typ, password, e := readRCON(conn)
+		if e != nil || id != 100 || typ != 3 || password != "test-password" {
+			result <- errors.New("wrong auth request")
+			return
+		}
+		_ = writeRCON(conn, 100, 2, "")
+		id, typ, command, e := readRCON(conn)
+		if e != nil || id != 101 || typ != 2 || command != "stop" {
+			result <- errors.New("stop not delivered")
+			return
+		}
+		result <- nil
+	}()
+
+	s := ServerConfig{ID: serverID, RCONPort: port}
+	if _, err = runServerConsoleRCON(s, "test-password", " /STOP "); err != nil {
+		t.Fatal(err)
+	}
+	if getDesired(serverID) {
+		t.Fatal("successful console stop must leave desired_running=false")
+	}
+	if err = <-result; err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestConsoleStopRestoresDesiredWhenRCONDeliveryFails(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	port := ln.Addr().(*net.TCPAddr).Port
+	_ = ln.Close()
+
+	serverID := "console-stop-fail"
+	setDesired(serverID, true)
+	defer setDesired(serverID, false)
+	s := ServerConfig{ID: serverID, RCONPort: port}
+	if _, err = runServerConsoleRCON(s, "test-password", "stop"); err == nil {
+		t.Fatal("expected RCON connection failure")
+	}
+	if !getDesired(serverID) {
+		t.Fatal("failed console stop must restore prior desired_running=true")
+	}
+}
+
+func TestRecentRCONSuccessBridgesPassiveListenerFalseNegative(t *testing.T) {
+	port := 34567
+	rconRecentMu.Lock()
+	old, had := rconRecentSuccess[port]
+	rconRecentSuccess[port] = time.Now()
+	rconRecentMu.Unlock()
+	defer func() {
+		rconRecentMu.Lock()
+		if had {
+			rconRecentSuccess[port] = old
+		} else {
+			delete(rconRecentSuccess, port)
+		}
+		rconRecentMu.Unlock()
+	}()
+
+	if !rconRecentlyUsable(port, 30*time.Second) {
+		t.Fatal("recent authenticated RCON success should count as usable")
+	}
+
+	rconRecentMu.Lock()
+	rconRecentSuccess[port] = time.Now().Add(-2 * time.Minute)
+	rconRecentMu.Unlock()
+	if rconRecentlyUsable(port, 30*time.Second) {
+		t.Fatal("stale RCON success must not hide a real outage")
+	}
+}
+
 func TestRCONAuthFailureDoesNotSendStop(t *testing.T) {
 	ln, e := net.Listen("tcp", "127.0.0.1:0")
 	if e != nil {
