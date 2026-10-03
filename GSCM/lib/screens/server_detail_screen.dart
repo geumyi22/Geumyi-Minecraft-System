@@ -864,6 +864,47 @@ class _PlayersSectionState extends State<_PlayersSection> {
     if (ok == true && player.isNotEmpty) await _act(action, player);
   }
 
+  Future<void> _manage(BackupInfo b, String action) async {
+    if (action == 'trash') {
+      final ok = await widget.confirm(
+        '백업 삭제',
+        '${b.file}\n\n바로 영구 삭제하지 않고 휴지통으로 이동합니다. 휴지통에서는 다시 복구할 수 있습니다.',
+        action: '휴지통으로 이동',
+        dangerous: true,
+      );
+      if (!ok) return;
+    }
+    if (action == 'delete-permanent') {
+      final ok = await widget.confirm(
+        '백업 영구 삭제',
+        '${b.file}\n\n휴지통에서도 완전히 삭제합니다. 이 작업은 되돌릴 수 없습니다.',
+        action: '영구 삭제',
+        dangerous: true,
+      );
+      if (!ok) return;
+    }
+    setState(() => busy = true);
+    try {
+      await widget.api.manageBackup(widget.server.id, b.file, action);
+      if (mounted) {
+        final message = switch (action) {
+          'protect' => '백업 보호 설정',
+          'unprotect' => '백업 보호 해제',
+          'trash' => '휴지통으로 이동 완료',
+          'restore-trash' => '휴지통 백업 복구 완료',
+          'delete-permanent' => '백업 영구 삭제 완료',
+          _ => '백업 작업 완료',
+        };
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      }
+      await _load();
+    } on GscApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => RefreshIndicator(
         onRefresh: _load,
@@ -1230,7 +1271,7 @@ class _BackupsSectionState extends State<_BackupsSection> {
   Future<void> _restore(BackupInfo b) async {
     final ok = await widget.confirm(
       '백업 복원',
-      '${b.file}\n\n현재 서버 데이터를 이 백업으로 복원합니다. GSC가 복원 전 체크포인트를 자동 생성합니다.',
+      '${b.file}\n\n현재 서버 데이터를 이 백업으로 복원합니다. GSC가 복원 직전에 보호된 체크포인트를 자동 생성합니다.',
       action: '복원',
       dangerous: true,
     );
@@ -1239,7 +1280,7 @@ class _BackupsSectionState extends State<_BackupsSection> {
     try {
       final cp = await widget.api.restoreBackup(widget.server.id, b.file);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('복원 완료 · 체크포인트 $cp')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('복원 완료 · 보호 체크포인트 $cp')));
       }
       await _load();
     } on GscApiException catch (e) {
@@ -1257,7 +1298,7 @@ class _BackupsSectionState extends State<_BackupsSection> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
           children: [
             SectionCard(
-              title: '새 백업',
+              title: '보호 / 복구 2.0',
               icon: Icons.archive_outlined,
               trailing: busy ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : null,
               child: Wrap(spacing: 8, runSpacing: 8, children: [
@@ -1277,20 +1318,50 @@ class _BackupsSectionState extends State<_BackupsSection> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Card(
                     child: ListTile(
-                      leading: Icon(b.verified ? Icons.verified_outlined : Icons.archive_outlined),
+                      leading: Icon(
+                        b.trashed
+                            ? Icons.delete_outline
+                            : b.protected
+                                ? Icons.lock_outline
+                                : b.verified
+                                    ? Icons.verified_outlined
+                                    : Icons.archive_outlined,
+                      ),
                       title: Text(b.file, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
                       subtitle: Text(
-                        '${b.scope} · ${_size(b.size)} · ${b.created == null ? '-' : _ServerDetailScreenState._formatDateTime(b.created!)}'
+                        '${b.trashed ? '휴지통' : (b.kind == 'checkpoint' ? '복원 체크포인트' : '백업')} · ${b.scope} · ${_size(b.size)} · ${b.created == null ? '-' : _ServerDetailScreenState._formatDateTime(b.created!)}'
+                        '${b.protected ? '\n보호됨 · 삭제하려면 먼저 보호 해제' : ''}'
+                        '${b.trashed && b.trashedAt != null ? '\n삭제 ${_ServerDetailScreenState._formatDateTime(b.trashedAt!)}' : ''}'
                         '${b.sha256.isEmpty ? '' : '\nSHA256 ${b.sha256.substring(0, b.sha256.length < 16 ? b.sha256.length : 16)}…'}',
                       ),
-                      isThreeLine: b.sha256.isNotEmpty,
+                      isThreeLine: b.protected || b.trashed || b.sha256.isNotEmpty,
                       trailing: PopupMenuButton<String>(
                         enabled: !busy,
-                        onSelected: (v) => v == 'verify' ? _verify(b) : _restore(b),
-                        itemBuilder: (_) => const [
-                          PopupMenuItem(value: 'verify', child: Text('무결성 검증')),
-                          PopupMenuItem(value: 'restore', child: Text('이 백업으로 복원')),
-                        ],
+                        onSelected: (v) {
+                          if (v == 'verify') {
+                            _verify(b);
+                          } else if (v == 'restore') {
+                            _restore(b);
+                          } else {
+                            _manage(b, v);
+                          }
+                        },
+                        itemBuilder: (_) => b.trashed
+                            ? const [
+                                PopupMenuItem(value: 'restore-trash', child: Text('휴지통에서 복구')),
+                                PopupMenuDivider(),
+                                PopupMenuItem(value: 'delete-permanent', child: Text('영구 삭제')),
+                              ]
+                            : [
+                                const PopupMenuItem(value: 'verify', child: Text('무결성 검증')),
+                                const PopupMenuItem(value: 'restore', child: Text('이 백업으로 복원')),
+                                PopupMenuItem(
+                                  value: b.protected ? 'unprotect' : 'protect',
+                                  child: Text(b.protected ? '보호 해제' : '백업 보호'),
+                                ),
+                                const PopupMenuDivider(),
+                                const PopupMenuItem(value: 'trash', child: Text('휴지통으로 이동')),
+                              ],
                       ),
                     ),
                   ),
