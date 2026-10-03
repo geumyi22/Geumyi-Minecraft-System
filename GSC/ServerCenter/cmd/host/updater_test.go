@@ -192,3 +192,64 @@ func TestDay10OtherReceivesWildTechnologyChemistryTargets(t *testing.T) {
 		}
 	}
 }
+
+
+func TestDay11ServerUpdateChannelPinNormalization(t *testing.T) {
+	s := normalizeServerConfig(ServerConfig{
+		ID:            "wild",
+		UpdatePolicy:  " HOLD ",
+		UpdateChannel: " BETA ",
+		UpdatePin:     "  v4.3.0-rc.1  ",
+	})
+	if s.UpdatePolicy != serverUpdateHold {
+		t.Fatalf("policy=%q want hold", s.UpdatePolicy)
+	}
+	if s.UpdateChannel != "beta" {
+		t.Fatalf("channel=%q want beta", s.UpdateChannel)
+	}
+	if s.UpdatePin != "v4.3.0-rc.1" {
+		t.Fatalf("pin=%q", s.UpdatePin)
+	}
+	if got := normalizeServerUpdateChannel("inherit"); got != "" {
+		t.Fatalf("inherit-like invalid channel should normalize to empty, got %q", got)
+	}
+}
+
+func TestDay11ReleasePinMatching(t *testing.T) {
+	if !releaseMatchesPin("gsc-v4.3.0", "") {
+		t.Fatal("empty pin must accept current release")
+	}
+	if !releaseMatchesPin("gsc-v4.3.0", "GSC-v4.3.0") {
+		t.Fatal("release pin should be case-insensitive exact match")
+	}
+	if releaseMatchesPin("gsc-v4.3.1", "gsc-v4.3.0") {
+		t.Fatal("different release must not match pin")
+	}
+}
+
+func TestDay11EffectiveUpdateConfigUsesServerOverride(t *testing.T) {
+	configMu.Lock()
+	old := cfg
+	cfg = Config{Update: UpdateConfig{
+		Enabled:        true,
+		Repository:     "geumyi22/Geumyi-Minecraft-System",
+		Channel:        "stable",
+		PublicKeyPath:  "deployment-public.pem",
+		TimeoutSeconds: 12,
+	}}
+	configMu.Unlock()
+	defer func() {
+		configMu.Lock()
+		cfg = old
+		configMu.Unlock()
+	}()
+
+	got := effectiveUpdateConfigForServer(ServerConfig{ID: "other", UpdateChannel: "canary"})
+	if got.Channel != "canary" {
+		t.Fatalf("override channel=%q want canary", got.Channel)
+	}
+	got = effectiveUpdateConfigForServer(ServerConfig{ID: "wild"})
+	if got.Channel != "stable" {
+		t.Fatalf("inherited channel=%q want stable", got.Channel)
+	}
+}
