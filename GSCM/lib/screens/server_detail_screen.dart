@@ -1263,7 +1263,7 @@ class _BackupsSectionState extends State<_BackupsSection> {
       }
       final ok = await widget.confirm(
         '백업을 휴지통으로 이동',
-        b.file + '\n\n즉시 영구 삭제하지 않고 GSC 휴지통으로 이동합니다. 나중에 복구할 수 있습니다.',
+        '${b.file}\n\n즉시 영구 삭제하지 않고 GSC 휴지통으로 이동합니다. 나중에 복구할 수 있습니다.',
         action: '휴지통으로 이동',
         dangerous: true,
       );
@@ -1271,7 +1271,7 @@ class _BackupsSectionState extends State<_BackupsSection> {
     } else if (action == 'delete-permanent') {
       final ok = await widget.confirm(
         '백업 영구 삭제',
-        b.file + '\n\n이 작업은 되돌릴 수 없습니다. 휴지통의 백업 파일을 영구 삭제합니다.',
+        '${b.file}\n\n이 작업은 되돌릴 수 없습니다. 휴지통의 백업 파일을 영구 삭제합니다.',
         action: '영구 삭제',
         dangerous: true,
       );
