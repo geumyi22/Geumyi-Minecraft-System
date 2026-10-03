@@ -130,10 +130,40 @@ function Day10-VerifySums {
     }
 }
 
+function Day10-ReadUtf8Strict {
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "File missing: $Path" }
+    $utf8 = New-Object System.Text.UTF8Encoding($false, $true)
+    try {
+        return [IO.File]::ReadAllText($Path, $utf8)
+    } catch {
+        throw "File is not valid UTF-8 and will not be rewritten: $Path"
+    }
+}
+
+function Day10-WriteUtf8NoBom {
+    param([string]$Path, [string]$Text)
+    $utf8 = New-Object System.Text.UTF8Encoding($false)
+    [IO.File]::WriteAllText($Path, $Text, $utf8)
+}
+
+function Day10-AssertYamlTextSafe {
+    param([string]$Text, [string]$Path)
+    foreach ($ch in $Text.ToCharArray()) {
+        $n = [int][char]$ch
+        if (($n -lt 32 -and $n -notin @(9,10,13)) -or ($n -ge 127 -and $n -le 159)) {
+            throw ("Unsafe YAML control character U+{0:X4} detected in {1}" -f $n, $Path)
+        }
+    }
+}
+
 function Day10-SetServerProperty {
     param([string]$Path, [string]$Key, [string]$Value)
     if (-not (Test-Path -LiteralPath $Path)) { throw "server.properties missing: $Path" }
-    $lines = @(Get-Content -LiteralPath $Path)
+    $text = Day10-ReadUtf8Strict $Path
+    $crlf = ([string][char]13) + [char]10
+    $newline = if ($text.Contains($crlf)) { $crlf } else { [string][char]10 }
+    $lines = @($text.Replace($crlf, [string][char]10).Split([char]10))
     $found = $false
     for ($i = 0; $i -lt $lines.Count; $i++) {
         $trim = $lines[$i].Trim()
@@ -146,9 +176,8 @@ function Day10-SetServerProperty {
         }
     }
     if (-not $found) { $lines += "$Key=$Value" }
-    [IO.File]::WriteAllLines($Path, $lines, (New-Object Text.UTF8Encoding($false)))
+    Day10-WriteUtf8NoBom $Path ($lines -join $newline)
 }
-
 function Day10-SetPaperVelocity {
     param([string]$Path, [string]$Secret)
     if (-not (Test-Path -LiteralPath $Path)) { throw "paper-global.yml missing: $Path" }
@@ -211,17 +240,22 @@ function Day10-SetPaperVelocity {
 function Day10-SetSpigotBungeeFalse {
     param([string]$Path)
     if (-not (Test-Path -LiteralPath $Path)) { return }
-    $lines = @(Get-Content -LiteralPath $Path)
+    $text = Day10-ReadUtf8Strict $Path
+    Day10-AssertYamlTextSafe $text $Path
+    $crlf = ([string][char]13) + [char]10
+    $newline = if ($text.Contains($crlf)) { $crlf } else { [string][char]10 }
+    $lines = @($text.Replace($crlf, [string][char]10).Split([char]10))
     for ($i = 0; $i -lt $lines.Count; $i++) {
         if ($lines[$i] -match '^\s+bungeecord:\s*') {
             $indent = $lines[$i].Substring(0, $lines[$i].Length - $lines[$i].TrimStart().Length)
             $lines[$i] = $indent + "bungeecord: false"
-            [IO.File]::WriteAllLines($Path, $lines, (New-Object Text.UTF8Encoding($false)))
+            $updated = $lines -join $newline
+            Day10-AssertYamlTextSafe $updated $Path
+            Day10-WriteUtf8NoBom $Path $updated
             return
         }
     }
 }
-
 function Day10-SetYamlChild {
     param([string]$Text, [string]$Section, [string]$Key, [string]$Value)
     $lines = @($Text.Replace([Environment]::NewLine, "`n").Split([char]10))
