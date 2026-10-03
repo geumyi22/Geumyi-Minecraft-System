@@ -1,4 +1,4 @@
-﻿param([Parameter(Mandatory=$true)][string]$StageRoot,[string]$ServerRoot="",[switch]$SelfTest)
+﻿param([Parameter(Mandatory=$true)][string]$StageRoot,[string]$ServerRoot="",[switch]$SkipBedrockManualE2E,[switch]$SelfTest)
 $isSelfTest=[bool]$SelfTest
 $ErrorActionPreference="Stop"
 $ProgressPreference="SilentlyContinue"
@@ -204,8 +204,16 @@ try{
     }
     Write-Host "JAVA TEST: join public TCP 25565,25566,25567. Each enters Lobby. Try all 3 destinations, /lobby and last position restoration."
     if((Read-Host "Type JAVA PASS after ALL Java checks") -cne "JAVA PASS"){throw "Java E2E not confirmed"}
-    Write-Host "BEDROCK TEST: join UDP 19132,19133,19134. Each enters Lobby. Try all 3 destinations and /lobby."
-    if((Read-Host "Type BEDROCK PASS after ALL Bedrock checks") -cne "BEDROCK PASS"){throw "Bedrock E2E not confirmed"}
+
+    $bedrockManualE2E = "PASS"
+    if($SkipBedrockManualE2E){
+        $bedrockManualE2E = "SKIPPED_UPSTREAM_UNSUPPORTED"
+        Write-Host "BEDROCK MANUAL E2E SKIPPED: latest Geyser is not yet compatible with the current Bedrock client."
+        Write-Host "Geyser/Velocity infrastructure checks remain recorded, but Bedrock client login is NOT treated as a Day 10 failure."
+    } else {
+        Write-Host "BEDROCK TEST: join UDP 19132,19133,19134. Each enters Lobby. Try all 3 destinations and /lobby."
+        if((Read-Host "Type BEDROCK PASS after ALL Bedrock checks") -cne "BEDROCK PASS"){throw "Bedrock E2E not confirmed"}
+    }
     foreach($p in $profiles){
         $final=Day10-ProfileFromSettings $p.profile $p.port 0 ([bool]$p.profile.auto_start)
         Day10-Gsc "POST" "/api/v4/server-profile" @{action="update";server=$final} | Out-Null
@@ -229,12 +237,12 @@ try{
     $lobby.restart_on_crash=$true
     Day10-Gsc "POST" "/api/v4/server-profile" @{action="update";server=$lobby} | Out-Null
     $result=[ordered]@{
-        main_sha=$ci.Commit;ci_run=$ci.Run;java_manual_e2e="PASS";bedrock_manual_e2e="PASS"
+        main_sha=$ci.Commit;ci_run=$ci.Run;java_manual_e2e="PASS";bedrock_manual_e2e=$bedrockManualE2E
         backup=$backup;proxy_root=$proxyRoot;rollback_rehearsal="NOT EXECUTED"
     }
     $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $backup "four-server-result.json") -Encoding UTF8
     $phase="verified"
-    Write-Host "JAVA/BEDROCK MANUAL E2E REPORTED PASS; backup retained: $backup"
+    if($bedrockManualE2E -eq "PASS"){ Write-Host "JAVA/BEDROCK MANUAL E2E REPORTED PASS; backup retained: $backup" } else { Write-Host "JAVA MANUAL E2E PASS; BEDROCK MANUAL E2E SKIPPED (UPSTREAM UNSUPPORTED); backup retained: $backup" }
 }catch{
     Write-Host ("Cutover stopped in "+$phase+": "+$_.Exception.Message)
     if($null -ne $state -and (Test-Path -LiteralPath $statePath -PathType Leaf) -and $phase -ne "verified"){
