@@ -96,14 +96,14 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference='Stop'
-          $host=(Get-FileHash day11-host-test/GeumyiServerHost.exe -Algorithm SHA256).Hash.ToLowerInvariant()
-          $client=(Get-FileHash day11-host-test/GeumyiServerCenter.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          $hostHash=(Get-FileHash day11-host-test/GeumyiServerHost.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          $clientHash=(Get-FileHash day11-host-test/GeumyiServerCenter.exe -Algorithm SHA256).Hash.ToLowerInvariant()
           [ordered]@{
             schema=1
             purpose='Day11 Phase1 GSC-only host test'
             source_sha='${{ github.sha }}'
-            host_sha256=$host
-            client_sha256=$client
+            host_sha256=$hostHash
+            client_sha256=$clientHash
             minecraft_processes_modified=$false
             velocity_processes_modified=$false
           } | ConvertTo-Json | Set-Content day11-host-test/host-test-manifest.json -Encoding UTF8
