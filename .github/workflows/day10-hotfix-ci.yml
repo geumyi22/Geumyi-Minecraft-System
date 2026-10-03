@@ -21,6 +21,7 @@ jobs:
           foreach ($path in @(
             'tools/day10/day10_live_helpers.ps1',
             'tools/day10/rollback_four_servers.ps1',
+            'tools/day10/four_cutover_helpers.ps1',
             'tools/day10/validate_four_server_cutover.ps1'
           )) {
             $tokens=$null
@@ -57,6 +58,21 @@ jobs:
           if(-not $blocked){throw 'U+0080 must be blocked'}
           Write-Host 'SPIGOT UTF-8 SAFETY PASS'
 
+      - name: Exercise Geyser completion gate and plain lobby RCON secret
+        shell: powershell
+        run: |
+          . (Resolve-Path 'tools/day10/day10_live_helpers.ps1')
+          . (Resolve-Path 'tools/day10/four_cutover_helpers.ps1')
+          $secret=Day10-NewPlainRconPassword
+          if($secret -notmatch '^[0-9a-f]{64}$'){throw 'Lobby RCON secret must be 64 lowercase hex chars'}
+          $cfg=Join-Path $env:RUNNER_TEMP 'geyser-config.yml'
+          $partial=('bedrock:'+[Environment]::NewLine+'  address: 0.0.0.0'+[Environment]::NewLine+('# filler'+[Environment]::NewLine)*20)
+          [IO.File]::WriteAllText($cfg,$partial,(New-Object Text.UTF8Encoding($false)))
+          if(Day10-GeyserConfigComplete $cfg){throw 'Partial Geyser config without remote must not be accepted'}
+          $complete=$partial+'remote:'+[Environment]::NewLine+'  address: auto'+[Environment]::NewLine+'  port: 25565'+[Environment]::NewLine+'  auth-type: floodgate'
+          [IO.File]::WriteAllText($cfg,$complete,(New-Object Text.UTF8Encoding($false)))
+          if(-not(Day10-GeyserConfigComplete $cfg)){throw 'Complete Geyser config must be accepted'}
+          Write-Host 'GEYSER COMPLETION + LOBBY RCON SECRET SELFTEST PASS'
       - name: Exercise read-only cutover UTF-8 preflight
         shell: powershell
         run: |
