@@ -1,0 +1,68 @@
+name: Day10 Hotfix CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'tools/day10/**'
+      - '.github/workflows/day10-hotfix-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  day10-hotfix-windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse Day10 hotfix scripts on Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          foreach ($path in @(
+            'tools/day10/day10_live_helpers.ps1',
+            'tools/day10/rollback_four_servers.ps1'
+          )) {
+            $tokens=$null
+            $errors=$null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error ("$path line " + $_.Extent.StartLineNumber + ": " + $_.Message) }
+              exit 1
+            }
+            Write-Host "PS5.1 syntax OK: $path"
+          }
+
+      - name: Exercise rollback RCON fallback
+        shell: powershell
+        run: |
+          & 'tools/day10/rollback_four_servers.ps1' -BackupRoot $env:TEMP -SelfTest
+          if ($LASTEXITCODE -ne 0) { throw 'Rollback/RCON selftest failed' }
+
+      - name: Exercise UTF-8 spigot.yml safety
+        shell: powershell
+        run: |
+          . (Resolve-Path 'tools/day10/day10_live_helpers.ps1')
+          $p=Join-Path $env:RUNNER_TEMP 'spigot.yml'
+          $hangul=([string][char]0xD55C)+[char]0xAE00
+          $valid="settings:"+[Environment]::NewLine+"  bungeecord: true"+[Environment]::NewLine+"# "+$hangul
+          [IO.File]::WriteAllText($p,$valid,(New-Object Text.UTF8Encoding($false)))
+          Day10-SetSpigotBungeeFalse $p
+          $round=[IO.File]::ReadAllText($p,(New-Object Text.UTF8Encoding($false,$true)))
+          if(-not $round.Contains('bungeecord: false') -or -not $round.Contains($hangul)){throw 'UTF-8 round-trip failed'}
+          $bad="settings:"+[Environment]::NewLine+"  bungeecord: true"+[char]0x80
+          [IO.File]::WriteAllText($p,$bad,(New-Object Text.UTF8Encoding($false)))
+          $blocked=$false
+          try{Day10-SetSpigotBungeeFalse $p}catch{$blocked=$true}
+          if(-not $blocked){throw 'U+0080 must be blocked'}
+          Write-Host 'SPIGOT UTF-8 SAFETY PASS'
+
+      - name: Check rollback retry launcher
+        shell: powershell
+        run: |
+          & 'tools/day10/Day10_Retry_Rollback.cmd' --selftest
+          if ($LASTEXITCODE -ne 0) { throw 'Rollback retry launcher selftest failed' }
+          $cmd=Get-Content -LiteralPath 'tools/day10/Day10_Retry_Rollback.cmd' -Raw
+          foreach($m in @('Does NOT start a new cutover','Never force-kills a Minecraft server','rollback_four_servers.ps1')){
+            if(-not $cmd.Contains($m)){throw "Missing rollback safety marker: $m"}
+          }
+          Write-Host 'DAY10 HOTFIX CI PASS'
