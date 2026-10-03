@@ -328,19 +328,22 @@ function Day10-FourRestore {
     if (Test-Path -LiteralPath ([string]$state.proxy_install_root)) {
         # Quarantine new installation instead of deleting generated Floodgate keys or logs.
         $quarantine = Join-Path $Root "quarantine\deployed-proxies"
-        if (Test-Path -LiteralPath $quarantine) { throw "Proxy rollback quarantine already exists" }
+        if (Test-Path -LiteralPath $quarantine) { $quarantine = Join-Path $Root ("quarantine\\deployed-proxies-resume-" + (Get-Date -Format "yyyyMMdd-HHmmss")) }
         Move-Item -LiteralPath ([string]$state.proxy_install_root) -Destination $quarantine -ErrorAction Stop
     }
     # Lobby is never deleted: its world and logs may contain valuable test data.
     if (Test-Path -LiteralPath ([string]$state.lobby_path)) {
         $quarantine = Join-Path $Root "quarantine\new-lobby"
-        if (Test-Path -LiteralPath $quarantine) { throw "Lobby rollback quarantine already exists" }
+        if (Test-Path -LiteralPath $quarantine) { $quarantine = Join-Path $Root ("quarantine\\new-lobby-resume-" + (Get-Date -Format "yyyyMMdd-HHmmss")) }
         Move-Item -LiteralPath ([string]$state.lobby_path) -Destination $quarantine -ErrorAction Stop
     }
     foreach ($entry in $state.servers) {
         if ([bool]$entry.was_online) {
-            Day10-Gsc "POST" "/api/server/action" @{id=$entry.id;action="start"} | Out-Null
-            Day10-WaitOnline ([string]$entry.id) $true 240 | Out-Null
+            $now = Day10-State ([string]$entry.id)
+            if ($null -eq $now -or -not [bool]$now.online) {
+                Day10-Gsc "POST" "/api/server/action" @{id=$entry.id;action="start"} | Out-Null
+                Day10-WaitOnline ([string]$entry.id) $true 240 | Out-Null
+            }
         }
     }
     Write-Host "DAY10 FOUR-SERVER ROLLBACK VERIFIED; backup and quarantine retained: $Root"
