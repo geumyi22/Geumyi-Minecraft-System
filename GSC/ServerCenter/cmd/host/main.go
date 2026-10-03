@@ -113,6 +113,8 @@ type ServerStatus struct {
 	JavaPortOpen        bool                    `json:"java_port_open"`
 	RCONPortOpen        bool                    `json:"rcon_port_open"`
 	BedrockUDPListening bool                    `json:"bedrock_udp_listening"`
+	BedrockMode         string                  `json:"bedrock_mode,omitempty"`
+	BedrockPublicPort   int                     `json:"bedrock_public_port,omitempty"`
 	GDSAPIOnline        bool                    `json:"gds_api_online"`
 	MC                  MCStatus                `json:"minecraft"`
 	Java                JavaStats               `json:"java"`
@@ -1406,6 +1408,37 @@ func runServerConsoleRCON(s ServerConfig, password, command string) (string, err
 	return resp, err
 }
 
+func publicBedrockPortForServer(s ServerConfig) int {
+	s = normalizeServerConfig(s)
+	switch s.Role {
+	case serverRoleWild:
+		return 19132
+	case serverRolePlayground:
+		return 19133
+	case serverRoleOther:
+		return 19134
+	default:
+		return 0
+	}
+}
+
+func topologyBedrockStatus(s ServerConfig) (online bool, mode string, publicPort int) {
+	s = normalizeServerConfig(s)
+	if s.BedrockPort > 0 {
+		return udpListening(s.BedrockPort), "backend", s.BedrockPort
+	}
+	if p := publicBedrockPortForServer(s); p > 0 {
+		return udpListening(p), "proxy", p
+	}
+	if s.Role == serverRoleLobby {
+		// Lobby has no dedicated public Bedrock socket. All three public
+		// Velocity/Geyser aliases route into Lobby, so require all three entry
+		// sockets to be present before reporting the Lobby Bedrock path healthy.
+		return udpListening(19132) && udpListening(19133) && udpListening(19134), "proxy-multi", 0
+	}
+	return false, "disabled", 0
+}
+
 func getServerStatus(s ServerConfig) ServerStatus {
 	s = normalizeServerConfig(s)
 	st := ServerStatus{ID: s.ID, Name: s.Name, Role: s.Role, UpdatePolicy: s.UpdatePolicy}
@@ -1419,7 +1452,7 @@ func getServerStatus(s ServerConfig) ServerStatus {
 	refreshJavaCache()
 	st.RCONPortOpen = cachedTCPListener(s.RCONPort) || nativeTCPListener(s.RCONPort) || rconRecentlyUsable(s.RCONPort, 30*time.Second)
 
-	st.BedrockUDPListening = udpListening(s.BedrockPort)
+	st.BedrockUDPListening, st.BedrockMode, st.BedrockPublicPort = topologyBedrockStatus(s)
 	st.GDSAPIOnline = httpOK(fmt.Sprintf("http://127.0.0.1:%d/health", s.GDSAPIPort))
 	if st.JavaPortOpen {
 		st.MC = queryMinecraft("127.0.0.1", s.JavaPort)
@@ -1627,6 +1660,11 @@ func refreshUDPCacheAsync() {
 			if srv.BedrockPort > 0 {
 				result[srv.BedrockPort] = nativeUDPListener(srv.BedrockPort)
 			}
+		}
+		// Day-10 public Bedrock entrypoints are owned by Velocity/Geyser, not
+		// the Paper backend profiles (which intentionally use bedrock_port=0).
+		for _, port := range []int{19132, 19133, 19134} {
+			result[port] = nativeUDPListener(port)
 		}
 		statusMu.Lock()
 		udpCache = result
