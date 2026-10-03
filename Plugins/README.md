@@ -1,10 +1,14 @@
-# Plugin source recovery
+# Plugin source recovery and current Day 10 components
 
-| Component | Target | Status |
+| Component | Version | Status / target |
 |---|---|---|
 | GDS | 1.1.1 | Recovered Java source, stubs, config template and tests |
-| GST | 1.1.1 HOTFIX | source not yet recovered for exact HOTFIX |
-| Technology | 0.1.4 | 0.1.3 reconstructed source retained; Day-8 metadata-only version bump for updater E2E |
-| Chemistry | 0.4.1 | source not yet recovered |
+| GST | 1.1.1 HOTFIX | HOTFIX overlay/source recovery tracked; legacy core remains binary-only |
+| Technology | 0.1.4 | Reconstructed 0.1.3 gameplay baseline + Day-8 metadata marker; Day 10 target: Wild + Other |
+| Chemistry | 0.4.1 | Reconstructed/validated source; Day 10 target: Wild + Other |
+| GeumyiNetwork | 0.1.0 | Day 10 transfer and per-backend last-location routing; Java host E2E verified |
+| GeumyiLobby | 0.1.0 | Day 10 Lobby protections, selector and physical destination blocks; Java host E2E verified |
 
-Binary releases remain at [mc-2026.09.26-v3](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/mc-2026.09.26-v3).
+Playground and Lobby do **not** receive Technology/Chemistry in the current four-server topology.
+
+Binary release assets remain in GitHub Releases; runtime secrets, worlds and host-local generated keys are not committed.
