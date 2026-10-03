@@ -20,7 +20,8 @@ jobs:
         run: |
           foreach ($path in @(
             'tools/day10/day10_live_helpers.ps1',
-            'tools/day10/rollback_four_servers.ps1'
+            'tools/day10/rollback_four_servers.ps1',
+            'tools/day10/validate_four_server_cutover.ps1'
           )) {
             $tokens=$null
             $errors=$null
@@ -55,6 +56,24 @@ jobs:
           try{Day10-SetSpigotBungeeFalse $p}catch{$blocked=$true}
           if(-not $blocked){throw 'U+0080 must be blocked'}
           Write-Host 'SPIGOT UTF-8 SAFETY PASS'
+
+      - name: Exercise read-only cutover UTF-8 preflight
+        shell: powershell
+        run: |
+          & 'tools/day10/validate_four_server_cutover.ps1' -SelfTest
+          if ($LASTEXITCODE -ne 0) { throw 'Day10 readiness UTF-8 selftest failed' }
+          $validator=Get-Content -LiteralPath 'tools/day10/validate_four_server_cutover.ps1' -Raw
+          foreach($m in @('Day10-ReadUtf8Strict','Day10-AssertYamlSafe','Unsafe spigot.yml control byte must block readiness')){
+            if(-not $validator.Contains($m)){throw "Missing readiness UTF-8 guard: $m"}
+          }
+
+      - name: Verify lobby rollback uses direct RCON first
+        shell: powershell
+        run: |
+          $rollback=Get-Content -LiteralPath 'tools/day10/rollback_four_servers.ps1' -Raw
+          foreach($m in @('Stopping lobby through direct standard RCON','Day10-DirectRconStop','if ($Id -eq "lobby")')){
+            if(-not $rollback.Contains($m)){throw "Missing lobby rollback direct-RCON guard: $m"}
+          }
 
       - name: Check rollback retry launcher
         shell: powershell
