@@ -1,0 +1,120 @@
+name: Day 11 Host Test Package
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'GSC/ServerCenter/**'
+      - 'tools/day11/Day11_Phase1_*'
+      - '.github/workflows/day11-host-test-package.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'GSC/ServerCenter/**'
+      - 'tools/day11/Day11_Phase1_*'
+      - '.github/workflows/day11-host-test-package.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-host-test:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: GSC/ServerCenter/go.mod
+          cache: false
+
+      - name: Go tests
+        working-directory: GSC/ServerCenter
+        run: go test ./...
+
+      - name: Parse deployment scripts
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($path in @(
+            'tools/day11/Day11_Phase1_Install_Host_Test.ps1',
+            'tools/day11/Day11_Phase1_Rollback_GSC.ps1'
+          )){
+            $tokens=$null;$errors=$null
+            [void][System.Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path $path),[ref]$tokens,[ref]$errors
+            )
+            if($errors.Count -gt 0){
+              $errors | Format-List | Out-String | Write-Host
+              throw "PowerShell parse failed: $path"
+            }
+          }
+
+      - name: Safety guard
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $paths=@(
+            'tools/day11/Day11_Phase1_Install_Host_Test.ps1',
+            'tools/day11/Day11_Phase1_Rollback_GSC.ps1'
+          )
+          $raw=($paths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "
+"
+          foreach($bad in @(
+            '(?i)\btaskkill(?:\.exe)?\b',
+            '(?i)\bStop-Process\b',
+            '(?i)\bRestart-Computer\b',
+            '(?i)\bStop-Computer\b',
+            '(?i)\bRemove-Item\b',
+            '(?i)\bStop-ScheduledTask\b',
+            '(?i)\bUnregister-ScheduledTask\b',
+            '(?i)\bjava(?:\.exe)?\s+.*(?:kill|stop)',
+            '(?i)velocity.*(?:kill|stop)'
+          )){
+            if($raw -match $bad){ throw "Forbidden Day 11 host-test mutation pattern: $bad" }
+          }
+          if($raw -notmatch 'Stop-Service\s+-Name\s+\$ServiceName'){
+            throw 'Expected GSC-service-only stop path missing'
+          }
+
+      - name: Build host and desktop client
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          New-Item -ItemType Directory -Path day11-host-test -Force | Out-Null
+          Push-Location GSC/ServerCenter
+          try {
+            go build -buildvcs=false -trimpath -o ../../day11-host-test/GeumyiServerHost.exe ./cmd/host
+            if($LASTEXITCODE -ne 0){throw 'Host build failed'}
+            go build -buildvcs=false -trimpath -o ../../day11-host-test/GeumyiServerCenter.exe ./cmd/client
+            if($LASTEXITCODE -ne 0){throw 'Client build failed'}
+          } finally { Pop-Location }
+          Copy-Item tools/day11/Day11_Phase1_Install_Host_Test.ps1 day11-host-test/
+          Copy-Item tools/day11/Day11_Phase1_INSTALL_HOST_TEST.cmd day11-host-test/
+          Copy-Item tools/day11/Day11_Phase1_Rollback_GSC.ps1 day11-host-test/
+          Copy-Item tools/day11/Day11_Phase1_ROLLBACK_GSC.cmd day11-host-test/
+
+      - name: Generate package manifest
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $host=(Get-FileHash day11-host-test/GeumyiServerHost.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          $client=(Get-FileHash day11-host-test/GeumyiServerCenter.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          [ordered]@{
+            schema=1
+            purpose='Day11 Phase1 GSC-only host test'
+            source_sha='${{ github.sha }}'
+            host_sha256=$host
+            client_sha256=$client
+            minecraft_processes_modified=$false
+            velocity_processes_modified=$false
+          } | ConvertTo-Json | Set-Content day11-host-test/host-test-manifest.json -Encoding UTF8
+
+      - name: Upload host-test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: day11-phase1-gsc-host-test
+          path: day11-host-test/*
+          if-no-files-found: error
+          retention-days: 14
