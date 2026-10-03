@@ -946,7 +946,7 @@ func apiV1ServerCommand(w http.ResponseWriter, r *http.Request, s ServerConfig) 
 		http.Error(w, "RCON password unavailable", 500)
 		return
 	}
-	resp, err := rconCommand("127.0.0.1", s.RCONPort, pass, q.Command)
+	resp, err := runServerConsoleRCON(s, pass, q.Command)
 	if err != nil {
 		appendAudit(r, "server.command", s.ID, "failed", commandName(q.Command)+": "+err.Error())
 		writeJSONStatus(w, 500, map[string]any{"ok": false, "error": err.Error()})
