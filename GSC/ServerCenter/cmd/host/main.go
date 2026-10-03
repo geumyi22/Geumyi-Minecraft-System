@@ -1397,11 +1397,16 @@ func isIntentionalStopCommand(command string) bool {
 func runServerConsoleRCON(s ServerConfig, password, command string) (string, error) {
 	intentionalStop := isIntentionalStopCommand(command)
 	previousDesired := false
+	wireCommand := command
 	if intentionalStop {
 		previousDesired = getDesired(s.ID)
 		setDesired(s.ID, false)
+		// Normalize aliases such as "/STOP" to the exact Minecraft RCON command.
+		// rconCommand intentionally does not wait for a reply to "stop" because
+		// Paper may close the RCON socket during shutdown.
+		wireCommand = "stop"
 	}
-	resp, err := rconCommand("127.0.0.1", s.RCONPort, password, command)
+	resp, err := rconCommand("127.0.0.1", s.RCONPort, password, wireCommand)
 	if err != nil && intentionalStop {
 		setDesired(s.ID, previousDesired)
 	}
