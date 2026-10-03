@@ -134,3 +134,48 @@ func TestAPISettingsPostPreservesSelectedPath(t *testing.T) {
 		t.Fatalf("selected path disappeared after POST/GET roundtrip: %+v", response.Servers)
 	}
 }
+
+func TestPreflightReportsBackendTransferPropertyDriftWithoutChangingFile(t *testing.T) {
+	dir := t.TempDir()
+	props := "server-port=25572\naccepts-transfers=false\n"
+	if err := os.WriteFile(filepath.Join(dir, "server.properties"), []byte(props), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "start.bat"), []byte("@echo off\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	s := ServerConfig{ID: "other", Name: "Other", Role: serverRoleOther, Path: dir, JavaPort: 25572, StartCommand: "start.bat"}
+
+	h := runV4Preflight(s)
+	found := false
+	for _, check := range h.Checks {
+		if check.Key == "accepts_transfers" && check.Status == "warn" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("expected accepts_transfers warning, got %+v", h.Checks)
+	}
+	after, err := os.ReadFile(filepath.Join(dir, "server.properties"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(after) != props {
+		t.Fatalf("preflight must not mutate server.properties: %q", string(after))
+	}
+
+	if err := os.WriteFile(filepath.Join(dir, "server.properties"), []byte("server-port=25572\naccepts-transfers=true\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	h = runV4Preflight(s)
+	for _, check := range h.Checks {
+		if check.Key == "accepts_transfers" {
+			if check.Status != "ok" {
+				t.Fatalf("accepts-transfers=true should be ok: %+v", check)
+			}
+			return
+		}
+	}
+	t.Fatal("accepts_transfers check missing")
+}
