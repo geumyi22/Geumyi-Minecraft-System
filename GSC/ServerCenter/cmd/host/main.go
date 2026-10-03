@@ -57,6 +57,8 @@ type ServerConfig struct {
 	Name           string `json:"name"`
 	Role           string `json:"role,omitempty"`
 	UpdatePolicy   string `json:"update_policy,omitempty"`
+	UpdateChannel  string `json:"update_channel,omitempty"`
+	UpdatePin      string `json:"update_pin,omitempty"`
 	JavaPort       int    `json:"java_port"`
 	RCONPort       int    `json:"rcon_port"`
 	BedrockPort    int    `json:"bedrock_port"`
