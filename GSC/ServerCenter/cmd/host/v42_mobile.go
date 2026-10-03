@@ -335,6 +335,8 @@ func apiV1Backups(w http.ResponseWriter, r *http.Request) {
 
 func apiV1BackupVerify(w http.ResponseWriter, r *http.Request)  { apiV4BackupVerify(w, r) }
 func apiV1BackupRestore(w http.ResponseWriter, r *http.Request) { apiV4Restore(w, r) }
+func apiV1BackupAction(w http.ResponseWriter, r *http.Request)  { apiV4BackupAction(w, r) }
+func apiV1BackupTrash(w http.ResponseWriter, r *http.Request)   { apiV4BackupTrash(w, r) }
 func apiV1Automations(w http.ResponseWriter, r *http.Request)   { apiV4Automations(w, r) }
 func apiV1Metrics(w http.ResponseWriter, r *http.Request)       { apiV4Metrics(w, r) }
 

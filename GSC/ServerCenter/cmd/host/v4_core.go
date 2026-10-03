@@ -174,6 +174,8 @@ func registerV4Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/backups", requireAuth(apiV4Backups))
 	mux.HandleFunc("/api/v4/restore", requireAuth(apiV4Restore))
 	mux.HandleFunc("/api/v4/backup/verify", requireAuth(apiV4BackupVerify))
+	mux.HandleFunc("/api/v4/backup/action", requireAuth(apiV4BackupAction))
+	mux.HandleFunc("/api/v4/backups/trash", requireAuth(apiV4BackupTrash))
 	mux.HandleFunc("/api/v4/metrics", requireAuth(apiV4Metrics))
 	mux.HandleFunc("/api/v4/automations", requireAuth(apiV4Automations))
 	mux.HandleFunc("/api/v4/pairing/code", requireAuth(apiV4PairingCode))
@@ -210,6 +212,15 @@ func runV4Preflight(s ServerConfig) V4Health {
 					add("server_port", "Java 포트 일치", "warn", fmt.Sprintf("server.properties=%d · GSC 프로필=%d — 모니터링 포트를 맞춰주세요", actual, s.JavaPort))
 				} else if e == nil {
 					add("server_port", "Java 포트 일치", "ok", fmt.Sprintf("%d", actual))
+				}
+			}
+			role := normalizeServerConfig(s).Role
+			if role == serverRoleWild || role == serverRolePlayground || role == serverRoleOther {
+				v, e := readServerProperty(configuredDir, "accepts-transfers")
+				if e != nil || !strings.EqualFold(strings.TrimSpace(v), "true") {
+					add("accepts_transfers", "Lobby 전송 허용", "warn", "Day-10 backend는 accepts-transfers=true가 필요합니다 · 자동 변경하지 않았습니다")
+				} else {
+					add("accepts_transfers", "Lobby 전송 허용", "ok", "accepts-transfers=true")
 				}
 			}
 		}
