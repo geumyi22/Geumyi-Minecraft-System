@@ -1,2 +1,2 @@
-Day 10 exact-main CI trigger after Geyser/proxy rollback fixes.
+Day 10 exact-main CI trigger after duplicate Velocity bind root-cause fix.
 No runtime behavior is changed by this file.
