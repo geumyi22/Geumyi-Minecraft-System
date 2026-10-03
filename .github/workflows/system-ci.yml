@@ -809,8 +809,12 @@ jobs:
           if ($launcher.Contains('finish_day10.ps1') -or $launcher.Contains('call Day10_Final_E2E.cmd')) {
             throw 'Retired three-server finalizer must not be invoked'
           }
-          foreach ($safety in @('Geumyi-Day10-FourServer-Assets-*', 'Requesting Administrator permission', 'four-server-readiness.json')) {
+          foreach ($safety in @('Requesting Administrator permission', 'four-server-readiness.json', 'resolve_four_server_stage.ps1')) {
             if (-not $launcher.Contains($safety)) { throw "Missing one-click launcher guard: $safety" }
+          }
+          $resolver = Get-Content -LiteralPath 'tools/day10/resolve_four_server_stage.ps1' -Raw
+          foreach ($safety in @('Geumyi-Day10-FourServer-Assets-*', 'four-server-network-plan.json', 'four-server-readiness.json')) {
+            if (-not $resolver.Contains($safety)) { throw "Missing four-server stage resolver guard: $safety" }
           }
           Write-Host 'DAY10 FOUR-SERVER FINALIZER STATIC GATES PASS (LIVE E2E UNVERIFIED)'
 
