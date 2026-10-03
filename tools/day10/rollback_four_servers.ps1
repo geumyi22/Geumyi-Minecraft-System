@@ -143,6 +143,17 @@ function Day10-StopForRollback {
     param([string]$Id, [string]$ServerDir, [int]$RconPort)
     $current = Day10-State $Id
     if ($null -eq $current -or -not [bool]$current.online) { return }
+
+    # The Day 10 lobby uses a simple generated start.bat and does not need the
+    # GSC launcher-shell shutdown path. Send a standard RCON stop immediately
+    # so rollback never appears hung behind GSC's 180-second stop handler.
+    if ($Id -eq "lobby") {
+        Write-Host "Stopping lobby through direct standard RCON..."
+        Day10-DirectRconStop $ServerDir $RconPort
+        Day10-WaitOnline $Id $false 120 | Out-Null
+        return
+    }
+
     Write-Host "Stopping $Id through GSC..."
     Day10-Gsc "POST" "/api/server/action" @{id=$Id;action="stop"} | Out-Null
     try {
