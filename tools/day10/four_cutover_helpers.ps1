@@ -212,7 +212,7 @@ function Day10-FourBootstrapProxy {
     $process=$null
     try {
         Day10-FourStopProxyProcessesInDir $Dir 5
-        $process = Start-Process -FilePath $Java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $Dir "velocity.jar")) -WorkingDirectory $Dir -PassThru
+        $process = Start-Process -FilePath $Java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $Dir "velocity.jar")) -WorkingDirectory $Dir -WindowStyle Hidden -PassThru
         Day10-FourTrackProcess $StatePath $State $process.Id
         $end = (Get-Date).AddSeconds(90)
         $stableLength = -1L
@@ -290,7 +290,7 @@ function Day10-FourStartProxy {
     Day10-FourStopProxyProcessesInDir $Dir 10
     Day10-FourAssertPublicPortFree $PublicJavaPort $BedrockPort
 
-    $proc=Start-Process -FilePath $Java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $Dir "velocity.jar")) -WorkingDirectory $Dir -PassThru
+    $proc=Start-Process -FilePath $Java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $Dir "velocity.jar")) -WorkingDirectory $Dir -WindowStyle Hidden -PassThru
     Day10-FourTrackProcess $StatePath $State $proc.Id
     $deadline=(Get-Date).AddSeconds(90)
     do {
