@@ -9,8 +9,8 @@
 - Public Java TCP `25565/25566/25567`: **LISTEN** after reboot.
 - Public Geyser UDP `19132/19133/19134`: **BOUND** after reboot.
 - Real Java client: public entry -> Lobby, Lobby -> Wild/Playground/Other, `/lobby`, and per-backend last-location restore: **PASS** by user verification.
-- Bedrock client E2E: **SKIPPED_UPSTREAM_UNSUPPORTED**. The current latest Geyser does not yet support the current Bedrock client version, so no Bedrock PASS is claimed.
-- Full Day 10 closure remains pending only for a real Bedrock client E2E after upstream Geyser compatibility becomes available.
+- Bedrock client E2E: original host run = **SKIPPED_UPSTREAM_UNSUPPORTED**; no Bedrock PASS is claimed.
+- Full Day 10 closure remains pending only for one **real Bedrock client E2E**. Upstream compatibility was the historical blocker, but support metadata/build availability alone does not close the milestone.
 
 See `DAY10-E2E-REPORT.md` for the exact verification boundary.
 
@@ -41,7 +41,7 @@ Only after backup succeeds does it stage three Velocity/Geyser/Floodgate process
 
 On failure the four-server rollback verifies backups, stops identified Day 10 Java processes and servers, quarantines generated Lobby/proxy files, restores original config and plugin directories with hash checks, restores original GSC profiles and initial online states, and removes only Day 10 firewall rules and scheduled tasks. Existing world files are never deleted during rollback. Full offline world backups are retained.
 
-The host run verified all three Java aliases, Lobby-first routing, all three backend destinations, `/lobby`, last-position restoration, and reboot persistence. Bedrock infrastructure listeners are bound, but the real Bedrock client test is intentionally recorded as `SKIPPED_UPSTREAM_UNSUPPORTED` until Geyser supports the current Bedrock client version. The finalizer supports the explicit `-SkipBedrockManualE2E` mode for this temporary upstream-compatibility condition; it does not convert the skip into a Bedrock PASS.
+The host run verified all three Java aliases, Lobby-first routing, all three backend destinations, `/lobby`, last-position restoration, and reboot persistence. Bedrock infrastructure listeners are bound, while the original host run records the real-client test as `SKIPPED_UPSTREAM_UNSUPPORTED`. That value is historical evidence for the skip reason, not a permanent gate. The finalizer's explicit `-SkipBedrockManualE2E` mode never converts the skip into a Bedrock PASS.
 
 Limits: CI can check syntax and synthetic gates, not actual client login, device behavior, public router forwarding, OneDrive behavior or Windows startup ordering. Java client login, routing, reboot persistence and recovery were host-verified by the user. Recurring updates for third-party Geyser/Floodgate/Via are not yet implemented. Do not record Bedrock as PASS until a real Bedrock client E2E succeeds after upstream compatibility is available.
 
@@ -55,7 +55,7 @@ A passing preflight is **not** live cutover authorization: full backups, shared 
 
 The host-side module `tools/day10/four_server_port_transaction.ps1` now provides `Day10-SnapshotFourConfig`, `Day10-ApplyFourConfig` and `Day10-RestoreFourConfig` for all four Paper backends. It enforces offline status for the three existing servers, rejects occupied target private Java ports, verifies SHA-256 backups of `server.properties` and `config/paper-global.yml`, applies localhost/private Java port and Paper Velocity-modern forwarding, preserves RCON values, and restores the exact original bytes on failure. Its synthetic Windows PowerShell 5.1 self-test exercises application and hash-exact rollback without touching host servers.
 
-**Implemented and host-used.** The live finalizer now orchestrates GSC profiles/process states, creates Lobby, stages and starts all three Velocity/Geyser instances with a shared Floodgate identity, preserves/restores server state through the four-server rollback path, and requires real Java confirmation. Bedrock manual client confirmation remains pending upstream Geyser support. The retired `Day10_Final_E2E.cmd` remains blocked.
+**Implemented and host-used.** The live finalizer now orchestrates GSC profiles/process states, creates Lobby, stages and starts all three Velocity/Geyser instances with a shared Floodgate identity, preserves/restores server state through the four-server rollback path, and requires real Java confirmation. Bedrock manual client confirmation remains pending **actual client E2E**. Upstream compatibility was the original reason the test was skipped; a newer build/support notice alone is not a PASS. The retired `Day10_Final_E2E.cmd` remains blocked.
 
 ## Revised implementation stages
 
