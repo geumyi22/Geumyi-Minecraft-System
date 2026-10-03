@@ -1,5 +1,11 @@
 # Day 4 E2E verification — 2026-09-27
 
+## Canonical milestone meaning
+
+Day 4 is a real project milestone, but it was **verification/closure only**. No new feature implementation was required for this day. Historical conversation wording equivalent to "Day 4 has nothing else to do" means the implementation work was already done and only live verification/closure remained; it does **not** mean Day 4 should be deleted or that later Day numbers should be shifted.
+
+The canonical numbering rule is maintained in `DAY-TIMELINE.md`.
+
 ## Scope
 
 Live Wild and Playground server operation was checked using the server-PC evidence bundle plus user-provided screenshots. Raw screenshots/log bundles are **not** committed because they contain local paths, network information and a live resource-pack share URL. Only sanitized derived evidence is stored here.
@@ -42,6 +48,8 @@ The original Day-4 follow-up list is now closed for the Day-4 milestone.
 The collection tool successfully removed obvious token/private-key fields, but its first version did not redact a resource-pack URL written as an escaped `https\://` value and also split one keystore-password redaction awkwardly. Therefore the raw Day-4 evidence bundle is not publication-safe and is intentionally kept out of Git. The sanitized server-property snapshots in `Servers/Wild` and `Servers/Playground` are the canonical public evidence.
 
 ## Day-4 result
+
+**Completed as a live E2E verification/closure milestone; no new implementation is implied.**
 
 **Completed. All Day-4 follow-up items are closed for this milestone; the resource-pack SHA-1 item is closed by explicit user acceptance rather than technical verification.**
 
