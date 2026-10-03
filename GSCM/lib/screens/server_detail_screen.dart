@@ -1326,25 +1326,66 @@ class _BackupsSectionState extends State<_BackupsSection> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Card(
                     child: ListTile(
-                      leading: Icon(b.verified ? Icons.verified_outlined : Icons.archive_outlined),
+                      leading: Icon(b.protected ? Icons.lock_outline : (b.verified ? Icons.verified_outlined : Icons.archive_outlined)),
                       title: Text(b.file, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
                       subtitle: Text(
-                        '${b.scope} · ${_size(b.size)} · ${b.created == null ? '-' : _ServerDetailScreenState._formatDateTime(b.created!)}'
+                        '${b.kind == 'checkpoint' ? '체크포인트' : '백업'} · ${b.scope} · ${_size(b.size)} · ${b.created == null ? '-' : _ServerDetailScreenState._formatDateTime(b.created!)}'
+                        '${b.protected ? '\n보호됨 · 휴지통 이동 차단' : ''}'
                         '${b.sha256.isEmpty ? '' : '\nSHA256 ${b.sha256.substring(0, b.sha256.length < 16 ? b.sha256.length : 16)}…'}',
                       ),
-                      isThreeLine: b.sha256.isNotEmpty,
+                      isThreeLine: b.sha256.isNotEmpty || b.protected,
                       trailing: PopupMenuButton<String>(
                         enabled: !busy,
-                        onSelected: (v) => v == 'verify' ? _verify(b) : _restore(b),
-                        itemBuilder: (_) => const [
-                          PopupMenuItem(value: 'verify', child: Text('무결성 검증')),
-                          PopupMenuItem(value: 'restore', child: Text('이 백업으로 복원')),
+                        onSelected: (v) {
+                          if (v == 'verify') {
+                            _verify(b);
+                          } else if (v == 'restore') {
+                            _restore(b);
+                          } else {
+                            _backupAction(b, v);
+                          }
+                        },
+                        itemBuilder: (_) => [
+                          const PopupMenuItem(value: 'verify', child: Text('무결성 검증')),
+                          const PopupMenuItem(value: 'restore', child: Text('이 백업으로 복원')),
+                          PopupMenuItem(value: b.protected ? 'unprotect' : 'protect', child: Text(b.protected ? '보호 해제' : '보호 지정')),
+                          const PopupMenuDivider(),
+                          const PopupMenuItem(value: 'trash', child: Text('휴지통으로 이동')),
                         ],
                       ),
                     ),
                   ),
                 ),
               ),
+            if (!loading) ...[
+              const SizedBox(height: 12),
+              SectionCard(
+                title: '휴지통 · ${trashItems.length}',
+                icon: Icons.delete_outline,
+                child: trashItems.isEmpty
+                    ? const Padding(padding: EdgeInsets.all(16), child: Center(child: Text('휴지통이 비어 있습니다.')))
+                    : Column(
+                        children: trashItems
+                            .map(
+                              (b) => ListTile(
+                                leading: const Icon(Icons.delete_outline),
+                                title: Text(b.file, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                subtitle: Text('${b.kind == 'checkpoint' ? '체크포인트' : '백업'} · ${b.scope} · ${_size(b.size)}'),
+                                trailing: PopupMenuButton<String>(
+                                  enabled: !busy,
+                                  onSelected: (v) => _backupAction(b, v),
+                                  itemBuilder: (_) => const [
+                                    PopupMenuItem(value: 'restore-trash', child: Text('휴지통에서 복구')),
+                                    PopupMenuDivider(),
+                                    PopupMenuItem(value: 'delete-permanent', child: Text('영구 삭제')),
+                                  ],
+                                ),
+                              ),
+                            )
+                            .toList(growable: false),
+                      ),
+              ),
+            ],
           ],
         ),
       );
