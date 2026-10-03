@@ -163,6 +163,23 @@ class GscApi {
       _request('POST', '/api/v4/update/decision',
           body: {'id': id, 'decision': decision});
 
+
+  Future<Map<String, dynamic>> serverUpdatePolicy(String id) =>
+      _request('GET', '/api/v4/update/server-policy', query: {'id': id});
+
+  Future<Map<String, dynamic>> saveServerUpdatePolicy(
+    String id, {
+    String? policy,
+    String? channel,
+    String? pin,
+  }) {
+    final body = <String, dynamic>{'id': id};
+    if (policy != null) body['policy'] = policy;
+    if (channel != null) body['channel'] = channel;
+    if (pin != null) body['pin'] = pin;
+    return _request('POST', '/api/v4/update/server-policy', body: body);
+  }
+
   Future<Map<String, dynamic>> server(String id) => _request('GET', '/api/v1/servers/$id');
   Future<Map<String, dynamic>> serverHealth(String id) => _request('GET', '/api/v1/servers/$id/health');
   Future<List<String>> players(String id) async {
