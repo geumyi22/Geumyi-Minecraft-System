@@ -156,20 +156,25 @@ if ($SelfTest) {
     try {
         New-Item -ItemType Directory -Force -Path $tmp | Out-Null
         $cfgPath = Join-Path $tmp "server.json"
+        $wildName = ([string][char]0xAE08) + [char]0xC774 + " " + [char]0xC57C + [char]0xC0DD
+        $testDir = ([string][char]0xD14C) + [char]0xC2A4 + [char]0xD2B8
+        $wildPath = "C:\" + $testDir + "\" + ([string][char]0xC57C) + [char]0xC0DD
+        $playName = ([string][char]0xAE08) + [char]0xC774 + " " + [char]0xB180 + [char]0xC774 + [char]0xD130
+        $playPath = "C:\" + $testDir + "\" + ([string][char]0xB180) + [char]0xC774 + [char]0xD130
         $probe = [pscustomobject]@{
             bind = "127.0.0.1"
             servers = @(
-                [pscustomobject]@{ id="wild"; name="금이 야생"; path="C:\테스트\야생"; auto_start=$true }
+                [pscustomobject]@{ id="wild"; name=$wildName; path=$wildPath; auto_start=$true }
             )
         }
         Write-JsonUtf8NoBom $cfgPath $probe
         $round = Read-JsonUtf8 $cfgPath
-        if ($round.servers[0].name -ne "금이 야생" -or $round.servers[0].path -ne "C:\테스트\야생") {
+        if ($round.servers[0].name -ne $wildName -or $round.servers[0].path -ne $wildPath) {
             throw "UTF-8 recovery round-trip failed"
         }
-        $bytes = Json-Utf8Bytes @{ server=@{ name="금이 놀이터"; path="C:\테스트\놀이터" } }
+        $bytes = Json-Utf8Bytes @{ server=@{ name=$playName; path=$playPath } }
         $decoded = [Text.Encoding]::UTF8.GetString($bytes) | ConvertFrom-Json
-        if ($decoded.server.name -ne "금이 놀이터") { throw "UTF-8 API body self-test failed" }
+        if ($decoded.server.name -ne $playName -or $decoded.server.path -ne $playPath) { throw "UTF-8 API body self-test failed" }
         Write-Host "DAY10 FAILED-CUTOVER RECOVERY SELFTEST PASS"
         exit 0
     }
