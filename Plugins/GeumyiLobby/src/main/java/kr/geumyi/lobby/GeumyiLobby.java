@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
 
 public final class GeumyiLobby extends JavaPlugin implements Listener {
     private static final String MENU_TITLE = "§0서버 선택";
-    private static final int BUILD_VERSION = 1;
+    private static final int BUILD_VERSION = 2;
 
     private final Map<UUID, Long> portalCooldown = new ConcurrentHashMap<>();
     private World lobbyWorld;
@@ -264,7 +264,8 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
             }
         }
         setRelative(-29, 0, 0, Material.EMERALD_BLOCK);
-        setRelative(-29, 1, 0, Material.SEA_LANTERN);
+        setRelative(-29, 1, 0, Material.EMERALD_BLOCK);
+        setRelative(-29, 2, 0, Material.SEA_LANTERN);
     }
 
     private void buildPlaygroundGate() {
@@ -283,7 +284,8 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
             }
         }
         setRelative(29, 0, 0, Material.DIAMOND_BLOCK);
-        setRelative(29, 1, 0, Material.SEA_LANTERN);
+        setRelative(29, 1, 0, Material.DIAMOND_BLOCK);
+        setRelative(29, 2, 0, Material.SEA_LANTERN);
     }
 
     private void buildOtherGate() {
@@ -302,7 +304,8 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
             }
         }
         setRelative(0, 0, -29, Material.AMETHYST_BLOCK);
-        setRelative(0, 1, -29, Material.SEA_LANTERN);
+        setRelative(0, 1, -29, Material.AMETHYST_BLOCK);
+        setRelative(0, 2, -29, Material.SEA_LANTERN);
     }
 
     private void buildTree(int x, int z) {
@@ -499,6 +502,27 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         if (!isLobbyPlayer(player)) {
             return;
         }
+
+        Block clicked = event.getClickedBlock();
+        if (clicked != null) {
+            Material type = clicked.getType();
+            if (type == Material.EMERALD_BLOCK) {
+                event.setCancelled(true);
+                requestServer(player, wildServer);
+                return;
+            }
+            if (type == Material.DIAMOND_BLOCK) {
+                event.setCancelled(true);
+                requestServer(player, playgroundServer);
+                return;
+            }
+            if (type == Material.AMETHYST_BLOCK) {
+                event.setCancelled(true);
+                requestServer(player, otherServer);
+                return;
+            }
+        }
+
         ItemStack item = event.getItem();
         if (item != null && item.getType() == Material.COMPASS) {
             event.setCancelled(true);
