@@ -181,7 +181,10 @@ function Day10-SetServerProperty {
 function Day10-SetPaperVelocity {
     param([string]$Path, [string]$Secret)
     if (-not (Test-Path -LiteralPath $Path)) { throw "paper-global.yml missing: $Path" }
-    $lines = @((Get-Content -LiteralPath $Path -Raw).Replace([Environment]::NewLine, "`n").Split([char]10))
+    $raw = Day10-ReadUtf8Strict $Path
+    Day10-AssertYamlTextSafe $raw $Path
+    $crlf = ([string][char]13) + [char]10
+    $lines = @($raw.Replace($crlf, [string][char]10).Split([char]10))
     $proxies = -1
     $velocity = -1
     for ($i = 0; $i -lt $lines.Count; $i++) {
@@ -234,7 +237,9 @@ function Day10-SetPaperVelocity {
             $end++
         }
     }
-    [IO.File]::WriteAllText($Path, ($lines -join [Environment]::NewLine), (New-Object Text.UTF8Encoding($false)))
+    $updated = $lines -join [Environment]::NewLine
+    Day10-AssertYamlTextSafe $updated $Path
+    Day10-WriteUtf8NoBom $Path $updated
 }
 
 function Day10-SetSpigotBungeeFalse {
@@ -294,13 +299,15 @@ function Day10-SetYamlChild {
 
 function Day10-SetGeyserConfig {
     param([string]$Path, [int]$BedrockPort)
-    $text = Get-Content -LiteralPath $Path -Raw
+    $text = Day10-ReadUtf8Strict $Path
+    Day10-AssertYamlTextSafe $text $Path
     $text = Day10-SetYamlChild $text "bedrock" "address" "0.0.0.0"
     $text = Day10-SetYamlChild $text "bedrock" "port" ([string]$BedrockPort)
     $text = Day10-SetYamlChild $text "bedrock" "clone-remote-port" "false"
     $text = Day10-SetYamlChild $text "remote" "address" "auto"
     $text = Day10-SetYamlChild $text "remote" "auth-type" "floodgate"
-    [IO.File]::WriteAllText($Path, $text, (New-Object Text.UTF8Encoding($false)))
+    Day10-AssertYamlTextSafe $text $Path
+    Day10-WriteUtf8NoBom $Path $text
 }
 
 function Day10-ConfigureLobbyGds {
