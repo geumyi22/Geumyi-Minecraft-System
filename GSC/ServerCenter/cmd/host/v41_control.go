@@ -737,6 +737,8 @@ func registerControlAPIRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v1/backups", requireAuth(apiV1Backups))
 	mux.HandleFunc("/api/v1/backups/verify", requireAuth(apiV1BackupVerify))
 	mux.HandleFunc("/api/v1/backups/restore", requireAuth(apiV1BackupRestore))
+	mux.HandleFunc("/api/v1/backups/action", requireAuth(apiV1BackupAction))
+	mux.HandleFunc("/api/v1/backups/trash", requireAuth(apiV1BackupTrash))
 	mux.HandleFunc("/api/v1/automations", requireAuth(apiV1Automations))
 	mux.HandleFunc("/api/v1/metrics", requireAuth(apiV1Metrics))
 }
