@@ -1,0 +1,89 @@
+name: Day 11 Safety Preflight CI
+
+on:
+  push:
+    paths:
+      - 'tools/day11/**'
+      - 'DAY11-PLAN.md'
+      - '.github/workflows/day11-safety-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'tools/day11/**'
+      - 'DAY11-PLAN.md'
+      - 'GSC/ServerCenter/**'
+      - 'GSCM/**'
+      - '.github/workflows/day11-safety-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  readonly-preflight:
+    name: Read-only preflight safety guard
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse PowerShell
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $path = 'tools/day11/Day11_Phase0_ReadOnly_Preflight.ps1'
+          $tokens = $null
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $path),
+            [ref]$tokens,
+            [ref]$errors
+          )
+          if($errors.Count -gt 0){
+            $errors | Format-List | Out-String | Write-Host
+            throw 'Day 11 preflight PowerShell parse failed'
+          }
+
+      - name: Reject destructive preflight commands
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $raw = Get-Content -LiteralPath 'tools/day11/Day11_Phase0_ReadOnly_Preflight.ps1' -Raw
+          $forbidden = @(
+            '(?i)\bStop-Process\b',
+            '(?i)\btaskkill(?:\.exe)?\b',
+            '(?i)\bRemove-Item\b',
+            '(?i)\bMove-Item\b',
+            '(?i)\bCopy-Item\b',
+            '(?i)\bNew-NetFirewallRule\b',
+            '(?i)\bRemove-NetFirewallRule\b',
+            '(?i)\bSet-NetFirewallRule\b',
+            '(?i)\bRestart-Computer\b',
+            '(?i)\bStop-Computer\b',
+            '(?i)\bStop-Service\b',
+            '(?i)\bStart-Service\b',
+            '(?i)\bSet-Service\b',
+            '(?i)Invoke-RestMethod[^\r\n]*-Method\s+(Post|Put|Delete|Patch)'
+          )
+          foreach($pattern in $forbidden){
+            if($raw -match $pattern){
+              throw "READ ONLY preflight contains forbidden mutation pattern: $pattern"
+            }
+          }
+
+      - name: Execute synthetic read-only preflight
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $out = Join-Path $env:RUNNER_TEMP 'day11-preflight'
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File 'tools/day11/Day11_Phase0_ReadOnly_Preflight.ps1' -NoNetworkProbe -OutputDir $out
+          if($LASTEXITCODE -ne 0){ throw "preflight exit code $LASTEXITCODE" }
+          $json = Get-ChildItem -LiteralPath $out -Filter 'Geumyi-Day11-Phase0-*.json' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if(-not $json){ throw 'preflight JSON missing' }
+          $r = Get-Content -LiteralPath $json.FullName -Raw | ConvertFrom-Json
+          if($r.phase -ne 'Day11-Phase0-READ-ONLY'){ throw 'wrong phase marker' }
+          foreach($name in @('mutates_server_config','stops_minecraft','stops_velocity','changes_firewall','reads_secrets')){
+            if([bool]$r.safety.$name){ throw "unsafe preflight flag: $name" }
+          }
+          Write-Host 'DAY 11 READ-ONLY PREFLIGHT SAFETY CI PASS'
