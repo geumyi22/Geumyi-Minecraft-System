@@ -64,8 +64,12 @@ See `DAY7-CI-REPORT.md`. Final System CI run 36448831023 and mobile runs 3644847
 See `DAY8-RELEASE-REPORT.md` and `DAY8-RUNBOOK.md`. Day 8 is closed. Secure Release run `36574955584` published `system-2026.09.29-222513-canary`, and the server-PC resume finalizer displayed PASS after verifying the real Wild Technology 0.1.4 pre-start update and Playground isolation. Android ADB signer-transition install remains optional/pending.
 
 
+## Day-9 transaction / rollback
+
+Day 9 is closed. GSC 4.2.4 transaction backup/staging/commit, interrupted-transaction recovery, post-start health gate, automatic rollback, rejected-release hold, failure injection/self-test, known-good fail-open, and the server-PC Final E2E were completed. Day 8 and Day 9 are both canonical **completed** milestones; their PASS labels are completion evidence, not partial-state labels.
+
 ## Day-10 four-server host verification
 
 On 2026-10-03 the user verified the real server PC after cutover and after a Windows reboot. Velocity startup tasks for wild/playground/other were Running; public TCP 25565/25566/25567 were LISTEN; UDP 19132/19133/19134 were BOUND. A real Java client entered Lobby and successfully routed to Wild, Playground and Other, returned with `/lobby`, and restored each backend's previous position.
 
-Bedrock client login was not tested as PASS. It is explicitly `SKIPPED_UPSTREAM_UNSUPPORTED` until the latest Geyser supports the current Bedrock client version. See `DAY10-E2E-REPORT.md`.
+Bedrock client login was not tested as PASS. The original live run recorded `SKIPPED_UPSTREAM_UNSUPPORTED`; that remains historical evidence for why it was skipped. The current closure condition is one real Bedrock client E2E. A newer Geyser build or support notice alone does not convert the result to PASS. See `DAY10-E2E-REPORT.md`.
