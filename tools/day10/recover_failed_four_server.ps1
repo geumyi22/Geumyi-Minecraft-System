@@ -35,7 +35,52 @@ function Invoke-Gsc {
     if ($null -eq $Body) {
         return Invoke-RestMethod -Method $Method -Uri $uri -TimeoutSec 20
     }
-    return Invoke-RestMethod -Method $Method -Uri $uri -TimeoutSec 20 -ContentType "application/json; charset=utf-8" -Body (Json-Utf8Bytes $Body)
+    if ($Method -ne "POST") { throw "Body requests currently support POST only" }
+
+    $bytes = Json-Utf8Bytes $Body
+    $request = [System.Net.HttpWebRequest]::Create($uri)
+    $request.Method = "POST"
+    $request.ContentType = "application/json; charset=utf-8"
+    $request.ContentLength = $bytes.Length
+    $request.Timeout = 20000
+    $request.ReadWriteTimeout = 20000
+
+    $stream = $request.GetRequestStream()
+    try {
+        $stream.Write($bytes, 0, $bytes.Length)
+    } finally {
+        $stream.Dispose()
+    }
+
+    try {
+        $response = $request.GetResponse()
+    } catch [System.Net.WebException] {
+        $message = $_.Exception.Message
+        if ($null -ne $_.Exception.Response) {
+            $errorResponse = $_.Exception.Response
+            $reader = $null
+            try {
+                $reader = New-Object System.IO.StreamReader($errorResponse.GetResponseStream(), [Text.Encoding]::UTF8)
+                $bodyText = $reader.ReadToEnd()
+                if (-not [string]::IsNullOrWhiteSpace($bodyText)) { $message += ": " + $bodyText.Trim() }
+            } finally {
+                if ($null -ne $reader) { $reader.Dispose() }
+                $errorResponse.Dispose()
+            }
+        }
+        throw $message
+    }
+
+    $reader = $null
+    try {
+        $reader = New-Object System.IO.StreamReader($response.GetResponseStream(), [Text.Encoding]::UTF8)
+        $text = $reader.ReadToEnd()
+        if ([string]::IsNullOrWhiteSpace($text)) { return $null }
+        return $text | ConvertFrom-Json
+    } finally {
+        if ($null -ne $reader) { $reader.Dispose() }
+        $response.Dispose()
+    }
 }
 
 function Wait-Gsc {
