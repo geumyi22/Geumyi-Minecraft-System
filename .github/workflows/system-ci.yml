@@ -841,12 +841,15 @@ jobs:
           $py = (Get-Command python.exe -ErrorAction Stop).Source
           $serverPy = Join-Path $env:RUNNER_TEMP 'day10_utf8_http_server.py'
           $capture = Join-Path $env:RUNNER_TEMP 'day10_utf8_http_capture.json'
+          $ready = Join-Path $env:RUNNER_TEMP 'day10_utf8_http_ready.txt'
+          Remove-Item -LiteralPath $ready -Force -ErrorAction SilentlyContinue
           $port = Get-Random -Minimum 20000 -Maximum 45000
           @'
           from http.server import BaseHTTPRequestHandler, HTTPServer
           import json, pathlib, sys
           port = int(sys.argv[1])
           capture = pathlib.Path(sys.argv[2])
+          ready = pathlib.Path(sys.argv[3])
           class Handler(BaseHTTPRequestHandler):
               def do_POST(self):
                   try:
@@ -868,10 +871,17 @@ jobs:
                       self.wfile.write(body)
               def log_message(self, fmt, *args):
                   pass
-          HTTPServer(("127.0.0.1", port), Handler).handle_request()
+          server = HTTPServer(("127.0.0.1", port), Handler)
+          ready.write_text("ready", encoding="ascii")
+          server.handle_request()
           '@ | Set-Content -LiteralPath $serverPy -Encoding UTF8
-          $serverProc = Start-Process -FilePath $py -ArgumentList @($serverPy, [string]$port, $capture) -PassThru -WindowStyle Hidden
-          Start-Sleep -Milliseconds 800
+          $serverProc = Start-Process -FilePath $py -ArgumentList @($serverPy, [string]$port, $capture, $ready) -PassThru -WindowStyle Hidden
+          $deadline = (Get-Date).AddSeconds(10)
+          while (-not (Test-Path -LiteralPath $ready)) {
+            if ($serverProc.HasExited) { throw 'Loopback JSON receiver exited before readiness' }
+            if ((Get-Date) -ge $deadline) { throw 'Loopback JSON receiver readiness timeout' }
+            Start-Sleep -Milliseconds 100
+          }
           try {
             $name = ([string][char]0xAE08) + [char]0xC774 + ' ' + [char]0xC57C + [char]0xC0DD
             $dir = ([string][char]0xD14C) + [char]0xC2A4 + [char]0xD2B8

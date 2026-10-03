@@ -82,6 +82,44 @@ type updatePlanItem struct {
 	Installed PluginInventory
 }
 
+type UpdateDryRunItem struct {
+	Key             string `json:"key"`
+	PluginName      string `json:"plugin_name"`
+	InstalledVersion string `json:"installed_version"`
+	TargetVersion   string `json:"target_version"`
+	File            string `json:"file"`
+	Size            int64  `json:"size"`
+	RequiresRestart bool   `json:"requires_restart"`
+}
+
+type UpdateDryRunServer struct {
+	ServerID         string             `json:"server_id"`
+	Name             string             `json:"name"`
+	Role             string             `json:"role"`
+	Policy           string             `json:"policy"`
+	Online           bool               `json:"online"`
+	Players          int                `json:"players"`
+	PlayerAwareBlock bool               `json:"player_aware_block"`
+	RestartSafe      bool               `json:"restart_safe"`
+	Items            []UpdateDryRunItem `json:"items"`
+	Error            string             `json:"error,omitempty"`
+}
+
+type UpdateDryRunResult struct {
+	DryRun           bool                 `json:"dry_run"`
+	InstallPerformed bool                 `json:"install_performed"`
+	RestartPerformed bool                 `json:"restart_performed"`
+	SettingsEnabled  bool                 `json:"settings_enabled"`
+	Channel          string               `json:"channel"`
+	Release          string               `json:"release"`
+	ManifestSHA256   string               `json:"manifest_sha256"`
+	SignatureVerified bool                `json:"signature_verified"`
+	Servers          []UpdateDryRunServer `json:"servers"`
+	AvailableCount   int                  `json:"available_count"`
+	BlockedServers   int                  `json:"blocked_servers"`
+}
+
+
 var (
 	updateStateMu sync.Mutex
 	updateStates  = map[string]UpdateStatus{}
@@ -143,6 +181,7 @@ func registerUpdateRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/update/status", requireAuth(apiV4UpdateStatus))
 	mux.HandleFunc("/api/v4/update/settings", requireAuth(apiV4UpdateSettings))
 	mux.HandleFunc("/api/v4/update/check", requireAuth(apiV4UpdateCheck))
+	mux.HandleFunc("/api/v4/update/dry-run", requireAuth(apiV4UpdateDryRun))
 	mux.HandleFunc("/api/v4/update/decision", requireAuth(apiV4UpdateDecision))
 }
 
@@ -228,6 +267,104 @@ func apiV4UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	appendV4Event("info", "update", "", "업데이트 설정 저장", fmt.Sprintf("enabled=%v channel=%s repository=%s", u.Enabled, u.Channel, u.Repository))
 	writeJSON(w, map[string]any{"ok": true, "settings": u})
+}
+
+func updateRestartSafety(online bool, players int) (blocked, safe bool) {
+	blocked = online && players > 0
+	safe = !online || players == 0
+	return blocked, safe
+}
+
+func updateDryRunServer(s ServerConfig, manifest DeploymentManifest) UpdateDryRunServer {
+	s = normalizeServerConfig(s)
+	st := getServerStatus(s)
+	blocked, restartSafe := updateRestartSafety(st.Online, st.MC.Online)
+	preview := UpdateDryRunServer{
+		ServerID: s.ID,
+		Name: s.Name,
+		Role: s.Role,
+		Policy: normalizeServerUpdatePolicy(s.UpdatePolicy),
+		Online: st.Online,
+		Players: st.MC.Online,
+		PlayerAwareBlock: blocked,
+		RestartSafe: restartSafe,
+	}
+	plan, err := buildUpdatePlan(s, manifest)
+	if err != nil {
+		preview.Error = err.Error()
+		return preview
+	}
+	preview.Items = make([]UpdateDryRunItem, 0, len(plan))
+	for _, item := range plan {
+		preview.Items = append(preview.Items, UpdateDryRunItem{
+			Key: item.Key,
+			PluginName: item.Component.PluginName,
+			InstalledVersion: item.Installed.Version,
+			TargetVersion: item.Component.Version,
+			File: item.Component.File,
+			Size: item.Component.Size,
+			RequiresRestart: item.Component.RequiresRestart,
+		})
+	}
+	return preview
+}
+
+func buildUpdateDryRun(c UpdateConfig, manifest DeploymentManifest, manifestHash, release, onlyID string) UpdateDryRunResult {
+	c = normalizeUpdateConfig(c)
+	result := UpdateDryRunResult{
+		DryRun: true,
+		InstallPerformed: false,
+		RestartPerformed: false,
+		SettingsEnabled: c.Enabled,
+		Channel: c.Channel,
+		Release: release,
+		ManifestSHA256: manifestHash,
+		SignatureVerified: true,
+	}
+	cfg := configSnapshot()
+	for _, s := range cfg.Servers {
+		if onlyID != "" && !strings.EqualFold(strings.TrimSpace(onlyID), s.ID) {
+			continue
+		}
+		preview := updateDryRunServer(s, manifest)
+		result.Servers = append(result.Servers, preview)
+		result.AvailableCount += len(preview.Items)
+		if preview.PlayerAwareBlock {
+			result.BlockedServers++
+		}
+	}
+	return result
+}
+
+// apiV4UpdateDryRun performs discovery and planning only. It never downloads
+// an artifact, edits a server profile, stops/restarts Minecraft, or changes an
+// update policy. The signed manifest is verified using the normal trust path.
+func apiV4UpdateDryRun(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST required", http.StatusMethodNotAllowed)
+		return
+	}
+	var q struct {
+		ID string `json:"id"`
+	}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q); err != nil && !errors.Is(err, io.EOF) {
+		http.Error(w, "bad json", http.StatusBadRequest)
+		return
+	}
+	q.ID = strings.ToLower(strings.TrimSpace(q.ID))
+	if q.ID != "" {
+		if _, ok := serverByID(q.ID); !ok {
+			http.Error(w, "unknown server", http.StatusBadRequest)
+			return
+		}
+	}
+	uc := normalizeUpdateConfig(configSnapshot().Update)
+	manifest, manifestHash, release, err := fetchVerifiedManifest(uc)
+	if err != nil {
+		http.Error(w, "dry-run manifest verification failed: "+err.Error(), http.StatusBadGateway)
+		return
+	}
+	writeJSON(w, buildUpdateDryRun(uc, manifest, manifestHash, release, q.ID))
 }
 
 func apiV4UpdateCheck(w http.ResponseWriter, r *http.Request) {

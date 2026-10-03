@@ -159,6 +159,10 @@ class GscApi {
       _request('POST', '/api/v4/update/check', body: {'id': id},
           timeout: const Duration(seconds: 30));
 
+  Future<Map<String, dynamic>> dryRunUpdates(String id) =>
+      _request('POST', '/api/v4/update/dry-run', body: {'id': id},
+          timeout: const Duration(seconds: 30));
+
   Future<Map<String, dynamic>> updateDecision(String id, String decision) =>
       _request('POST', '/api/v4/update/decision',
           body: {'id': id, 'decision': decision});
