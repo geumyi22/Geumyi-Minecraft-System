@@ -1,46 +1,47 @@
 # Lobby backend
 
-Day 10 introduces one new Minecraft world/server: **Lobby**.
+Day 10 adds **Lobby** as the central Paper backend behind Velocity.
 
 ## Purpose
 
-- Every successful public login enters Lobby first.
-- Lobby always places the player at the central spawn.
-- Lobby provides the Wild / Playground selector.
-- Wild and Playground worlds remain unchanged.
-- Lobby is a backend behind Velocity and must not be exposed directly.
+- Every successful public Java login enters Lobby first.
+- Lobby always places the player at the central spawn instead of restoring a Lobby position.
+- Lobby provides routes to Wild, Playground and Other.
+- `/lobby` returns backend players to Lobby.
+- Wild/Playground/Other positions are stored separately and restored on return.
+- Lobby is private behind Velocity and must not be exposed directly.
 
-## Candidate local ports
+## Current local ports
 
-- Java: `127.0.0.1:25569`
+- Java: `127.0.0.1:25573`
 - RCON: `127.0.0.1:25579`
-- GDS API: reserved for later integration; not required by the first Lobby build.
+- GSC backend `bedrock_port`: `0`
 
-## Required files at runtime
+## Runtime components
 
-- Paper 26.3 as `paper.jar`
-- `GeumyiLobby-0.1.0.jar` in `plugins/`
-- generated Velocity forwarding secret applied to Paper modern forwarding config
+- Paper 26.3
+- `GeumyiLobby-0.1.0.jar`
+- Day 10 routing integration with `GeumyiNetwork-0.1.0.jar`
+- Velocity modern forwarding secret generated locally during deployment
 
-## Important security transition
+## Lobby map / selector
 
-The template already uses `online-mode=false` because authentication belongs to
-Velocity in the final network. Do not expose this backend publicly. During the
-actual cutover, Paper modern forwarding must be enabled with the same secret as
-Velocity and the server stays bound to `127.0.0.1`.
+The current GeumyiLobby build uses a compact protected central plaza with three physical destination blocks:
 
-## Lobby map
+- `EMERALD_BLOCK` -> Wild
+- `DIAMOND_BLOCK` -> Playground
+- `AMETHYST_BLOCK` -> Other
 
-The first GeumyiLobby build generates a compact floating/plaza-style hub at the
-configured spawn:
+The compass selector is also available. The movement portal trigger is disabled by default in the current Day 10 baseline.
 
-- central quartz/stone plaza
-- safety barrier edge
-- Wild nature gate
-- Playground colored quartz gate
-- four decorative trees
-- compass server selector
-- walking into either gate also requests a server transfer
+## Host verification
 
-The map generator only runs on the dedicated Lobby server. It does not touch
-Wild or Playground.
+On the 2026-10-03/04 Day 10 host run, the user verified:
+
+- public Java entry -> Lobby;
+- Lobby -> Wild / Playground / Other;
+- `/lobby` return;
+- last-position restoration for all three backends;
+- successful operation after a Windows reboot.
+
+Bedrock client E2E remains pending upstream Geyser compatibility; no Bedrock PASS is claimed.
