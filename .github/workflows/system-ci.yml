@@ -792,6 +792,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Four-server stage resolver selftest failed' }
           & 'tools/day10/Day10_FourServer_Live.cmd' --selftest
           if ($LASTEXITCODE -ne 0) { throw 'Four-server launcher selftest failed' }
+          & 'tools/day10/recover_failed_four_server.ps1' -SelfTest
+          if ($LASTEXITCODE -ne 0) { throw 'Failed-cutover recovery selftest failed' }
+          & 'tools/day10/Day10_Recovery_After_Failed_Cutover.cmd' --selftest
+          if ($LASTEXITCODE -ne 0) { throw 'Failed-cutover recovery launcher selftest failed' }
           . (Resolve-Path 'tools/day10/day10_live_helpers.ps1')
           $probe = @{ action='update'; server=@{ id='wild'; name='금이 야생'; path='C:\테스트\야생' } }
           $utf8 = Day10-JsonUtf8Bytes $probe
