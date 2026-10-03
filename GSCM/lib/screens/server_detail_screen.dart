@@ -864,49 +864,6 @@ class _PlayersSectionState extends State<_PlayersSection> {
     if (ok == true && player.isNotEmpty) await _act(action, player);
   }
 
-  Future<void> _backupAction(BackupInfo b, String action) async {
-    if (action == 'trash') {
-      if (b.protected) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('보호된 백업입니다. 먼저 보호를 해제하세요.')));
-        return;
-      }
-      final ok = await widget.confirm(
-        '백업을 휴지통으로 이동',
-        b.file + '\n\n즉시 영구 삭제하지 않고 GSC 휴지통으로 이동합니다. 나중에 복구할 수 있습니다.',
-        action: '휴지통으로 이동',
-        dangerous: true,
-      );
-      if (!ok) return;
-    } else if (action == 'delete-permanent') {
-      final ok = await widget.confirm(
-        '백업 영구 삭제',
-        b.file + '\n\n이 작업은 되돌릴 수 없습니다. 휴지통의 백업 파일을 영구 삭제합니다.',
-        action: '영구 삭제',
-        dangerous: true,
-      );
-      if (!ok) return;
-    }
-    setState(() => busy = true);
-    try {
-      await widget.api.backupAction(widget.server.id, b.file, action);
-      if (mounted) {
-        final labels = <String, String>{
-          'protect': '백업 보호 지정 완료',
-          'unprotect': '백업 보호 해제 완료',
-          'trash': '휴지통으로 이동 완료',
-          'restore-trash': '휴지통에서 복구 완료',
-          'delete-permanent': '백업 영구 삭제 완료',
-        };
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(labels[action] ?? '백업 작업 완료')));
-      }
-      await _load();
-    } on GscApiException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-    } finally {
-      if (mounted) setState(() => busy = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) => RefreshIndicator(
         onRefresh: _load,
@@ -1289,6 +1246,49 @@ class _BackupsSectionState extends State<_BackupsSection> {
       final cp = await widget.api.restoreBackup(widget.server.id, b.file);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('복원 완료 · 체크포인트 $cp')));
+      }
+      await _load();
+    } on GscApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> _backupAction(BackupInfo b, String action) async {
+    if (action == 'trash') {
+      if (b.protected) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('보호된 백업입니다. 먼저 보호를 해제하세요.')));
+        return;
+      }
+      final ok = await widget.confirm(
+        '백업을 휴지통으로 이동',
+        b.file + '\n\n즉시 영구 삭제하지 않고 GSC 휴지통으로 이동합니다. 나중에 복구할 수 있습니다.',
+        action: '휴지통으로 이동',
+        dangerous: true,
+      );
+      if (!ok) return;
+    } else if (action == 'delete-permanent') {
+      final ok = await widget.confirm(
+        '백업 영구 삭제',
+        b.file + '\n\n이 작업은 되돌릴 수 없습니다. 휴지통의 백업 파일을 영구 삭제합니다.',
+        action: '영구 삭제',
+        dangerous: true,
+      );
+      if (!ok) return;
+    }
+    setState(() => busy = true);
+    try {
+      await widget.api.backupAction(widget.server.id, b.file, action);
+      if (mounted) {
+        final labels = <String, String>{
+          'protect': '백업 보호 지정 완료',
+          'unprotect': '백업 보호 해제 완료',
+          'trash': '휴지통으로 이동 완료',
+          'restore-trash': '휴지통에서 복구 완료',
+          'delete-permanent': '백업 영구 삭제 완료',
+        };
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(labels[action] ?? '백업 작업 완료')));
       }
       await _load();
     } on GscApiException catch (e) {
