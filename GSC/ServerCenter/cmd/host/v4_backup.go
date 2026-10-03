@@ -28,13 +28,22 @@ type BackupManifest struct {
 }
 
 type BackupInfo struct {
-	File     string `json:"file"`
-	Path     string `json:"path"`
-	Scope    string `json:"scope"`
-	Created  string `json:"created"`
-	Size     int64  `json:"size"`
-	Verified bool   `json:"verified"`
-	SHA256   string `json:"sha256,omitempty"`
+	File      string `json:"file"`
+	Path      string `json:"path"`
+	Scope     string `json:"scope"`
+	Created   string `json:"created"`
+	Size      int64  `json:"size"`
+	Verified  bool   `json:"verified"`
+	SHA256    string `json:"sha256,omitempty"`
+	Kind      string `json:"kind,omitempty"`
+	Protected bool   `json:"protected,omitempty"`
+	Trashed   bool   `json:"trashed,omitempty"`
+	TrashedAt string `json:"trashed_at,omitempty"`
+}
+
+type backupTrashMetadata struct {
+	OriginalKind string `json:"original_kind"`
+	TrashedAt    string `json:"trashed_at"`
 }
 
 func backupBase(serverID string, checkpoints bool) string {
@@ -43,6 +52,95 @@ func backupBase(serverID string, checkpoints bool) string {
 		root = "Checkpoints"
 	}
 	return filepath.Join(v4Root(), root, serverID)
+}
+
+func backupTrashBase(serverID string) string {
+	return filepath.Join(v4Root(), "BackupTrash", serverID)
+}
+
+func backupProtectedMarker(path string) string {
+	return path + ".protected"
+}
+
+func backupTrashMetadataPath(path string) string {
+	return path + ".trash.json"
+}
+
+func backupKindForPath(serverID, path string) string {
+	clean := filepath.Clean(path)
+	if strings.EqualFold(filepath.Dir(clean), filepath.Clean(backupBase(serverID, true))) {
+		return "checkpoint"
+	}
+	return "backup"
+}
+
+func backupIsProtected(path string) bool {
+	st, err := os.Stat(backupProtectedMarker(path))
+	return err == nil && !st.IsDir()
+}
+
+func setBackupProtected(path string, protected bool) error {
+	marker := backupProtectedMarker(path)
+	if protected {
+		return os.WriteFile(marker, []byte("protected\r\n"), 0644)
+	}
+	if err := os.Remove(marker); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	return nil
+}
+
+func readBackupSHA(path string) string {
+	b, err := os.ReadFile(path + ".sha256")
+	if err != nil {
+		return ""
+	}
+	fields := strings.Fields(string(b))
+	if len(fields) == 0 {
+		return ""
+	}
+	return fields[0]
+}
+
+func backupInfoFromPath(serverID, path, kind string, trashed bool) (BackupInfo, error) {
+	m, err := readBackupManifest(path)
+	if err != nil {
+		return BackupInfo{}, err
+	}
+	st, err := os.Stat(path)
+	if err != nil {
+		return BackupInfo{}, err
+	}
+	info := BackupInfo{
+		File:      filepath.Base(path),
+		Path:      path,
+		Scope:     m.Scope,
+		Created:   m.Created,
+		Size:      st.Size(),
+		SHA256:    readBackupSHA(path),
+		Kind:      kind,
+		Protected: backupIsProtected(path),
+		Trashed:   trashed,
+	}
+	info.Verified = info.SHA256 != ""
+	if trashed {
+		var meta backupTrashMetadata
+		if b, e := os.ReadFile(backupTrashMetadataPath(path)); e == nil && json.Unmarshal(b, &meta) == nil {
+			info.TrashedAt = meta.TrashedAt
+			if strings.TrimSpace(meta.OriginalKind) != "" {
+				info.Kind = meta.OriginalKind
+			}
+		}
+	}
+	return info, nil
+}
+
+func backupStorageBytes(items []BackupInfo) int64 {
+	var total int64
+	for _, item := range items {
+		total += item.Size
+	}
+	return total
 }
 
 func backupRoots(dir, scope string) ([]string, error) {
@@ -224,9 +322,18 @@ func createBackup(s ServerConfig, scope string, checkpoints bool) (BackupInfo, e
 		return BackupInfo{}, e
 	}
 	_ = os.WriteFile(out+".sha256", []byte(sha+"  "+filepath.Base(out)+"\r\n"), 0644)
+	if checkpoints {
+		if e = setBackupProtected(out, true); e != nil {
+			return BackupInfo{}, fmt.Errorf("체크포인트 보호 표시 실패: %w", e)
+		}
+	}
 	st, _ := os.Stat(out)
-	bi := BackupInfo{File: filepath.Base(out), Path: out, Scope: scope, Created: manifest.Created, Size: st.Size(), Verified: true, SHA256: sha}
-	appendV4Event("info", "backup", s.ID, "백업 완료: "+bi.File, fmt.Sprintf("scope=%s size=%d", scope, bi.Size))
+	kind := "backup"
+	if checkpoints {
+		kind = "checkpoint"
+	}
+	bi := BackupInfo{File: filepath.Base(out), Path: out, Scope: scope, Created: manifest.Created, Size: st.Size(), Verified: true, SHA256: sha, Kind: kind, Protected: checkpoints}
+	appendV4Event("info", "backup", s.ID, "백업 완료: "+bi.File, fmt.Sprintf("scope=%s size=%d kind=%s", scope, bi.Size, kind))
 	return bi, nil
 }
 
@@ -301,33 +408,46 @@ func verifyBackup(p string) (BackupInfo, error) {
 	return BackupInfo{File: filepath.Base(p), Path: p, Scope: m.Scope, Created: m.Created, Size: st.Size(), Verified: true, SHA256: sha}, nil
 }
 
-func listBackups(s ServerConfig) []BackupInfo {
-	out := []BackupInfo{}
-	for _, checkpoint := range []bool{false, true} {
-		root := backupBase(s.ID, checkpoint)
-		es, _ := os.ReadDir(root)
-		for _, e := range es {
-			if e.IsDir() || !strings.HasSuffix(strings.ToLower(e.Name()), ".zip") {
+func listBackups(s ServerConfig) ([]BackupInfo, []BackupInfo) {
+	active := []BackupInfo{}
+	for _, item := range []struct {
+		root string
+		kind string
+	}{
+		{backupBase(s.ID, false), "backup"},
+		{backupBase(s.ID, true), "checkpoint"},
+	} {
+		entries, _ := os.ReadDir(item.root)
+		for _, entry := range entries {
+			if entry.IsDir() || !strings.HasSuffix(strings.ToLower(entry.Name()), ".zip") {
 				continue
 			}
-			p := filepath.Join(root, e.Name())
-			m, er := readBackupManifest(p)
-			if er != nil {
-				continue
+			info, err := backupInfoFromPath(s.ID, filepath.Join(item.root, entry.Name()), item.kind, false)
+			if err == nil {
+				active = append(active, info)
 			}
-			st, _ := e.Info()
-			sha := ""
-			if b, er := os.ReadFile(p + ".sha256"); er == nil {
-				f := strings.Fields(string(b))
-				if len(f) > 0 {
-					sha = f[0]
-				}
-			}
-			out = append(out, BackupInfo{File: e.Name(), Path: p, Scope: m.Scope, Created: m.Created, Size: st.Size(), Verified: sha != "", SHA256: sha})
 		}
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i].Created > out[j].Created })
-	return out
+	trash := []BackupInfo{}
+	trashRoot := backupTrashBase(s.ID)
+	entries, _ := os.ReadDir(trashRoot)
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(strings.ToLower(entry.Name()), ".zip") {
+			continue
+		}
+		info, err := backupInfoFromPath(s.ID, filepath.Join(trashRoot, entry.Name()), "backup", true)
+		if err == nil {
+			trash = append(trash, info)
+		}
+	}
+	sort.Slice(active, func(i, j int) bool { return active[i].Created > active[j].Created })
+	sort.Slice(trash, func(i, j int) bool {
+		if trash[i].TrashedAt != trash[j].TrashedAt {
+			return trash[i].TrashedAt > trash[j].TrashedAt
+		}
+		return trash[i].Created > trash[j].Created
+	})
+	return active, trash
 }
 
 func safeBackupPath(s ServerConfig, file string) (string, error) {
@@ -340,6 +460,195 @@ func safeBackupPath(s ServerConfig, file string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("backup not found")
+}
+
+func safeTrashedBackupPath(s ServerConfig, file string) (string, error) {
+	p := filepath.Join(backupTrashBase(s.ID), filepath.Base(file))
+	if st, err := os.Stat(p); err == nil && !st.IsDir() {
+		return p, nil
+	}
+	return "", fmt.Errorf("trashed backup not found")
+}
+
+func moveBackupSidecars(from, to string) error {
+	for _, suffix := range []string{".sha256", ".protected"} {
+		src := from + suffix
+		dst := to + suffix
+		if _, err := os.Stat(src); err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return err
+		}
+		if err := os.Rename(src, dst); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func trashBackup(s ServerConfig, file string) (BackupInfo, error) {
+	path, err := safeBackupPath(s, file)
+	if err != nil {
+		return BackupInfo{}, err
+	}
+	if backupIsProtected(path) {
+		return BackupInfo{}, fmt.Errorf("보호된 백업은 보호 해제 후 삭제할 수 있습니다")
+	}
+	kind := backupKindForPath(s.ID, path)
+	root := backupTrashBase(s.ID)
+	if err = os.MkdirAll(root, 0755); err != nil {
+		return BackupInfo{}, err
+	}
+	dst := filepath.Join(root, filepath.Base(path))
+	if _, err = os.Stat(dst); err == nil {
+		return BackupInfo{}, fmt.Errorf("휴지통에 같은 이름의 백업이 이미 있습니다")
+	}
+	if err = os.Rename(path, dst); err != nil {
+		return BackupInfo{}, err
+	}
+	if err = moveBackupSidecars(path, dst); err != nil {
+		_ = os.Rename(dst, path)
+		_ = moveBackupSidecars(dst, path)
+		return BackupInfo{}, err
+	}
+	meta := backupTrashMetadata{OriginalKind: kind, TrashedAt: time.Now().Format(time.RFC3339)}
+	b, _ := json.MarshalIndent(meta, "", "  ")
+	if err = os.WriteFile(backupTrashMetadataPath(dst), b, 0644); err != nil {
+		_ = moveBackupSidecars(dst, path)
+		_ = os.Rename(dst, path)
+		return BackupInfo{}, err
+	}
+	info, err := backupInfoFromPath(s.ID, dst, kind, true)
+	if err != nil {
+		return BackupInfo{}, err
+	}
+	appendV4Event("warn", "backup", s.ID, "백업을 휴지통으로 이동: "+info.File, "kind="+kind)
+	return info, nil
+}
+
+func restoreTrashedBackup(s ServerConfig, file string) (BackupInfo, error) {
+	path, err := safeTrashedBackupPath(s, file)
+	if err != nil {
+		return BackupInfo{}, err
+	}
+	meta := backupTrashMetadata{OriginalKind: "backup"}
+	if b, e := os.ReadFile(backupTrashMetadataPath(path)); e == nil {
+		_ = json.Unmarshal(b, &meta)
+	}
+	checkpoint := strings.EqualFold(meta.OriginalKind, "checkpoint")
+	dstRoot := backupBase(s.ID, checkpoint)
+	if err = os.MkdirAll(dstRoot, 0755); err != nil {
+		return BackupInfo{}, err
+	}
+	dst := filepath.Join(dstRoot, filepath.Base(path))
+	if _, err = os.Stat(dst); err == nil {
+		return BackupInfo{}, fmt.Errorf("복구 위치에 같은 이름의 백업이 이미 있습니다")
+	}
+	if err = os.Rename(path, dst); err != nil {
+		return BackupInfo{}, err
+	}
+	if err = moveBackupSidecars(path, dst); err != nil {
+		_ = os.Rename(dst, path)
+		_ = moveBackupSidecars(dst, path)
+		return BackupInfo{}, err
+	}
+	_ = os.Remove(backupTrashMetadataPath(path))
+	info, err := backupInfoFromPath(s.ID, dst, meta.OriginalKind, false)
+	if err != nil {
+		return BackupInfo{}, err
+	}
+	appendV4Event("info", "backup", s.ID, "휴지통 백업 복구: "+info.File, "kind="+meta.OriginalKind)
+	return info, nil
+}
+
+func permanentlyDeleteTrashedBackup(s ServerConfig, file string) error {
+	path, err := safeTrashedBackupPath(s, file)
+	if err != nil {
+		return err
+	}
+	for _, p := range []string{path, path + ".sha256", backupProtectedMarker(path), backupTrashMetadataPath(path)} {
+		if e := os.Remove(p); e != nil && !os.IsNotExist(e) {
+			return e
+		}
+	}
+	appendV4Event("warn", "backup", s.ID, "휴지통 백업 영구 삭제: "+filepath.Base(path), "")
+	return nil
+}
+
+func apiV4BackupManage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST required", http.StatusMethodNotAllowed)
+		return
+	}
+	var q struct {
+		ID     string `json:"id"`
+		File   string `json:"file"`
+		Action string `json:"action"`
+	}
+	if json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q) != nil {
+		http.Error(w, "bad json", http.StatusBadRequest)
+		return
+	}
+	s, ok := serverByID(strings.TrimSpace(q.ID))
+	if !ok {
+		http.Error(w, "unknown server", http.StatusBadRequest)
+		return
+	}
+	q.Action = strings.ToLower(strings.TrimSpace(q.Action))
+	rel, err := beginV4Operation(s.ID, "backup-manage:"+q.Action)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	defer rel()
+
+	switch q.Action {
+	case "protect", "unprotect":
+		path, err := safeBackupPath(s, q.File)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		protect := q.Action == "protect"
+		if err = setBackupProtected(path, protect); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		info, err := backupInfoFromPath(s.ID, path, backupKindForPath(s.ID, path), false)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		appendV4Event("info", "backup", s.ID, map[bool]string{true: "백업 보호 설정", false: "백업 보호 해제"}[protect]+": "+info.File, "")
+		writeJSON(w, map[string]any{"ok": true, "backup": info})
+	case "trash":
+		info, err := trashBackup(s, q.File)
+		if err != nil {
+			status := http.StatusInternalServerError
+			if strings.Contains(err.Error(), "보호된") || strings.Contains(err.Error(), "같은 이름") {
+				status = http.StatusConflict
+			}
+			http.Error(w, err.Error(), status)
+			return
+		}
+		writeJSON(w, map[string]any{"ok": true, "backup": info})
+	case "restore-trash":
+		info, err := restoreTrashedBackup(s, q.File)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusConflict)
+			return
+		}
+		writeJSON(w, map[string]any{"ok": true, "backup": info})
+	case "delete-permanent":
+		if err := permanentlyDeleteTrashedBackup(s, q.File); err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		writeJSON(w, map[string]any{"ok": true})
+	default:
+		http.Error(w, "action must be protect, unprotect, trash, restore-trash, or delete-permanent", http.StatusBadRequest)
+	}
 }
 
 func apiV4Backup(w http.ResponseWriter, r *http.Request) {
@@ -380,7 +689,16 @@ func apiV4Backups(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unknown server", 400)
 		return
 	}
-	writeJSON(w, map[string]any{"backups": listBackups(s)})
+	active, trash := listBackups(s)
+	writeJSON(w, map[string]any{
+		"backups": active,
+		"trash": trash,
+		"storage": map[string]any{
+			"active_bytes": backupStorageBytes(active),
+			"trash_bytes": backupStorageBytes(trash),
+			"total_bytes": backupStorageBytes(active) + backupStorageBytes(trash),
+		},
+	})
 }
 func apiV4BackupVerify(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
