@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-03 — Day 10 four-server Java cutover
+
+- Deployed three isolated Velocity proxy instances for Wild, Playground and Other public aliases, all routing first to Lobby.
+- Moved Paper backends to private Java ports `25570/25571/25572/25573` and kept public Java on `25565/25566/25567`.
+- Added/verified GeumyiNetwork and GeumyiLobby routing, physical Lobby gates, `/lobby`, and per-server last-position restoration.
+- Hardened live cutover rollback for interrupted recovery, UTF-8 config safety, RCON fallback and exact proxy-process cleanup.
+- Verified after a real Windows reboot that all three Velocity startup tasks are Running, public Java ports are LISTEN, and Geyser UDP ports `19132/19133/19134` are BOUND.
+- User-confirmed Java E2E PASS: public join -> Lobby, Lobby -> Wild/Playground/Other, `/lobby`, and last-location restore.
+- Bedrock client E2E is recorded as `SKIPPED_UPSTREAM_UNSUPPORTED` because the current latest Geyser does not yet support the current Bedrock client version. Bedrock client verification remains pending; this is not recorded as a Bedrock PASS.
+- Exact validation baseline for the final recovery-safe cutover source: `0e1490bfe75975eb278526df0f89a430109e28d8`; Day10 Hotfix CI `37113499045` and System CI `37113499031` both succeeded.
+
 ## 2026-09-29 — Day 8 secure release / updater foundation
 
 - Added signed Day-8 Secure Release workflow with Stable/Beta/Canary channels, SHA-256 verification and Ed25519 deployment manifests.
