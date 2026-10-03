@@ -227,9 +227,19 @@ func createBackup(s ServerConfig, scope string, checkpoints bool) (BackupInfo, e
 		return BackupInfo{}, e
 	}
 	_ = os.WriteFile(out+".sha256", []byte(sha+"  "+filepath.Base(out)+"\r\n"), 0644)
+	protected := false
+	if checkpoints {
+		meta := readBackupMeta(out)
+		meta.Protected = true
+		meta.ProtectedAt = time.Now().Format(time.RFC3339)
+		if e = writeBackupMeta(out, meta); e != nil {
+			return BackupInfo{}, fmt.Errorf("복원 체크포인트 보호 설정 실패: %w", e)
+		}
+		protected = true
+	}
 	st, _ := os.Stat(out)
-	bi := BackupInfo{File: filepath.Base(out), Path: out, Scope: scope, Created: manifest.Created, Size: st.Size(), Verified: true, SHA256: sha, Kind: map[bool]string{true: "checkpoint", false: "backup"}[checkpoints]}
-	appendV4Event("info", "backup", s.ID, "백업 완료: "+bi.File, fmt.Sprintf("scope=%s size=%d", scope, bi.Size))
+	bi := BackupInfo{File: filepath.Base(out), Path: out, Scope: scope, Created: manifest.Created, Size: st.Size(), Verified: true, SHA256: sha, Kind: map[bool]string{true: "checkpoint", false: "backup"}[checkpoints], Protected: protected}
+	appendV4Event("info", "backup", s.ID, "백업 완료: "+bi.File, fmt.Sprintf("scope=%s size=%d protected=%v", scope, bi.Size, protected))
 	return bi, nil
 }
 
