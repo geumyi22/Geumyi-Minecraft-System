@@ -72,4 +72,4 @@ Day 9 is closed. GSC 4.2.4 transaction backup/staging/commit, interrupted-transa
 
 On 2026-10-03 the user verified the real server PC after cutover and after a Windows reboot. Velocity startup tasks for wild/playground/other were Running; public TCP 25565/25566/25567 were LISTEN; UDP 19132/19133/19134 were BOUND. A real Java client entered Lobby and successfully routed to Wild, Playground and Other, returned with `/lobby`, and restored each backend's previous position.
 
-Bedrock client login was not tested as PASS. The original live run recorded `SKIPPED_UPSTREAM_UNSUPPORTED`; that remains historical evidence for why it was skipped. The current closure condition is one real Bedrock client E2E. A newer Geyser build or support notice alone does not convert the result to PASS. See `DAY10-E2E-REPORT.md`.
+The original live run recorded Bedrock as `SKIPPED_UPSTREAM_UNSUPPORTED`; that remains historical evidence for the first skipped test. On 2026-10-04 the user later confirmed real Bedrock client operation and approved Day-10 closure. Day 10 is therefore **complete** by user real-client verification. See `DAY10-E2E-REPORT.md`.
