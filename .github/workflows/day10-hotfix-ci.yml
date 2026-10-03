@@ -79,8 +79,8 @@ jobs:
             if(-not $four.Contains($m)){throw "Missing Geyser/proxy readiness guard: $m"}
           }
           $runner=Get-Content -LiteralPath 'tools/day10/finish_four_servers.ps1' -Raw
-          foreach($m in @('Day10-FourBootstrapProxy $wildProxy','Day10-FourSeedProxyRuntime','Day10-FourStartProxy','public=25565','public=25566','public=25567')){
-            if(-not $runner.Contains($m)){throw "Missing isolated proxy startup flow: $m"}
+          foreach($m in @('Day10-FourBootstrapProxy $wildProxy','Day10-FourSeedProxyRuntime','Day10-FourStartProxy','public=25565','public=25566','public=25567','SkipBedrockManualE2E','SKIPPED_UPSTREAM_UNSUPPORTED')){
+            if(-not $runner.Contains($m)){throw "Missing isolated proxy/Bedrock skip flow: $m"}
           }
           Write-Host 'GEYSER COMPLETION + LOBBY RCON SECRET SELFTEST PASS'
 
