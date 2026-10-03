@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-10-04 — Day 10 Bedrock closure
+
+- User confirmed real Bedrock client operation on the Day-10 Velocity/Geyser/Lobby network.
+- Day 10 is now **COMPLETE**: Java and Bedrock client paths are both treated as passed by user verification.
+- The earlier `SKIPPED_UPSTREAM_UNSUPPORTED` record is retained as historical evidence for the first skipped Bedrock test; it no longer represents current completion status.
+- No assistant-side client execution is claimed.
+
 ## 2026-10-04 — Canonical Day timeline / roadmap cleanup
 
 - Added `DAY-TIMELINE.md` as the single source of truth for Day numbering and completion state.
