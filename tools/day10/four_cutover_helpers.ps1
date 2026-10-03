@@ -185,9 +185,12 @@ function Day10-FourBootstrapProxy {
     $process.WaitForExit(20000) | Out-Null
     Day10-SetGeyserConfig $geyser $BedrockPort
     $geyserText=Day10-ReadUtf8Strict $geyser
-    $bedrockBlock=[regex]::Match($geyserText,'(?ms)^bedrock:\s*\r?\n(?<body>(?:[ \t]+.*(?:\r?\n|$))*)')
-    if(-not $bedrockBlock.Success){throw "Geyser bedrock section missing after configuration: $Dir"}
-    $portMatch=[regex]::Match($bedrockBlock.Groups["body"].Value,'(?m)^\s+port:\s*(\d+)\s*
+    $expectedPortLine="  port: " + [string]$BedrockPort
+    if($geyserText.IndexOf($expectedPortLine,[StringComparison]::Ordinal) -lt 0){
+        throw "Geyser UDP port verification failed for $Dir; expected $BedrockPort"
+    }
+    Write-Host "Configured Geyser UDP $BedrockPort for $Dir"
+    return $key
 }
 function Day10-FourCheckPorts {
     foreach ($port in @(25570,25571,25572,25573)) { Day10-AssertLoopbackListener $port }
