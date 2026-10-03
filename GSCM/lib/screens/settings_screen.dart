@@ -41,8 +41,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _deviceAction(String action, TrustedDevice d) async {
     final self = d.id == widget.connection.deviceId;
-    if (self && (action == 'revoke' || action == 'delete')) {
-      final ok = await showDialog<bool>(context: context, builder: (context) => AlertDialog(title: const Text('현재 기기 연결 해제'), content: const Text('이 기기의 토큰이 즉시 무효화되며 다시 QR/연결 코드로 등록해야 합니다.'), actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('취소')), FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('연결 해제'))])) ?? false;
+    if (action == 'delete' || (self && action == 'revoke')) {
+      final deleting = action == 'delete';
+      final ok = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(deleting ? '관리 기기 완전 삭제' : '현재 기기 연결 해제'),
+              content: Text(deleting
+                  ? '이 기기의 등록 기록을 완전히 삭제합니다. 기존 토큰은 즉시 사용할 수 없고 다시 사용하려면 새 QR/연결 코드로 등록해야 합니다.'
+                  : '이 기기의 토큰이 즉시 무효화됩니다. 현재 앱은 로그아웃되며 다시 연결하려면 새 QR/연결 코드가 필요합니다.'),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('취소')),
+                FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(deleting ? '기기 삭제' : '연결 해제')),
+              ],
+            ),
+          ) ??
+          false;
       if (!ok) return;
     }
     try {
