@@ -66,13 +66,16 @@ jobs:
           $secret=Day10-NewPlainRconPassword
           if($secret.Length -ne 64){throw 'Lobby RCON secret must be 64 chars'}
           $cfg=Join-Path $env:RUNNER_TEMP 'geyser-config.yml'
-          $partial=('bedrock:'+[Environment]::NewLine+'  address: 0.0.0.0'+[Environment]::NewLine+'  port: 19132'+[Environment]::NewLine+('# filler'+[Environment]::NewLine)*20)
+          $partial='bedrock:'+[Environment]::NewLine+'  address: 0.0.0.0'+[Environment]::NewLine+'  port: 19132'+[Environment]::NewLine
+          $partial += ('# filler'+[Environment]::NewLine)*20
           [IO.File]::WriteAllText($cfg,$partial,(New-Object Text.UTF8Encoding($false)))
-          if(-not(Day10-GeyserConfigComplete $cfg)){throw 'Geyser bedrock section must be sufficient for bootstrap readiness'}
+          if(-not (Day10-GeyserConfigComplete $cfg)){throw 'Geyser bedrock section must be sufficient for bootstrap readiness'}
           Day10-SetGeyserConfig $cfg 19132
           $round=[IO.File]::ReadAllText($cfg,(New-Object Text.UTF8Encoding($false,$true)))
-          if(-not $round.Contains('remote:') -or -not $round.Contains('auth-type: floodgate')){throw 'Missing remote section must be created safely'}
+          if(-not $round.Contains('remote:')){throw 'Missing remote section was not created'}
+          if(-not $round.Contains('auth-type: floodgate')){throw 'Floodgate auth was not written'}
           Write-Host 'GEYSER COMPLETION + LOBBY RCON SECRET SELFTEST PASS'
+
       - name: Exercise read-only cutover UTF-8 preflight
         shell: powershell
         run: |
