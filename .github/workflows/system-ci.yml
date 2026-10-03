@@ -797,6 +797,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Failed-cutover recovery selftest failed' }
           & 'tools/day10/Day10_Recovery_After_Failed_Cutover.cmd' --selftest
           if ($LASTEXITCODE -ne 0) { throw 'Failed-cutover recovery launcher selftest failed' }
+          & 'tools/day10/Day10_Retry_Rollback.cmd' --selftest
+          if ($LASTEXITCODE -ne 0) { throw 'Rollback retry launcher selftest failed' }
           . (Resolve-Path 'tools/day10/day10_live_helpers.ps1')
           $probe = @{ action='update'; server=@{ id='wild'; name='금이 야생'; path='C:\테스트\야생' } }
           $utf8 = Day10-JsonUtf8Bytes $probe
@@ -805,8 +807,30 @@ jobs:
             throw 'Day10 UTF-8 JSON body regression'
           }
           $liveHelper = Get-Content -LiteralPath 'tools/day10/day10_live_helpers.ps1' -Raw
-          foreach ($marker in @('UTF8Encoding($false)', 'application/json; charset=utf-8', 'Day10-JsonUtf8Bytes', 'HttpWebRequest', 'GetRequestStream')) {
+          foreach ($marker in @('UTF8Encoding($false)', 'application/json; charset=utf-8', 'Day10-JsonUtf8Bytes', 'HttpWebRequest', 'GetRequestStream', 'Day10-ReadUtf8Strict', 'Day10-AssertYamlTextSafe')) {
             if (-not $liveHelper.Contains($marker)) { throw "Missing Day10 UTF-8 transport guard: $marker" }
+          }
+          $yamlTest = Join-Path $env:RUNNER_TEMP 'day10-spigot-utf8-test.yml'
+          $valid = "settings:" + [Environment]::NewLine + "  bungeecord: true" + [Environment]::NewLine + "# " + ([string][char]0xD55C) + [char]0xAE00
+          [IO.File]::WriteAllText($yamlTest, $valid, (New-Object Text.UTF8Encoding($false)))
+          Day10-SetSpigotBungeeFalse $yamlTest
+          $round = [IO.File]::ReadAllText($yamlTest, (New-Object Text.UTF8Encoding($false,$true)))
+          if (-not $round.Contains('bungeecord: false') -or -not $round.Contains(([string][char]0xD55C)+[char]0xAE00)) {
+            throw 'Spigot UTF-8 rewrite regression'
+          }
+          $bad = "settings:" + [Environment]::NewLine + "  bungeecord: true" + [char]0x80
+          [IO.File]::WriteAllText($yamlTest, $bad, (New-Object Text.UTF8Encoding($false)))
+          $blocked=$false
+          try { Day10-SetSpigotBungeeFalse $yamlTest } catch { $blocked=$true }
+          if (-not $blocked) { throw 'Invalid YAML control character must block Day10 rewrite' }
+          Write-Host 'DAY10 SPIGOT UTF-8 SAFETY SELFTEST PASS'
+          $rollback = Get-Content -LiteralPath 'tools/day10/rollback_four_servers.ps1' -Raw
+          foreach ($marker in @('Day10-DirectRconStop', 'Day10-StopForRollback', 'DIRECT RCON FALLBACK SELFTEST PASS')) {
+            if (-not $rollback.Contains($marker)) { throw "Missing rollback RCON safety marker: $marker" }
+          }
+          $retryLauncher = Get-Content -LiteralPath 'tools/day10/Day10_Retry_Rollback.cmd' -Raw
+          foreach ($marker in @('Does NOT start a new cutover', 'Never force-kills a Minecraft server', 'rollback_four_servers.ps1')) {
+            if (-not $retryLauncher.Contains($marker)) { throw "Missing rollback retry launcher guard: $marker" }
           }
           $recovery = Get-Content -LiteralPath 'tools/day10/recover_failed_four_server.ps1' -Raw
           foreach ($marker in @('HttpWebRequest', 'GetRequestStream', 'DAY10 FAILED-CUTOVER RECOVERY PASS')) {
