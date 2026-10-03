@@ -184,24 +184,111 @@ function Day10-FourBootstrapProxy {
     Stop-Process -Id $process.Id -Force
     $process.WaitForExit(20000) | Out-Null
     Day10-SetGeyserConfig $geyser $BedrockPort
+    $geyserText=Day10-ReadUtf8Strict $geyser
+    $bedrockBlock=[regex]::Match($geyserText,'(?ms)^bedrock:\s*\r?\n(?<body>(?:[ \t]+.*(?:\r?\n|$))*)')
+    if(-not $bedrockBlock.Success){throw "Geyser bedrock section missing after configuration: $Dir"}
+    $portMatch=[regex]::Match($bedrockBlock.Groups["body"].Value,'(?m)^\s+port:\s*(\d+)\s*
+}
+function Day10-FourCheckPorts {
+    foreach ($port in @(25570,25571,25572,25573)) { Day10-AssertLoopbackListener $port }
+    foreach ($port in @(25565,25566,25567)) { Day10-WaitTcp $port $true 60 }
+
+    foreach ($port in @(19132,19133,19134)) {
+        $deadline=(Get-Date).AddSeconds(90)
+        $ready=$false
+        do {
+            if (@(Get-NetUDPEndpoint -LocalPort $port -ErrorAction SilentlyContinue).Count -gt 0) {
+                $ready=$true
+                break
+            }
+            Start-Sleep -Seconds 2
+        } while ((Get-Date) -lt $deadline)
+        if (-not $ready) { throw "Bedrock UDP listener missing after 90s: $port" }
+    }
+
+    # A bound UDP socket is not proof that Geyser can answer RakNet.
+    # Poll the GSC network probe because Velocity TCP commonly becomes ready
+    # before Geyser has completed RakNet startup.
+    $deadline=(Get-Date).AddSeconds(90)
+    $last=$null
+    do {
+        try {
+            $last=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 12
+            $points=@($last.endpoints)
+            if($points.Count -eq 3){
+                $bad=@($points | Where-Object { -not [bool]$_.java_responding -or -not [bool]$_.bedrock_raknet_pong })
+                if($bad.Count -eq 0){ return }
+            }
+        } catch {}
+        Start-Sleep -Seconds 2
+    } while ((Get-Date) -lt $deadline)
+
+    if($null -eq $last){throw "Java/RakNet network probe unavailable after 90s"}
+    $points=@($last.endpoints)
+    if($points.Count -ne 3){throw "Missing Java/Bedrock network endpoint results after 90s"}
+    $bad=@($points | Where-Object { -not [bool]$_.java_responding -or -not [bool]$_.bedrock_raknet_pong })
+    $detail=($bad | ForEach-Object { "$($_.id):TCP=$($_.java_tcp)/$($_.java_responding),UDP=$($_.bedrock_udp)/$($_.bedrock_raknet_pong)" }) -join "; "
+    throw "Java/RakNet response failed after 90s: $detail"
+}
+
+function Day10-FourProtectProxySecrets {
+    param([string]$ProxyRoot)
+    foreach($id in @("wild","playground","other")){
+        foreach($relative in @("forwarding.secret","plugins\floodgate\key.pem")){
+            $path=Join-Path (Join-Path $ProxyRoot $id) $relative
+            if(-not(Test-Path -LiteralPath $path -PathType Leaf)){throw "Missing proxy secret: $id/$relative"}
+            & icacls.exe $path /inheritance:r /grant:r "*S-1-5-18:(F)" "*S-1-5-32-544:(F)" | Out-Null
+            if($LASTEXITCODE -ne 0){throw "Could not restrict local secret ACL: $id/$relative"}
+        }
+    }
+}
+)
+    if(-not $portMatch.Success -or [int]$portMatch.Groups[1].Value -ne $BedrockPort){
+        throw "Geyser UDP port verification failed for $Dir; expected $BedrockPort"
+    }
+    Write-Host "Configured Geyser UDP $BedrockPort for $Dir"
     return $key
 }
 function Day10-FourCheckPorts {
     foreach ($port in @(25570,25571,25572,25573)) { Day10-AssertLoopbackListener $port }
-    foreach ($port in @(25565,25566,25567)) { Day10-WaitTcp $port $true 45 }
+    foreach ($port in @(25565,25566,25567)) { Day10-WaitTcp $port $true 60 }
+
     foreach ($port in @(19132,19133,19134)) {
-        if (@(Get-NetUDPEndpoint -LocalPort $port -ErrorAction SilentlyContinue).Count -lt 1) {
-            throw "Bedrock UDP listener missing: $port"
-        }
+        $deadline=(Get-Date).AddSeconds(90)
+        $ready=$false
+        do {
+            if (@(Get-NetUDPEndpoint -LocalPort $port -ErrorAction SilentlyContinue).Count -gt 0) {
+                $ready=$true
+                break
+            }
+            Start-Sleep -Seconds 2
+        } while ((Get-Date) -lt $deadline)
+        if (-not $ready) { throw "Bedrock UDP listener missing after 90s: $port" }
     }
+
     # A bound UDP socket is not proof that Geyser can answer RakNet.
-    $result=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 12
-    foreach($point in @($result.endpoints)){
-        if(-not [bool]$point.java_responding -or -not [bool]$point.bedrock_raknet_pong){
-            throw "Java/RakNet response failed: $($point.id) TCP $($point.java_tcp), UDP $($point.bedrock_udp)"
-        }
-    }
-    if(@($result.endpoints).Count -ne 3){throw "Missing Java/Bedrock network endpoint results"}
+    # Poll the GSC network probe because Velocity TCP commonly becomes ready
+    # before Geyser has completed RakNet startup.
+    $deadline=(Get-Date).AddSeconds(90)
+    $last=$null
+    do {
+        try {
+            $last=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 12
+            $points=@($last.endpoints)
+            if($points.Count -eq 3){
+                $bad=@($points | Where-Object { -not [bool]$_.java_responding -or -not [bool]$_.bedrock_raknet_pong })
+                if($bad.Count -eq 0){ return }
+            }
+        } catch {}
+        Start-Sleep -Seconds 2
+    } while ((Get-Date) -lt $deadline)
+
+    if($null -eq $last){throw "Java/RakNet network probe unavailable after 90s"}
+    $points=@($last.endpoints)
+    if($points.Count -ne 3){throw "Missing Java/Bedrock network endpoint results after 90s"}
+    $bad=@($points | Where-Object { -not [bool]$_.java_responding -or -not [bool]$_.bedrock_raknet_pong })
+    $detail=($bad | ForEach-Object { "$($_.id):TCP=$($_.java_tcp)/$($_.java_responding),UDP=$($_.bedrock_udp)/$($_.bedrock_raknet_pong)" }) -join "; "
+    throw "Java/RakNet response failed after 90s: $detail"
 }
 
 function Day10-FourProtectProxySecrets {
