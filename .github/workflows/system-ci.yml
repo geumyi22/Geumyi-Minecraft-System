@@ -771,7 +771,8 @@ jobs:
             'tools/day10/day10_live_helpers.ps1',
             'tools/day10/finish_four_servers.ps1',
             'tools/day10/four_cutover_helpers.ps1',
-            'tools/day10/rollback_four_servers.ps1'
+            'tools/day10/rollback_four_servers.ps1',
+            'tools/day10/recover_failed_four_server.ps1'
           )
           foreach ($path in $paths) {
             $tokens = $null
@@ -804,8 +805,12 @@ jobs:
             throw 'Day10 UTF-8 JSON body regression'
           }
           $liveHelper = Get-Content -LiteralPath 'tools/day10/day10_live_helpers.ps1' -Raw
-          foreach ($marker in @('UTF8Encoding($false)', 'application/json; charset=utf-8', 'Day10-JsonUtf8Bytes')) {
+          foreach ($marker in @('UTF8Encoding($false)', 'application/json; charset=utf-8', 'Day10-JsonUtf8Bytes', 'HttpWebRequest', 'GetRequestStream')) {
             if (-not $liveHelper.Contains($marker)) { throw "Missing Day10 UTF-8 transport guard: $marker" }
+          }
+          $recovery = Get-Content -LiteralPath 'tools/day10/recover_failed_four_server.ps1' -Raw
+          foreach ($marker in @('HttpWebRequest', 'GetRequestStream', 'DAY10 FAILED-CUTOVER RECOVERY PASS')) {
+            if (-not $recovery.Contains($marker)) { throw "Missing recovery transport guard: $marker" }
           }
           $launcher = Get-Content -LiteralPath 'tools/day10/Day10_FourServer_Live.cmd' -Raw
           foreach ($marker in @('Never pass the stage path through UAC.', 'resolve_four_server_stage.ps1', '--elevated')) {
