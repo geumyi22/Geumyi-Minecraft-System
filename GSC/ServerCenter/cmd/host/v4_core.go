@@ -214,6 +214,15 @@ func runV4Preflight(s ServerConfig) V4Health {
 					add("server_port", "Java 포트 일치", "ok", fmt.Sprintf("%d", actual))
 				}
 			}
+			role := normalizeServerConfig(s).Role
+			if role == serverRoleWild || role == serverRolePlayground || role == serverRoleOther {
+				v, e := readServerProperty(configuredDir, "accepts-transfers")
+				if e != nil || !strings.EqualFold(strings.TrimSpace(v), "true") {
+					add("accepts_transfers", "Lobby 전송 허용", "warn", "Day-10 backend는 accepts-transfers=true가 필요합니다 · 자동 변경하지 않았습니다")
+				} else {
+					add("accepts_transfers", "Lobby 전송 허용", "ok", "accepts-transfers=true")
+				}
+			}
 		}
 	}
 	if dir != "" {
