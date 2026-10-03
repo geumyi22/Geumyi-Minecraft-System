@@ -26,7 +26,7 @@
 | 범위 | 상태 |
 |---|---|
 | Day 1~9 | ✅ 완료 |
-| Day 10 | 🟡 Java four-server/Lobby E2E 완료, Bedrock 실제 client E2E 대기 |
+| Day 10 | ✅ Java + Bedrock four-server/Lobby real-client E2E 완료 |
 | Day 11 | ⏳ GSC 4.3 / GSCM 1.1.5 — Operations UX & Fleet Management |
 | Day 12 | ⏳ Extended Automation & Production Hardening |
 
