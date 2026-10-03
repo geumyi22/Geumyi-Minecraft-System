@@ -7,14 +7,57 @@ function Day10-JsonUtf8Bytes {
     return $utf8.GetBytes($json)
 }
 
+function Day10-PostJsonUtf8 {
+    param([string]$Uri, $Body)
+    $bytes = Day10-JsonUtf8Bytes $Body
+    $request = [System.Net.HttpWebRequest]::Create($Uri)
+    $request.Method = "POST"
+    $request.ContentType = "application/json; charset=utf-8"
+    $request.ContentLength = $bytes.Length
+    $request.Timeout = 20000
+    $request.ReadWriteTimeout = 20000
+    $stream = $request.GetRequestStream()
+    try {
+        $stream.Write($bytes, 0, $bytes.Length)
+    } finally {
+        $stream.Dispose()
+    }
+    try {
+        $response = $request.GetResponse()
+    } catch [System.Net.WebException] {
+        $message = $_.Exception.Message
+        if ($null -ne $_.Exception.Response) {
+            $errorResponse = $_.Exception.Response
+            try {
+                $reader = New-Object System.IO.StreamReader($errorResponse.GetResponseStream(), [Text.Encoding]::UTF8)
+                $bodyText = $reader.ReadToEnd()
+                if (-not [string]::IsNullOrWhiteSpace($bodyText)) { $message += ": " + $bodyText.Trim() }
+            } finally {
+                if ($null -ne $reader) { $reader.Dispose() }
+                $errorResponse.Dispose()
+            }
+        }
+        throw $message
+    }
+    try {
+        $reader = New-Object System.IO.StreamReader($response.GetResponseStream(), [Text.Encoding]::UTF8)
+        $text = $reader.ReadToEnd()
+        if ([string]::IsNullOrWhiteSpace($text)) { return $null }
+        return $text | ConvertFrom-Json
+    } finally {
+        if ($null -ne $reader) { $reader.Dispose() }
+        $response.Dispose()
+    }
+}
+
 function Day10-Gsc {
     param([string]$Method, [string]$Path, $Body = $null)
     $uri = "http://127.0.0.1:8787$Path"
     if ($null -eq $Body) {
         return Invoke-RestMethod -Method $Method -Uri $uri -TimeoutSec 20
     }
-    $bytes = Day10-JsonUtf8Bytes $Body
-    return Invoke-RestMethod -Method $Method -Uri $uri -TimeoutSec 20 -ContentType "application/json; charset=utf-8" -Body $bytes
+    if ($Method -ne "POST") { throw "Day10-Gsc body requests currently support POST only" }
+    return Day10-PostJsonUtf8 -Uri $uri -Body $Body
 }
 
 function Day10-WaitGsc {
