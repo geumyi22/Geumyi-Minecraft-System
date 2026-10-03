@@ -3,7 +3,8 @@ setlocal EnableExtensions DisableDelayedExpansion
 
 if /I "%~1"=="--selftest" (
   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0resolve_four_server_stage.ps1" -SelfTest
-  exit /b %ERRORLEVEL%
+  if errorlevel 1 exit /b 1
+  exit /b 0
 )
 
 echo.
