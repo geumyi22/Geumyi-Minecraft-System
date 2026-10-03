@@ -16,7 +16,7 @@
 | 7 | Build Foundation | ✅ 완료 |
 | 8 | Secure Release & Update Foundation | ✅ 완료 |
 | 9 | Transaction / Backup / Rollback | ✅ 완료 |
-| 10 | Full E2E + Lobby / Proxy Network | 🟡 Java 완료 / Bedrock 실제 E2E 대기 |
+| 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 |
 | 11 | Operations UX & Fleet Management — GSC 4.3 / GSCM 1.1.5 | ⏳ 예정 |
 | 12 | Extended Automation & Production Hardening | ⏳ 예정 |
 
@@ -100,10 +100,11 @@ Java 실제 검증 완료:
 - 서버별 마지막 위치 복원
 
 Bedrock:
-- UDP/Geyser/Floodgate 기반은 구성됨
-- 실제 Bedrock client PASS는 아직 없음
-- 새 Geyser 빌드/지원 문서만으로 PASS 처리하지 않음
-- Lobby 진입 -> 3 backend 이동 -> `/lobby` -> 위치 복원의 실제 E2E 1회가 남음
+- UDP/Geyser/Floodgate 기반 구성 완료
+- 2026-10-04 사용자 실기기 확인으로 Bedrock 접속/서버 이동/복귀 동작 정상 확인
+- 사용자 확인 기준 real-client E2E PASS
+
+따라서 **Day 10 완료**로 닫습니다. 이 결과는 사용자 실기기 확인이며 assistant-side 직접 실행으로 기록하지 않습니다.
 
 세부 근거: [DAY10-PLAN.md](DAY10-PLAN.md), [DAY10-E2E-REPORT.md](DAY10-E2E-REPORT.md)
 
