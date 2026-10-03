@@ -52,22 +52,123 @@ function Day10-FourStopProxies {
     }
 }
 
+function Day10-ReadExactly {
+    param($Stream, [int]$Count)
+    $buffer = New-Object byte[] $Count
+    $offset = 0
+    while ($offset -lt $Count) {
+        $n = $Stream.Read($buffer, $offset, $Count - $offset)
+        if ($n -le 0) { throw "Unexpected EOF from RCON" }
+        $offset += $n
+    }
+    return $buffer
+}
+
+function Day10-WriteRconPacket {
+    param($Stream, [int]$Id, [int]$Type, [string]$Body)
+    $bodyBytes = [Text.Encoding]::UTF8.GetBytes($Body)
+    $ms = New-Object IO.MemoryStream
+    $bw = New-Object IO.BinaryWriter($ms)
+    try {
+        $bw.Write([int](4 + 4 + $bodyBytes.Length + 2))
+        $bw.Write([int]$Id)
+        $bw.Write([int]$Type)
+        $bw.Write($bodyBytes)
+        $bw.Write([byte]0)
+        $bw.Write([byte]0)
+        $bw.Flush()
+        $bytes = $ms.ToArray()
+        $Stream.Write($bytes, 0, $bytes.Length)
+        $Stream.Flush()
+    } finally {
+        $bw.Dispose()
+        $ms.Dispose()
+    }
+}
+
+function Day10-ReadRconPacket {
+    param($Stream)
+    $lenBytes = Day10-ReadExactly $Stream 4
+    $length = [BitConverter]::ToInt32($lenBytes, 0)
+    if ($length -lt 10 -or $length -gt 1048576) { throw "Invalid RCON packet length: $length" }
+    $packet = Day10-ReadExactly $Stream $length
+    $id = [BitConverter]::ToInt32($packet, 0)
+    $type = [BitConverter]::ToInt32($packet, 4)
+    $bodyLength = $length - 10
+    $body = if ($bodyLength -gt 0) { [Text.Encoding]::UTF8.GetString($packet, 8, $bodyLength) } else { "" }
+    return [pscustomobject]@{ id=$id; type=$type; body=$body }
+}
+
+function Day10-ReadServerPropertyForRollback {
+    param([string]$ServerDir, [string]$Key)
+    $path = Join-Path $ServerDir "server.properties"
+    $text = Day10-ReadUtf8Strict $path
+    foreach ($line in $text.Replace((([string][char]13)+[char]10), [string][char]10).Split([char]10)) {
+        $trim = $line.Trim()
+        if ($trim.StartsWith("#") -or -not $trim.Contains("=")) { continue }
+        $parts = $trim.Split("=", 2)
+        if ($parts[0].Trim() -eq $Key) { return $parts[1].Trim() }
+    }
+    throw "Missing server property $Key in $path"
+}
+
+function Day10-DirectRconStop {
+    param([string]$ServerDir, [int]$Port)
+    $password = Day10-ReadServerPropertyForRollback $ServerDir "rcon.password"
+    if ([string]::IsNullOrWhiteSpace($password)) { throw "RCON password is empty" }
+    $client = New-Object Net.Sockets.TcpClient
+    try {
+        $iar = $client.BeginConnect("127.0.0.1", $Port, $null, $null)
+        if (-not $iar.AsyncWaitHandle.WaitOne(3000)) { throw "RCON connect timeout on port $Port" }
+        $client.EndConnect($iar)
+        $stream = $client.GetStream()
+        $stream.ReadTimeout = 5000
+        $stream.WriteTimeout = 5000
+        Day10-WriteRconPacket $stream 100 3 $password
+        $authenticated = $false
+        for ($i=0; $i -lt 4; $i++) {
+            $p = Day10-ReadRconPacket $stream
+            if ([int]$p.id -eq -1) { throw "RCON authentication failed" }
+            if ([int]$p.id -eq 100 -and [int]$p.type -eq 2) { $authenticated = $true; break }
+        }
+        if (-not $authenticated) { throw "RCON authentication response missing" }
+        Day10-WriteRconPacket $stream 101 2 "stop"
+        Write-Host "Direct RCON fallback sent stop to $Port"
+    } finally {
+        $client.Close()
+    }
+}
+
+function Day10-StopForRollback {
+    param([string]$Id, [string]$ServerDir, [int]$RconPort)
+    $current = Day10-State $Id
+    if ($null -eq $current -or -not [bool]$current.online) { return }
+    Write-Host "Stopping $Id through GSC..."
+    Day10-Gsc "POST" "/api/server/action" @{id=$Id;action="stop"} | Out-Null
+    try {
+        Day10-WaitOnline $Id $false 105 | Out-Null
+        return
+    } catch {
+        Write-Host "GSC graceful stop did not finish for $Id; trying direct standard RCON stop without force-kill."
+    }
+    Day10-DirectRconStop $ServerDir $RconPort
+    Day10-WaitOnline $Id $false 120 | Out-Null
+}
+
 function Day10-FourRestore {
     param([string]$Root)
     $state = Day10-FourRollbackAssert $Root  # Pre-verify before touching the host.
     Write-Host "DAY10 FOUR-SERVER ROLLBACK START"
-    foreach ($name in @("wild","playground","other")) {
-        $current = Day10-State $name
-        if ($null -eq $current) { throw "GSC server state missing: $name" }
+    foreach ($entry in @($state.servers)) {
+        $current = Day10-State ([string]$entry.id)
+        if ($null -eq $current) { throw "GSC server state missing: $($entry.id)" }
         if ([bool]$current.online) {
-            Day10-Gsc "POST" "/api/server/action" @{id=$name;action="stop"} | Out-Null
-            Day10-WaitOnline $name $false 180 | Out-Null
+            Day10-StopForRollback ([string]$entry.id) ([string]$entry.path) ([int]$entry.profile.rcon_port)
         }
     }
     $lobby = Day10-State "lobby"
     if ($null -ne $lobby -and [bool]$lobby.online) {
-        Day10-Gsc "POST" "/api/server/action" @{id="lobby";action="stop"} | Out-Null
-        Day10-WaitOnline "lobby" $false 180 | Out-Null
+        Day10-StopForRollback "lobby" ([string]$state.lobby_path) 25579
     }
     foreach($id in @("wild","playground","other")){
         $taskName="Geumyi Day10 Velocity "+$id
