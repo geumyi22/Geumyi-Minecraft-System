@@ -1,2 +1,2 @@
-Day 10 exact-main CI trigger after duplicate Velocity bind root-cause fix.
+Day 10 exact-main CI trigger after hiding proxy child windows.
 No runtime behavior is changed by this file.
