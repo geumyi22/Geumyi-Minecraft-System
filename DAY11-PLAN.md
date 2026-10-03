@@ -1,6 +1,6 @@
 # Day 11 — Operations UX & Fleet Management
 
-Status: **STARTED — Phase 11.0 READ ONLY preflight**
+Status: **IN PROGRESS — Phase 11.0 host preflight captured; Phase 11.1 + Protection & Recovery 2.0 in CI**
 Target: **GSC 4.3.0 / GSCM 1.1.5**
 
 ## Safety rules
@@ -27,6 +27,16 @@ Target: **GSC 4.3.0 / GSCM 1.1.5**
 - no process stop, firewall edit, server config edit, or world write
 
 Tool: `tools/day11/Day11_Phase0_READ_ONLY.cmd`
+
+## Phase 11.0 result
+
+The user executed the read-only host preflight on 2026-10-04. See `DAY11-PHASE0-REPORT.md`.
+
+Key follow-ups:
+- Other backend was offline with `auto_start=false` and live `accepts-transfers=false`; record as drift and do not silently change host policy.
+- Other still had Technology 0.1.3 while the managed baseline is 0.1.4.
+- backup footprint was ~198.6 GiB, so Protection & Recovery 2.0 is prioritized.
+- no pending update artifact was detected.
 
 ## Phase 11.1 — Operations correctness
 
