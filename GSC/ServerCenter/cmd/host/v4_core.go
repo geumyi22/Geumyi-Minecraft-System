@@ -467,6 +467,8 @@ func apiV4ServerProfile(w http.ResponseWriter, r *http.Request) {
 	q.Server.Path = strings.TrimSpace(q.Server.Path)
 	q.Server.Role = strings.ToLower(strings.TrimSpace(q.Server.Role))
 	q.Server.UpdatePolicy = strings.ToLower(strings.TrimSpace(q.Server.UpdatePolicy))
+	q.Server.UpdateChannel = normalizeServerUpdateChannel(q.Server.UpdateChannel)
+	q.Server.UpdatePin = normalizeServerUpdatePin(q.Server.UpdatePin)
 	if !serverIDRE.MatchString(q.Server.ID) {
 		http.Error(w, "서버 ID는 영문 소문자/숫자/_/- 2~32자", 400)
 		return
@@ -528,6 +530,12 @@ func apiV4ServerProfile(w http.ResponseWriter, r *http.Request) {
 		}
 		if q.Server.UpdatePolicy == "" {
 			q.Server.UpdatePolicy = old.UpdatePolicy
+		}
+		if q.Server.UpdateChannel == "" {
+			q.Server.UpdateChannel = old.UpdateChannel
+		}
+		if q.Server.UpdatePin == "" {
+			q.Server.UpdatePin = old.UpdatePin
 		}
 		q.Server = normalizeServerConfig(q.Server)
 		c.Servers[idx] = q.Server
