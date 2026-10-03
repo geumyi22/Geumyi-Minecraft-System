@@ -98,8 +98,8 @@ jobs:
         shell: powershell
         run: |
           $rollback=Get-Content -LiteralPath 'tools/day10/rollback_four_servers.ps1' -Raw
-          foreach($m in @('Stopping lobby through direct standard RCON','Day10-DirectRconStop','if ($Id -eq "lobby")','Day10-DisableLobbyRestartForRollback','restart_on_crash = $false','Day10-WaitOnline "lobby" $false 30')){
-            if(-not $rollback.Contains($m)){throw "Missing lobby rollback safety guard: $m"}
+          foreach($m in @('Stopping lobby through direct standard RCON','Day10-DirectRconStop','if ($Id -eq "lobby")','Day10-DisableLobbyRestartForRollback','restart_on_crash = $false','Day10-WaitOnline "lobby" $false 30','deployed-proxies-resume-','new-lobby-resume-','$now = Day10-State')){
+            if(-not $rollback.Contains($m)){throw "Missing lobby/resume rollback safety guard: $m"}
           }
 
       - name: Check rollback retry launcher
