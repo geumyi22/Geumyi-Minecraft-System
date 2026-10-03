@@ -53,18 +53,21 @@ type DeploymentComponent struct {
 }
 
 type UpdateStatus struct {
-	ServerID  string   `json:"server_id"`
-	Phase     string   `json:"phase"`
-	Channel   string   `json:"channel"`
-	Release   string   `json:"release,omitempty"`
-	Message   string   `json:"message"`
-	Error     string   `json:"error,omitempty"`
-	Available []string `json:"available,omitempty"`
-	Applied       []string `json:"applied,omitempty"`
-	Transaction   string   `json:"transaction,omitempty"`
-	RollbackReason string  `json:"rollback_reason,omitempty"`
-	BlockStart    bool     `json:"block_start,omitempty"`
-	Updated       string   `json:"updated"`
+	ServerID       string   `json:"server_id"`
+	Phase          string   `json:"phase"`
+	Policy         string   `json:"policy,omitempty"`
+	Channel        string   `json:"channel"`
+	Pin            string   `json:"pin,omitempty"`
+	DryRun         bool     `json:"dry_run,omitempty"`
+	Release        string   `json:"release,omitempty"`
+	Message        string   `json:"message"`
+	Error          string   `json:"error,omitempty"`
+	Available      []string `json:"available,omitempty"`
+	Applied        []string `json:"applied,omitempty"`
+	Transaction    string   `json:"transaction,omitempty"`
+	RollbackReason string   `json:"rollback_reason,omitempty"`
+	BlockStart     bool     `json:"block_start,omitempty"`
+	Updated        string   `json:"updated"`
 }
 
 type githubRelease struct {
@@ -116,6 +119,23 @@ func normalizeUpdateConfig(c UpdateConfig) UpdateConfig {
 	return c
 }
 
+func effectiveUpdateConfigForServer(s ServerConfig) UpdateConfig {
+	c := normalizeUpdateConfig(configSnapshot().Update)
+	if ch := normalizeServerUpdateChannel(s.UpdateChannel); ch != "" {
+		c.Channel = ch
+	}
+	return c
+}
+
+func updatePinForServer(s ServerConfig) string {
+	return normalizeServerUpdatePin(s.UpdatePin)
+}
+
+func releaseMatchesPin(tag, pin string) bool {
+	pin = strings.TrimSpace(pin)
+	return pin == "" || strings.EqualFold(strings.TrimSpace(tag), pin)
+}
+
 func setUpdateStatus(st UpdateStatus) UpdateStatus {
 	if st.Updated == "" {
 		st.Updated = time.Now().Format(time.RFC3339)
@@ -129,11 +149,16 @@ func setUpdateStatus(st UpdateStatus) UpdateStatus {
 
 func updateStatusFor(id string) UpdateStatus {
 	updateStateMu.Lock()
-	defer updateStateMu.Unlock()
 	if st, ok := updateStates[id]; ok {
 		st.Available = append([]string(nil), st.Available...)
 		st.Applied = append([]string(nil), st.Applied...)
+		updateStateMu.Unlock()
 		return st
+	}
+	updateStateMu.Unlock()
+	if s, ok := serverByID(id); ok {
+		c := effectiveUpdateConfigForServer(s)
+		return UpdateStatus{ServerID: s.ID, Phase: "idle", Policy: normalizeServerUpdatePolicy(s.UpdatePolicy), Channel: c.Channel, Pin: updatePinForServer(s), Message: "아직 업데이트 확인 기록이 없습니다", Updated: time.Now().Format(time.RFC3339)}
 	}
 	c := normalizeUpdateConfig(configSnapshot().Update)
 	return UpdateStatus{ServerID: id, Phase: "idle", Channel: c.Channel, Message: "아직 업데이트 확인 기록이 없습니다", Updated: time.Now().Format(time.RFC3339)}
@@ -142,6 +167,7 @@ func updateStatusFor(id string) UpdateStatus {
 func registerUpdateRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/update/status", requireAuth(apiV4UpdateStatus))
 	mux.HandleFunc("/api/v4/update/settings", requireAuth(apiV4UpdateSettings))
+	mux.HandleFunc("/api/v4/update/server-policy", requireAuth(apiV4UpdateServerPolicy))
 	mux.HandleFunc("/api/v4/update/check", requireAuth(apiV4UpdateCheck))
 	mux.HandleFunc("/api/v4/update/decision", requireAuth(apiV4UpdateDecision))
 }
@@ -230,6 +256,102 @@ func apiV4UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]any{"ok": true, "settings": u})
 }
 
+func apiV4UpdateServerPolicy(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		id := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("id")))
+		s, ok := serverByID(id)
+		if !ok {
+			http.Error(w, "unknown server", http.StatusBadRequest)
+			return
+		}
+		cfg := effectiveUpdateConfigForServer(s)
+		writeJSON(w, map[string]any{
+			"server_id": s.ID,
+			"policy": normalizeServerUpdatePolicy(s.UpdatePolicy),
+			"channel": cfg.Channel,
+			"channel_override": normalizeServerUpdateChannel(s.UpdateChannel),
+			"pin": updatePinForServer(s),
+			"server_restarted": false,
+		})
+		return
+	}
+	if r.Method != http.MethodPost {
+		http.Error(w, "GET or POST required", http.StatusMethodNotAllowed)
+		return
+	}
+	var q struct {
+		ID      string  `json:"id"`
+		Policy  *string `json:"policy"`
+		Channel *string `json:"channel"`
+		Pin     *string `json:"pin"`
+	}
+	if json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q) != nil {
+		http.Error(w, "bad json", http.StatusBadRequest)
+		return
+	}
+	id := strings.ToLower(strings.TrimSpace(q.ID))
+	c := configSnapshot()
+	idx := -1
+	for i := range c.Servers {
+		if strings.EqualFold(c.Servers[i].ID, id) {
+			idx = i
+			break
+		}
+	}
+	if idx < 0 {
+		http.Error(w, "unknown server", http.StatusBadRequest)
+		return
+	}
+	if q.Policy != nil {
+		policy := strings.ToLower(strings.TrimSpace(*q.Policy))
+		switch policy {
+		case serverUpdateManaged, serverUpdateManual, serverUpdateHold:
+			c.Servers[idx].UpdatePolicy = policy
+		default:
+			http.Error(w, "policy must be managed, manual, or hold", http.StatusBadRequest)
+			return
+		}
+	}
+	if q.Channel != nil {
+		raw := strings.ToLower(strings.TrimSpace(*q.Channel))
+		if raw == "inherit" {
+			raw = ""
+		}
+		if raw != "" && normalizeServerUpdateChannel(raw) == "" {
+			http.Error(w, "channel must be inherit, stable, beta, or canary", http.StatusBadRequest)
+			return
+		}
+		c.Servers[idx].UpdateChannel = raw
+	}
+	if q.Pin != nil {
+		pin := strings.TrimSpace(*q.Pin)
+		if len(pin) > 120 || strings.ContainsAny(pin, "\r\n\t") {
+			http.Error(w, "pin must be a release tag up to 120 characters", http.StatusBadRequest)
+			return
+		}
+		c.Servers[idx].UpdatePin = pin
+	}
+	c.Servers[idx] = normalizeServerConfig(c.Servers[idx])
+	if err := saveHostConfig(c); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	s := c.Servers[idx]
+	eff := effectiveUpdateConfigForServer(s)
+	appendV4Event("info", "update", s.ID, "서버 업데이트 정책 저장", fmt.Sprintf("policy=%s channel=%s pin=%s", s.UpdatePolicy, eff.Channel, updatePinForServer(s)))
+	appendAudit(r, "update.server-policy", s.ID, "completed", fmt.Sprintf("policy=%s channel=%s pinned=%v", s.UpdatePolicy, eff.Channel, updatePinForServer(s) != ""))
+	writeJSON(w, map[string]any{
+		"ok": true,
+		"server_id": s.ID,
+		"policy": s.UpdatePolicy,
+		"channel": eff.Channel,
+		"channel_override": s.UpdateChannel,
+		"pin": updatePinForServer(s),
+		"requires_server_restart": false,
+		"server_restarted": false,
+	})
+}
+
 func apiV4UpdateCheck(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "POST required", http.StatusMethodNotAllowed)
@@ -316,15 +438,17 @@ func apiV4UpdateDecision(w http.ResponseWriter, r *http.Request) {
 }
 
 func checkServerUpdates(s ServerConfig) UpdateStatus {
-	c := normalizeUpdateConfig(configSnapshot().Update)
-	st := UpdateStatus{ServerID: s.ID, Phase: "checking", Channel: c.Channel, Message: "배포 manifest 확인 중"}
+	s = normalizeServerConfig(s)
+	c := effectiveUpdateConfigForServer(s)
+	pin := updatePinForServer(s)
+	st := UpdateStatus{ServerID: s.ID, Phase: "checking", Policy: s.UpdatePolicy, Channel: c.Channel, Pin: pin, DryRun: true, Message: "배포 manifest 미리보기 확인 중"}
 	setUpdateStatus(st)
 	if !c.Enabled {
 		st.Phase = "disabled"
 		st.Message = "자동 업데이트가 비활성화되어 있습니다"
 		return setUpdateStatus(st)
 	}
-	manifest, _, release, err := fetchVerifiedManifest(c)
+	manifest, _, release, err := fetchVerifiedManifestPinned(c, pin)
 	if err != nil {
 		st.Phase = "error"
 		st.Message = "업데이트 확인 실패"
@@ -364,8 +488,10 @@ func checkServerUpdates(s ServerConfig) UpdateStatus {
 // failure is recorded, but startServerLocked continues to the user's original
 // start.bat so a GitHub/network problem cannot take the server offline.
 func runPreStartUpdater(s ServerConfig) UpdateStatus {
-	c := normalizeUpdateConfig(configSnapshot().Update)
-	st := UpdateStatus{ServerID: s.ID, Phase: "checking", Channel: c.Channel, Message: "서버 시작 전 업데이트 확인 중"}
+	s = normalizeServerConfig(s)
+	c := effectiveUpdateConfigForServer(s)
+	pin := updatePinForServer(s)
+	st := UpdateStatus{ServerID: s.ID, Phase: "checking", Policy: s.UpdatePolicy, Channel: c.Channel, Pin: pin, Message: "서버 시작 전 업데이트 확인 중"}
 	if !c.Enabled {
 		st.Phase = "disabled"
 		st.Message = "자동 업데이트 비활성화"
@@ -396,7 +522,7 @@ func runPreStartUpdater(s ServerConfig) UpdateStatus {
 		st.Message = "수동 업데이트 정책 · 기존 파일로 서버 시작"
 		return setUpdateStatus(st)
 	}
-	manifest, manifestHash, release, err := fetchVerifiedManifest(c)
+	manifest, manifestHash, release, err := fetchVerifiedManifestPinned(c, pin)
 	if err != nil {
 		st.Phase = "error"
 		st.Message = "업데이트 확인 실패 · 기존 파일로 서버 시작"
@@ -463,6 +589,10 @@ func runPreStartUpdater(s ServerConfig) UpdateStatus {
 }
 
 func fetchVerifiedManifest(c UpdateConfig) (DeploymentManifest, string, string, error) {
+	return fetchVerifiedManifestPinned(c, "")
+}
+
+func fetchVerifiedManifestPinned(c UpdateConfig, pin string) (DeploymentManifest, string, string, error) {
 	var zero DeploymentManifest
 	pub, err := loadDeploymentPublicKey(c.PublicKeyPath)
 	if err != nil {
@@ -494,7 +624,7 @@ func fetchVerifiedManifest(c UpdateConfig) (DeploymentManifest, string, string, 
 	manifestName := "deployment-" + c.Channel + ".json"
 	sigName := manifestName + ".sig"
 	for _, rel := range releases {
-		if rel.Draft {
+		if rel.Draft || !releaseMatchesPin(rel.TagName, pin) {
 			continue
 		}
 		var manifestURL, sigURL string
@@ -529,6 +659,9 @@ func fetchVerifiedManifest(c UpdateConfig) (DeploymentManifest, string, string, 
 		}
 		sum := sha256.Sum256(manifestBytes)
 		return m, hex.EncodeToString(sum[:]), rel.TagName, nil
+	}
+	if strings.TrimSpace(pin) != "" {
+		return zero, "", "", fmt.Errorf("고정 release %s에서 %s 채널의 서명된 deployment manifest를 찾지 못했습니다", pin, c.Channel)
 	}
 	return zero, "", "", fmt.Errorf("%s 채널의 서명된 deployment manifest를 최근 GitHub Release에서 찾지 못했습니다", c.Channel)
 }
