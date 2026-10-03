@@ -215,6 +215,15 @@ function Day10-DirectRconStop {
     }
 }
 
+function Day10-DisableLobbyRestartForRollback {
+    $settings = Day10-Gsc "GET" "/api/settings"
+    $profile = @($settings.servers | Where-Object { $_.id -eq "lobby" }) | Select-Object -First 1
+    if ($null -eq $profile) { return }
+    $profile.auto_start = $false
+    $profile.restart_on_crash = $false
+    Day10-Gsc "POST" "/api/v4/server-profile" @{action="update";server=$profile} | Out-Null
+}
+
 function Day10-StopForRollback {
     param([string]$Id, [string]$ServerDir, [int]$RconPort)
     $current = Day10-State $Id
@@ -224,9 +233,11 @@ function Day10-StopForRollback {
     # GSC launcher-shell shutdown path. Send a standard RCON stop immediately
     # so rollback never appears hung behind GSC's 180-second stop handler.
     if ($Id -eq "lobby") {
+        Day10-DisableLobbyRestartForRollback
         Write-Host "Stopping lobby through direct standard RCON..."
         Day10-DirectRconStop $ServerDir $RconPort
         Day10-WaitOnline $Id $false 120 | Out-Null
+        Start-Sleep -Seconds 2
         return
     }
 
@@ -299,6 +310,13 @@ function Day10-FourRestore {
         }
     }
     if ($null -ne $lobby) {
+        Day10-DisableLobbyRestartForRollback
+        $lobbyNow = Day10-State "lobby"
+        if ($null -ne $lobbyNow -and [bool]$lobbyNow.online) {
+            Day10-StopForRollback "lobby" ([string]$state.lobby_path) 25579
+        }
+        Day10-WaitOnline "lobby" $false 30 | Out-Null
+        Start-Sleep -Seconds 2
         Day10-Gsc "POST" "/api/v4/server-profile" @{action="delete";server=@{id="lobby"}} | Out-Null
     }
     foreach ($entry in $state.servers) {
