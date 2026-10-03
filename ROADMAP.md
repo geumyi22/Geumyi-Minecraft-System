@@ -1,6 +1,6 @@
 # Geumyi Minecraft System — 작업 로드맵
 
-기준일: 2026-09-29
+기준일: 2026-10-04
 
 | Day | 목표 | 상태 |
 |---|---|---|
@@ -13,7 +13,7 @@
 | 7 | 전체 컴포넌트 CI/자동 빌드 + 검증 artifact 기반 정리 | 완료 |
 | 8 | 보안 Release/자동 업데이트 기반: manifest·채널·서명·체크섬·고정 Android 서명·pre-start updater | 완료 |
 | 9 | 트랜잭션 배포·백업·원자적 교체·health 검증·자동 rollback·장애 주입 테스트 | 완료 |
-| 10 | 전체 업데이트 E2E + Lobby/Proxy + 서버별 마지막 위치 복원 + Java/Bedrock 이동 | 진행 중 |
+| 10 | 전체 업데이트 E2E + Lobby/Proxy + 서버별 마지막 위치 복원 + Java/Bedrock 이동 | Java 완료 / Bedrock E2E 대기 |
 | 11 | GSC/GSCM Update Center·채널/pin/hold·canary·maintenance window·알림·fleet 운영 UX | 예정 |
 | 12 | GSC/Agent self-update·Resource/DataPack 배포·SBOM/provenance·재현성·DR drill·Lobby 구현 확장 | 예정 |
 
@@ -96,6 +96,14 @@ Day 9 종료 시점의 main에는 finalizer hotfix까지 반영되어 있으며,
 
 Day 10에서는 이 기반 위에 full deployment E2E와 Lobby/Proxy 네트워크를 추가합니다. 상세 고정 계획은 `DAY10-PLAN.md`를 기준으로 합니다.
 
+## Day 10 현재 검증 상태
+
+2026-10-03 서버 PC 실사용 검증에서 세 개의 Velocity 프록시가 재부팅 후 자동 시작했고, Java 공개 TCP `25565/25566/25567`가 모두 LISTEN 상태임을 확인했습니다. 실제 Java 클라이언트로 Lobby 진입, Wild/Playground/Other 이동, `/lobby`, 서버별 마지막 위치 복원을 사용자 확인 기준으로 통과했습니다.
+
+Bedrock UDP `19132/19133/19134`는 재부팅 후 BOUND 상태까지 확인했지만, 현재 최신 Geyser가 사용 중인 Bedrock 클라이언트 버전을 아직 지원하지 않아 실제 Bedrock 클라이언트 E2E는 `SKIPPED_UPSTREAM_UNSUPPORTED`로 기록했습니다. 따라서 Day 10의 Java 네트워크/재부팅 검증은 완료됐고, 전체 Day 10 종료는 Geyser 지원 후 Bedrock 실제 E2E 1회가 남아 있습니다.
+
+세부 근거는 `DAY10-E2E-REPORT.md`에 기록합니다.
+
 ## Day 7~12 — 자동 배포/운영 확장
 
 Day 7 이후는 단순 CI가 아니라 **소스 수정 → 검증된 artifact → 안전한 자동 배포 → health 확인 → rollback**까지 연결합니다. 세부 설계는 `DEPLOYMENT-ARCHITECTURE.md`를 기준으로 합니다.
@@ -121,5 +129,5 @@ Day 7 이후는 단순 CI가 아니라 **소스 수정 → 검증된 artifact �
 - Lobby -> Wild/Playground 이동 시 서버별 마지막 위치 복원
 - Lobby 자체 위치는 복원하지 않고 항상 중앙 Spawn
 - Wild/Playground 기존 월드와 gameplay는 변경하지 않음
-- Technology/Chemistry는 계속 Wild only
-- 실제 Java/Bedrock + Day10 Final E2E PASS 전에는 Day 10 완료 선언 금지
+- Technology/Chemistry는 Wild + Other에만 적용
+- Java 네트워크/재부팅 E2E는 PASS. Bedrock 실제 클라이언트 E2E는 Geyser upstream 지원 후 별도 PASS 필요
