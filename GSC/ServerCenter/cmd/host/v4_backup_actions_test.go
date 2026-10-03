@@ -168,3 +168,64 @@ func TestBackupActionRejectsPathTraversalAndActivePermanentDelete(t *testing.T) 
 		t.Fatal("active backup was changed by invalid permanent-delete request")
 	}
 }
+
+func TestRestoreCheckpointIsProtectedByDefault(t *testing.T) {
+	root := t.TempDir()
+	serverDir := filepath.Join(root, "server")
+	if err := os.MkdirAll(serverDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(serverDir, "server.properties"), []byte("server-port=25570\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(serverDir, "bukkit.yml"), []byte("settings: {}\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	configMu.Lock()
+	oldCfg := cfg
+	oldConfigPath := configPath
+	cfg = Config{Servers: []ServerConfig{{ID: "test", Name: "Test", Path: serverDir, JavaPort: 0}}}
+	configPath = filepath.Join(root, "server.json")
+	configMu.Unlock()
+	defer func() {
+		configMu.Lock()
+		cfg = oldCfg
+		configPath = oldConfigPath
+		configMu.Unlock()
+	}()
+
+	s, ok := serverByID("test")
+	if !ok {
+		t.Fatal("test server missing")
+	}
+	cp, err := createBackup(s, "config", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cp.Protected || cp.Kind != "checkpoint" {
+		t.Fatalf("checkpoint metadata = %+v", cp)
+	}
+	p, err := safeBackupPath(s, cp.File)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !readBackupMeta(p).Protected {
+		t.Fatal("checkpoint protection metadata was not persisted")
+	}
+
+	v4OpMu.Lock()
+	oldOps := v4Operations
+	v4Operations = map[string]string{}
+	v4OpMu.Unlock()
+	defer func() {
+		v4OpMu.Lock()
+		v4Operations = oldOps
+		v4OpMu.Unlock()
+	}()
+
+	w := postBackupActionForTest(t, "test", cp.File, "trash")
+	if w.Code != http.StatusConflict {
+		t.Fatalf("protected checkpoint must reject trash: %d %s", w.Code, w.Body.String())
+	}
+}
