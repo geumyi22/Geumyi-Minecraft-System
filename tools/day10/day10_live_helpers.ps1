@@ -1,13 +1,20 @@
 Set-StrictMode -Version Latest
 
+function Day10-JsonUtf8Bytes {
+    param($Body)
+    $json = $Body | ConvertTo-Json -Depth 12 -Compress
+    $utf8 = New-Object System.Text.UTF8Encoding($false)
+    return $utf8.GetBytes($json)
+}
+
 function Day10-Gsc {
     param([string]$Method, [string]$Path, $Body = $null)
     $uri = "http://127.0.0.1:8787$Path"
     if ($null -eq $Body) {
         return Invoke-RestMethod -Method $Method -Uri $uri -TimeoutSec 20
     }
-    $json = $Body | ConvertTo-Json -Depth 12 -Compress
-    return Invoke-RestMethod -Method $Method -Uri $uri -TimeoutSec 20 -ContentType "application/json" -Body $json
+    $bytes = Day10-JsonUtf8Bytes $Body
+    return Invoke-RestMethod -Method $Method -Uri $uri -TimeoutSec 20 -ContentType "application/json; charset=utf-8" -Body $bytes
 }
 
 function Day10-WaitGsc {
