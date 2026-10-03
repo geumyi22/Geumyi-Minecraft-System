@@ -1,6 +1,18 @@
-# Day 10 revised baseline — four-server rollout (2026-10-02)
+# Day 10 revised baseline — four-server rollout (updated 2026-10-04)
 
-> This section supersedes the older three-server live cutover below. The older `tools/day10/Day10_Final_E2E.cmd` is blocked to prevent accidental deployment. Do not use it until the four-server finalizer is built and tested.
+> This section supersedes the older three-server live cutover below. The retired `tools/day10/Day10_Final_E2E.cmd` remains blocked. The four-server finalizer is the current implementation.
+
+## Current host verification status
+
+- Java four-server cutover: **PASS** on the real server PC.
+- Reboot persistence: **PASS**. `Geumyi Day10 Velocity wild/playground/other` startup tasks were Running after Windows reboot.
+- Public Java TCP `25565/25566/25567`: **LISTEN** after reboot.
+- Public Geyser UDP `19132/19133/19134`: **BOUND** after reboot.
+- Real Java client: public entry -> Lobby, Lobby -> Wild/Playground/Other, `/lobby`, and per-backend last-location restore: **PASS** by user verification.
+- Bedrock client E2E: **SKIPPED_UPSTREAM_UNSUPPORTED**. The current latest Geyser does not yet support the current Bedrock client version, so no Bedrock PASS is claimed.
+- Full Day 10 closure remains pending only for a real Bedrock client E2E after upstream Geyser compatibility becomes available.
+
+See `DAY10-E2E-REPORT.md` for the exact verification boundary.
 
 ## Approved filesystem and topology
 
@@ -9,15 +21,15 @@
 - Java public listeners: 25565 (wild alias), 25566 (playground alias), 25567 (other alias); **all first enter Lobby**.
 - Bedrock UDP public listeners: 19132 (wild alias), 19133 (playground alias), 19134 (other alias); **all first enter Lobby**.
 - Existing backend RCON: wild 25575, playground 25576, other 25577; Lobby 25579.
-- Proposed internal Java backends: wild 25570, playground 25571, other 25572, Lobby 25573; subject to live port inventory.
-- Use three isolated Velocity proxy instances, each with its own Java TCP listener and Geyser UDP listener: Java 25565/Bedrock 19132, Java 25566/Bedrock 19133, Java 25567/Bedrock 19134. All three share the same backend list, forwarding secret, Floodgate key and Lobby-first routing. A single versioned Geyser/Floodgate release is staged for all three. This avoids false UDP portproxy assumptions and retains real client address. Proxy resource use and shared-key handoff require actual host E2E.
+- Verified internal Java backends: wild 25570, playground 25571, other 25572, Lobby 25573.
+- Use three isolated Velocity proxy instances, each with its own Java TCP listener and Geyser UDP listener: Java 25565/Bedrock 19132, Java 25566/Bedrock 19133, Java 25567/Bedrock 19134. All three share the same backend list, forwarding secret, Floodgate key and Lobby-first routing. A single versioned Geyser/Floodgate release is staged for all three. This avoids false UDP portproxy assumptions and retains real client address. Proxy resource use and shared-key handoff were exercised during the Java host E2E.
 - GeumyiTechnology and GeumyiChemistry target **wild and other**; they must not be installed on playground or lobby. Existing Other data/configs must be preserved.
 - GSC must manage all four Paper servers and monitor Proxy/Geyser.
 - Pre-start updates for signed Geumyi plugin releases, plus separately verified official Geyser/Floodgate and Via releases. Manual GSC check offers keep-running or update-and-restart; Proxy updates must disclose affected sessions. These are approved requirements, **not yet implemented or host-verified**.
 - Preserve previous per-backend positions/dimensions on transfer and always place new external connections in Lobby.
 - Existing worlds, plugin configuration, and unrelated plugins are never overwritten or removed implicitly.
 
-## Four-server live-cutover installer (host E2E pending)
+## Four-server live-cutover installer (Java host E2E passed; Bedrock client E2E pending)
 
 Four-server-only scripts: Day10_FourServer_Live.cmd, finish_four_servers.ps1, four_cutover_helpers.ps1, rollback_four_servers.ps1. The retired three-server Day10_Final_E2E.cmd remains blocked.
 
@@ -29,9 +41,9 @@ Only after backup succeeds does it stage three Velocity/Geyser/Floodgate process
 
 On failure the four-server rollback verifies backups, stops identified Day 10 Java processes and servers, quarantines generated Lobby/proxy files, restores original config and plugin directories with hash checks, restores original GSC profiles and initial online states, and removes only Day 10 firewall rules and scheduled tasks. Existing world files are never deleted during rollback. Full offline world backups are retained.
 
-Actual users must verify all three Java aliases and three Bedrock UDP listeners enter Lobby; every server destination, /lobby and last-position restoration must be tested. Separate JAVA PASS and BEDROCK PASS confirmations are required before at-boot proxy tasks are registered.
+The host run verified all three Java aliases, Lobby-first routing, all three backend destinations, `/lobby`, last-position restoration, and reboot persistence. Bedrock infrastructure listeners are bound, but the real Bedrock client test is intentionally recorded as `SKIPPED_UPSTREAM_UNSUPPORTED` until Geyser supports the current Bedrock client version. The finalizer supports the explicit `-SkipBedrockManualE2E` mode for this temporary upstream-compatibility condition; it does not convert the skip into a Bedrock PASS.
 
-Limits: CI can check syntax and synthetic gates, not actual Java/Bedrock client login, server plugin compatibility, device behavior, public router forwarding, OneDrive behavior, Windows startup ordering, or live rollback rehearsal. Recurring updates for third-party Geyser/Floodgate/Via are not yet implemented. Do not call Day 10 complete until live E2E and rollback are verified on the host.
+Limits: CI can check syntax and synthetic gates, not actual client login, device behavior, public router forwarding, OneDrive behavior or Windows startup ordering. Java client login, routing, reboot persistence and recovery were host-verified by the user. Recurring updates for third-party Geyser/Floodgate/Via are not yet implemented. Do not record Bedrock as PASS until a real Bedrock client E2E succeeds after upstream compatibility is available.
 
 ## Phase 2 single-click staging and cutover readiness
 
@@ -43,7 +55,7 @@ A passing preflight is **not** live cutover authorization: full backups, shared 
 
 The host-side module `tools/day10/four_server_port_transaction.ps1` now provides `Day10-SnapshotFourConfig`, `Day10-ApplyFourConfig` and `Day10-RestoreFourConfig` for all four Paper backends. It enforces offline status for the three existing servers, rejects occupied target private Java ports, verifies SHA-256 backups of `server.properties` and `config/paper-global.yml`, applies localhost/private Java port and Paper Velocity-modern forwarding, preserves RCON values, and restores the exact original bytes on failure. Its synthetic Windows PowerShell 5.1 self-test exercises application and hash-exact rollback without touching host servers.
 
-**Not yet a live installer.** The final cutover must additionally orchestrate GSC profiles and process states, create Lobby, stage and start all three Velocity/Geyser instances with a safely shared Floodgate key, disable old per-backend Geyser/Floodgate with their own verified backups, restore all services on rollback, and confirm real Java/Bedrock E2E. The retired `Day10_Final_E2E.cmd` remains blocked.
+**Implemented and host-used.** The live finalizer now orchestrates GSC profiles/process states, creates Lobby, stages and starts all three Velocity/Geyser instances with a shared Floodgate identity, preserves/restores server state through the four-server rollback path, and requires real Java confirmation. Bedrock manual client confirmation remains pending upstream Geyser support. The retired `Day10_Final_E2E.cmd` remains blocked.
 
 ## Revised implementation stages
 
@@ -55,7 +67,7 @@ The host-side module `tools/day10/four_server_port_transaction.ps1` now provides
 6. Extend GSC/GSCM and create tested all-component CI plus a revised four-server cutover script.
 7. Host-only E2E: backup, graceful shutdown, install, Java/Bedrock per-port entry, Lobby, movement, location, GSC control and rollback rehearsal.
 
-**Day 10 is not complete until live Java/Bedrock E2E and recovery tests pass.**
+**Day 10 Java/recovery scope is host-verified. Full Day 10 closure waits for the real Bedrock client E2E after upstream Geyser support.**
 
 ---
 
@@ -327,19 +339,20 @@ player-aware countdown/maintenance scheduling은 Day 11 범위로 둔다.
 
 ## 12. 완료 조건
 
-- [ ] Day 9 기준선/문서 drift 정리
+- [x] Day 9 기준선/문서 drift 정리
 - [ ] Full deployment E2E harness PASS
-- [ ] GSC generic server catalog PASS
-- [ ] Velocity + modern forwarding PASS
+- [x] GSC generic server catalog PASS
+- [x] Velocity + modern forwarding PASS
 - [ ] backend direct exposure 차단 확인
-- [ ] Lobby 서버 부팅 PASS
-- [ ] Lobby 중앙 Spawn 규칙 PASS
-- [ ] Lobby 맵/선택 UI PASS
-- [ ] Wild 마지막 위치 복원 PASS
-- [ ] Playground 마지막 위치 복원 PASS
-- [ ] Java 전체 이동 E2E PASS
+- [x] Lobby 서버 부팅 PASS
+- [x] Lobby 중앙 Spawn 규칙 PASS
+- [x] Lobby 맵/선택 UI PASS
+- [x] Wild 마지막 위치 복원 PASS
+- [x] Playground 마지막 위치 복원 PASS
+- [x] Other 마지막 위치 복원 PASS
+- [x] Java 전체 이동 E2E PASS
 - [ ] Bedrock 전체 이동 E2E PASS
 - [ ] maintenance/offline 이동 차단 PASS
-- [ ] update/rollback과 Lobby routing 공존 PASS
+- [x] update/rollback과 Lobby routing 공존 PASS
 - [ ] Day10 Final E2E 서버 PC PASS
-- [ ] 문서/rollback 절차/변경 내역 반영
+- [x] 문서/rollback 절차/변경 내역 반영
