@@ -1,2 +1,0 @@
-Day 10 exact-main CI trigger for Bedrock upstream-unsupported manual E2E skip mode.
-No runtime behavior is changed by this file.
