@@ -62,6 +62,10 @@ try{
       @{id="playground";name="놀이터";port=25571;udp=19133},
       @{id="other";name="기타";port=25572;udp=19134}
     )
+    $udpMap=@($entries | ForEach-Object {[int]$_.udp})
+    if(($udpMap | Sort-Object -Unique).Count -ne 3 -or ($udpMap -join ",") -ne "19132,19133,19134"){
+        throw "Bedrock public port map regression"
+    }
     foreach($e in $entries){
         $original=@($settings.servers | Where-Object {$_.id -eq $e.id}) | Select-Object -First 1
         if($null -eq $original){throw "Missing GSC profile: $($e.id)"}
@@ -125,6 +129,11 @@ try{
             throw "Original Java port still listening after graceful shutdown: $port"
         }
     }
+    foreach($port in @(19132,19133,19134)){
+        if(Get-NetUDPEndpoint -LocalPort $port -ErrorAction SilentlyContinue){
+            throw "Public Bedrock UDP port still occupied after graceful shutdown: $port"
+        }
+    }
     New-Item -ItemType Directory -Path $backup -Force | Out-Null
     foreach($p in $profiles){Day10-FourBackupServer $p.path (Join-Path $backup ("servers\"+$p.id))}
     $state=[ordered]@{
@@ -155,9 +164,16 @@ try{
     $lobby=@{
         id="lobby";name="Geumyi Lobby";role="lobby";update_policy="manual";java_port=25573
         rcon_port=25579;bedrock_port=0;gds_api_port=$lobbyGds;path=$state.lobby_path
-        path_file="";start_command="start.bat";auto_start=$false;restart_on_crash=$true
+        path_file="";start_command="start.bat";auto_start=$false;restart_on_crash=$false
     }
     Day10-Gsc "POST" "/api/v4/server-profile" @{action="add";server=$lobby} | Out-Null
+    $privateSettings=Day10-Gsc "GET" "/api/settings"
+    foreach($id in @("wild","playground","other","lobby")){
+        $check=@($privateSettings.servers | Where-Object {$_.id -eq $id}) | Select-Object -First 1
+        if($null -eq $check -or [int]$check.bedrock_port -ne 0){
+            throw "Backend GSC bedrock_port must be 0 during proxy cutover: $id"
+        }
+    }
     foreach($id in @("lobby","wild","playground","other")){
         Day10-Gsc "POST" "/api/server/action" @{id=$id;action="start"} | Out-Null
         Day10-WaitOnline $id $true 300 | Out-Null
@@ -204,7 +220,8 @@ try{
         $taskSettings=New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit ([TimeSpan]::Zero) -StartWhenAvailable
         Register-ScheduledTask -TaskName $name -Action $action -Trigger $trigger -Principal $principal -Settings $taskSettings -ErrorAction Stop | Out-Null
     }
-$lobby.auto_start=$true
+    $lobby.auto_start=$true
+    $lobby.restart_on_crash=$true
     Day10-Gsc "POST" "/api/v4/server-profile" @{action="update";server=$lobby} | Out-Null
     $result=[ordered]@{
         main_sha=$ci.Commit;ci_run=$ci.Run;java_manual_e2e="PASS";bedrock_manual_e2e="PASS"
