@@ -86,8 +86,21 @@ If a newer Geyser build or supported-version notice is available, that alone doe
 
 Until that is executed and observed, Bedrock remains **not verified**.
 
+## Bedrock real-client E2E — user-confirmed PASS
+
+On 2026-10-04, the user reported that Bedrock operation was working across the Day-10 network and approved closing the milestone. This is recorded as **user real-device/client verification**, not as an assistant-run test.
+
+The earlier `SKIPPED_UPSTREAM_UNSUPPORTED` entry remains preserved above as historical evidence of why the first Bedrock test was skipped. It is superseded for completion status by the later user-confirmed Bedrock PASS.
+
+Required Day-10 Bedrock behavior is therefore treated as passed:
+- public Bedrock entry through Geyser/Velocity;
+- Lobby entry;
+- backend transfer behavior;
+- return-to-Lobby behavior;
+- expected per-backend state/location behavior.
+
 ## Completion boundary
 
 - Java four-server / Lobby / routing / reboot verification: **complete**.
-- Bedrock real-client E2E: **pending actual client verification**. Upstream compatibility was the original skip reason, but a new build/support notice by itself is not a PASS.
-- Full Day 10 closure should occur only after that Bedrock real-client E2E passes.
+- Bedrock real-client E2E: **PASS by user verification on 2026-10-04**.
+- Full Day 10: **complete**.
