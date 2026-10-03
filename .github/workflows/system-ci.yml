@@ -787,8 +787,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Four-server finalizer selftest failed' }
           & 'tools/day10/rollback_four_servers.ps1' -BackupRoot $env:TEMP -SelfTest
           if ($LASTEXITCODE -ne 0) { throw 'Four-server rollback selftest failed' }
+          & 'tools/day10/resolve_four_server_stage.ps1' -SelfTest
+          if ($LASTEXITCODE -ne 0) { throw 'Four-server stage resolver selftest failed' }
           & 'tools/day10/Day10_FourServer_Live.cmd' --selftest
           if ($LASTEXITCODE -ne 0) { throw 'Four-server launcher selftest failed' }
+          $launcher = Get-Content -LiteralPath 'tools/day10/Day10_FourServer_Live.cmd' -Raw
+          foreach ($marker in @('Never pass the stage path through UAC.', 'resolve_four_server_stage.ps1', '--elevated')) {
+            if (-not $launcher.Contains($marker)) { throw "Missing four-server launcher safety marker: $marker" }
+          }
           $runner = Get-Content -LiteralPath 'tools/day10/finish_four_servers.ps1' -Raw
           foreach ($safety in @('Day10-FourBackupServer', 'Day10-ApplyFourConfig', 'rollback_four_servers.ps1',
                                'DEPLOY FOUR', 'JAVA PASS', 'BEDROCK PASS', '25565,25566,25567', '19132,19133,19134',
