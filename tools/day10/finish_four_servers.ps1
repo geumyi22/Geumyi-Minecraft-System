@@ -58,9 +58,9 @@ try{
     $ci=Day10-FourGetArtifacts $artifacts "geumyi22/Geumyi-Minecraft-System"
     $settings=Day10-Gsc "GET" "/api/settings"
     $entries=@(
-      @{id="wild";name="야생";port=25570;udp=19132},
-      @{id="playground";name="놀이터";port=25571;udp=19133},
-      @{id="other";name="기타";port=25572;udp=19134}
+      @{id="wild";name="야생";port=25570;public=25565;udp=19132},
+      @{id="playground";name="놀이터";port=25571;public=25566;udp=19133},
+      @{id="other";name="기타";port=25572;public=25567;udp=19134}
     )
     $udpMap=@($entries | ForEach-Object {[int]$_.udp})
     if(($udpMap | Sort-Object -Unique).Count -ne 3 -or ($udpMap -join ",") -ne "19132,19133,19134"){
@@ -178,17 +178,22 @@ try{
         Day10-Gsc "POST" "/api/server/action" @{id=$id;action="start"} | Out-Null
         Day10-WaitOnline $id $true 300 | Out-Null
     }
-    $shared=""
-    foreach($e in $entries){
+    # Generate Geyser/Floodgate runtime exactly once on an isolated loopback
+    # TCP bootstrap port. Never bootstrap on production 25565/25566/25567.
+    $wildProxy=Join-Path $proxyRoot "wild"
+    $shared=Day10-FourBootstrapProxy $wildProxy $java 19132 $state $statePath
+    foreach($e in @($entries | Where-Object {$_.id -ne "wild"})){
         $dir=Join-Path $proxyRoot $e.id
-        $key=Day10-FourBootstrapProxy $dir $java $e.udp $shared $state $statePath
-        if($shared -eq ""){$shared=$key}
+        Day10-FourSeedProxyRuntime $wildProxy $dir ([int]$e.udp)
     }
+
     Day10-FourProtectProxySecrets $proxyRoot
+
+    # Every production proxy start is guarded against stale bootstrap processes
+    # and requires its own TCP+UDP pair to bind before moving to the next.
     foreach($e in $entries){
         $dir=Join-Path $proxyRoot $e.id
-        $proc=Start-Process -FilePath $java -ArgumentList @("-Xms256M","-Xmx512M","-jar",(Join-Path $dir "velocity.jar")) -WorkingDirectory $dir -PassThru
-        Day10-FourTrackProcess $statePath $state $proc.Id
+        Day10-FourStartProxy $dir $java ([int]$e.public) ([int]$e.udp) $state $statePath
     }
     Day10-FourCheckPorts
     New-NetFirewallRule -DisplayName "Geumyi Day10 Velocity Java" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 25565,25566,25567 | Out-Null
