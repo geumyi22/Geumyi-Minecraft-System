@@ -207,7 +207,20 @@ class GscApi {
 
   Future<List<BackupInfo>> backups(String id) async {
     final json = await _request('GET', '/api/v1/backups', query: {'id': id});
-    return jMapList(json['backups']).map(BackupInfo.fromJson).toList(growable: false);
+    final active = jMapList(json['backups']).map(BackupInfo.fromJson);
+    final trash = jMapList(json['trash']).map(BackupInfo.fromJson);
+    return [...active, ...trash];
+  }
+
+  Future<BackupInfo?> manageBackup(String id, String file, String action) async {
+    final json = await _request(
+      'POST',
+      '/api/v1/backups/manage',
+      body: {'id': id, 'file': file, 'action': action},
+      timeout: const Duration(minutes: 2),
+    );
+    final raw = jMap(json['backup']);
+    return raw.isEmpty ? null : BackupInfo.fromJson(raw);
   }
 
   Future<BackupInfo> createBackup(String id, String scope) async {
