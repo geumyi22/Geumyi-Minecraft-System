@@ -14,12 +14,11 @@ function Day10-GeyserConfigComplete {
         $text = Day10-ReadUtf8Strict $Path
         Day10-AssertYamlTextSafe $text $Path
         if ((Get-Item -LiteralPath $Path).Length -le 128) { return $false }
-        return [regex]::IsMatch($text, '(?m)^bedrock:\s*
+        return ($text -match "(?m)^bedrock:\s*")
     } catch {
         return $false
     }
 }
-
 function Day10-FourRequireSuccess {
     param([string]$Step)
     if ($LASTEXITCODE -ne 0) { throw "$Step failed with exit code $LASTEXITCODE" }
