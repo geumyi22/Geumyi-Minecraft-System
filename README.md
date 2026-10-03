@@ -19,6 +19,19 @@
 | Lobby server | Paper 26.3 | Servers/Lobby | Day 10 central entry server; reboot/startup and Java routing verified on host |
 | Resource packs | Java 26.3 / bundled Bedrock | ResourcePacks | Recovered expanded assets and Wild Geyser mapping |
 
+## 프로젝트 일차 기준
+
+일차 번호/완료 상태는 [DAY-TIMELINE.md](DAY-TIMELINE.md)를 **단일 기준**으로 사용합니다.
+
+| 범위 | 상태 |
+|---|---|
+| Day 1~9 | ✅ 완료 |
+| Day 10 | 🟡 Java four-server/Lobby E2E 완료, Bedrock 실제 client E2E 대기 |
+| Day 11 | ⏳ GSC 4.3 / GSCM 1.1.5 — Operations UX & Fleet Management |
+| Day 12 | ⏳ Extended Automation & Production Hardening |
+
+Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/마감을 수행한 milestone**입니다. Day 8과 Day 9는 모두 완료 상태이며, 각 E2E PASS는 완료의 근거입니다.
+
 ## 사용 방법
 
 - GSC: [빌드 안내](GSC/ServerCenter/BUILD.md)
@@ -27,10 +40,12 @@
 - StatusAgent: [복구 근거](GSC/StatusAgent/RECOVERY.md)
 - GST / Technology / Chemistry: 각 컴포넌트의 `README.md`와 `RECOVERY.md`에서 원본/재구성 범위를 구분합니다.
 - 리소스팩: [구성 및 패키징](ResourcePacks/README.md)
-- 실제 서버 검증 결과: [DAY4-E2E-REPORT.md](DAY4-E2E-REPORT.md)
+- 전체 일차/상태 단일 기준: [DAY-TIMELINE.md](DAY-TIMELINE.md)
+- Day 4 실서버 검증/마감: [DAY4-E2E-REPORT.md](DAY4-E2E-REPORT.md)
 - GSC/GSCM 안정화 검증: [DAY5-STABILITY-REPORT.md](DAY5-STABILITY-REPORT.md)
 - 전체 컴포넌트 자동 빌드/CI 검증: [DAY7-CI-REPORT.md](DAY7-CI-REPORT.md)
-- Day 8 보안 Release/자동 업데이트 진행 상태: [DAY8-RELEASE-REPORT.md](DAY8-RELEASE-REPORT.md)
+- Day 8 보안 Release/자동 업데이트 완료 보고: [DAY8-RELEASE-REPORT.md](DAY8-RELEASE-REPORT.md)
+- Day 9 transaction/backup/rollback 완료 상태: [ROADMAP.md](ROADMAP.md#day-9--transaction--backup--rollback--완료)
 - Day 10 Full E2E/Lobby 네트워크 고정 계획: [DAY10-PLAN.md](DAY10-PLAN.md)
 - Day 10 실제 서버 검증 결과: [DAY10-E2E-REPORT.md](DAY10-E2E-REPORT.md)
 - 이후 작업 순서와 장기 계획: [ROADMAP.md](ROADMAP.md)
