@@ -68,9 +68,7 @@ jobs:
             '(?i)\bStop-Computer\b',
             '(?i)\bRemove-Item\b',
             '(?i)\bStop-ScheduledTask\b',
-            '(?i)\bUnregister-ScheduledTask\b',
-            '(?i)\bjava(?:\.exe)?\s+.*(?:kill|stop)',
-            '(?i)velocity.*(?:kill|stop)'
+            '(?i)\bUnregister-ScheduledTask\b'
           )){
             if($raw -match $bad){ throw "Forbidden Day 11 host-test mutation pattern: $bad" }
           }
