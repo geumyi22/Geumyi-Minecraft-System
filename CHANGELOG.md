@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-04 — Canonical Day timeline / roadmap cleanup
+
+- Added `DAY-TIMELINE.md` as the single source of truth for Day numbering and completion state.
+- Clarified Day 4 as a real verification/closure milestone with no new implementation; later Day numbers are not shifted.
+- Canonically marked Day 8 and Day 9 as **completed**. Their E2E PASS results are completion evidence, not partial-state labels.
+- Kept Day 10 Java four-server/Lobby/routing/reboot verification complete while leaving the real Bedrock client E2E pending.
+- Changed the current Day-10 closure rule from a permanent "wait for upstream" condition to **actual Bedrock client E2E required**; the original `SKIPPED_UPSTREAM_UNSUPPORTED` value remains historical evidence.
+- Fixed roadmap drift across README, ROADMAP, VERSION-MATRIX, Day-10 plan/report, Network docs and deployment architecture.
+- Fixed the Day 11 target scope to **GSC 4.3 / GSCM 1.1.5**: Update Center/fleet UX, startup update checks, managed Geyser/Floodgate/Via policy, player-aware restart/update and RCON/intentional-stop state fixes.
+- Fixed Day 12 as Extended Automation & Production Hardening: Resource/DataPack deployment, StatusAgent/extended self-update, SBOM/provenance/security scans, reproducibility, shared cache, offline hardening and DR drill.
+- Documentation-only cleanup; no runtime component is claimed updated or re-verified by this entry.
+
 ## 2026-10-03 — Day 10 four-server Java cutover
 
 - Deployed three isolated Velocity proxy instances for Wild, Playground and Other public aliases, all routing first to Lobby.
