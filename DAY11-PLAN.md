@@ -1,6 +1,6 @@
 # Day 11 — Operations UX & Fleet Management
 
-Status: **IN PROGRESS — Phase 11.0 host preflight captured; Phase 11.1 + Protection & Recovery 2.0 in CI**
+Status: **IN PROGRESS — Phase 11.0 PASS; Phase 11.1 + Protection & Recovery 2.0 CI PASS; GSC-only host-test package in validation**
 Target: **GSC 4.3.0 / GSCM 1.1.5**
 
 ## Safety rules
@@ -46,6 +46,25 @@ Key follow-ups:
 - Day-10 topology-aware Bedrock status using public Velocity/Geyser entrypoints, not backend `bedrock_port=0`
 - GSC PC registered-device UI exposes **revoke / restore / delete** distinctly
 - device delete permanently removes the registration record; re-pair is required
+
+## Phase 11.1 host-test deployment
+
+Before merging broader Day 11 Update Center work into the live host, a GSC-only host-test package is built.
+
+Safety boundary:
+- backs up only installed GSC binaries + `server.json`;
+- closes/requires the desktop GSC client to be closed before replacement;
+- stops **only** the Windows service `Geumyi Server Center Host`;
+- does not stop Paper/Minecraft or Velocity;
+- verifies every TCP/UDP entrypoint that was open before remains open;
+- verifies package SHA-256 and installed binary SHA-256;
+- waits for GSC `/api/health`;
+- automatically restores previous GSC binaries if the new Host fails health or network-preservation checks;
+- includes a separate manual GSC-only rollback launcher.
+
+Artifact target: `day11-phase1-gsc-host-test`.
+
+Live runtime PASS is not claimed until the user runs this package on the server PC.
 
 ## Phase 11.2 — Update Center 2.0
 
