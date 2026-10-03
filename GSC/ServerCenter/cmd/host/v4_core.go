@@ -174,6 +174,8 @@ func registerV4Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/backups", requireAuth(apiV4Backups))
 	mux.HandleFunc("/api/v4/restore", requireAuth(apiV4Restore))
 	mux.HandleFunc("/api/v4/backup/verify", requireAuth(apiV4BackupVerify))
+	mux.HandleFunc("/api/v4/backup/action", requireAuth(apiV4BackupAction))
+	mux.HandleFunc("/api/v4/backups/trash", requireAuth(apiV4BackupTrash))
 	mux.HandleFunc("/api/v4/metrics", requireAuth(apiV4Metrics))
 	mux.HandleFunc("/api/v4/automations", requireAuth(apiV4Automations))
 	mux.HandleFunc("/api/v4/pairing/code", requireAuth(apiV4PairingCode))
