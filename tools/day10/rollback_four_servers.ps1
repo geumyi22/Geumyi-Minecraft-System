@@ -33,22 +33,64 @@ function Day10-FourRollbackAssert {
 
 function Day10-FourStopProxies {
     param($State)
+
+    $known = New-Object System.Collections.Generic.HashSet[int]
     foreach ($p in @($State.proxy_pids)) {
         $id = [int]$p
         if ($id -le 0) { continue }
+        [void]$known.Add($id)
+    }
+
+    # Also discover only Java processes whose command line is inside the exact Day10 proxy root.
+    foreach ($proc in @(Get-CimInstance Win32_Process -Filter "Name='java.exe' OR Name='javaw.exe'" -ErrorAction SilentlyContinue)) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$proc.CommandLine) -and
+            $proc.CommandLine.IndexOf([string]$State.proxy_install_root,[StringComparison]::OrdinalIgnoreCase) -ge 0) {
+            [void]$known.Add([int]$proc.ProcessId)
+        }
+    }
+
+    foreach ($id in @($known)) {
         $proc = Get-CimInstance Win32_Process -Filter "ProcessId=$id" -ErrorAction SilentlyContinue
         if ($null -eq $proc) { continue }
         if ($proc.Name -notin @("java.exe","javaw.exe") -or
             [string]::IsNullOrWhiteSpace([string]$proc.CommandLine) -or
             $proc.CommandLine.IndexOf([string]$State.proxy_install_root,[StringComparison]::OrdinalIgnoreCase) -lt 0) {
-            continue # PID recycled or unrelated; never kill it. Check public listeners below.
+            continue # Never touch an unrelated Java/Minecraft process.
         }
+        Write-Host "Stopping Day10 proxy process PID $id..."
         Stop-Process -Id $id -Force -ErrorAction Stop
+        try { Wait-Process -Id $id -Timeout 20 -ErrorAction Stop } catch { }
     }
+
+    $deadline = (Get-Date).AddSeconds(20)
+    do {
+        $occupied = @()
+        foreach ($port in @(25565,25566,25567)) {
+            $listener = @(Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue)
+            foreach ($l in $listener) {
+                $owner = Get-CimInstance Win32_Process -Filter ("ProcessId=" + [int]$l.OwningProcess) -ErrorAction SilentlyContinue
+                if ($null -ne $owner -and
+                    $owner.Name -in @("java.exe","javaw.exe") -and
+                    -not [string]::IsNullOrWhiteSpace([string]$owner.CommandLine) -and
+                    $owner.CommandLine.IndexOf([string]$State.proxy_install_root,[StringComparison]::OrdinalIgnoreCase) -ge 0) {
+                    Stop-Process -Id ([int]$owner.ProcessId) -Force -ErrorAction SilentlyContinue
+                } else {
+                    $occupied += $port
+                }
+            }
+        }
+        if ($occupied.Count -eq 0 -and
+            -not (Get-NetTCPConnection -LocalPort 25565,25566,25567 -State Listen -ErrorAction SilentlyContinue)) {
+            return
+        }
+        Start-Sleep -Milliseconds 500
+    } while ((Get-Date) -lt $deadline)
+
     foreach ($port in @(25565,25566,25567)) {
-        # Never terminate an unrelated port owner.
         $listener = @(Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue)
-        if ($listener.Count -gt 0) { throw "Public TCP port $port remains occupied; stop the unexpected process before rollback" }
+        if ($listener.Count -gt 0) {
+            throw "Public TCP port $port remains occupied by a non-Day10 process; rollback will not terminate it automatically"
+        }
     }
 }
 
