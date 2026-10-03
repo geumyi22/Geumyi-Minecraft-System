@@ -73,8 +73,21 @@ Current state: `SKIPPED_UPSTREAM_UNSUPPORTED`.
 
 At the time of the host test, the latest Geyser available to the project did not yet support the current Bedrock client version. When upstream compatibility becomes available, run one real Bedrock client E2E covering Lobby entry, all three backend routes, `/lobby`, and last-position restoration.
 
+## 2026-10-04 closure note
+
+The upstream-compatibility statement above records the reason the original Bedrock test was skipped at the time of the host run. It is **historical evidence**, not a permanent closure condition.
+
+If a newer Geyser build or supported-version notice is available, that alone does not change this report to PASS. Day 10 closes only after one real Bedrock client E2E verifies:
+
+- public Bedrock entry -> Lobby;
+- Lobby -> Wild / Playground / Other;
+- `/lobby`;
+- per-backend last-position restoration.
+
+Until that is executed and observed, Bedrock remains **not verified**.
+
 ## Completion boundary
 
 - Java four-server / Lobby / routing / reboot verification: **complete**.
-- Bedrock real-client E2E: **pending upstream Geyser support**.
+- Bedrock real-client E2E: **pending actual client verification**. Upstream compatibility was the original skip reason, but a new build/support notice by itself is not a PASS.
 - Full Day 10 closure should occur only after that Bedrock real-client E2E passes.
