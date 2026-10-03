@@ -28,6 +28,7 @@ function Day10-PostJsonUtf8 {
         $message = $_.Exception.Message
         if ($null -ne $_.Exception.Response) {
             $errorResponse = $_.Exception.Response
+            $reader = $null
             try {
                 $reader = New-Object System.IO.StreamReader($errorResponse.GetResponseStream(), [Text.Encoding]::UTF8)
                 $bodyText = $reader.ReadToEnd()
@@ -39,6 +40,7 @@ function Day10-PostJsonUtf8 {
         }
         throw $message
     }
+    $reader = $null
     try {
         $reader = New-Object System.IO.StreamReader($response.GetResponseStream(), [Text.Encoding]::UTF8)
         $text = $reader.ReadToEnd()
