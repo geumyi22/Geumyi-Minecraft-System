@@ -74,6 +74,10 @@ jobs:
           $round=[IO.File]::ReadAllText($cfg,(New-Object Text.UTF8Encoding($false,$true)))
           if(-not $round.Contains('remote:')){throw 'Missing remote section was not created'}
           if(-not $round.Contains('auth-type: floodgate')){throw 'Floodgate auth was not written'}
+          $four=Get-Content -LiteralPath 'tools/day10/four_cutover_helpers.ps1' -Raw
+          foreach($m in @('Geyser UDP port verification failed','Bedrock UDP listener missing after 90s','Java/RakNet response failed after 90s')){
+            if(-not $four.Contains($m)){throw "Missing Geyser readiness guard: $m"}
+          }
           Write-Host 'GEYSER COMPLETION + LOBBY RCON SECRET SELFTEST PASS'
 
       - name: Exercise read-only cutover UTF-8 preflight
@@ -90,8 +94,8 @@ jobs:
         shell: powershell
         run: |
           $rollback=Get-Content -LiteralPath 'tools/day10/rollback_four_servers.ps1' -Raw
-          foreach($m in @('Stopping lobby through direct standard RCON','Day10-DirectRconStop','if ($Id -eq "lobby")')){
-            if(-not $rollback.Contains($m)){throw "Missing lobby rollback direct-RCON guard: $m"}
+          foreach($m in @('Stopping lobby through direct standard RCON','Day10-DirectRconStop','if ($Id -eq "lobby")','Day10-DisableLobbyRestartForRollback','restart_on_crash = $false','Day10-WaitOnline "lobby" $false 30')){
+            if(-not $rollback.Contains($m)){throw "Missing lobby rollback safety guard: $m"}
           }
 
       - name: Check rollback retry launcher
