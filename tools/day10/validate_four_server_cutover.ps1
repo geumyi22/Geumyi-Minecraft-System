@@ -7,15 +7,35 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 Set-StrictMode -Version Latest
 
+function Day10-ReadUtf8Strict {
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "File missing: $Path" }
+    $utf8 = New-Object System.Text.UTF8Encoding($false, $true)
+    try { return [IO.File]::ReadAllText($Path, $utf8) }
+    catch { throw "Invalid UTF-8 file: $Path" }
+}
+
+function Day10-AssertYamlSafe {
+    param([string]$Path)
+    $text = Day10-ReadUtf8Strict $Path
+    foreach ($ch in $text.ToCharArray()) {
+        $n = [int][char]$ch
+        if (($n -lt 32 -and $n -notin @(9,10,13)) -or ($n -ge 127 -and $n -le 159)) {
+            throw ("Unsafe YAML control character U+{0:X4} in {1}" -f $n, $Path)
+        }
+    }
+    return $text
+}
+
 function Day10-ReadProperty {
     param([string]$Path, [string]$Key)
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return "" }
+    $text = Day10-ReadUtf8Strict $Path
     $pattern = "^\s*" + [regex]::Escape($Key) + "\s*=\s*(.*?)\s*$"
-    $result = @(Get-Content -LiteralPath $Path | Where-Object { $_ -match $pattern })
+    $result = @($text.Replace((([string][char]13)+[char]10), [string][char]10).Split([char]10) | Where-Object { $_ -match $pattern })
     if ($result.Count -lt 1) { return "" }
     return [regex]::Match($result[-1], $pattern).Groups[1].Value
 }
-
 function Day10-CheckFileSha {
     param([string]$Path, [string]$Expected, [long]$MinBytes = 0)
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $false }
@@ -125,6 +145,16 @@ function Day10-CheckServerRoot {
             $issues.Add("Paper startup/config files missing: $($entry.id)")
             continue
         }
+        try {
+            $null = Day10-ReadUtf8Strict $props
+            $null = Day10-AssertYamlSafe (Join-Path $folder "config\paper-global.yml")
+            $spigot = Join-Path $folder "spigot.yml"
+            if (Test-Path -LiteralPath $spigot -PathType Leaf) {
+                $null = Day10-AssertYamlSafe $spigot
+            }
+        } catch {
+            $issues.Add("Unsafe or invalid UTF-8 backend config in $($entry.id): $($_.Exception.Message)")
+        }
         if ((Day10-ReadProperty $props "server-port") -ne [string]$entry.java -or
             (Day10-ReadProperty $props "rcon.port") -ne [string]$entry.rcon) {
             $issues.Add("Unexpected original Java/RCON port; do not attempt first cutover: $($entry.id)")
@@ -222,7 +252,8 @@ function Day10-SyntheticSelfTest {
             [IO.File]::WriteAllText((Join-Path $root "server.properties"),"server-port=$($entry.java)" + [Environment]::NewLine + "rcon.port=$($entry.rcon)")
             [IO.File]::WriteAllText((Join-Path $root "paper.jar"),"paper")
             [IO.File]::WriteAllText((Join-Path $root "start.bat"),"start")
-            [IO.File]::WriteAllText((Join-Path $root "config\paper-global.yml"),"proxies:")
+            [IO.File]::WriteAllText((Join-Path $root "config\paper-global.yml"),"proxies:",(New-Object Text.UTF8Encoding($false)))
+            [IO.File]::WriteAllText((Join-Path $root "spigot.yml"),"settings:" + [Environment]::NewLine + "  bungeecord: false",(New-Object Text.UTF8Encoding($false)))
             if ($entry.name -ne "놀이터") {
                 foreach ($plugin in @("GeumyiTechnology","GeumyiChemistry")) {
                     [IO.File]::WriteAllText((Join-Path $root ("plugins\" + $plugin + ".jar")),"test")
@@ -253,6 +284,14 @@ function Day10-SyntheticSelfTest {
         if (-not $ok.staging_and_first_deploy_preflight_pass -or $ok.live_cutover_verified) {
             throw ("Expected staged-only success: " + ($ok.errors -join "; "))
         }
+        $badYaml = Join-Path $servers "야생\spigot.yml"
+        [IO.File]::WriteAllText($badYaml, "settings:" + [Environment]::NewLine + "  bungeecord: false" + [char]0x80, (New-Object Text.UTF8Encoding($false)))
+        $badEncoding = Day10-RunReadiness $stage $servers -Synthetic
+        if ($badEncoding.staging_and_first_deploy_preflight_pass -or
+            @($badEncoding.errors | Where-Object { $_ -match "Unsafe or invalid UTF-8 backend config" }).Count -eq 0) {
+            throw "Unsafe spigot.yml control byte must block readiness"
+        }
+        [IO.File]::WriteAllText($badYaml, "settings:" + [Environment]::NewLine + "  bungeecord: false", (New-Object Text.UTF8Encoding($false)))
         [IO.File]::Delete((Join-Path $servers "기타\plugins\GeumyiChemistry.jar"))
         $bad = Day10-RunReadiness $stage $servers -Synthetic
         if ($bad.staging_and_first_deploy_preflight_pass -or
