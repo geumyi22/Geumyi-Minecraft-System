@@ -211,6 +211,12 @@ func apiV4Devices(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, e.Error(), 500)
 		return
 	}
-	appendV4Event("warn", "security", "", "관리 장치 변경", q.Action+" "+q.ID)
+	actionLabel := map[string]string{
+		"revoke":  "관리 장치 연결 해제",
+		"restore": "관리 장치 복구",
+		"delete":  "관리 장치 삭제",
+	}[q.Action]
+	appendV4Event("warn", "security", "", actionLabel, q.ID)
+	appendAudit(r, "device."+q.Action, q.ID, "completed", actionLabel)
 	writeJSON(w, map[string]any{"ok": true})
 }
