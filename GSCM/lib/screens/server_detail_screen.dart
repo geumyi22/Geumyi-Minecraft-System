@@ -277,6 +277,7 @@ class _UpdateSection extends StatefulWidget {
 
 class _UpdateSectionState extends State<_UpdateSection> {
   Map<String, dynamic> status = const {};
+  Map<String, dynamic> dryRun = const {};
   bool busy = false;
 
   @override
@@ -293,6 +294,35 @@ class _UpdateSectionState extends State<_UpdateSection> {
           ? await widget.api.checkUpdates(widget.server.id)
           : await widget.api.updateStatus(widget.server.id);
       if (mounted) setState(() => status = next);
+    } on GscApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> _dryRun() async {
+    if (busy) return;
+    setState(() => busy = true);
+    try {
+      final result = await widget.api.dryRunUpdates(widget.server.id);
+      final servers = jMapList(result['servers']);
+      final preview = servers.isEmpty ? <String, dynamic>{} : servers.first;
+      if (mounted) {
+        setState(() => dryRun = preview);
+        final count = jMapList(preview['items']).length;
+        final players = jInt(preview['players']);
+        final blocked = jBool(preview['player_aware_block']);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              blocked
+                  ? 'Dry-run: $count개 업데이트 · 접속자 $players명으로 재시작 차단'
+                  : 'Dry-run: $count개 업데이트 · 파일 변경/재시작 없음',
+            ),
+          ),
+        );
+      }
     } on GscApiException catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
@@ -348,7 +378,19 @@ class _UpdateSectionState extends State<_UpdateSection> {
                   onPressed: busy ? null : () => _refresh(check: true),
                   child: const Text('업데이트 확인'),
                 ),
+                OutlinedButton(
+                  onPressed: busy ? null : _dryRun,
+                  child: const Text('Dry-run'),
+                ),
               ]),
+              if (dryRun.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  jBool(dryRun['player_aware_block'])
+                      ? 'Dry-run: 접속자 ${jInt(dryRun['players'])}명 · 업데이트 재시작 차단'
+                      : 'Dry-run: 재시작 안전 조건 통과 · 실제 적용은 하지 않음',
+                ),
+              ],
               const SizedBox(height: 12),
               Wrap(spacing: 8, runSpacing: 8, children: [
                 OutlinedButton(
@@ -370,9 +412,11 @@ class _UpdateSectionState extends State<_UpdateSection> {
               if (widget.server.online) ...[
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
-                  onPressed: busy ? null : widget.onRestart,
+                  onPressed: busy || widget.server.minecraft.online > 0 ? null : widget.onRestart,
                   icon: const Icon(Icons.restart_alt),
-                  label: const Text('별도로 재시작 요청'),
+                  label: Text(widget.server.minecraft.online > 0
+                      ? '접속자 ${widget.server.minecraft.online}명 · 업데이트 재시작 대기'
+                      : '별도로 재시작 요청'),
                 ),
               ],
             ],

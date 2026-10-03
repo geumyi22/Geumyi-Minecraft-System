@@ -192,3 +192,94 @@ func TestDay10OtherReceivesWildTechnologyChemistryTargets(t *testing.T) {
 		}
 	}
 }
+
+func TestDay11UpdateRestartSafetyBlocksOnlinePlayers(t *testing.T) {
+	tests := []struct {
+		online  bool
+		players int
+		blocked bool
+		safe    bool
+	}{
+		{false, 0, false, true},
+		{true, 0, false, true},
+		{true, 1, true, false},
+		{true, 5, true, false},
+	}
+	for _, tc := range tests {
+		blocked, safe := updateRestartSafety(tc.online, tc.players)
+		if blocked != tc.blocked || safe != tc.safe {
+			t.Fatalf("online=%v players=%d => blocked=%v safe=%v want blocked=%v safe=%v",
+				tc.online, tc.players, blocked, safe, tc.blocked, tc.safe)
+		}
+	}
+}
+
+func TestDay11UpdateDryRunNeverInstallsOrRestarts(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "server.properties"), []byte("server-port=0\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	oldJar := filepath.Join(root, "plugins", "GeumyiTechnology-0.1.3.jar")
+	writeTestPluginJar(t, oldJar, "GeumyiTechnology", "0.1.3")
+
+	manifest := DeploymentManifest{
+		Schema: 1,
+		Channel: "canary",
+		Release: "test-day11",
+		Repository: "geumyi22/Geumyi-Minecraft-System",
+		Components: map[string]DeploymentComponent{
+			"technology": {
+				Version: "0.1.4",
+				Kind: "plugin",
+				PluginName: "GeumyiTechnology",
+				File: "GeumyiTechnology-0.1.4.jar",
+				URL: "https://github.com/example/release/GeumyiTechnology-0.1.4.jar",
+				SHA256: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+				Size: 123,
+				Targets: []string{"wild"},
+				RequiresRestart: true,
+			},
+		},
+	}
+
+	configMu.Lock()
+	oldCfg := cfg
+	cfg = Config{
+		Update: UpdateConfig{Enabled: true, Repository: "geumyi22/Geumyi-Minecraft-System", Channel: "canary", TimeoutSeconds: 12},
+		Servers: []ServerConfig{{
+			ID: "wild", Name: "Wild", Role: serverRoleWild, Path: root,
+			JavaPort: 0, RCONPort: 0, BedrockPort: 0, GDSAPIPort: 0,
+			UpdatePolicy: serverUpdateManaged,
+		}},
+	}
+	configMu.Unlock()
+	defer func() {
+		configMu.Lock()
+		cfg = oldCfg
+		configMu.Unlock()
+	}()
+
+	result := buildUpdateDryRun(cfg.Update, manifest, "abc123", manifest.Release, "wild")
+	if !result.DryRun || result.InstallPerformed || result.RestartPerformed {
+		t.Fatalf("dry-run mutation flags wrong: %+v", result)
+	}
+	if !result.SignatureVerified || result.Release != "test-day11" || result.ManifestSHA256 != "abc123" {
+		t.Fatalf("dry-run provenance wrong: %+v", result)
+	}
+	if len(result.Servers) != 1 || len(result.Servers[0].Items) != 1 {
+		t.Fatalf("unexpected dry-run plan: %+v", result)
+	}
+	item := result.Servers[0].Items[0]
+	if item.PluginName != "GeumyiTechnology" || item.InstalledVersion != "0.1.3" || item.TargetVersion != "0.1.4" {
+		t.Fatalf("unexpected item: %+v", item)
+	}
+	if result.Servers[0].PlayerAwareBlock || !result.Servers[0].RestartSafe {
+		t.Fatalf("offline test server should be restart-safe: %+v", result.Servers[0])
+	}
+	if _, err := os.Stat(oldJar); err != nil {
+		t.Fatalf("dry-run changed installed plugin: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "plugins", "GeumyiTechnology-0.1.4.jar")); !os.IsNotExist(err) {
+		t.Fatalf("dry-run created target artifact, err=%v", err)
+	}
+}
