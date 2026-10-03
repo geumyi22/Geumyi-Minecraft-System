@@ -304,8 +304,18 @@ function Day10-SetGeyserConfig {
     $text = Day10-SetYamlChild $text "bedrock" "address" "0.0.0.0"
     $text = Day10-SetYamlChild $text "bedrock" "port" ([string]$BedrockPort)
     $text = Day10-SetYamlChild $text "bedrock" "clone-remote-port" "false"
-    if (-not [regex]::IsMatch($text, '(?m)^remote:\s*
-
+    if (-not [regex]::IsMatch($text, '(?m)^remote:\s*$')) {
+        if (-not $text.EndsWith([Environment]::NewLine)) { $text += [Environment]::NewLine }
+        $text += "remote:" + [Environment]::NewLine
+        $text += "  address: auto" + [Environment]::NewLine
+        $text += "  auth-type: floodgate" + [Environment]::NewLine
+    } else {
+        $text = Day10-SetYamlChild $text "remote" "address" "auto"
+        $text = Day10-SetYamlChild $text "remote" "auth-type" "floodgate"
+    }
+    Day10-AssertYamlTextSafe $text $Path
+    Day10-WriteUtf8NoBom $Path $text
+}
 function Day10-ConfigureLobbyGds {
     param([string]$TemplatePath, [string]$DestinationPath, [int]$APIPort = 8767)
     if (-not (Test-Path -LiteralPath $TemplatePath)) {
