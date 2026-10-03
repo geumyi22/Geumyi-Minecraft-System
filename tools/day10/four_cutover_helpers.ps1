@@ -178,7 +178,7 @@ function Day10-FourStopProxyProcessesInDir {
     } while((Get-Date) -lt $deadline)
     $left=@(Day10-FourProxyProcessesInDir $Dir)
     if($left.Count -gt 0){
-        throw "Day10 proxy processes did not exit in $Dir: $(@($left | ForEach-Object {$_.ProcessId}) -join ',')"
+        throw "Day10 proxy processes did not exit in ${Dir}: $(@($left | ForEach-Object {$_.ProcessId}) -join ',')"
     }
 }
 
