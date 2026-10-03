@@ -1,5 +1,27 @@
 ﻿Set-StrictMode -Version Latest
 
+function Day10-NewPlainRconPassword {
+    $bytes = New-Object byte[] 32
+    $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
+    try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
+    return (-join ($bytes | ForEach-Object { $_.ToString("x2") }))
+}
+
+function Day10-GeyserConfigComplete {
+    param([string]$Path)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $false }
+    try {
+        $text = Day10-ReadUtf8Strict $Path
+        Day10-AssertYamlTextSafe $text $Path
+        if ((Get-Item -LiteralPath $Path).Length -le 128) { return $false }
+        $hasBedrock = [regex]::IsMatch($text, '(?m)^bedrock:\s*$')
+        $hasRemote = [regex]::IsMatch($text, '(?m)^remote:\s*$')
+        return ($hasBedrock -and $hasRemote)
+    } catch {
+        return $false
+    }
+}
+
 function Day10-FourRequireSuccess {
     param([string]$Step)
     if ($LASTEXITCODE -ne 0) { throw "$Step failed with exit code $LASTEXITCODE" }
@@ -118,12 +140,8 @@ function Day10-FourCreateLobby {
     Day10-CopyArtifactJar (Join-Path $Artifacts "gst-1.1.1-hotfix") (Join-Path $Path "plugins\GeumyiServerTools-1.1.1.jar")
     Day10-CopyArtifactJar (Join-Path $Artifacts "gds-1.1.1") (Join-Path $Path "plugins\GeumyiDiscordStatus-1.1.1.jar")
     Day10-ConfigureLobbyGds (Join-Path $PSScriptRoot "..\..\Plugins\GeumyiDiscordStatus\src\main\resources\config.yml") (Join-Path $Path "plugins\GeumyiDiscordStatus\config.yml") $GdsPort
-    $bytes = New-Object byte[] 32
-    $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
-    try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
-    # Use plain hexadecimal so Java Properties never needs to escape '=' or ':'.
-    $rconPassword = -join ($bytes | ForEach-Object { $_.ToString("x2") })
-    Day10-SetServerProperty (Join-Path $Path "server.properties") "rcon.password" $rconPassword
+    # Plain hexadecimal avoids Java Properties escaping '=' or ':'.
+    Day10-SetServerProperty (Join-Path $Path "server.properties") "rcon.password" (Day10-NewPlainRconPassword)
     [IO.File]::WriteAllText((Join-Path $Path "eula.txt"),("eula=true" + [Environment]::NewLine),[Text.Encoding]::ASCII)
 }
 function Day10-FourBootstrapProxy {
@@ -144,85 +162,21 @@ function Day10-FourBootstrapProxy {
         if ($process.HasExited) { throw "Velocity exited early during bootstrap: $Dir" }
         if ((Test-Path -LiteralPath $geyser -PathType Leaf) -and
             (Test-Path -LiteralPath $key -PathType Leaf)) {
-            try {
-                $text = Day10-ReadUtf8Strict $geyser
-                Day10-AssertYamlTextSafe $text $geyser
-                $hasBedrock = [regex]::IsMatch($text, '(?m)^bedrock:\s*
-    return $key
-}
-function Day10-FourCheckPorts {
-    foreach ($port in @(25570,25571,25572,25573)) { Day10-AssertLoopbackListener $port }
-    foreach ($port in @(25565,25566,25567)) { Day10-WaitTcp $port $true 45 }
-    foreach ($port in @(19132,19133,19134)) {
-        if (@(Get-NetUDPEndpoint -LocalPort $port -ErrorAction SilentlyContinue).Count -lt 1) {
-            throw "Bedrock UDP listener missing: $port"
-        }
-    }
-    # A bound UDP socket is not proof that Geyser can answer RakNet.
-    $result=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 12
-    foreach($point in @($result.endpoints)){
-        if(-not [bool]$point.java_responding -or -not [bool]$point.bedrock_raknet_pong){
-            throw "Java/RakNet response failed: $($point.id) TCP $($point.java_tcp), UDP $($point.bedrock_udp)"
-        }
-    }
-    if(@($result.endpoints).Count -ne 3){throw "Missing Java/Bedrock network endpoint results"}
-}
-
-function Day10-FourProtectProxySecrets {
-    param([string]$ProxyRoot)
-    foreach($id in @("wild","playground","other")){
-        foreach($relative in @("forwarding.secret","plugins\floodgate\key.pem")){
-            $path=Join-Path (Join-Path $ProxyRoot $id) $relative
-            if(-not(Test-Path -LiteralPath $path -PathType Leaf)){throw "Missing proxy secret: $id/$relative"}
-            & icacls.exe $path /inheritance:r /grant:r "*S-1-5-18:(F)" "*S-1-5-32-544:(F)" | Out-Null
-            if($LASTEXITCODE -ne 0){throw "Could not restrict local secret ACL: $id/$relative"}
-        }
-    }
-}
-)
-                $hasRemote = [regex]::IsMatch($text, '(?m)^remote:\s*
-    return $key
-}
-function Day10-FourCheckPorts {
-    foreach ($port in @(25570,25571,25572,25573)) { Day10-AssertLoopbackListener $port }
-    foreach ($port in @(25565,25566,25567)) { Day10-WaitTcp $port $true 45 }
-    foreach ($port in @(19132,19133,19134)) {
-        if (@(Get-NetUDPEndpoint -LocalPort $port -ErrorAction SilentlyContinue).Count -lt 1) {
-            throw "Bedrock UDP listener missing: $port"
-        }
-    }
-    # A bound UDP socket is not proof that Geyser can answer RakNet.
-    $result=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 12
-    foreach($point in @($result.endpoints)){
-        if(-not [bool]$point.java_responding -or -not [bool]$point.bedrock_raknet_pong){
-            throw "Java/RakNet response failed: $($point.id) TCP $($point.java_tcp), UDP $($point.bedrock_udp)"
-        }
-    }
-    if(@($result.endpoints).Count -ne 3){throw "Missing Java/Bedrock network endpoint results"}
-}
-
-function Day10-FourProtectProxySecrets {
-    param([string]$ProxyRoot)
-    foreach($id in @("wild","playground","other")){
-        foreach($relative in @("forwarding.secret","plugins\floodgate\key.pem")){
-            $path=Join-Path (Join-Path $ProxyRoot $id) $relative
-            if(-not(Test-Path -LiteralPath $path -PathType Leaf)){throw "Missing proxy secret: $id/$relative"}
-            & icacls.exe $path /inheritance:r /grant:r "*S-1-5-18:(F)" "*S-1-5-32-544:(F)" | Out-Null
-            if($LASTEXITCODE -ne 0){throw "Could not restrict local secret ACL: $id/$relative"}
-        }
-    }
-}
-)
-                $length = (Get-Item -LiteralPath $geyser).Length
-                if ($hasBedrock -and $hasRemote -and $length -gt 128) {
-                    if ($length -eq $stableLength) { $stableCount++ } else { $stableLength = $length; $stableCount = 1 }
-                    if ($stableCount -ge 2) { $configReady = $true; break }
+            $length = (Get-Item -LiteralPath $geyser).Length
+            if (Day10-GeyserConfigComplete $geyser) {
+                if ($length -eq $stableLength) {
+                    $stableCount++
                 } else {
-                    $stableCount = 0
                     $stableLength = $length
+                    $stableCount = 1
                 }
-            } catch {
+                if ($stableCount -ge 2) {
+                    $configReady = $true
+                    break
+                }
+            } else {
                 $stableCount = 0
+                $stableLength = $length
             }
         }
         Start-Sleep -Seconds 2
