@@ -2,132 +2,154 @@
 
 기준일: 2026-10-04
 
+> **일차 번호와 상태의 단일 기준은 [DAY-TIMELINE.md](DAY-TIMELINE.md)입니다.**
+> Day 번호는 개발 날짜 수가 아니라 milestone 번호입니다. Day 4는 삭제된 일차가 아니라 **신규 구현 없이 실서버 E2E 검증/마감을 수행한 milestone**입니다.
+
 | Day | 목표 | 상태 |
 |---|---|---|
-| 1 | GitHub 소스 복구·정리, 최신 버전 기준 통일 | 완료 |
-| 2 | GSC / GDS / ResourcePack System CI 구축 및 실제 Actions 성공 확인 | 완료 |
-| 3 | GST HOTFIX·StatusAgent·Technology·Chemistry 복구, Wild/Playground 설정 근거 회수, Public 보안 점검 | 완료 |
-| 4 | 실제 Wild/Playground 서버 E2E 부팅 및 플러그인/리소스팩/연동 검증 | 완료 |
-| 5 | GSC/GSCM 통합 안정화: 재연결, Whole Shutdown, 락, 고아 프로세스, 상태 오탐, 네트워크 복구 | 완료 |
-| 6 | GSCM Android+iOS 실기기 검증: 페어링, 토큰 지속, WS/HTTP 재동기화, 제어·재접속 | 완료 |
-| 7 | 전체 컴포넌트 CI/자동 빌드 + 검증 artifact 기반 정리 | 완료 |
-| 8 | 보안 Release/자동 업데이트 기반: manifest·채널·서명·체크섬·고정 Android 서명·pre-start updater | 완료 |
-| 9 | 트랜잭션 배포·백업·원자적 교체·health 검증·자동 rollback·장애 주입 테스트 | 완료 |
-| 10 | 전체 업데이트 E2E + Lobby/Proxy + 서버별 마지막 위치 복원 + Java/Bedrock 이동 | Java 완료 / Bedrock E2E 대기 |
-| 11 | GSC/GSCM Update Center·채널/pin/hold·canary·maintenance window·알림·fleet 운영 UX | 예정 |
-| 12 | GSC/Agent self-update·Resource/DataPack 배포·SBOM/provenance·재현성·DR drill·Lobby 구현 확장 | 예정 |
+| 1 | Source Recovery / Baseline | ✅ 완료 |
+| 2 | CI & Component Verification | ✅ 완료 |
+| 3 | Component Recovery / Configuration | ✅ 완료 |
+| 4 | Live E2E Verification & Closure — 신규 구현 없음 | ✅ 완료 |
+| 5 | Operations Stability | ✅ 완료 |
+| 6 | GSCM Android+iOS Device Verification | ✅ 완료 |
+| 7 | Build Foundation | ✅ 완료 |
+| 8 | Secure Release & Update Foundation | ✅ 완료 |
+| 9 | Transaction / Backup / Rollback | ✅ 완료 |
+| 10 | Full E2E + Lobby / Proxy Network | 🟡 Java 완료 / Bedrock 실제 E2E 대기 |
+| 11 | Operations UX & Fleet Management — GSC 4.3 / GSCM 1.1.5 | ⏳ 예정 |
+| 12 | Extended Automation & Production Hardening | ⏳ 예정 |
 
-## Day 3 완료 기준
+## Day 1~3 — 복구와 기반 정리
 
-Day 3의 복구/검증 단계는 완료했습니다. 당시 남겨 둔 Wild/Playground 실서버 설정 확인 항목은 Day 4에서 서버 PC의 2026-09-27 현재 설정을 캡처해 공개용으로 정리했습니다.
+- Day 1: GitHub 소스 복구·정리, 버전 기준 통일.
+- Day 2: GSC/GDS/ResourcePack 등 초기 CI/구성요소 검증 기반 구축.
+- Day 3: GST 1.1.1 HOTFIX, StatusAgent, Technology, Chemistry 복구와 Wild/Playground 설정 근거 정리.
 
-## Day 4 완료 기준
+## Day 4 — Live E2E Verification & Closure
 
-Wild/Playground Paper 26.3 실서버 부팅, GSC 4.2.3, GSCM 1.1.2, StatusAgent 0.5.4, GST 1.1.1 HOTFIX, GDS 1.1.1의 실제 상태/연동 증거를 확인했습니다. 세부 근거와 비차단 이슈는 `DAY4-E2E-REPORT.md`에 기록합니다.
+Day 4는 **신규 기능 구현 일차가 아닙니다.** 당시 “더 할 것이 없다”는 의미는 Day 4가 존재하지 않는다는 뜻이 아니라, 추가 구현 없이 기존 구성을 실제 서버에서 검증하고 마감한다는 뜻으로 정리합니다.
 
-Day 4는 **완료**로 닫습니다.
+확인 범위:
+- Wild/Playground Paper 26.3
+- GSC 4.2.3
+- GSCM 1.1.2
+- StatusAgent 0.5.4
+- GST 1.1.1 HOTFIX
+- GDS 1.1.1
+- 후속 비차단 항목 정리
 
-후속 항목 처리 상태:
-- Bedrock/Geyser 문제: 사용자 보고 기준 해결
-- Playground AutoSaveWorld 오류: 사용자 보고 기준 해결
-- ProtocolLib 26.3 경고: 사용자 보고 기준 해결
-- DiscordSRV 누락 설정: V2 자동 보정 로그에서 92개 누락 키 추가 확인, 사용자 승인으로 통과
-- resource-pack SHA1: 자동 검증 성공은 확인하지 못했으나 사용자 승인으로 Day-4 비차단/통과 처리. 기술적 검증 완료로 기록하지 않음
+세부 근거: [DAY4-E2E-REPORT.md](DAY4-E2E-REPORT.md)
 
-## Day 5 완료 기준
+## Day 5 — Operations Stability
 
-Day 5는 **사용자 실사용 검증 통과**로 완료 처리합니다. 시작/종료/재시작/강제 종료, 중복 명령 및 락, GSC/Agent 재연결, 네트워크 복구, Whole Shutdown, 고아 프로세스 여부, Other 서버 상태/알림 동작을 사용자가 기존 운영 중 이미 확인했고 모두 정상이라고 확인했습니다.
+사용자 실운영 기준으로 시작/정상 종료/재시작/강제 종료, 중복 명령/락, GSC·Agent 재연결, 네트워크 복구, Whole Shutdown, 고아 프로세스, Other 상태/알림을 확인했습니다.
 
-새로운 Day-5 로그 재수집이나 별도 assistant-side E2E 재현은 수행하지 않았으므로, 이를 새로 재현된 자동 테스트 결과로 기록하지 않습니다. 세부 경계는 `DAY5-STABILITY-REPORT.md`에 기록합니다.
+세부 근거: [DAY5-STABILITY-REPORT.md](DAY5-STABILITY-REPORT.md)
 
-## Day 6 완료 기준
+## Day 6 — GSCM Device Verification
 
-Day 6은 **완료**로 닫습니다. Android와 iOS에서 페어링, 인증정보 지속, 앱 재실행/기기 재부팅, HTTP snapshot, WebSocket realtime, 네트워크 끊김/자동 복구, 백그라운드 복귀, 서버 시작/종료/재시작, 로그아웃/토큰 해제를 사용자 실기기 기준으로 확인했습니다.
+Android/iOS에서 페어링, 인증 지속, 앱/기기 재시작, HTTP snapshot, WebSocket realtime, 네트워크 끊김/복구, 서버 제어를 사용자 실기기로 검증했습니다.
 
-Android에서는 오프라인인데 상단이 `REALTIME`으로 남는 표시 문제를 재현했고, GSCM 1.1.2+113에서 수정 후 실기기 재검증까지 통과했습니다. Android CI의 고정 서명키 문제는 Day 8 Release/패키징 범위로 남깁니다.
+## Day 7 — Build Foundation
 
-## Day 7 완료 기준
+GSC, StatusAgent, GST, GDS, Technology, Chemistry, ResourcePack, GSCM Android/iOS 자동 build/test/artifact 체계를 실제 GitHub Actions에서 통과시켰습니다.
 
-Day 7은 **완료**로 닫습니다. GSC, StatusAgent, GST, GDS, Technology, Chemistry, ResourcePack, GSCM Android/iOS의 자동 빌드/검증 체계를 실제 GitHub Actions에서 통과시켰습니다. GSC Setup도 같은 run에서 새로 빌드한 Agent/GDS/GST artifact를 받아 자동 조립됩니다.
+세부 근거: [DAY7-CI-REPORT.md](DAY7-CI-REPORT.md)
 
-최종 System CI run `36448831023`, GSCM Android run `36448477722`, 최종 clean iOS run `36449571301`이 성공했습니다. 세부 artifact/체크섬 검증은 `DAY7-CI-REPORT.md`에 기록합니다.
+## Day 8 — Secure Release & Update Foundation — 완료
 
-Day 7은 빌드/검증 기반까지만 포함합니다. **실서버 자동 업데이트는 아직 수행하지 않았으며 Day 8부터 시작합니다.**
-
-## Day 8 완료 기준
-
-Day 8은 **완료**로 닫습니다.
-
-완료된 범위:
-- Secure Release workflow + Stable/Beta/Canary channel
+완료 범위:
+- Stable/Beta/Canary
 - SHA-256 artifact verification
 - Ed25519 signed deployment manifest
-- persistent Android release signing path
-- GSC pre-start updater + fail-open server start
-- GSC Update Center 1차 UI/API
-- Wild-only Technology 0.1.4 metadata marker
-- 실제 canary Release `system-2026.09.29-222513-canary`
-- 서버 PC finalizer에서 signed manifest / release artifact hashes / GSC update API / Wild pre-start update / Wild online / Playground isolation 검증 PASS
+- persistent Android release-signing path
+- GSC pre-start updater + fail-open
+- GSC Update Center 1차
+- Wild Technology 0.1.4 실제 pre-start update
+- Playground isolation
+- 서버 PC finalizer PASS
 
-GitHub Actions의 Day-8 Secure Release run `36574955584`가 성공했고, 서버 PC에서는 사용자 확인 기준 `DAY 8 RESUME FINALIZER: PASS`가 표시되었습니다. 이 PASS는 finalizer 내부의 Wild Technology 0.1.4 단일 enabled 확인과 Playground 무배포 확인을 포함합니다.
+세부 근거: [DAY8-RELEASE-REPORT.md](DAY8-RELEASE-REPORT.md), [DAY8-RUNBOOK.md](DAY8-RUNBOOK.md)
 
-Day-8 finalizer 자체의 Windows 호환성 문제는 Day 8 중 수정했습니다. 주요 검증 run은 `36574083087` 및 `36576774848`이며 둘 다 성공했습니다.
+## Day 9 — Transaction / Backup / Rollback — 완료
 
-Android ADB install은 서버-side Day 8 closure의 필수 조건이 아니므로 별도 전환 항목으로 남깁니다. Day 9에서는 transaction journal, post-start health gate, 자동 rollback, 장애 주입 검증을 진행합니다.
-
-See `DAY8-RELEASE-REPORT.md` and `DAY8-RUNBOOK.md`.
-
-## Day 9 완료 기준
-
-Day 9는 **완료**로 닫습니다.
-
-완료된 범위:
-- GSC 4.2.4 transaction backup/staging/commit
-- release-group 단위 실패 복구
+완료 범위:
+- transaction backup/staging/commit
+- atomic replacement
+- transaction journal
+- release-group failure recovery
 - interrupted transaction recovery
 - post-start health gate
 - automatic rollback
-- rejected release hold
-- GitHub/update lookup 실패 시 known-good fail-open 부팅
-- Host 임시 테스트 서버의 transaction/rollback self-test
-- 서버 PC 실제 Final E2E 사용자 확인 PASS
+- rejected-release hold
+- GitHub/update lookup 장애 시 known-good fail-open
+- failure-injection/self-test
+- 서버 PC Final E2E PASS
 
-Day 9 종료 시점의 main에는 finalizer hotfix까지 반영되어 있으며, 실제 서버 PC에서 `DAY 9 FINALIZER: PASS`가 확인되었습니다. 이 실서버 PASS는 사용자 실행 결과이며 assistant가 서버 PC를 직접 실행한 것으로 기록하지 않습니다.
+Day 8과 Day 9의 E2E PASS는 “부분 완료” 표기가 아니라 **완료 근거**입니다.
 
-Day 10에서는 이 기반 위에 full deployment E2E와 Lobby/Proxy 네트워크를 추가합니다. 상세 고정 계획은 `DAY10-PLAN.md`를 기준으로 합니다.
+## Day 10 — Full E2E + Lobby / Proxy Network
 
-## Day 10 현재 검증 상태
+Java 실제 검증 완료:
+- Velocity 3개 재부팅 후 자동 시작
+- public Java TCP 25565/25566/25567
+- public entry -> Lobby
+- Lobby -> Wild / Playground / Other
+- `/lobby`
+- 서버별 마지막 위치 복원
 
-2026-10-03 서버 PC 실사용 검증에서 세 개의 Velocity 프록시가 재부팅 후 자동 시작했고, Java 공개 TCP `25565/25566/25567`가 모두 LISTEN 상태임을 확인했습니다. 실제 Java 클라이언트로 Lobby 진입, Wild/Playground/Other 이동, `/lobby`, 서버별 마지막 위치 복원을 사용자 확인 기준으로 통과했습니다.
+Bedrock:
+- UDP/Geyser/Floodgate 기반은 구성됨
+- 실제 Bedrock client PASS는 아직 없음
+- 새 Geyser 빌드/지원 문서만으로 PASS 처리하지 않음
+- Lobby 진입 -> 3 backend 이동 -> `/lobby` -> 위치 복원의 실제 E2E 1회가 남음
 
-Bedrock UDP `19132/19133/19134`는 재부팅 후 BOUND 상태까지 확인했지만, 현재 최신 Geyser가 사용 중인 Bedrock 클라이언트 버전을 아직 지원하지 않아 실제 Bedrock 클라이언트 E2E는 `SKIPPED_UPSTREAM_UNSUPPORTED`로 기록했습니다. 따라서 Day 10의 Java 네트워크/재부팅 검증은 완료됐고, 전체 Day 10 종료는 Geyser 지원 후 Bedrock 실제 E2E 1회가 남아 있습니다.
+세부 근거: [DAY10-PLAN.md](DAY10-PLAN.md), [DAY10-E2E-REPORT.md](DAY10-E2E-REPORT.md)
 
-세부 근거는 `DAY10-E2E-REPORT.md`에 기록합니다.
+## Day 11 — Operations UX & Fleet Management
 
-## Day 7~12 — 자동 배포/운영 확장
+목표 버전:
+- **GSC 4.3**
+- **GSCM 1.1.5**
 
-Day 7 이후는 단순 CI가 아니라 **소스 수정 → 검증된 artifact → 안전한 자동 배포 → health 확인 → rollback**까지 연결합니다. 세부 설계는 `DEPLOYMENT-ARCHITECTURE.md`를 기준으로 합니다.
+고정 범위:
+- GSC/GSCM 시작 시 최신 검증 빌드 확인
+- GSC 자체 업데이트 흐름
+- Android update / iOS signing 제약에 맞는 GSCM update UX
+- GSC Full Update Center + GSCM remote controls
+- channel / pin / hold / dry-run
+- next-start / next-restart / maintenance-window
+- player-aware restart/update
+- canary promotion
+- update history/audit/notifications
+- Geyser/Floodgate/ViaVersion/ViaBackwards 업데이트 정책
+- Paper는 별도 호환성/승인 정책
 
-핵심 원칙:
-- GitHub `main` 자체를 곧바로 실서버 배포 대상으로 사용하지 않음
-- CI/테스트를 통과한 artifact만 Stable/Beta/Canary manifest에 등록
-- 서버 시작 전 staging + SHA-256/서명 검증 + 백업 + 원자적 교체
-- 인터넷/다운로드/검증 실패 시 기존 정상 버전으로 서버 시작
-- 새 버전 health 실패 시 rollback 가능
-- 자체 플러그인은 자동화, 외부 플러그인/Paper/Java는 정책 기반
-- GSC/GSCM에서 업데이트 상태·channel·pin·rollback·이력 확인
-- Android는 Day 8부터 고정 release signer 사용
-- iOS는 Apple signing/provisioning 제약을 분리해서 관리
+Day 11 안정화 버그:
+- RCON `관리 제한` 오탐 방지
+- 정상 종료 후 `자동 복구 중` 오표시 수정
+- 콘솔 `stop`을 의도적 종료로 인식
+- 의도적 종료 -> OFFLINE / 실제 crash -> RECOVERING -> 자동 재시작
 
-## Day 10 — Full E2E + Lobby 네트워크
+## Day 12 — Extended Automation & Production Hardening
 
-상세 사양과 완료 조건은 `DAY10-PLAN.md`를 기준으로 합니다.
+- ResourcePack/DataPack managed deployment
+- resource-pack SHA/UUID/property 자동화
+- StatusAgent/확장 self-update
+- SBOM/provenance/dependency/security scans
+- reproducibility hardening
+- shared artifact cache / offline operation
+- disaster-recovery drill
+- Day 10 Lobby/Proxy를 fleet/update 정책과 최종 통합 검증
 
-고정 핵심:
-- 외부 Java/Bedrock 접속은 Proxy를 거쳐 항상 Lobby 중앙으로 진입
-- Wild/Playground backend 포트는 직접 공개하지 않음
-- Lobby -> Wild/Playground 이동 시 서버별 마지막 위치 복원
-- Lobby 자체 위치는 복원하지 않고 항상 중앙 Spawn
-- Wild/Playground 기존 월드와 gameplay는 변경하지 않음
-- Technology/Chemistry는 Wild + Other에만 적용
-- Java 네트워크/재부팅 E2E는 PASS. Bedrock 실제 클라이언트 E2E는 Geyser upstream 지원 후 별도 PASS 필요
+## 운영 원칙
+
+- GitHub `main` 자체가 배포 대상이 아니라 검증된 artifact/manifest가 배포 기준
+- CI/검증을 통과하지 않은 artifact는 Stable 진입 금지
+- 서버 시작 전 staging + checksum/signature + backup + atomic replacement
+- 인터넷/다운로드/검증 실패 시 기존 정상 버전으로 시작
+- health 실패 시 rollback
+- 자체/외부 업데이트 정책 분리
+- Android/iOS 플랫폼 제약 분리
+- 실제 E2E 없이 완료/정상 작동 선언 금지
