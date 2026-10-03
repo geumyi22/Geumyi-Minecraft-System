@@ -160,6 +160,8 @@ var (
 	udpCache            map[int]bool = make(map[int]bool)
 	udpCacheAt          time.Time
 	udpRefreshInFlight  atomic.Bool
+	rconRecentMu        sync.RWMutex
+	rconRecentSuccess   = map[int]time.Time{}
 	agentMu             sync.RWMutex
 	agentStartMu        sync.Mutex
 	lastAgentErr        string
@@ -783,7 +785,7 @@ func apiCommand(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "RCON password unavailable", 500)
 		return
 	}
-	resp, err := rconCommand("127.0.0.1", s.RCONPort, pass, q.Command)
+	resp, err := runServerConsoleRCON(s, pass, q.Command)
 	if err != nil {
 		w.WriteHeader(500)
 		writeJSON(w, map[string]any{"ok": false, "error": err.Error()})
@@ -1361,6 +1363,49 @@ func readServerProperty(dir, key string) (string, error) {
 	return "", sc.Err()
 }
 
+func markRCONSuccess(port int) {
+	if port <= 0 {
+		return
+	}
+	rconRecentMu.Lock()
+	rconRecentSuccess[port] = time.Now()
+	rconRecentMu.Unlock()
+}
+
+func rconRecentlyUsable(port int, ttl time.Duration) bool {
+	if port <= 0 || ttl <= 0 {
+		return false
+	}
+	rconRecentMu.RLock()
+	last := rconRecentSuccess[port]
+	rconRecentMu.RUnlock()
+	return !last.IsZero() && time.Since(last) <= ttl
+}
+
+func isIntentionalStopCommand(command string) bool {
+	v := strings.TrimSpace(command)
+	v = strings.TrimSpace(strings.TrimPrefix(v, "/"))
+	return strings.EqualFold(v, "stop")
+}
+
+// runServerConsoleRCON preserves the operator's desired-running intent.
+// An exact console "stop" means the server should remain stopped. If the
+// RCON delivery itself fails, restore the prior desired state so a transient
+// command failure cannot silently disable crash recovery.
+func runServerConsoleRCON(s ServerConfig, password, command string) (string, error) {
+	intentionalStop := isIntentionalStopCommand(command)
+	previousDesired := false
+	if intentionalStop {
+		previousDesired = getDesired(s.ID)
+		setDesired(s.ID, false)
+	}
+	resp, err := rconCommand("127.0.0.1", s.RCONPort, password, command)
+	if err != nil && intentionalStop {
+		setDesired(s.ID, previousDesired)
+	}
+	return resp, err
+}
+
 func getServerStatus(s ServerConfig) ServerStatus {
 	s = normalizeServerConfig(s)
 	st := ServerStatus{ID: s.ID, Name: s.Name, Role: s.Role, UpdatePolicy: s.UpdatePolicy}
@@ -1372,7 +1417,7 @@ func getServerStatus(s ServerConfig) ServerStatus {
 	// background process cache, but fall back to the native Windows TCP table
 	// Native TCP listener enumeration avoids shell/CIM probes under a service account.
 	refreshJavaCache()
-	st.RCONPortOpen = cachedTCPListener(s.RCONPort) || nativeTCPListener(s.RCONPort)
+	st.RCONPortOpen = cachedTCPListener(s.RCONPort) || nativeTCPListener(s.RCONPort) || rconRecentlyUsable(s.RCONPort, 30*time.Second)
 
 	st.BedrockUDPListening = udpListening(s.BedrockPort)
 	st.GDSAPIOnline = httpOK(fmt.Sprintf("http://127.0.0.1:%d/health", s.GDSAPIPort))
@@ -1906,6 +1951,7 @@ func rconCommand(host string, port int, password, command string) (string, error
 	if !authenticated {
 		return "", errors.New("RCON authentication response missing")
 	}
+	markRCONSuccess(port)
 	if err = writeRCON(c, 101, 2, command); err != nil {
 		return "", err
 	}
