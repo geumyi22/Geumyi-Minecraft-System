@@ -348,13 +348,26 @@ class MetricPoint {
 }
 
 class BackupInfo {
-  const BackupInfo({required this.file, required this.scope, required this.created, required this.size, required this.verified, required this.sha256});
+  const BackupInfo({
+    required this.file,
+    required this.scope,
+    required this.created,
+    required this.size,
+    required this.verified,
+    required this.sha256,
+    required this.kind,
+    required this.protected,
+    required this.trashed,
+  });
   final String file;
   final String scope;
   final DateTime? created;
   final int size;
   final bool verified;
   final String sha256;
+  final String kind;
+  final bool protected;
+  final bool trashed;
   factory BackupInfo.fromJson(Map<String, dynamic> json) => BackupInfo(
         file: jString(json['file']),
         scope: jString(json['scope']),
@@ -362,6 +375,9 @@ class BackupInfo {
         size: jInt(json['size']),
         verified: jBool(json['verified']),
         sha256: jString(json['sha256']),
+        kind: jString(json['kind'], 'backup'),
+        protected: jBool(json['protected']),
+        trashed: jBool(json['trashed']),
       );
 }
 
