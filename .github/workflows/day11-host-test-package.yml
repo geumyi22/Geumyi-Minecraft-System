@@ -59,8 +59,7 @@ jobs:
             'tools/day11/Day11_Phase1_Install_Host_Test.ps1',
             'tools/day11/Day11_Phase1_Rollback_GSC.ps1'
           )
-          $raw=($paths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "
-"
+          $raw=($paths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join [Environment]::NewLine
           foreach($bad in @(
             '(?i)\btaskkill(?:\.exe)?\b',
             '(?i)\bStop-Process\b',
