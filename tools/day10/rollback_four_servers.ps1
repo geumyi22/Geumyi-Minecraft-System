@@ -266,6 +266,54 @@ if ($SelfTest) {
         $tamperCaught=$false
         try { $null=Day10-FourRollbackAssert $testRoot } catch { $tamperCaught=$true }
         if(-not $tamperCaught){throw "Corrupt backup must block rollback before any host writes"}
+        $rconDir = Join-Path $testRoot "rcon"
+        New-Item -ItemType Directory -Path $rconDir -Force | Out-Null
+        [IO.File]::WriteAllText((Join-Path $rconDir "server.properties"), "rcon.password=test-password", [Text.Encoding]::ASCII)
+        $rconPort = Get-Random -Minimum 30000 -Maximum 45000
+        $job = Start-Job -ArgumentList $rconPort -ScriptBlock {
+            param($Port)
+            function ReadExact($s,[int]$n){
+                $b=New-Object byte[] $n; $o=0
+                while($o -lt $n){$r=$s.Read($b,$o,$n-$o); if($r -le 0){throw "eof"}; $o+=$r}
+                return $b
+            }
+            function ReadPacket($s){
+                $lb=ReadExact $s 4; $len=[BitConverter]::ToInt32($lb,0)
+                $p=ReadExact $s $len
+                $id=[BitConverter]::ToInt32($p,0); $type=[BitConverter]::ToInt32($p,4)
+                $bodyLen=$len-10
+                $body=if($bodyLen -gt 0){[Text.Encoding]::UTF8.GetString($p,8,$bodyLen)}else{""}
+                return [pscustomobject]@{id=$id;type=$type;body=$body}
+            }
+            function WritePacket($s,[int]$id,[int]$type,[string]$body){
+                $bb=[Text.Encoding]::UTF8.GetBytes($body)
+                $ms=New-Object IO.MemoryStream; $bw=New-Object IO.BinaryWriter($ms)
+                try{$bw.Write([int](4+4+$bb.Length+2));$bw.Write([int]$id);$bw.Write([int]$type);$bw.Write($bb);$bw.Write([byte]0);$bw.Write([byte]0);$bw.Flush();$out=$ms.ToArray();$s.Write($out,0,$out.Length);$s.Flush()}finally{$bw.Dispose();$ms.Dispose()}
+            }
+            $listener=[Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback,$Port)
+            $listener.Start()
+            try{
+                $client=$listener.AcceptTcpClient(); $stream=$client.GetStream()
+                try{
+                    $auth=ReadPacket $stream
+                    if($auth.type -ne 3 -or $auth.body -ne "test-password"){throw "bad auth"}
+                    WritePacket $stream $auth.id 0 ""
+                    WritePacket $stream $auth.id 2 ""
+                    $cmd=ReadPacket $stream
+                    $cmd.body
+                }finally{$client.Close()}
+            }finally{$listener.Stop()}
+        }
+        Start-Sleep -Milliseconds 500
+        try {
+            Day10-DirectRconStop $rconDir $rconPort
+            if (-not (Wait-Job $job -Timeout 10)) { throw "RCON mock server timeout" }
+            $command = Receive-Job $job -ErrorAction Stop | Select-Object -Last 1
+            if ([string]$command -ne "stop") { throw "Direct RCON fallback did not send stop" }
+        } finally {
+            Remove-Job $job -Force -ErrorAction SilentlyContinue
+        }
+        Write-Host "DAY10 DIRECT RCON FALLBACK SELFTEST PASS"
         Write-Host "DAY10 FOUR-SERVER ROLLBACK HASH/TAMPER SELFTEST PASS"
     } finally {
         if(Test-Path -LiteralPath $testRoot){
