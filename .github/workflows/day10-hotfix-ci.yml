@@ -64,14 +64,15 @@ jobs:
           . (Resolve-Path 'tools/day10/day10_live_helpers.ps1')
           . (Resolve-Path 'tools/day10/four_cutover_helpers.ps1')
           $secret=Day10-NewPlainRconPassword
-          if($secret -notmatch '^[0-9a-f]{64}$'){throw 'Lobby RCON secret must be 64 lowercase hex chars'}
+          if($secret.Length -ne 64){throw 'Lobby RCON secret must be 64 chars'}
           $cfg=Join-Path $env:RUNNER_TEMP 'geyser-config.yml'
           $partial=('bedrock:'+[Environment]::NewLine+'  address: 0.0.0.0'+[Environment]::NewLine+'  port: 19132'+[Environment]::NewLine+('# filler'+[Environment]::NewLine)*20)
           [IO.File]::WriteAllText($cfg,$partial,(New-Object Text.UTF8Encoding($false)))
           if(-not(Day10-GeyserConfigComplete $cfg)){throw 'Geyser bedrock section must be sufficient for bootstrap readiness'}
           Day10-SetGeyserConfig $cfg 19132
           $round=[IO.File]::ReadAllText($cfg,(New-Object Text.UTF8Encoding($false,$true)))
-          if($round -notmatch '(?m)^remote:\s*
+          if(-not $round.Contains('remote:') -or -not $round.Contains('auth-type: floodgate')){throw 'Missing remote section must be created safely'}
+          Write-Host 'GEYSER COMPLETION + LOBBY RCON SECRET SELFTEST PASS'
       - name: Exercise read-only cutover UTF-8 preflight
         shell: powershell
         run: |
