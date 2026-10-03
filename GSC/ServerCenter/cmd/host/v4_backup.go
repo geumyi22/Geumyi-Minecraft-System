@@ -28,13 +28,16 @@ type BackupManifest struct {
 }
 
 type BackupInfo struct {
-	File     string `json:"file"`
-	Path     string `json:"path"`
-	Scope    string `json:"scope"`
-	Created  string `json:"created"`
-	Size     int64  `json:"size"`
-	Verified bool   `json:"verified"`
-	SHA256   string `json:"sha256,omitempty"`
+	File      string `json:"file"`
+	Path      string `json:"path"`
+	Scope     string `json:"scope"`
+	Created   string `json:"created"`
+	Size      int64  `json:"size"`
+	Verified  bool   `json:"verified"`
+	SHA256    string `json:"sha256,omitempty"`
+	Kind      string `json:"kind,omitempty"`
+	Protected bool   `json:"protected,omitempty"`
+	Trashed   bool   `json:"trashed,omitempty"`
 }
 
 func backupBase(serverID string, checkpoints bool) string {
@@ -225,7 +228,7 @@ func createBackup(s ServerConfig, scope string, checkpoints bool) (BackupInfo, e
 	}
 	_ = os.WriteFile(out+".sha256", []byte(sha+"  "+filepath.Base(out)+"\r\n"), 0644)
 	st, _ := os.Stat(out)
-	bi := BackupInfo{File: filepath.Base(out), Path: out, Scope: scope, Created: manifest.Created, Size: st.Size(), Verified: true, SHA256: sha}
+	bi := BackupInfo{File: filepath.Base(out), Path: out, Scope: scope, Created: manifest.Created, Size: st.Size(), Verified: true, SHA256: sha, Kind: map[bool]string{true: "checkpoint", false: "backup"}[checkpoints]}
 	appendV4Event("info", "backup", s.ID, "백업 완료: "+bi.File, fmt.Sprintf("scope=%s size=%d", scope, bi.Size))
 	return bi, nil
 }
@@ -323,7 +326,8 @@ func listBackups(s ServerConfig) []BackupInfo {
 					sha = f[0]
 				}
 			}
-			out = append(out, BackupInfo{File: e.Name(), Path: p, Scope: m.Scope, Created: m.Created, Size: st.Size(), Verified: sha != "", SHA256: sha})
+			meta := readBackupMeta(p)
+			out = append(out, BackupInfo{File: e.Name(), Path: p, Scope: m.Scope, Created: m.Created, Size: st.Size(), Verified: sha != "", SHA256: sha, Kind: map[bool]string{true: "checkpoint", false: "backup"}[checkpoint], Protected: meta.Protected})
 		}
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].Created > out[j].Created })
