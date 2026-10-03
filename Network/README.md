@@ -51,7 +51,7 @@ These are user-run host checks; they are not CI-simulated claims.
 
 ## Bedrock compatibility status
 
-The UDP/Geyser infrastructure is present and bound, but the real Bedrock client E2E is currently `SKIPPED_UPSTREAM_UNSUPPORTED` because the latest Geyser available at the time of the host test does not yet support the current Bedrock client version. Do not label Bedrock as PASS until a real client test succeeds after upstream support is released.
+The UDP/Geyser infrastructure is present and bound. The original host run recorded the real Bedrock client E2E as `SKIPPED_UPSTREAM_UNSUPPORTED` because of the upstream compatibility state at that time. That is historical context, not a permanent condition. Do not label Bedrock as PASS until a real client verifies Lobby entry, all three backend routes, `/lobby`, and per-backend last-position restoration.
 
 ## Staging and live tools
 
