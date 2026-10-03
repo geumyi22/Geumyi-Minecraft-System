@@ -295,6 +295,46 @@ func TestRCONAuthFailureDoesNotSendStop(t *testing.T) {
 		t.Fatal(e)
 	}
 }
+func TestDay10TopologyBedrockStatusUsesProxyPorts(t *testing.T) {
+	statusMu.Lock()
+	oldCache := udpCache
+	oldAt := udpCacheAt
+	udpCache = map[int]bool{19132: true, 19133: true, 19134: true}
+	udpCacheAt = time.Now()
+	statusMu.Unlock()
+	defer func() {
+		statusMu.Lock()
+		udpCache = oldCache
+		udpCacheAt = oldAt
+		statusMu.Unlock()
+	}()
+
+	tests := []struct {
+		s ServerConfig
+		mode string
+		port int
+	}{
+		{ServerConfig{ID: "wild", Role: serverRoleWild, BedrockPort: 0}, "proxy", 19132},
+		{ServerConfig{ID: "playground", Role: serverRolePlayground, BedrockPort: 0}, "proxy", 19133},
+		{ServerConfig{ID: "other", Role: serverRoleOther, BedrockPort: 0}, "proxy", 19134},
+		{ServerConfig{ID: "lobby", Role: serverRoleLobby, BedrockPort: 0}, "proxy-multi", 0},
+	}
+	for _, tc := range tests {
+		online, mode, port := topologyBedrockStatus(tc.s)
+		if !online || mode != tc.mode || port != tc.port {
+			t.Fatalf("%s bedrock status online=%v mode=%q port=%d", tc.s.ID, online, mode, port)
+		}
+	}
+
+	statusMu.Lock()
+	udpCache[19133] = false
+	statusMu.Unlock()
+	online, mode, _ := topologyBedrockStatus(ServerConfig{ID: "lobby", Role: serverRoleLobby, BedrockPort: 0})
+	if online || mode != "proxy-multi" {
+		t.Fatalf("lobby must report unhealthy when one public Bedrock alias is down: online=%v mode=%q", online, mode)
+	}
+}
+
 func TestEnvironmentReplacesCaseVariants(t *testing.T) {
 	e := setEnvValue([]string{"Path=old", "PATH=duplicate", "JAVA_HOME=shim", "OTHER=keep"}, "PATH", "real-java;system32")
 	if len(e) != 3 || envValue(e, "path") != "real-java;system32" || envValue(e, "OTHER") != "keep" {
