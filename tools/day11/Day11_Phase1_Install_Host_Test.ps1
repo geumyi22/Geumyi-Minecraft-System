@@ -185,11 +185,15 @@ $config = Join-Path $StateRoot "server.json"
 if (Test-Path -LiteralPath $config -PathType Leaf) {
     Copy-Item -LiteralPath $config -Destination (Join-Path $backup "server.json") -Force
 }
+$oldClientHash = ""
+if (Test-Path -LiteralPath $clientPath -PathType Leaf) {
+    $oldClientHash = (Get-FileHash -LiteralPath $clientPath -Algorithm SHA256).Hash.ToLowerInvariant()
+}
 $beforeRecord = [ordered]@{
     time = (Get-Date).ToString("o")
     source_sha = [string]$manifest.source_sha
     old_host_sha256 = (Get-FileHash -LiteralPath $hostPath -Algorithm SHA256).Hash.ToLowerInvariant()
-    old_client_sha256 = if (Test-Path -LiteralPath $clientPath -PathType Leaf) { (Get-FileHash -LiteralPath $clientPath -Algorithm SHA256).Hash.ToLowerInvariant() } else { "" }
+    old_client_sha256 = $oldClientHash
     new_host_sha256 = [string]$manifest.host_sha256
     new_client_sha256 = [string]$manifest.client_sha256
     install_dir = $installDir
