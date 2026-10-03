@@ -26,7 +26,7 @@
 | 7 | Build Foundation | ✅ 완료 | 전체 컴포넌트 자동 build/test/artifact CI. See `DAY7-CI-REPORT.md` |
 | 8 | Secure Release & Update Foundation | ✅ 완료 | signed manifest, SHA-256, Stable/Beta/Canary, pre-start updater, Wild Technology 0.1.4 실제 update + Playground isolation E2E |
 | 9 | Transaction / Backup / Rollback | ✅ 완료 | transaction journal, backup/staging/atomic replacement, post-start health gate, interrupted recovery, automatic rollback, failure injection + 서버 PC Final E2E |
-| 10 | Full E2E + Lobby / Proxy Network | 🟡 부분 완료 | Java four-server/Lobby/routing/reboot E2E ✅. 실제 Bedrock client E2E만 미완료. See `DAY10-E2E-REPORT.md` |
+| 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 | Java four-server/Lobby/routing/reboot E2E + Bedrock real-client routing/return/location behavior를 사용자 실기기 확인으로 PASS. See `DAY10-E2E-REPORT.md` |
 | 11 | Operations UX & Fleet Management | ⏳ 예정 | **GSC 4.3 / GSCM 1.1.5 목표**. Full Update Center, startup version check, channel/pin/hold, player-aware update/restart, Geyser/Floodgate/Via policy, 운영 상태 버그 수정 |
 | 12 | Extended Automation & Production Hardening | ⏳ 예정 | Resource/DataPack managed deployment, Agent/확장 self-update, SBOM/provenance/security scans, reproducibility, shared cache, disaster-recovery drill, fleet 최종 검증 |
 
@@ -67,8 +67,9 @@
 - Windows reboot 후 Velocity 3개 자동 시작
 - public Java TCP readiness
 
-Bedrock 쪽은 Geyser/Floodgate/UDP listener 인프라가 존재하더라도 **실제 Bedrock client E2E PASS를 아직 선언하지 않습니다**.
-새 upstream 빌드나 지원 문서가 생겨도 실제 접속/이동/복귀 테스트 전에는 Day 10 전체 완료로 닫지 않습니다.
+Bedrock 쪽도 2026-10-04 사용자 실기기 확인에서 **정상 작동이 확인되어 PASS**로 닫습니다. 이 PASS는 사용자 확인 결과이며 assistant가 직접 클라이언트를 실행한 것으로 기록하지 않습니다.
+
+따라서 Day 10은 Java + Bedrock 범위 모두 완료입니다.
 
 ## Day 11 고정 목표
 
