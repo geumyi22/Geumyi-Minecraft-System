@@ -217,6 +217,8 @@ func registerUpdateRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/update/decision", requireAuth(apiV4UpdateDecision))
 	mux.HandleFunc("/api/v4/update/policy", requireAuth(apiV4UpdatePolicy))
 	mux.HandleFunc("/api/v4/update/fleet", requireAuth(apiV4UpdateFleet))
+	mux.HandleFunc("/api/v4/update/external/status", requireAuth(apiV4ExternalUpdateStatus))
+	mux.HandleFunc("/api/v4/update/external/stage", requireAuth(apiV4ExternalUpdateStage))
 }
 
 func apiV4UpdateStatus(w http.ResponseWriter, r *http.Request) {
