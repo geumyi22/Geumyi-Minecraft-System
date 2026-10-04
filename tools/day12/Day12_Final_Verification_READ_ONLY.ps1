@@ -126,7 +126,7 @@ $report=[ordered]@{
     synthetic=[bool]$Synthetic
     generated_at=(Get-Date).ToString("o")
     summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail}
-    checks=@($checks)
+    checks=@($checks | ForEach-Object { $_ })
     notes=@(
         "This verifier does not prove Java/Bedrock real-client E2E.",
         "No passwords, tokens, private keys, or full configuration files are exported."
