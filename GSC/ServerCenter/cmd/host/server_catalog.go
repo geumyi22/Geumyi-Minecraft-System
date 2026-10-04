@@ -14,6 +14,11 @@ const (
 	serverUpdateManaged = "managed"
 	serverUpdateManual  = "manual"
 	serverUpdateHold    = "hold"
+
+	serverUpdateChannelInherit = "inherit"
+	serverUpdateChannelStable  = "stable"
+	serverUpdateChannelBeta    = "beta"
+	serverUpdateChannelCanary  = "canary"
 )
 
 func validServerRole(role string) bool {
@@ -49,6 +54,27 @@ func normalizeServerUpdatePolicy(policy string) string {
 	}
 }
 
+func normalizeServerUpdateChannel(channel string) string {
+	switch strings.ToLower(strings.TrimSpace(channel)) {
+	case serverUpdateChannelStable:
+		return serverUpdateChannelStable
+	case serverUpdateChannelBeta:
+		return serverUpdateChannelBeta
+	case serverUpdateChannelCanary:
+		return serverUpdateChannelCanary
+	default:
+		return serverUpdateChannelInherit
+	}
+}
+
+func normalizeServerUpdatePin(pin string) string {
+	pin = strings.TrimSpace(pin)
+	if len(pin) > 128 {
+		pin = pin[:128]
+	}
+	return pin
+}
+
 func normalizeServerConfig(s ServerConfig) ServerConfig {
 	s.ID = strings.ToLower(strings.TrimSpace(s.ID))
 	s.Name = strings.TrimSpace(s.Name)
@@ -58,6 +84,8 @@ func normalizeServerConfig(s ServerConfig) ServerConfig {
 	}
 	s.Role = role
 	s.UpdatePolicy = normalizeServerUpdatePolicy(s.UpdatePolicy)
+	s.UpdateChannel = normalizeServerUpdateChannel(s.UpdateChannel)
+	s.UpdatePin = normalizeServerUpdatePin(s.UpdatePin)
 	return s
 }
 
@@ -96,6 +124,8 @@ type serverCatalogEntry struct {
 	Name           string `json:"name"`
 	Role           string `json:"role"`
 	UpdatePolicy   string `json:"update_policy"`
+	UpdateChannel  string `json:"update_channel"`
+	UpdatePin      string `json:"update_pin,omitempty"`
 	JavaPort       int    `json:"java_port"`
 	RCONPort       int    `json:"rcon_port"`
 	BedrockPort    int    `json:"bedrock_port"`
@@ -118,6 +148,8 @@ func apiV4ServerCatalog(w http.ResponseWriter, r *http.Request) {
 			Name: s.Name,
 			Role: s.Role,
 			UpdatePolicy: s.UpdatePolicy,
+			UpdateChannel: s.UpdateChannel,
+			UpdatePin: s.UpdatePin,
 			JavaPort: s.JavaPort,
 			RCONPort: s.RCONPort,
 			BedrockPort: s.BedrockPort,
