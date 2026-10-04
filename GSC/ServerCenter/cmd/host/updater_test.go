@@ -10,6 +10,7 @@ import (
 	"encoding/pem"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -281,5 +282,58 @@ func TestDay11UpdateDryRunNeverInstallsOrRestarts(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(root, "plugins", "GeumyiTechnology-0.1.4.jar")); !os.IsNotExist(err) {
 		t.Fatalf("dry-run created target artifact, err=%v", err)
+	}
+}
+
+
+func TestDay11PerServerUpdateChannelNormalization(t *testing.T) {
+	tests := map[string]string{
+		"": serverUpdateChannelInherit,
+		"inherit": serverUpdateChannelInherit,
+		" STABLE ": serverUpdateChannelStable,
+		"beta": serverUpdateChannelBeta,
+		"CANARY": serverUpdateChannelCanary,
+		"invalid": serverUpdateChannelInherit,
+	}
+	for input, want := range tests {
+		if got := normalizeServerUpdateChannel(input); got != want {
+			t.Fatalf("channel %q => %q, want %q", input, got, want)
+		}
+	}
+}
+
+func TestDay11PerServerUpdateChannelOverridesGlobal(t *testing.T) {
+	configMu.Lock()
+	oldCfg := cfg
+	cfg = Config{Update: UpdateConfig{
+		Enabled: true,
+		Repository: "geumyi22/Geumyi-Minecraft-System",
+		Channel: "stable",
+		TimeoutSeconds: 12,
+	}}
+	configMu.Unlock()
+	defer func() {
+		configMu.Lock()
+		cfg = oldCfg
+		configMu.Unlock()
+	}()
+
+	if got := effectiveUpdateConfigForServer(ServerConfig{ID: "wild", UpdateChannel: "beta"}).Channel; got != "beta" {
+		t.Fatalf("server beta override => %q", got)
+	}
+	if got := effectiveUpdateConfigForServer(ServerConfig{ID: "wild", UpdateChannel: "inherit"}).Channel; got != "stable" {
+		t.Fatalf("inherit should use global stable, got %q", got)
+	}
+}
+
+func TestDay11UpdatePinNormalization(t *testing.T) {
+	s := normalizeServerConfig(ServerConfig{ID: "wild", UpdatePin: "  release-2026.10.04  "})
+	if s.UpdatePin != "release-2026.10.04" {
+		t.Fatalf("unexpected pin normalization: %q", s.UpdatePin)
+	}
+	long := strings.Repeat("x", 150)
+	s = normalizeServerConfig(ServerConfig{ID: "wild", UpdatePin: long})
+	if len(s.UpdatePin) != 128 {
+		t.Fatalf("pin length=%d want=128", len(s.UpdatePin))
 	}
 }
