@@ -140,7 +140,10 @@ async function loadUpdates(){
         </div>
       </div>
       <div class="notice">서버별 채널/Pin은 기본 채널 위에 적용됩니다. 외부 프록시 구성요소와 Paper는 별도 안전 정책으로 관리합니다.</div>
-    </div>`+cards+'<div id="networkEntry" class="card full"><div class="title">네트워크 상태 확인 중...</div></div>';
+    </div>`+cards+
+      '<div id="externalUpdateEntry" class="card full"><div class="title">외부 구성요소 확인 중...</div></div>'+
+      '<div id="networkEntry" class="card full"><div class="title">네트워크 상태 확인 중...</div></div>';
+    loadExternalUpdates();
     loadNetworkEntryStatus();
   }catch(e){
     $('updateBody').innerHTML=`<div class="card full badtext">${esc(koMessage(e.message))}</div>`;
@@ -195,6 +198,44 @@ async function applyUpdateAndRestart(id){
     loadUpdates()
   }catch(e){toast(koMessage(e.message),true)}
 }
+async function loadExternalUpdates(){
+  const root=$('externalUpdateEntry');if(!root)return;
+  try{
+    const x=await req('/api/v4/update/external/status');
+    const components=x.components||[];
+    const rows=components.map(v=>{
+      const st=String(v.status||'unknown');
+      const cls=st==='current'?'ok':st==='error'?'bad':'warn';
+      const installed=Object.entries(v.installed||{}).map(([k,val])=>esc(k)+': '+esc(String(val).slice(0,18))+(String(val).length>18?'…':'')).join('<br>')||'-';
+      const target=(v.version||'-')+(v.build?' build '+v.build:'');
+      return '<tr><td><b>'+esc(v.component||'-')+'</b><br><span class="small">'+esc(v.source||'')+'</span></td>'+
+        '<td>'+installed+'</td><td>'+esc(target)+'</td>'+
+        '<td><span class="status '+cls+'"><span class="dot '+cls+'"></span>'+esc(st)+'</span><br><span class="small">'+esc(v.message||'')+'</span></td>'+
+        '<td>'+(v.stage_supported?'SHA-256 검증 가능':'자동 staging 차단')+'</td></tr>';
+    }).join('');
+    const errs=(x.errors||[]).map(v=>'<div class="warntext">• '+esc(v)+'</div>').join('');
+    root.innerHTML='<div class="row spread"><div><div class="title">🌐 외부 프록시 / 호환 구성요소</div>'+
+      '<div class="small">Geyser/Floodgate/Via 공식 metadata를 조회합니다. Paper는 알림 + 수동 승인 정책입니다.</div></div>'+
+      '<div class="actions"><button onclick="loadExternalUpdates()">새로고침</button>'+
+      '<button class="primary" onclick="stageExternalUpdates()">검증 후 Staging</button></div></div>'+
+      '<div class="notice" style="margin-top:10px">Staging은 live JAR/config/Floodgate key를 변경하지 않습니다. 실제 교체는 백업·접속자 확인·maintenance 승인·health gate·rollback 경로가 준비된 뒤 별도로 수행합니다.</div>'+
+      '<div class="table-wrap" style="margin-top:10px"><table class="table"><tr><th>구성요소</th><th>현재 설치</th><th>최신</th><th>상태</th><th>검증</th></tr>'+
+      (rows||'<tr><td colspan="5">확인된 구성요소가 없습니다.</td></tr>')+'</table></div>'+errs;
+  }catch(e){root.innerHTML='<div class="badtext">'+esc(koMessage(e.message))+'</div>'}
+}
+async function stageExternalUpdates(){
+  if(!confirm('공식 metadata와 SHA-256을 검증한 외부 구성요소만 별도 Staging 폴더에 다운로드합니다. live 서버/프록시 파일은 변경하지 않습니다. 계속할까요?'))return;
+  try{
+    toast('외부 구성요소 검증 / staging 중...');
+    const x=await req('/api/v4/update/external/stage',{method:'POST',body:JSON.stringify({components:[]})});
+    const staged=x.staged||[],blocked=x.blocked||[];
+    alert('외부 구성요소 Staging 결과\n\n검증 후 staging: '+staged.length+'개\n차단: '+blocked.length+'개\n\nLive 파일 변경: 없음\n'+
+      (staged.length?'\nStaged\n'+staged.map(v=>'• '+v.component+' '+v.version).join('\n'):'')+
+      (blocked.length?'\n\nBlocked\n'+blocked.map(v=>'• '+v.component+': '+v.reason).join('\n'):''));
+    loadExternalUpdates();
+  }catch(e){toast(koMessage(e.message),true)}
+}
+
 async function loadNetworkEntryStatus(){
   const root=$('networkEntry');if(!root)return;
   try{
