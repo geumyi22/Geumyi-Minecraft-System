@@ -28,7 +28,7 @@
 | 9 | Transaction / Backup / Rollback | ✅ 완료 | transaction journal, backup/staging/atomic replacement, post-start health gate, interrupted recovery, automatic rollback, failure injection + 서버 PC Final E2E |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 | Java four-server/Lobby/routing/reboot E2E + Bedrock real-client routing/return/location behavior를 사용자 실기기 확인으로 PASS. See `DAY10-E2E-REPORT.md` |
 | 11 | Operations UX & Fleet Management | ⏳ 예정 | **GSC 4.3 / GSCM 1.1.5 목표**. Full Update Center, startup version check, channel/pin/hold, player-aware update/restart, Geyser/Floodgate/Via policy, 운영 상태 버그 수정 |
-| 12 | Extended Automation & Production Hardening | ⏳ 예정 | Resource/DataPack managed deployment, Agent/확장 self-update, SBOM/provenance/security scans, reproducibility, shared cache, disaster-recovery drill, fleet 최종 검증 |
+| 12 | Final Production Hardening & Closure | ⏳ 예정 | Golden baseline, managed Resource/DataPack, full health/storage/security hardening, trusted builds/offline cache, DR drill, final verifier/E2E/soak, Maintenance Mode handoff |
 
 ## Day 8 / Day 9 완료 상태
 
@@ -98,14 +98,24 @@ Bedrock 쪽도 2026-10-04 사용자 실기기 확인에서 **정상 작동이 �
 
 ## Day 12 고정 목표
 
-- ResourcePack / DataPack managed deployment
-- resource-pack SHA/UUID/property 자동화
-- StatusAgent 및 확장 self-update 경로
-- SBOM / provenance / dependency / security scan
-- reproducible build hardening
-- shared artifact cache / offline 운영 강화
-- disaster-recovery drill
-- Day 10에서 구현된 Lobby/Proxy를 fleet/update 정책과 최종 통합 검증
+Day 12는 **Final Production Hardening & Closure**이며 이 프로젝트의 마지막 제작 milestone입니다.
+
+- 12.0 Golden Baseline / final freeze
+- 12.1 ResourcePack / DataPack managed deployment
+- 12.2 전체 구성요소 update inventory / last-known-good / rollback
+- 12.3 Whole-system read-only health check
+- 12.4 backup retention / disk guard / log lifecycle
+- 12.5 SBOM / provenance / dependency / secret / security hardening
+- 12.6 trusted/reproducible release chain
+- 12.7 shared artifact cache / offline known-good operation
+- 12.8 disaster-recovery drill + Recovery Kit
+- 12.9 GSC/GSCM final UX cleanup
+- 12.10 read-only Final Verification tool
+- 12.11 Java/Bedrock/GSCM final live E2E
+- 12.12 extended soak test
+- 12.13 Stable final release + Maintenance Mode handoff
+
+세부 안전 조건과 완료 Gate는 [DAY12-PLAN.md](DAY12-PLAN.md)를 단일 기준으로 사용합니다.
 
 ## 최종 완료 원칙
 
