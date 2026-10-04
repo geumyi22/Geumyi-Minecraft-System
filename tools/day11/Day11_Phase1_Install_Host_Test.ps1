@@ -6,6 +6,10 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+$PackageDir = ([string]$PackageDir).Trim().Trim([char]34)
+if ([string]::IsNullOrWhiteSpace($PackageDir)) { $PackageDir = $PSScriptRoot }
+$PackageDir = [IO.Path]::GetFullPath($PackageDir)
+
 $ServiceName = "Geumyi Server Center Host"
 $ProgramDataRoot = if ($env:PROGRAMDATA) { $env:PROGRAMDATA } else { "C:\ProgramData" }
 $StateRoot = Join-Path $ProgramDataRoot "GeumyiServerCenter"
