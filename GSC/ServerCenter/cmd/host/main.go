@@ -1374,6 +1374,15 @@ func markRCONSuccess(port int) {
 	rconRecentMu.Unlock()
 }
 
+func clearRCONSuccess(port int) {
+	if port <= 0 {
+		return
+	}
+	rconRecentMu.Lock()
+	delete(rconRecentSuccess, port)
+	rconRecentMu.Unlock()
+}
+
 func rconRecentlyUsable(port int, ttl time.Duration) bool {
 	if port <= 0 || ttl <= 0 {
 		return false
@@ -1407,8 +1416,11 @@ func runServerConsoleRCON(s ServerConfig, password, command string) (string, err
 		wireCommand = "stop"
 	}
 	resp, err := rconCommand("127.0.0.1", s.RCONPort, password, wireCommand)
-	if err != nil && intentionalStop {
-		setDesired(s.ID, previousDesired)
+	if err != nil {
+		clearRCONSuccess(s.RCONPort)
+		if intentionalStop {
+			setDesired(s.ID, previousDesired)
+		}
 	}
 	return resp, err
 }
@@ -1449,13 +1461,24 @@ func getServerStatus(s ServerConfig) ServerStatus {
 	st := ServerStatus{ID: s.ID, Name: s.Name, Role: s.Role, UpdatePolicy: s.UpdatePolicy}
 	st.JavaPortOpen = tcpOpen("127.0.0.1", s.JavaPort, 400*time.Millisecond)
 	st.Online = st.JavaPortOpen
+	if !st.JavaPortOpen {
+		// A confirmed offline backend invalidates any prior authenticated RCON
+		// success. This keeps the long-lived success cache tied to the current
+		// server lifetime instead of surviving a normal stop.
+		clearRCONSuccess(s.RCONPort)
+	}
 
 	// Do not probe RCON with net.Dial here. Minecraft logs every TCP connect to
 	// the RCON listener, so status polling must remain passive. Prefer the
 	// background process cache, but fall back to the native Windows TCP table
 	// Native TCP listener enumeration avoids shell/CIM probes under a service account.
 	refreshJavaCache()
-	st.RCONPortOpen = cachedTCPListener(s.RCONPort) || nativeTCPListener(s.RCONPort) || rconRecentlyUsable(s.RCONPort, 30*time.Second)
+	// An authenticated RCON command is stronger evidence than passive Windows
+	// listener enumeration. Some service-account environments fail to expose
+	// the listener through the TCP table, so retain that proof for the current
+	// server lifetime. It is cleared when the backend is observed offline,
+	// when a new server start begins, or when an RCON command fails.
+	st.RCONPortOpen = cachedTCPListener(s.RCONPort) || nativeTCPListener(s.RCONPort) || rconRecentlyUsable(s.RCONPort, 12*time.Hour)
 
 	st.BedrockUDPListening, st.BedrockMode, st.BedrockPublicPort = topologyBedrockStatus(s)
 	st.GDSAPIOnline = httpOK(fmt.Sprintf("http://127.0.0.1:%d/health", s.GDSAPIPort))
