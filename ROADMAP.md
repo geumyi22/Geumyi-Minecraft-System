@@ -18,7 +18,7 @@
 | 9 | Transaction / Backup / Rollback | ✅ 완료 |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 |
 | 11 | Operations UX & Fleet Management — GSC 4.3 / GSCM 1.1.5 | ⏳ 예정 |
-| 12 | Extended Automation & Production Hardening | ⏳ 예정 |
+| 12 | Final Production Hardening & Closure | ⏳ 예정 |
 
 ## Day 1~3 — 복구와 기반 정리
 
@@ -133,16 +133,26 @@ Day 11 안정화 버그:
 - 콘솔 `stop`을 의도적 종료로 인식
 - 의도적 종료 -> OFFLINE / 실제 crash -> RECOVERING -> 자동 재시작
 
-## Day 12 — Extended Automation & Production Hardening
+## Day 12 — Final Production Hardening & Closure
 
+Day 12는 신규 기능을 계속 늘리는 단계가 아니라 **장기 무인/저관리 운영이 가능한 최종 제품 상태**를 만드는 마지막 milestone입니다.
+
+- Golden Baseline / final freeze
 - ResourcePack/DataPack managed deployment
-- resource-pack SHA/UUID/property 자동화
-- StatusAgent/확장 self-update
-- SBOM/provenance/dependency/security scans
-- reproducibility hardening
-- shared artifact cache / offline operation
-- disaster-recovery drill
-- Day 10 Lobby/Proxy를 fleet/update 정책과 최종 통합 검증
+- StatusAgent 및 남은 자체 구성요소 update 경로 통합
+- whole-system read-only health report
+- backup retention / disk guard / log lifecycle
+- SBOM/provenance/dependency/secret/security scans
+- trusted/reproducible build hardening
+- shared artifact cache / offline known-good operation
+- disaster-recovery drill + Recovery Kit
+- GSC/GSCM final UX cleanup
+- read-only Final Verification tool
+- Java + Bedrock + GSCM final live E2E
+- extended soak test
+- Stable final release 후 Maintenance Mode 전환
+
+세부 단계 및 완료 Gate: [DAY12-PLAN.md](DAY12-PLAN.md)
 
 ## 운영 원칙
 
