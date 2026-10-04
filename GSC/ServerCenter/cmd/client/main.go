@@ -162,6 +162,11 @@ var (
 		ResponseHeaderTimeout: 12 * time.Second,
 		ForceAttemptHTTP2:     true,
 	}
+	clientLongProxyTransport = func() *http.Transport {
+		t := clientProxyTransport.Clone()
+		t.ResponseHeaderTimeout = 30 * time.Minute
+		return t
+	}()
 )
 
 func wptr(s string) *uint16 { p, _ := syscall.UTF16PtrFromString(s); return p }
@@ -305,7 +310,16 @@ func proxyAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p := httputil.NewSingleHostReverseProxy(target)
-	p.Transport = clientProxyTransport
+	transport := clientProxyTransport
+	switch r.URL.Path {
+	case "/api/v4/backup", "/api/v4/backup/verify", "/api/v4/restore":
+		// Backup/verify/restore can legitimately spend minutes compressing,
+		// hashing, or extracting large worlds before the Host writes headers.
+		// Keep the short timeout for normal UI/status requests, but do not turn
+		// long storage operations into a false "server PC connection failed".
+		transport = clientLongProxyTransport
+	}
+	p.Transport = transport
 	orig := p.Director
 	p.Director = func(req *http.Request) {
 		orig(req)
@@ -315,7 +329,7 @@ func proxyAPI(w http.ResponseWriter, r *http.Request) {
 		req.Host = target.Host
 	}
 	p.ErrorHandler = func(w http.ResponseWriter, r *http.Request, e error) {
-		clientProxyTransport.CloseIdleConnections()
+		transport.CloseIdleConnections()
 		http.Error(w, "서버 PC 연결 실패: "+e.Error(), 502)
 	}
 	p.ServeHTTP(w, r)
