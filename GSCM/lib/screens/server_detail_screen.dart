@@ -349,7 +349,7 @@ class _UpdateSectionState extends State<_UpdateSection> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DropdownButtonFormField<String>(
-                      value: policy,
+                      initialValue: policy,
                       decoration: const InputDecoration(labelText: '실행 정책'),
                       items: const [
                         DropdownMenuItem(value: 'managed', child: Text('관리형 · 다음 시작 시 검증/적용')),
@@ -360,7 +360,7 @@ class _UpdateSectionState extends State<_UpdateSection> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: channel,
+                      initialValue: channel,
                       decoration: const InputDecoration(labelText: 'Release 채널'),
                       items: const [
                         DropdownMenuItem(value: 'inherit', child: Text('전체 설정 상속')),
@@ -444,6 +444,7 @@ class _UpdateSectionState extends State<_UpdateSection> {
   Widget build(BuildContext context) {
     final available = status['available'];
     final pending = available is List ? available.map((e) => e.toString()).toList() : const <String>[];
+    final pinText = status['pin']?.toString() ?? '';
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
       children: [
@@ -459,7 +460,7 @@ class _UpdateSectionState extends State<_UpdateSection> {
               Text(
                 '정책: ${status['policy'] ?? 'managed'} · '
                 '채널: ${status['configured_channel'] ?? 'inherit'} → ${status['channel'] ?? '-'}'
-                '${(status['pin']?.toString() ?? '').isNotEmpty ? ' · Pin ' + status['pin'].toString() : ''}',
+                '${pinText.isNotEmpty ? ' · Pin $pinText' : ''}',
               ),
               if (pending.isNotEmpty) ...[
                 const SizedBox(height: 8),
