@@ -264,6 +264,31 @@ func TestRecentRCONSuccessBridgesPassiveListenerFalseNegative(t *testing.T) {
 	}
 }
 
+func TestAuthenticatedRCONHealthPersistsForCurrentServerLifetime(t *testing.T) {
+	port := 34568
+	rconRecentMu.Lock()
+	old, had := rconRecentSuccess[port]
+	rconRecentSuccess[port] = time.Now().Add(-48 * time.Hour)
+	rconRecentMu.Unlock()
+	defer func() {
+		rconRecentMu.Lock()
+		if had {
+			rconRecentSuccess[port] = old
+		} else {
+			delete(rconRecentSuccess, port)
+		}
+		rconRecentMu.Unlock()
+	}()
+
+	if !rconAuthenticatedForCurrentLifetime(port) {
+		t.Fatal("authenticated RCON evidence must not expire by wall clock during the same server lifetime")
+	}
+	clearRCONSuccess(port)
+	if rconAuthenticatedForCurrentLifetime(port) {
+		t.Fatal("cleared/offline RCON lifetime evidence must not remain usable")
+	}
+}
+
 func TestRCONAuthFailureDoesNotSendStop(t *testing.T) {
 	ln, e := net.Listen("tcp", "127.0.0.1:0")
 	if e != nil {
