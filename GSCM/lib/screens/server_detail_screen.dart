@@ -330,6 +330,97 @@ class _UpdateSectionState extends State<_UpdateSection> {
     }
   }
 
+  Future<void> _editPolicy() async {
+    if (busy) return;
+    var policy = (status['policy']?.toString() ?? 'managed').toLowerCase();
+    if (!const {'managed', 'hold', 'manual'}.contains(policy)) policy = 'managed';
+    var channel = (status['configured_channel']?.toString() ?? 'inherit').toLowerCase();
+    if (!const {'inherit', 'stable', 'beta', 'canary'}.contains(channel)) channel = 'inherit';
+    final pin = TextEditingController(text: status['pin']?.toString() ?? '');
+
+    final accepted = await showDialog<bool>(
+          context: context,
+          builder: (context) => StatefulBuilder(
+            builder: (context, setLocal) => AlertDialog(
+              title: Text('${widget.server.name} 업데이트 정책'),
+              content: SizedBox(
+                width: 420,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      value: policy,
+                      decoration: const InputDecoration(labelText: '실행 정책'),
+                      items: const [
+                        DropdownMenuItem(value: 'managed', child: Text('관리형 · 다음 시작 시 검증/적용')),
+                        DropdownMenuItem(value: 'hold', child: Text('보류')),
+                        DropdownMenuItem(value: 'manual', child: Text('수동 관리')),
+                      ],
+                      onChanged: (v) => setLocal(() => policy = v ?? policy),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: channel,
+                      decoration: const InputDecoration(labelText: 'Release 채널'),
+                      items: const [
+                        DropdownMenuItem(value: 'inherit', child: Text('전체 설정 상속')),
+                        DropdownMenuItem(value: 'stable', child: Text('Stable')),
+                        DropdownMenuItem(value: 'beta', child: Text('Beta')),
+                        DropdownMenuItem(value: 'canary', child: Text('Canary')),
+                      ],
+                      onChanged: (v) => setLocal(() => channel = v ?? channel),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: pin,
+                      decoration: const InputDecoration(
+                        labelText: 'Release Pin',
+                        hintText: '비우면 고정 해제',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text('정책 저장만으로 서버를 재시작하지 않습니다. Pin은 해당 Release의 서명된 manifest만 허용합니다.'),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('취소')),
+                FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('저장')),
+              ],
+            ),
+          ),
+        ) ??
+        false;
+
+    if (!accepted) {
+      pin.dispose();
+      return;
+    }
+    final pinValue = pin.text.trim();
+    pin.dispose();
+
+    setState(() => busy = true);
+    try {
+      await widget.api.updatePolicy(
+        widget.server.id,
+        policy: policy,
+        channel: channel,
+        pin: pinValue,
+      );
+      final next = await widget.api.updateStatus(widget.server.id);
+      if (mounted) {
+        setState(() => status = next);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('업데이트 정책을 저장했습니다. 서버는 재시작하지 않았습니다.')),
+        );
+      }
+    } on GscApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
   Future<void> _decide(String choice) async {
     if (busy) return;
     setState(() => busy = true);
@@ -364,6 +455,12 @@ class _UpdateSectionState extends State<_UpdateSection> {
             children: [
               Text('상태: ${status['phase'] ?? '확인 전'}'),
               Text('안내: ${status['message'] ?? '상태 확인을 눌러주세요.'}'),
+              const SizedBox(height: 4),
+              Text(
+                '정책: ${status['policy'] ?? 'managed'} · '
+                '채널: ${status['configured_channel'] ?? 'inherit'} → ${status['channel'] ?? '-'}'
+                '${(status['pin']?.toString() ?? '').isNotEmpty ? ' · Pin ' + status['pin'].toString() : ''}',
+              ),
               if (pending.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 for (final line in pending) Text('• $line'),
@@ -381,6 +478,11 @@ class _UpdateSectionState extends State<_UpdateSection> {
                 OutlinedButton(
                   onPressed: busy ? null : _dryRun,
                   child: const Text('Dry-run'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: busy ? null : _editPolicy,
+                  icon: const Icon(Icons.tune_rounded),
+                  label: const Text('채널 / Pin / 정책'),
                 ),
               ]),
               if (dryRun.isNotEmpty) ...[
