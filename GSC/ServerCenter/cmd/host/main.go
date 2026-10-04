@@ -57,6 +57,8 @@ type ServerConfig struct {
 	Name           string `json:"name"`
 	Role           string `json:"role,omitempty"`
 	UpdatePolicy   string `json:"update_policy,omitempty"`
+	UpdateChannel  string `json:"update_channel,omitempty"`
+	UpdatePin      string `json:"update_pin,omitempty"`
 	JavaPort       int    `json:"java_port"`
 	RCONPort       int    `json:"rcon_port"`
 	BedrockPort    int    `json:"bedrock_port"`
@@ -109,6 +111,8 @@ type ServerStatus struct {
 	Name                string                  `json:"name"`
 	Role                string                  `json:"role"`
 	UpdatePolicy        string                  `json:"update_policy"`
+	UpdateChannel       string                  `json:"update_channel"`
+	UpdatePin           string                  `json:"update_pin,omitempty"`
 	Online              bool                    `json:"online"`
 	JavaPortOpen        bool                    `json:"java_port_open"`
 	RCONPortOpen        bool                    `json:"rcon_port_open"`
@@ -1458,7 +1462,7 @@ func topologyBedrockStatus(s ServerConfig) (online bool, mode string, publicPort
 
 func getServerStatus(s ServerConfig) ServerStatus {
 	s = normalizeServerConfig(s)
-	st := ServerStatus{ID: s.ID, Name: s.Name, Role: s.Role, UpdatePolicy: s.UpdatePolicy}
+	st := ServerStatus{ID: s.ID, Name: s.Name, Role: s.Role, UpdatePolicy: s.UpdatePolicy, UpdateChannel: s.UpdateChannel, UpdatePin: s.UpdatePin}
 	st.JavaPortOpen = tcpOpen("127.0.0.1", s.JavaPort, 400*time.Millisecond)
 	st.Online = st.JavaPortOpen
 	if !st.JavaPortOpen {
