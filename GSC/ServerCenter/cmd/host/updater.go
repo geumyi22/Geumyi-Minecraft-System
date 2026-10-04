@@ -55,9 +55,10 @@ type DeploymentComponent struct {
 type UpdateStatus struct {
 	ServerID  string   `json:"server_id"`
 	Phase     string   `json:"phase"`
-	Policy    string   `json:"policy"`
-	Channel   string   `json:"channel"`
-	Pin       string   `json:"pin,omitempty"`
+	Policy            string   `json:"policy"`
+	Channel           string   `json:"channel"`
+	ConfiguredChannel string   `json:"configured_channel"`
+	Pin               string   `json:"pin,omitempty"`
 	Release   string   `json:"release,omitempty"`
 	Message   string   `json:"message"`
 	Error     string   `json:"error,omitempty"`
@@ -168,6 +169,7 @@ func effectiveUpdateConfigForServer(s ServerConfig) UpdateConfig {
 func updateStatusPolicyFields(st UpdateStatus, s ServerConfig) UpdateStatus {
 	s = normalizeServerConfig(s)
 	st.Policy = s.UpdatePolicy
+	st.ConfiguredChannel = s.UpdateChannel
 	st.Pin = s.UpdatePin
 	st.Channel = effectiveUpdateConfigForServer(s).Channel
 	return st
