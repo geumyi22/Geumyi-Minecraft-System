@@ -1397,6 +1397,16 @@ func rconRecentlyUsable(port int, ttl time.Duration) bool {
 	return !last.IsZero() && time.Since(last) <= ttl
 }
 
+func rconAuthenticatedForCurrentLifetime(port int) bool {
+	if port <= 0 {
+		return false
+	}
+	rconRecentMu.RLock()
+	_, ok := rconRecentSuccess[port]
+	rconRecentMu.RUnlock()
+	return ok
+}
+
 func isIntentionalStopCommand(command string) bool {
 	v := strings.TrimSpace(command)
 	v = strings.TrimSpace(strings.TrimPrefix(v, "/"))
@@ -1480,9 +1490,10 @@ func getServerStatus(s ServerConfig) ServerStatus {
 	// An authenticated RCON command is stronger evidence than passive Windows
 	// listener enumeration. Some service-account environments fail to expose
 	// the listener through the TCP table, so retain that proof for the current
-	// server lifetime. It is cleared when the backend is observed offline,
-	// when a new server start begins, or when an RCON command fails.
-	st.RCONPortOpen = cachedTCPListener(s.RCONPort) || nativeTCPListener(s.RCONPort) || rconRecentlyUsable(s.RCONPort, 12*time.Hour)
+	// server lifetime without an arbitrary wall-clock expiry. It is cleared
+	// when the backend is observed offline, when a new server start begins,
+	// or when an RCON command fails.
+	st.RCONPortOpen = cachedTCPListener(s.RCONPort) || nativeTCPListener(s.RCONPort) || rconAuthenticatedForCurrentLifetime(s.RCONPort)
 
 	st.BedrockUDPListening, st.BedrockMode, st.BedrockPublicPort = topologyBedrockStatus(s)
 	st.GDSAPIOnline = httpOK(fmt.Sprintf("http://127.0.0.1:%d/health", s.GDSAPIPort))
