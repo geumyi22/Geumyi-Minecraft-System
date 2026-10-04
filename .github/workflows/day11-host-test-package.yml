@@ -82,9 +82,9 @@ jobs:
           New-Item -ItemType Directory -Path day11-host-test -Force | Out-Null
           Push-Location GSC/ServerCenter
           try {
-            go build -buildvcs=false -trimpath -o ../../day11-host-test/GeumyiServerHost.exe ./cmd/host
+            go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui" -o ../../day11-host-test/GeumyiServerHost.exe ./cmd/host
             if($LASTEXITCODE -ne 0){throw 'Host build failed'}
-            go build -buildvcs=false -trimpath -o ../../day11-host-test/GeumyiServerCenter.exe ./cmd/client
+            go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui" -o ../../day11-host-test/GeumyiServerCenter.exe ./cmd/client
             if($LASTEXITCODE -ne 0){throw 'Client build failed'}
           } finally { Pop-Location }
           Copy-Item tools/day11/Day11_Phase1_Install_Host_Test.ps1 day11-host-test/
