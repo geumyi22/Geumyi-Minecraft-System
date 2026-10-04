@@ -321,6 +321,8 @@ func startServerLocked(s ServerConfig) (string, error) {
 		}
 		return s.Name + " 이미 실행 중", nil
 	}
+	// A new backend lifetime must not inherit RCON health from the previous one.
+	clearRCONSuccess(s.RCONPort)
 	markAttempt(s.ID)
 	probe := newStartupLogCursor(s)
 	if !launchAlive(s.ID) && !trackedServerAlive(s.ID) {
