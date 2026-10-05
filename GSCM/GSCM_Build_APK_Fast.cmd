@@ -1,10 +1,10 @@
 @echo off
 setlocal EnableExtensions DisableDelayedExpansion
 cd /d "%~dp0"
-title GSCM v1.1.2 APK Builder - Fast
+title GSCM APK Builder - Fast
 
 echo ============================================================
-echo GSCM v1.1.2 APK Builder - Fast
+echo GSCM APK Builder - Fast
 echo ============================================================
 echo Installs/reuses build tools under LOCALAPPDATA only.
 echo.
@@ -20,7 +20,7 @@ echo.
 if not "%RC%"=="0" (
   echo [GSCM] Build failed. Check GSCM-build.log in this folder.
 ) else (
-  echo [GSCM] Build completed. APK: dist\GSCM-v1.1.2.apk
+  echo [GSCM] Build completed. See dist\ for the versioned APK.
 )
 echo.
 pause
