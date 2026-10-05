@@ -100,6 +100,23 @@ func checkGSCSelfUpdate() GSCSelfUpdateStatus {
 	return st
 }
 
+func startGSCSelfUpdateStartupCheck() {
+	go func() {
+		// Keep Host startup fail-open. Release discovery happens only after the
+		// local API/runtime is initialized and never blocks Minecraft startup.
+		time.Sleep(5 * time.Second)
+		st := checkGSCSelfUpdate()
+		if st.Error != "" {
+			appendV4Event("warn", "update", "", "GSC 시작 시 업데이트 확인 실패", st.Error)
+			return
+		}
+		if st.Available {
+			appendV4Event("info", "update", "", "검증된 GSC 업데이트 사용 가능",
+				"installed="+st.Installed+" target="+st.Latest+" release="+st.Release)
+		}
+	}()
+}
+
 func apiV4GSCSelfUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "GET required", http.StatusMethodNotAllowed)
