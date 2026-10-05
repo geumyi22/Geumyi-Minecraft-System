@@ -227,6 +227,136 @@ func apiV4BackupRetentionDryRun(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, buildBackupRetentionDryRun(s, q.KeepLatest))
 }
 
+type BackupRetentionApplyResult struct {
+	ServerID     string       `json:"server_id"`
+	DryRun       bool         `json:"dry_run"`
+	KeepLatest   int          `json:"keep_latest"`
+	Moved        []BackupInfo `json:"moved"`
+	ReclaimBytes int64        `json:"reclaim_bytes"`
+}
+
+func trashBackupFile(s ServerConfig, file string) (BackupInfo, error) {
+	if hasPendingUpdate(s) {
+		return BackupInfo{}, fmt.Errorf("pending update transaction: backup deletion is blocked until recovery/commit completes")
+	}
+	p, err := safeBackupPath(s, file)
+	if err != nil {
+		return BackupInfo{}, err
+	}
+	meta := readBackupMeta(p)
+	if meta.Protected {
+		return BackupInfo{}, fmt.Errorf("protected backup: unprotect before moving to trash")
+	}
+	kind := backupKindFromPath(s, p)
+	dst := filepath.Join(backupTrashBase(s.ID, kind), filepath.Base(p))
+	if err = moveBackupBundle(p, dst); err != nil {
+		return BackupInfo{}, err
+	}
+	meta.OriginalKind = kind
+	meta.DeletedAt = time.Now().Format(time.RFC3339)
+	if err = writeBackupMeta(dst, meta); err != nil {
+		_ = os.Rename(dst+".sha256", p+".sha256")
+		_ = os.Rename(dst, p)
+		return BackupInfo{}, fmt.Errorf("trash metadata write failed; backup restored to original location: %w", err)
+	}
+	_ = os.Remove(backupMetaPath(p))
+	return backupInfoAt(dst, kind, true)
+}
+
+func restoreTrashedBackupFile(s ServerConfig, file string) (BackupInfo, error) {
+	p, kind, err := safeTrashBackupPath(s, file)
+	if err != nil {
+		return BackupInfo{}, err
+	}
+	meta := readBackupMeta(p)
+	if meta.OriginalKind == "backup" || meta.OriginalKind == "checkpoint" {
+		kind = meta.OriginalKind
+	}
+	dst := filepath.Join(backupBase(s.ID, kind == "checkpoint"), filepath.Base(p))
+	if err = moveBackupBundle(p, dst); err != nil {
+		return BackupInfo{}, err
+	}
+	meta.DeletedAt = ""
+	meta.OriginalKind = ""
+	if err = writeBackupMeta(dst, meta); err != nil {
+		_ = os.Rename(dst+".sha256", p+".sha256")
+		_ = os.Rename(dst, p)
+		return BackupInfo{}, fmt.Errorf("restore metadata write failed; backup returned to trash: %w", err)
+	}
+	_ = os.Remove(backupMetaPath(p))
+	return backupInfoAt(dst, kind, false)
+}
+
+func applyBackupRetentionToTrash(s ServerConfig, keepLatest int) (BackupRetentionApplyResult, error) {
+	plan := buildBackupRetentionDryRun(s, keepLatest)
+	out := BackupRetentionApplyResult{
+		ServerID: s.ID,
+		DryRun: false,
+		KeepLatest: plan.KeepLatest,
+		Moved: []BackupInfo{},
+	}
+	if plan.BlockedReason != "" {
+		return out, fmt.Errorf("%s", plan.BlockedReason)
+	}
+	for _, candidate := range plan.Candidates {
+		moved, err := trashBackupFile(s, candidate.File)
+		if err != nil {
+			// Retention is all-or-nothing. Restore every candidate already moved
+			// during this request before returning an error.
+			for i := len(out.Moved) - 1; i >= 0; i-- {
+				_, _ = restoreTrashedBackupFile(s, out.Moved[i].File)
+			}
+			out.Moved = nil
+			out.ReclaimBytes = 0
+			return out, err
+		}
+		out.Moved = append(out.Moved, moved)
+		out.ReclaimBytes += moved.Size
+	}
+	return out, nil
+}
+
+func apiV4BackupRetentionApply(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST required", http.StatusMethodNotAllowed)
+		return
+	}
+	var q struct {
+		ID         string `json:"id"`
+		KeepLatest int    `json:"keep_latest"`
+		Confirm    string `json:"confirm"`
+	}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q); err != nil {
+		http.Error(w, "bad json", http.StatusBadRequest)
+		return
+	}
+	if q.Confirm != "MOVE_TO_TRASH" {
+		http.Error(w, "confirm must be MOVE_TO_TRASH", http.StatusBadRequest)
+		return
+	}
+	s, ok := serverByID(strings.TrimSpace(q.ID))
+	if !ok {
+		http.Error(w, "unknown server", http.StatusBadRequest)
+		return
+	}
+	rel, err := beginV4Operation(s.ID, "backup-retention:apply")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	defer rel()
+	result, err := applyBackupRetentionToTrash(s, q.KeepLatest)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	appendV4Event("warn", "backup", s.ID, "백업 retention 휴지통 이동",
+		fmt.Sprintf("moved=%d reclaim_bytes=%d keep_latest=%d", len(result.Moved), result.ReclaimBytes, result.KeepLatest))
+	appendAudit(r, "backup.retention.apply", s.ID, "completed",
+		fmt.Sprintf("moved=%d reclaim_bytes=%d keep_latest=%d", len(result.Moved), result.ReclaimBytes, result.KeepLatest))
+	writeJSON(w, result)
+}
+
 func apiV4BackupTrash(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "GET required", http.StatusMethodNotAllowed)
@@ -305,62 +435,24 @@ func apiV4BackupAction(w http.ResponseWriter, r *http.Request) {
 		return
 
 	case "trash":
-		p, err := safeBackupPath(s, q.File)
+		moved, err := trashBackupFile(s, q.File)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
+			http.Error(w, err.Error(), http.StatusConflict)
 			return
 		}
-		meta := readBackupMeta(p)
-		if meta.Protected {
-			http.Error(w, "protected backup: unprotect before moving to trash", http.StatusConflict)
-			return
-		}
-		kind := backupKindFromPath(s, p)
-		dst := filepath.Join(backupTrashBase(s.ID, kind), filepath.Base(p))
-		if err = moveBackupBundle(p, dst); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		meta.OriginalKind = kind
-		meta.DeletedAt = time.Now().Format(time.RFC3339)
-		if err = writeBackupMeta(dst, meta); err != nil {
-			_ = os.Rename(dst+".sha256", p+".sha256")
-			_ = os.Rename(dst, p)
-			http.Error(w, "trash metadata write failed; backup restored to original location: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		_ = os.Remove(backupMetaPath(p))
-		appendV4Event("warn", "backup", s.ID, "백업 휴지통 이동: "+filepath.Base(dst), "kind="+kind)
-		appendAudit(r, "backup.trash", s.ID+":"+filepath.Base(dst), "completed", kind)
+		appendV4Event("warn", "backup", s.ID, "백업 휴지통 이동: "+moved.File, "kind="+moved.Kind)
+		appendAudit(r, "backup.trash", s.ID+":"+moved.File, "completed", moved.Kind)
 		writeJSON(w, map[string]any{"ok": true, "trashed": true})
 		return
 
 	case "restore-trash":
-		p, kind, err := safeTrashBackupPath(s, q.File)
+		restored, err := restoreTrashedBackupFile(s, q.File)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		meta := readBackupMeta(p)
-		if meta.OriginalKind == "backup" || meta.OriginalKind == "checkpoint" {
-			kind = meta.OriginalKind
-		}
-		dst := filepath.Join(backupBase(s.ID, kind == "checkpoint"), filepath.Base(p))
-		if err = moveBackupBundle(p, dst); err != nil {
 			http.Error(w, err.Error(), http.StatusConflict)
 			return
 		}
-		meta.DeletedAt = ""
-		meta.OriginalKind = ""
-		if err = writeBackupMeta(dst, meta); err != nil {
-			_ = os.Rename(dst+".sha256", p+".sha256")
-			_ = os.Rename(dst, p)
-			http.Error(w, "restore metadata write failed; backup returned to trash: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		_ = os.Remove(backupMetaPath(p))
-		appendV4Event("info", "backup", s.ID, "휴지통 백업 복구: "+filepath.Base(dst), "kind="+kind)
-		appendAudit(r, "backup.restore-trash", s.ID+":"+filepath.Base(dst), "completed", kind)
+		appendV4Event("info", "backup", s.ID, "휴지통 백업 복구: "+restored.File, "kind="+restored.Kind)
+		appendAudit(r, "backup.restore-trash", s.ID+":"+restored.File, "completed", restored.Kind)
 		writeJSON(w, map[string]any{"ok": true, "trashed": false})
 		return
 

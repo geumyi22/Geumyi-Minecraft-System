@@ -150,3 +150,55 @@ func TestDay11BackupDiskGuard(t *testing.T) {
 		t.Fatalf("unknown free space should not create a false blocker: %v", err)
 	}
 }
+
+
+func TestDay11BackupRetentionApplyMovesOnlyEligibleBackupsToTrash(t *testing.T) {
+	s, cleanup := setupBackupPolicyTest(t)
+	defer cleanup()
+
+	bi, err := createBackup(s, "config", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	src, err := safeBackupPath(s, bi.File)
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := backupBase(s.ID, false)
+	for i := 1; i <= 4; i++ {
+		dst := filepath.Join(root, "test-retention-apply-"+string(rune('0'+i))+".zip")
+		copyTestBackup(t, src, dst)
+	}
+	_ = os.Remove(src)
+	_ = os.Remove(src + ".sha256")
+
+	protected := filepath.Join(root, "test-retention-apply-1.zip")
+	meta := readBackupMeta(protected)
+	meta.Protected = true
+	meta.ProtectedAt = "2026-10-05T00:00:00Z"
+	if err = writeBackupMeta(protected, meta); err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := applyBackupRetentionToTrash(s, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.DryRun || len(result.Moved) != 2 {
+		t.Fatalf("expected two old unprotected backups moved to trash: %+v", result)
+	}
+	if _, err = os.Stat(protected); err != nil {
+		t.Fatalf("protected backup moved by retention: %v", err)
+	}
+	for _, moved := range result.Moved {
+		if !moved.Trashed {
+			t.Fatalf("moved backup not marked trashed: %+v", moved)
+		}
+		if _, _, err = safeTrashBackupPath(s, moved.File); err != nil {
+			t.Fatalf("moved backup missing from trash: %v", err)
+		}
+		if _, err = safeBackupPath(s, moved.File); err == nil {
+			t.Fatalf("moved backup still present in active backup root: %s", moved.File)
+		}
+	}
+}
