@@ -745,7 +745,10 @@ func apiV4ExternalUpdateApplyProxy(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "explicit confirmation required", http.StatusConflict)
 		return
 	}
-	updateApplyMu.Lock()
+	if !updateApplyMu.TryLock() {
+		http.Error(w, "another update transaction is already in progress", http.StatusConflict)
+		return
+	}
 	defer updateApplyMu.Unlock()
 
 	plan, err := readExternalStagePlan(q.Root)

@@ -312,11 +312,13 @@ func proxyAPI(w http.ResponseWriter, r *http.Request) {
 	p := httputil.NewSingleHostReverseProxy(target)
 	transport := clientProxyTransport
 	switch r.URL.Path {
-	case "/api/v4/backup", "/api/v4/backup/verify", "/api/v4/restore":
-		// Backup/verify/restore can legitimately spend minutes compressing,
-		// hashing, or extracting large worlds before the Host writes headers.
-		// Keep the short timeout for normal UI/status requests, but do not turn
-		// long storage operations into a false "server PC connection failed".
+	case "/api/v4/backup", "/api/v4/backup/verify", "/api/v4/restore",
+		"/api/v4/update/external/apply-proxy":
+		// These operations can legitimately spend minutes before the Host writes
+		// response headers. External proxy apply performs rolling stop -> verified
+		// JAR replace -> restart -> Java/Bedrock health gates for up to 3 proxies.
+		// Keep the short timeout for ordinary UI/status calls, but never convert a
+		// still-running safe transaction into a false "server PC connection failed".
 		transport = clientLongProxyTransport
 	}
 	p.Transport = transport
