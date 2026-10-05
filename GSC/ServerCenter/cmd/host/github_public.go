@@ -101,11 +101,19 @@ func githubRateLimitError(resp *http.Response) error {
 // unreachable, a recent immutable-metadata cache may be used. Signed GSC
 // manifests are still independently signature-verified by the caller.
 func githubPublicJSON(client *http.Client, rawURL string, max int64) ([]byte, bool, error) {
+	return githubPublicJSONMode(client, rawURL, max, false)
+}
+
+func githubPublicJSONFresh(client *http.Client, rawURL string, max int64) ([]byte, bool, error) {
+	return githubPublicJSONMode(client, rawURL, max, true)
+}
+
+func githubPublicJSONMode(client *http.Client, rawURL string, max int64, forceNetwork bool) ([]byte, bool, error) {
 	githubPublicMu.Lock()
 	defer githubPublicMu.Unlock()
 
 	cached, fetched, haveCache := readGitHubPublicCache(rawURL)
-	if haveCache && time.Since(fetched) >= 0 && time.Since(fetched) <= githubPublicCacheFresh {
+	if !forceNetwork && haveCache && time.Since(fetched) >= 0 && time.Since(fetched) <= githubPublicCacheFresh {
 		return cached, true, nil
 	}
 
