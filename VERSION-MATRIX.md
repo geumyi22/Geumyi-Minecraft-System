@@ -1,6 +1,6 @@
 # Version and source recovery matrix
 
-Confirmed runtime baseline: 2026-10-03. Recovery/verification status updated 2026-10-04.
+Confirmed runtime baseline: 2026-10-06. Recovery/verification status updated 2026-10-06.
 
 CI:
 - System CI run 36299122264: GSC, GDS and ResourcePack validation passed.
@@ -25,9 +25,9 @@ CI:
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
-| GSC | 4.2.4 | GSC/ServerCenter | Recovered source; Day-9 transaction/health/rollback baseline; Day-10 four-server profiles/routing used in host E2E |
+| GSC | 4.3.2 | GSC/ServerCenter | Day 11 live self-update 4.3.1→4.3.2 PASS; Host health gate/client relaunch/RCON status verification completed |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction present; Day-7 JDK 21 clean build/artifact succeeds; byte-identical historical rebuild is not claimed |
-| GSCM | 1.1.2+113 | GSCM | Day-6 device verification complete; Day-8 persistent Android release-signing path and signed Release workflow implemented/CI-verified; Android ADB signer-transition install remains optional/pending |
+| GSCM | 1.1.5+116 | GSCM | Day 11 version-display fix; persistent-signed Android release and unsigned iOS IPA published; user device distribution verification completed |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | HOTFIX overlay source tracked; Day-7 JDK 21 overlay build + CoreTests + artifact passes; legacy core remains binary-only and uses a pinned verified reference in CI |
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full source/stubs/tests; Day-7 JDK 21 build + CoreTests + artifact passes |
 | GeumyiNetwork | 0.1.0 | Plugins/GeumyiNetwork | Four-server transfer and last-location routing; Java host E2E PASS on 2026-10-03 |
