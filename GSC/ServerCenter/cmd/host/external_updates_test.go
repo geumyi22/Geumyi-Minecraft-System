@@ -83,3 +83,27 @@ func TestExternalProxyTargetsMatchDay10PublicPorts(t *testing.T) {
 		}
 	}
 }
+
+
+func TestExternalPlayerGateDecision(t *testing.T) {
+	cases := []struct {
+		name string
+		online bool
+		mcOK bool
+		players int
+		blocked bool
+	}{
+		{"offline does not block", false, false, 0, false},
+		{"online zero players", true, true, 0, false},
+		{"online players block", true, true, 2, true},
+		{"online unknown player count fails closed", true, false, 0, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := externalPlayerGateDecision("test", tc.online, tc.mcOK, tc.players)
+			if (err != nil) != tc.blocked {
+				t.Fatalf("blocked=%v err=%v", tc.blocked, err)
+			}
+		})
+	}
+}

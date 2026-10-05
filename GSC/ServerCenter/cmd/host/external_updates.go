@@ -533,12 +533,25 @@ func readExternalStagePlan(root string) (externalStagePlanFile, error) {
 	return plan, nil
 }
 
+func externalPlayerGateDecision(name string, online, mcOK bool, players int) error {
+	if !online {
+		return nil
+	}
+	if !mcOK {
+		return fmt.Errorf("%s 플레이어 수 확인 실패 · 안전을 위해 외부 프록시 업데이트 차단", name)
+	}
+	if players > 0 {
+		return fmt.Errorf("%s에 플레이어 %d명 접속 중 · 외부 프록시 업데이트 차단", name, players)
+	}
+	return nil
+}
+
 func externalPlayersGate() error {
 	for _, raw := range configSnapshot().Servers {
 		s := normalizeServerConfig(raw)
 		st := getServerStatus(s)
-		if st.Online && st.MC.OK && st.MC.Online > 0 {
-			return fmt.Errorf("%s에 플레이어 %d명 접속 중 · 외부 프록시 업데이트 차단", s.Name, st.MC.Online)
+		if err := externalPlayerGateDecision(s.Name, st.Online, st.MC.OK, st.MC.Online); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -562,14 +575,24 @@ func runScheduledTask(action, name string) error {
 func waitExternalProxyPorts(javaPort, bedrockPort int, want bool, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
-		javaOK := tcpOpen("127.0.0.1", javaPort, 250*time.Millisecond)
-		bedrockOK := udpListening(bedrockPort)
-		if javaOK == want && bedrockOK == want {
-			return nil
+		if want {
+			// Startup is healthy only when Java accepts connections and Geyser
+			// answers a real RakNet UNCONNECTED_PING, not merely when UDP is bound.
+			if probeJavaTCP(javaPort) && probeBedrockRaknet(bedrockPort) {
+				return nil
+			}
+		} else {
+			// For shutdown, verify the public listeners are actually gone before
+			// replacing JARs.
+			javaDown := !tcpOpen("127.0.0.1", javaPort, 250*time.Millisecond)
+			bedrockDown := !udpListening(bedrockPort)
+			if javaDown && bedrockDown {
+				return nil
+			}
 		}
 		time.Sleep(750 * time.Millisecond)
 	}
-	return fmt.Errorf("proxy port health timeout java=%d bedrock=%d want=%v", javaPort, bedrockPort, want)
+	return fmt.Errorf("proxy health timeout java=%d bedrock=%d want=%v", javaPort, bedrockPort, want)
 }
 
 func externalAtomicCopy(src, dst string) error {
@@ -639,6 +662,12 @@ func applyExternalProxyPlan(plan externalStagePlanFile) (map[string]any, error) 
 	backupRoot := filepath.Join(v4Root(), "Backups", "Day11-ExternalProxy-"+time.Now().Format("20060102-150405"))
 	applied := []string{}
 	for _, target := range day11ExternalProxyTargets {
+		// Re-check immediately before every rolling stop so a player who joined
+		// after the initial preflight cannot be kicked by a later proxy restart.
+		if err := externalPlayersGate(); err != nil {
+			appendV4Event("warn", "update", target.ID, "외부 프록시 rolling 중단", fmt.Sprintf("already_applied=%v cause=%v", applied, err))
+			return nil, fmt.Errorf("rolling stopped before %s; already applied proxies remain healthy (%v): %w", target.ID, applied, err)
+		}
 		proxyDir := filepath.Join(externalProxyRoot(), target.ID)
 		type backupRec struct {
 			Live   string
@@ -724,7 +753,7 @@ func applyExternalProxyPlan(plan externalStagePlanFile) (map[string]any, error) 
 		"backup_root": backupRoot,
 		"paper_touched": false,
 		"floodgate_key_touched": false,
-		"health_gate": "public Java TCP + Bedrock UDP",
+		"health_gate": "public Java TCP + Bedrock RakNet PONG",
 	}, nil
 }
 
