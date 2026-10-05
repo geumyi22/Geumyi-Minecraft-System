@@ -101,11 +101,11 @@ func TestDay11GSCVersionComparisonBlocksDowngrade(t *testing.T) {
 		a, b string
 		want int
 	}{
-		{"4.3.1", "4.3.1", 0},
-		{"4.3.1", "4.3.2", -1},
-		{"4.3.1", "4.2.3", 1},
+		{"4.3.2", "4.3.2", 0},
+		{"4.3.2", "4.3.3", -1},
+		{"4.3.2", "4.2.3", 1},
 		{"4.10.0", "4.9.9", 1},
-		{"v4.3.1", "4.3.1+115", 0},
+		{"v4.3.2", "4.3.2+115", 0},
 	}
 	for _, tc := range cases {
 		got, err := compareGSCVersions(tc.a, tc.b)
@@ -119,7 +119,7 @@ func TestDay11GSCVersionComparisonBlocksDowngrade(t *testing.T) {
 	if err := requireNewerGSCVersion("4.2.3"); err == nil {
 		t.Fatal("older signed release was accepted as self-update target")
 	}
-	if err := requireNewerGSCVersion("4.3.1"); err == nil {
+	if err := requireNewerGSCVersion("4.3.3"); err == nil {
 		t.Fatal("same version was accepted as self-update target")
 	}
 	if err := requireNewerGSCVersion("4.3.2"); err != nil {
