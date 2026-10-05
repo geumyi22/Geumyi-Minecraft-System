@@ -1,8 +1,10 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestDay11SelfUpdateComponentValidation(t *testing.T) {
@@ -67,5 +69,28 @@ func TestDay11SelfUpdateStagePathStaysUnderGSCStaging(t *testing.T) {
 	}
 	if rel == ".." || len(rel) >= 3 && rel[:3] == ".."+string(filepath.Separator) {
 		t.Fatalf("stage path escaped root: %s", got)
+	}
+}
+
+
+func TestDay11SelfUpdateLaunchLockRejectsConcurrentAndRecoversStale(t *testing.T) {
+	oldConfigPath := configPath
+	configPath = filepath.Join(t.TempDir(), "server.json")
+	defer func() { configPath = oldConfigPath }()
+
+	if err := reserveGSCSelfUpdateLaunch("4.3.0"); err != nil {
+		t.Fatal(err)
+	}
+	lock := gscSelfUpdateLockPath()
+	defer os.Remove(lock)
+	if err := reserveGSCSelfUpdateLaunch("4.3.0"); err == nil {
+		t.Fatal("concurrent self-update launch lock was accepted")
+	}
+	old := time.Now().Add(-20 * time.Minute)
+	if err := os.Chtimes(lock, old, old); err != nil {
+		t.Fatal(err)
+	}
+	if err := reserveGSCSelfUpdateLaunch("4.3.0"); err != nil {
+		t.Fatalf("stale self-update lock was not recovered: %v", err)
 	}
 }

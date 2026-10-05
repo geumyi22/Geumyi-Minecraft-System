@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -21,8 +24,9 @@ type GSCSelfUpdateStatus struct {
 	SignatureVerified bool   `json:"signature_verified"`
 	Staged            bool   `json:"staged"`
 	StagedPath        string `json:"staged_path,omitempty"`
-	LiveApplied       bool   `json:"live_applied"`
-	Message           string `json:"message"`
+	LiveApplied       bool           `json:"live_applied"`
+	LastApply         map[string]any `json:"last_apply,omitempty"`
+	Message           string         `json:"message"`
 	Error             string `json:"error,omitempty"`
 	Updated           string `json:"updated"`
 }
@@ -59,12 +63,61 @@ func selfUpdateStagePath(release string, comp DeploymentComponent) string {
 	return filepath.Join(v4Root(), "Staging", "GSC", safePathPart(release), comp.File)
 }
 
+func gscSelfUpdateLastPath() string {
+	return filepath.Join(v4Root(), "Updates", "gsc-self-update-last.json")
+}
+
+func gscSelfUpdateLockPath() string {
+	return filepath.Join(v4Root(), "Updates", "gsc-self-update.lock")
+}
+
+func readGSCSelfUpdateLast() map[string]any {
+	b, err := os.ReadFile(gscSelfUpdateLastPath())
+	if err != nil {
+		return nil
+	}
+	var out map[string]any
+	if json.Unmarshal(b, &out) != nil {
+		return nil
+	}
+	return out
+}
+
+func reserveGSCSelfUpdateLaunch(target string) error {
+	p := gscSelfUpdateLockPath()
+	if st, err := os.Stat(p); err == nil {
+		if time.Since(st.ModTime()) < 15*time.Minute {
+			return errors.New("GSC self-update helper is already active")
+		}
+		_ = os.Remove(p)
+	}
+	if err := os.MkdirAll(filepath.Dir(p), 0755); err != nil {
+		return err
+	}
+	f, err := os.OpenFile(p, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	_, werr := f.WriteString(target + "\n")
+	cerr := f.Close()
+	if werr != nil {
+		_ = os.Remove(p)
+		return werr
+	}
+	if cerr != nil {
+		_ = os.Remove(p)
+		return cerr
+	}
+	return nil
+}
+
 func checkGSCSelfUpdate() GSCSelfUpdateStatus {
 	c := normalizeUpdateConfig(configSnapshot().Update)
 	st := GSCSelfUpdateStatus{
 		Installed: appVersion,
 		Channel: c.Channel,
 		LiveApplied: false,
+		LastApply: readGSCSelfUpdateLast(),
 		Updated: time.Now().Format(time.RFC3339),
 		Message: "서명된 GSC release 확인 중",
 	}
@@ -176,5 +229,68 @@ func apiV4GSCSelfUpdateStage(w http.ResponseWriter, r *http.Request) {
 		"staged_path": dst,
 		"live_applied": false,
 		"next_step": "helper replacement + GSC-only backup + service restart + health gate + rollback",
+	})
+}
+
+
+func apiV4GSCSelfUpdateApply(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST required", http.StatusMethodNotAllowed)
+		return
+	}
+	var q struct {
+		Confirm string `json:"confirm"`
+	}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q); err != nil {
+		http.Error(w, "bad json", http.StatusBadRequest)
+		return
+	}
+	if q.Confirm != "APPLY_GSC_SELF_UPDATE" {
+		http.Error(w, "confirm must be APPLY_GSC_SELF_UPDATE", http.StatusBadRequest)
+		return
+	}
+	c := normalizeUpdateConfig(configSnapshot().Update)
+	m, _, release, err := fetchVerifiedManifest(c)
+	if err != nil {
+		http.Error(w, "signed GSC manifest verification failed: "+err.Error(), http.StatusBadGateway)
+		return
+	}
+	comp, err := selfUpdateComponent(m)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	if comp.Version == appVersion {
+		http.Error(w, "GSC is already on the verified target version", http.StatusConflict)
+		return
+	}
+	stage := selfUpdateStagePath(release, comp)
+	if ok, verifyErr := verifyArtifactFile(stage, comp); verifyErr != nil || !ok {
+		http.Error(w, "verified staged GSC installer is required before apply", http.StatusConflict)
+		return
+	}
+	if err = reserveGSCSelfUpdateLaunch(comp.Version); err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	cmd := exec.Command(stage, "--self-update")
+	cmd.Dir = filepath.Dir(stage)
+	if err = cmd.Start(); err != nil {
+		_ = os.Remove(gscSelfUpdateLockPath())
+		http.Error(w, "self-update helper launch failed: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	appendV4Event("warn", "update", "", "GSC self-update helper 시작",
+		"target="+comp.Version+" release="+release+" minecraft_velocity_touched=false")
+	appendAudit(r, "update.gsc.apply", release, "accepted", "target="+comp.Version)
+	writeJSON(w, map[string]any{
+		"ok": true,
+		"accepted": true,
+		"installed": appVersion,
+		"target": comp.Version,
+		"release": release,
+		"host_will_restart": true,
+		"minecraft_velocity_touched": false,
+		"result_path": gscSelfUpdateLastPath(),
 	})
 }

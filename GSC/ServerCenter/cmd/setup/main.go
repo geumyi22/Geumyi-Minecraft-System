@@ -116,6 +116,14 @@ func hideCmd(c *exec.Cmd) {
 }
 
 func main() {
+	if hasArg("--self-update") {
+		if !isAdmin() {
+			elevate("--elevated --self-update")
+			return
+		}
+		runSelfUpdateMode()
+		return
+	}
 	if hasArg("/uninstall") || hasArg("--uninstall") {
 		if !isAdmin() {
 			elevate("/uninstall")
