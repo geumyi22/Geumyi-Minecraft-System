@@ -1,6 +1,6 @@
 # GSCM iOS platform layer
 
-GSCM 1.1.2 retains the iOS platform layer introduced in 1.1.0: shared Flutter UI/API/WebSocket logic plus iOS-native secure storage.
+GSCM 1.1.5 retains the iOS platform layer introduced in 1.1.0: shared Flutter UI/API/WebSocket logic plus iOS-native secure storage.
 
 ## Platform channel
 Dart continues to call `com.geumyi.gscm/secure_storage` on both platforms.
