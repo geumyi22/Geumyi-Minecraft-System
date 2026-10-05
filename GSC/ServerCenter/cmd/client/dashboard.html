@@ -205,10 +205,10 @@ async function applyUpdateAndRestart(id){
     loadUpdates()
   }catch(e){toast(koMessage(e.message),true)}
 }
-async function loadGSCSelfUpdate(){
+async function loadGSCSelfUpdate(force=false){
   const root=$('gscSelfUpdateEntry');if(!root)return;
   try{
-    const x=await req('/api/v4/update/self/status');
+    const x=await req('/api/v4/update/self/status'+(force?'?fresh=1':''));
     const cls=x.error?'bad':x.available?'warn':'ok';
     const staged=x.staged?' · Staged':'';
     root.innerHTML='<div class="row spread"><div><div class="title">🖥 GSC 본체 Self-update</div>'+
@@ -218,7 +218,7 @@ async function loadGSCSelfUpdate(){
       (x.error?'<br><span class="badtext">'+esc(x.error)+'</span>':'')+
       (x.signature_verified?'<br>서명된 deployment manifest 검증됨':'')+
       (x.staged_path?'<br>Staging: '+esc(x.staged_path):'')+'</div>'+
-      '<div class="actions"><button onclick="loadGSCSelfUpdate()">다시 확인</button>'+
+      '<div class="actions"><button onclick="loadGSCSelfUpdate(true)">다시 확인</button>'+
       '<button '+(x.signature_verified?'':'disabled')+' onclick="stageGSCSelfUpdate()">검증 후 Staging</button></div>'+
       '<div class="notice" style="margin-top:10px">Staging은 실행 중인 GSC를 교체하지 않습니다. 실제 Self-update는 GSC-only 백업 → helper 교체 → Host health → 자동 rollback Gate를 통과한 뒤에만 허용합니다.</div>';
   }catch(e){root.innerHTML='<div class="badtext">'+esc(koMessage(e.message))+'</div>'}
