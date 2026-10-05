@@ -360,7 +360,12 @@ try {
         $script:TranscriptStarted = $true
     } catch {}
 
-    Write-Host 'GSCM v1.1.2 APK Builder' -ForegroundColor Green
+    $pubspecText = Get-Content -LiteralPath (Join-Path $Root 'pubspec.yaml') -Raw
+    $versionMatch = [regex]::Match($pubspecText, '(?m)^version:\s*([^\r\n]+)')
+    if (-not $versionMatch.Success) { throw 'pubspec.yaml version was not found.' }
+    $appVersion = $versionMatch.Groups[1].Value.Trim()
+
+    Write-Host "GSCM v$appVersion APK Builder" -ForegroundColor Green
     Write-Host "Project: $Root"
 
     $ToolRoot = Join-Path $env:LOCALAPPDATA 'GSCM-Toolchain'
@@ -410,7 +415,7 @@ try {
 
     $dist = Join-Path $Root 'dist'
     New-Item -ItemType Directory -Force -Path $dist | Out-Null
-    $final = Join-Path $dist 'GSCM-v1.1.2.apk'
+    $final = Join-Path $dist ("GSCM-v$appVersion.apk")
     Copy-Item $built $final -Force
     $hash = (Get-FileHash $final -Algorithm SHA256).Hash.ToLowerInvariant()
     $size = [math]::Round((Get-Item $final).Length / 1MB, 2)
