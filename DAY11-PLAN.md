@@ -1,6 +1,6 @@
 # Day 11 — Operations UX & Fleet Management
 
-Status: **IN PROGRESS — Phase 11.0 PASS; Phase 11.1 + Protection & Recovery 2.0 CI PASS; GSC-only host-test package in validation**
+Status: **IN PROGRESS — Phase 11.0 live preflight PASS; latest Day 11 repo-side GSC/GSCM CI PASS; live host/device E2E still required before closure**
 Target: **GSC 4.3.0 / GSCM 1.1.5**
 
 ## Safety rules
@@ -120,6 +120,32 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - retention + disk guard + dry-run
 - restore preflight/checkpoint/verify/health
 - GSCM controls
+
+## 2026-10-05 repo-side progress
+
+Current main evidence: `ff5aa528e04c9d84f3ba788d764a3304b8444dd4`.
+
+Completed in source/CI without touching the live Minecraft/Velocity processes:
+
+- Update Center fleet policy now supports per-server managed/manual/hold, Stable/Beta/Canary inheritance/override, signed release pinning and dry-run.
+- GSC/GSCM expose the fleet policy controls without restarting a server merely by saving policy.
+- Geyser/Floodgate/ViaVersion/ViaBackwards have official-metadata inventory plus SHA-256-gated **staging only**. Live proxy/backend JAR replacement is not claimed.
+- GSC self-update has signed manifest discovery, fail-open startup checking and verified artifact staging. Live helper replacement/relaunch rollback is still a runtime gate.
+- RCON authenticated health evidence is tied to the current server lifetime rather than a fixed 12-hour TTL.
+- Protection & Recovery adds backup source-size disk preflight, protected/checkpoint retention exemptions, retention **dry-run**, and a conservative delete guard while a pending update transaction exists.
+- GSC and GSCM expose backup retention preview; preview never deletes files.
+- GSCM target is `1.1.5+115`; Android release APK and unsigned iOS IPA CI builds both passed.
+
+CI evidence:
+
+- System CI run `37317107084`: **PASS** on the current main SHA.
+- Day 11 Host Test Package run `37317107060`: **PASS** including `go test ./...`, WindowsGUI Host/Client build, script parser and safety guard.
+- Host-test artifact `11349015100`, digest `sha256:c0193ba301bd7d3aa678e732b034f9a41ea1a10a1a29ad2ea17e3cd3bd60381a`.
+- GSCM Android run `37316499921`: **PASS**, artifact `GSCM-1.1.5-build115-Android`.
+- GSCM iOS run `37316499905`: **PASS**, artifact `GSCM-1.1.5-build115-iOS-unsigned`.
+- GSCM control tests run `37316500013`: **PASS**.
+
+These are CI/build results only. They do **not** convert the remaining live host, Android/iOS device, Java, Bedrock, external-component apply/rollback or final E2E gates to PASS.
 
 ## Completion boundary
 
