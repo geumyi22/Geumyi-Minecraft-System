@@ -352,7 +352,7 @@ func apiV4GSCSelfUpdateApply(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c := normalizeUpdateConfig(configSnapshot().Update)
-	m, _, release, err := fetchVerifiedManifest(c)
+	m, _, release, err := fetchVerifiedManifestFresh(c)
 	if err != nil {
 		http.Error(w, "signed GSC manifest verification failed: "+err.Error(), http.StatusBadGateway)
 		return
