@@ -801,10 +801,18 @@ func runPreStartUpdater(s ServerConfig) UpdateStatus {
 }
 
 func fetchVerifiedManifest(c UpdateConfig) (DeploymentManifest, string, string, error) {
-	return fetchVerifiedManifestPinned(c, "")
+	return fetchVerifiedManifestPinnedMode(c, "", false)
+}
+
+func fetchVerifiedManifestFresh(c UpdateConfig) (DeploymentManifest, string, string, error) {
+	return fetchVerifiedManifestPinnedMode(c, "", true)
 }
 
 func fetchVerifiedManifestPinned(c UpdateConfig, pin string) (DeploymentManifest, string, string, error) {
+	return fetchVerifiedManifestPinnedMode(c, pin, false)
+}
+
+func fetchVerifiedManifestPinnedMode(c UpdateConfig, pin string, forceNetwork bool) (DeploymentManifest, string, string, error) {
 	var zero DeploymentManifest
 	pub, err := loadDeploymentPublicKey(c.PublicKeyPath)
 	if err != nil {
@@ -817,7 +825,13 @@ func fetchVerifiedManifestPinned(c UpdateConfig, pin string) (DeploymentManifest
 	timeout := time.Duration(c.TimeoutSeconds) * time.Second
 	client := &http.Client{Timeout: timeout}
 	apiURL := "https://api.github.com/repos/" + url.PathEscape(parts[0]) + "/" + url.PathEscape(parts[1]) + "/releases?per_page=30"
-	body, _, err := githubPublicJSON(client, apiURL, 4<<20)
+	var body []byte
+	var err error
+	if forceNetwork {
+		body, _, err = githubPublicJSONFresh(client, apiURL, 4<<20)
+	} else {
+		body, _, err = githubPublicJSON(client, apiURL, 4<<20)
+	}
 	if err != nil {
 		return zero, "", "", fmt.Errorf("GitHub release 조회 실패: %w", err)
 	}
