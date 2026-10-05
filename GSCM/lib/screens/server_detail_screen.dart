@@ -1402,6 +1402,45 @@ class _BackupsSectionState extends State<_BackupsSection> {
     }
   }
 
+  Future<void> _retentionApply() async {
+    if (busy) return;
+    setState(() => busy = true);
+    try {
+      final preview = await widget.api.backupRetentionDryRun(widget.server.id, keepLatest: 2);
+      if (!mounted) return;
+      final blocked = jString(preview['blocked_reason']);
+      final candidates = jMapList(preview['candidates']);
+      final reclaim = jInt(preview['reclaim_bytes']);
+      if (blocked.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('정리 차단: $blocked')));
+        return;
+      }
+      if (candidates.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('휴지통으로 이동할 오래된 백업이 없습니다.')));
+        return;
+      }
+      final ok = await widget.confirm(
+        '백업 정리 실행',
+        '최신 2개와 보호/체크포인트는 유지합니다.\n'
+            '${candidates.length}개 · ${_size(reclaim)}를 영구 삭제하지 않고 GSC 휴지통으로 이동합니다.\n\n'
+            '휴지통에서는 다시 복구할 수 있습니다.',
+        action: '휴지통으로 이동',
+        dangerous: true,
+      );
+      if (!ok) return;
+      final result = await widget.api.backupRetentionApply(widget.server.id, keepLatest: 2);
+      if (mounted) {
+        final moved = jMapList(result['moved']).length;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('백업 정리 완료 · $moved개를 휴지통으로 이동')));
+      }
+      await _load();
+    } on GscApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
   Future<void> _verify(BackupInfo b) async {
     setState(() => busy = true);
     try {
@@ -1499,6 +1538,11 @@ class _BackupsSectionState extends State<_BackupsSection> {
                   onPressed: busy ? null : _retentionPreview,
                   icon: const Icon(Icons.cleaning_services_outlined),
                   label: const Text('정리 미리보기'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: busy ? null : _retentionApply,
+                  icon: const Icon(Icons.delete_sweep_outlined),
+                  label: const Text('정리 실행'),
                 ),
               ]),
             ),
