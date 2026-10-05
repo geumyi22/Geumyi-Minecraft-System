@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Read app version
         id: version
@@ -59,7 +59,7 @@ jobs:
           echo "build_number=$BUILD" >> "$GITHUB_OUTPUT"
 
       - name: Install Flutter 3.47.5
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@v2.23.0
         with:
           flutter-version: '3.47.5'
           channel: stable
@@ -243,7 +243,7 @@ jobs:
           ls -lh app/dist
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: GSCM-${{ steps.version.outputs.version_name }}-build${{ steps.version.outputs.build_number }}-Android
           path: app/dist/*
