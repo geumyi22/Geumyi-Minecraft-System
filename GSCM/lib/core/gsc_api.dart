@@ -242,6 +242,11 @@ class GscApi {
     return jMapList(json['backups']).map(BackupInfo.fromJson).toList(growable: false);
   }
 
+  Future<Map<String, dynamic>> backupRetentionDryRun(String id, {int keepLatest = 2}) =>
+      _request('POST', '/api/v4/backup/retention/dry-run',
+          body: {'id': id, 'keep_latest': keepLatest},
+          timeout: const Duration(seconds: 30));
+
   Future<void> backupAction(String id, String file, String action) async {
     await _request('POST', '/api/v1/backups/action', body: {'id': id, 'file': file, 'action': action}, timeout: const Duration(minutes: 2));
   }
