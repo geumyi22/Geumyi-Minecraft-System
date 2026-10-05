@@ -123,7 +123,7 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 
 ## 2026-10-05 repo-side progress
 
-Current main evidence: `ff5aa528e04c9d84f3ba788d764a3304b8444dd4`.
+Day 11 runtime-code baseline evidence: `ff5aa528e04c9d84f3ba788d764a3304b8444dd4` (the following documentation-only commits do not change runtime code).
 
 Completed in source/CI without touching the live Minecraft/Velocity processes:
 
