@@ -1,0 +1,20 @@
+{
+  "version": "4.3.0",
+  "platform": "windows/amd64",
+  "control_api": 1,
+  "mobile_backend": true,
+  "pairing_qr": true,
+  "day9_transactional_updates": true,
+  "day11_fleet_update_policy": true,
+  "day11_external_staging": true,
+  "day11_gsc_self_update_staging": true,
+  "day11_protection_recovery_2": true,
+  "post_start_health_gate": true,
+  "automatic_rollback": true,
+  "deployment_dependencies": true,
+  "server_tools": "1.1.1-HOTFIX",
+  "discord_status": "1.1.1",
+  "status_agent": "0.5.4",
+  "gscm_target": "1.1.5+115",
+  "live_e2e_verified": false
+}

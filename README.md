@@ -4,9 +4,9 @@
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
-| GSC | 4.2.4 | GSC/ServerCenter | Recovered source; Day 9 transaction/health/rollback baseline; Windows Go tests covered by System CI |
+| GSC | 4.3.0 source target / 4.2.4 live baseline | GSC/ServerCenter | Day 11 Update Center/self-update/fleet/protection source; live 4.3.0 host E2E still required before baseline promotion |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction; JDK 21 clean build succeeds |
-| GSCM | 1.1.2+113 | GSCM | Recovered Flutter/Android source and iOS generation scripts; Day-6 realtime status hotfix applied |
+| GSCM | 1.1.5+115 | GSCM | Day 11 mobile target; Android/iOS CI builds pass, real-device Day 11 E2E still required |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | Exact HOTFIX/overlay delta recovered and matched against final deployed JAR; legacy 0.1.5 core remains binary-only |
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full plugin source, stubs and tests |
 | GeumyiNetwork | 0.1.0 | Plugins/GeumyiNetwork | Day 10 four-server transfer/last-location routing plugin; Java host E2E verified |
@@ -28,7 +28,7 @@
 | Day 1~9 | ✅ 완료 |
 | Day 10 | ✅ Java + Bedrock four-server/Lobby real-client E2E 완료 |
 | Day 11 | ⏳ GSC 4.3 / GSCM 1.1.5 — Operations UX & Fleet Management |
-| Day 12 | ⏳ Extended Automation & Production Hardening |
+| Day 12 | ⏳ Final Production Hardening & Closure |
 
 Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/마감을 수행한 milestone**입니다. Day 8과 Day 9는 모두 완료 상태이며, 각 E2E PASS는 완료의 근거입니다.
 

@@ -1,0 +1,11 @@
+Geumyi Server Center v4.3.0 — Day 11 Operations UX & Fleet Management
+
+- Added per-server update policy, channel override and signed release pin.
+- Added fleet update status APIs and UI controls.
+- Added player-aware update dry-run/safety.
+- Added official-metadata external component inventory and verified staging.
+- Added signed GSC self-update discovery and staging with fail-open startup checks.
+- Bound authenticated RCON health evidence to the current backend lifetime.
+- Expanded Protection & Recovery with disk preflight, retention dry-run and active-transaction deletion guards.
+- Preserved Day 9 transaction/health/automatic rollback foundations.
+- Live server-PC, external apply/rollback and real-device E2E remain separate runtime gates.
