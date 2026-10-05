@@ -92,6 +92,61 @@ func backupRoots(dir, scope string) ([]string, error) {
 	}
 }
 
+func estimateBackupSourceBytes(base string, roots []string) (int64, error) {
+	var total int64
+	seen := map[string]bool{}
+	for _, rel := range roots {
+		target := base
+		if rel != "." {
+			target = filepath.Join(base, filepath.FromSlash(rel))
+		}
+		err := filepath.Walk(target, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.Mode()&os.ModeSymlink != 0 {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+			if info.IsDir() {
+				return nil
+			}
+			clean := filepath.Clean(path)
+			if seen[clean] {
+				return nil
+			}
+			seen[clean] = true
+			total += info.Size()
+			return nil
+		})
+		if err != nil {
+			return 0, err
+		}
+	}
+	return total, nil
+}
+
+func backupDiskGuardForFree(sourceBytes, freeBytes int64) error {
+	if sourceBytes < 0 {
+		sourceBytes = 0
+	}
+	if freeBytes <= 0 {
+		return nil
+	}
+	margin := sourceBytes / 10
+	const minimumMargin = int64(512 << 20)
+	if margin < minimumMargin {
+		margin = minimumMargin
+	}
+	required := sourceBytes + margin
+	if freeBytes < required {
+		return fmt.Errorf("백업 디스크 여유 공간 부족: 예상 원본 %d bytes + 안전 여유 %d bytes, 사용 가능 %d bytes", sourceBytes, margin, freeBytes)
+	}
+	return nil
+}
+
 func withOnlineWorldFreeze(s ServerConfig, fn func() error) error {
 	online := tcpOpen("127.0.0.1", s.JavaPort, 300*time.Millisecond)
 	if !online {
@@ -167,6 +222,15 @@ func createBackup(s ServerConfig, scope string, checkpoints bool) (BackupInfo, e
 	}
 	if scope == "full" && tcpOpen("127.0.0.1", s.JavaPort, 300*time.Millisecond) {
 		return BackupInfo{}, fmt.Errorf("전체 서버 백업은 서버를 정상 종료한 뒤 실행하세요")
+	}
+	sourceBytes, sizeErr := estimateBackupSourceBytes(dir, roots)
+	if sizeErr != nil {
+		return BackupInfo{}, fmt.Errorf("백업 크기 사전 계산 실패: %w", sizeErr)
+	}
+	freeBytes := int64(getHostStats().DiskFreeGB * 1073741824)
+	if e = backupDiskGuardForFree(sourceBytes, freeBytes); e != nil {
+		appendV4Event("warn", "backup", s.ID, "백업 디스크 가드 차단", e.Error())
+		return BackupInfo{}, e
 	}
 	root := backupBase(s.ID, checkpoints)
 	if e = os.MkdirAll(root, 0755); e != nil {
