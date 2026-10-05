@@ -58,9 +58,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version-file: GSC/ServerCenter/go.mod
           cache: false
@@ -74,9 +74,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
@@ -98,7 +98,7 @@ jobs:
           cp "$JAR" dist/statusagent/
           (cd dist/statusagent && sha256sum GeumyiStatusAgent-0.5.4.jar > GeumyiStatusAgent-0.5.4.jar.sha256)
       - name: Upload StatusAgent artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: statusagent-0.5.4
           path: dist/statusagent/*
@@ -111,9 +111,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
@@ -137,7 +137,7 @@ jobs:
           cp "$JAR" dist/gds/
           (cd dist/gds && sha256sum GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar > GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256)
       - name: Upload GDS artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gds-1.1.1
           path: dist/gds/*
@@ -150,9 +150,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
@@ -186,7 +186,7 @@ jobs:
           cp "$JAR" dist/gst/
           (cd dist/gst && sha256sum GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar > GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256)
       - name: Upload GST artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gst-1.1.1-hotfix
           path: dist/gst/*
@@ -199,14 +199,14 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
       - name: Set up Gradle 9.1.0
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '9.1.0'
       - name: Build Technology
@@ -227,7 +227,7 @@ jobs:
           cp "$SRC" "dist/technology/$OUT"
           (cd dist/technology && sha256sum "$OUT" > "$OUT.sha256")
       - name: Upload Technology artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: technology-0.1.4
           path: dist/technology/*
@@ -240,14 +240,14 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
       - name: Set up Gradle 9.1.0
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '9.1.0'
       - name: Build Chemistry
@@ -268,7 +268,7 @@ jobs:
           cp "$SRC" "dist/chemistry/$OUT"
           (cd dist/chemistry && sha256sum "$OUT" > "$OUT.sha256")
       - name: Upload Chemistry artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chemistry-0.4.1
           path: dist/chemistry/*
@@ -281,14 +281,14 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
       - name: Set up Gradle 9.1.0
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '9.1.0'
       - name: Build GeumyiLobby
@@ -321,7 +321,7 @@ jobs:
           grep -Eq '^level-type=minecraft:flat$' "$PROPS"
           grep -Eq '^pvp=false$' "$PROPS"
       - name: Upload GeumyiLobby artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: lobby-0.1.0
           path: dist/lobby/*
@@ -334,14 +334,14 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
       - name: Set up Gradle 9.1.0
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '9.1.0'
       - name: Build GeumyiNetwork
@@ -363,7 +363,7 @@ jobs:
           cp "$SRC" "dist/network/$OUT"
           (cd dist/network && sha256sum "$OUT" > "$OUT.sha256")
       - name: Upload GeumyiNetwork artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: network-0.1.0
           path: dist/network/*
@@ -376,7 +376,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Validate JSON, pack.mcmeta and manifest.json
         shell: bash
         run: |
@@ -458,24 +458,24 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version-file: GSC/ServerCenter/go.mod
           cache: false
       - name: Download StatusAgent
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: statusagent-0.5.4
           path: ci-artifacts/statusagent
       - name: Download GDS
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gds-1.1.1
           path: ci-artifacts/gds
       - name: Download GST
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: gst-1.1.1-hotfix
           path: ci-artifacts/gst
@@ -521,7 +521,7 @@ jobs:
           Write-Host 'DAY10 BUILT HOST SELFTEST PASS'
 
       - name: Upload GSC CI package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gsc-4.3.0-ci
           path: GSC/ServerCenter/dist-ci/*
@@ -534,7 +534,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Parse and self-test Bedrock staging
         shell: powershell
         run: |
@@ -584,7 +584,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Validate deployment catalog and generator
         shell: bash
@@ -722,7 +722,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Parse Day 8 scripts with Windows PowerShell
         shell: powershell

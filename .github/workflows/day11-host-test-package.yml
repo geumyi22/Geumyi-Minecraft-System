@@ -22,9 +22,9 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: GSC/ServerCenter/go.mod
           cache: false
@@ -109,7 +109,7 @@ jobs:
           } | ConvertTo-Json | Set-Content day11-host-test/host-test-manifest.json -Encoding UTF8
 
       - name: Upload host-test package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: day11-phase1-gsc-host-test
           path: day11-host-test/*
