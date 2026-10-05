@@ -3,11 +3,13 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -16,6 +18,8 @@ type GSCSelfUpdateStatus struct {
 	Installed         string `json:"installed"`
 	Latest            string `json:"latest,omitempty"`
 	Available         bool   `json:"available"`
+	DowngradeBlocked  bool   `json:"downgrade_blocked"`
+	TargetRelation    string `json:"target_relation,omitempty"`
 	Channel           string `json:"channel"`
 	Release           string `json:"release,omitempty"`
 	File              string `json:"file,omitempty"`
@@ -111,6 +115,77 @@ func reserveGSCSelfUpdateLaunch(target string) error {
 	return nil
 }
 
+func parseGSCVersion(v string) ([]int, error) {
+	v = strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(v, "v"), "V"))
+	if v == "" {
+		return nil, errors.New("empty version")
+	}
+	if i := strings.IndexAny(v, "-+"); i >= 0 {
+		v = v[:i]
+	}
+	parts := strings.Split(v, ".")
+	if len(parts) < 2 || len(parts) > 4 {
+		return nil, fmt.Errorf("unsupported version format: %s", v)
+	}
+	out := make([]int, len(parts))
+	for i, p := range parts {
+		if p == "" {
+			return nil, fmt.Errorf("unsupported version format: %s", v)
+		}
+		n, err := strconv.Atoi(p)
+		if err != nil || n < 0 {
+			return nil, fmt.Errorf("unsupported version format: %s", v)
+		}
+		out[i] = n
+	}
+	return out, nil
+}
+
+func compareGSCVersions(a, b string) (int, error) {
+	av, err := parseGSCVersion(a)
+	if err != nil {
+		return 0, err
+	}
+	bv, err := parseGSCVersion(b)
+	if err != nil {
+		return 0, err
+	}
+	n := len(av)
+	if len(bv) > n {
+		n = len(bv)
+	}
+	for i := 0; i < n; i++ {
+		ai, bi := 0, 0
+		if i < len(av) {
+			ai = av[i]
+		}
+		if i < len(bv) {
+			bi = bv[i]
+		}
+		if ai < bi {
+			return -1, nil
+		}
+		if ai > bi {
+			return 1, nil
+		}
+	}
+	return 0, nil
+}
+
+func requireNewerGSCVersion(target string) error {
+	cmp, err := compareGSCVersions(appVersion, target)
+	if err != nil {
+		return fmt.Errorf("cannot safely compare GSC versions: %w", err)
+	}
+	if cmp >= 0 {
+		if cmp == 0 {
+			return fmt.Errorf("GSC is already on verified target version %s", target)
+		}
+		return fmt.Errorf("downgrade blocked: installed GSC %s is newer than verified release %s", appVersion, target)
+	}
+	return nil
+}
+
 func checkGSCSelfUpdate() GSCSelfUpdateStatus {
 	c := normalizeUpdateConfig(configSnapshot().Update)
 	st := GSCSelfUpdateStatus{
@@ -139,7 +214,20 @@ func checkGSCSelfUpdate() GSCSelfUpdateStatus {
 	st.SHA256 = comp.SHA256
 	st.Size = comp.Size
 	st.SignatureVerified = true
-	st.Available = comp.Version != appVersion
+	if cmp, cmpErr := compareGSCVersions(appVersion, comp.Version); cmpErr != nil {
+		st.TargetRelation = "unknown"
+		st.Message = "GSC 버전 비교 실패"
+		st.Error = cmpErr.Error()
+		return st
+	} else if cmp < 0 {
+		st.TargetRelation = "newer"
+		st.Available = true
+	} else if cmp == 0 {
+		st.TargetRelation = "same"
+	} else {
+		st.TargetRelation = "older"
+		st.DowngradeBlocked = true
+	}
 	stage := selfUpdateStagePath(release, comp)
 	if ok, _ := verifyArtifactFile(stage, comp); ok {
 		st.Staged = true
@@ -147,6 +235,8 @@ func checkGSCSelfUpdate() GSCSelfUpdateStatus {
 	}
 	if st.Available {
 		st.Message = "검증된 GSC 업데이트 사용 가능"
+	} else if st.DowngradeBlocked {
+		st.Message = "현재 GSC가 검증 release보다 최신입니다 · 다운그레이드 차단"
 	} else {
 		st.Message = "GSC가 현재 검증 release와 일치합니다"
 	}
@@ -192,6 +282,10 @@ func apiV4GSCSelfUpdateStage(w http.ResponseWriter, r *http.Request) {
 	comp, err := selfUpdateComponent(m)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	if err = requireNewerGSCVersion(comp.Version); err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
 	cachePath, err := downloadVerifiedArtifact(c, release, comp)
@@ -260,8 +354,8 @@ func apiV4GSCSelfUpdateApply(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
 	}
-	if comp.Version == appVersion {
-		http.Error(w, "GSC is already on the verified target version", http.StatusConflict)
+	if err = requireNewerGSCVersion(comp.Version); err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
 	stage := selfUpdateStagePath(release, comp)

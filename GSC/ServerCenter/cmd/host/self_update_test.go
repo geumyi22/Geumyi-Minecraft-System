@@ -94,3 +94,35 @@ func TestDay11SelfUpdateLaunchLockRejectsConcurrentAndRecoversStale(t *testing.T
 		t.Fatalf("stale self-update lock was not recovered: %v", err)
 	}
 }
+
+
+func TestDay11GSCVersionComparisonBlocksDowngrade(t *testing.T) {
+	cases := []struct {
+		a, b string
+		want int
+	}{
+		{"4.3.0", "4.3.0", 0},
+		{"4.3.0", "4.3.1", -1},
+		{"4.3.0", "4.2.3", 1},
+		{"4.10.0", "4.9.9", 1},
+		{"v4.3.0", "4.3.0+115", 0},
+	}
+	for _, tc := range cases {
+		got, err := compareGSCVersions(tc.a, tc.b)
+		if err != nil {
+			t.Fatalf("%s vs %s: %v", tc.a, tc.b, err)
+		}
+		if got != tc.want {
+			t.Fatalf("%s vs %s: got %d want %d", tc.a, tc.b, got, tc.want)
+		}
+	}
+	if err := requireNewerGSCVersion("4.2.3"); err == nil {
+		t.Fatal("older signed release was accepted as self-update target")
+	}
+	if err := requireNewerGSCVersion("4.3.0"); err == nil {
+		t.Fatal("same version was accepted as self-update target")
+	}
+	if err := requireNewerGSCVersion("4.3.1"); err != nil {
+		t.Fatalf("newer version was rejected: %v", err)
+	}
+}
