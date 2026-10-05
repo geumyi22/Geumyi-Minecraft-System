@@ -123,29 +123,32 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 
 ## 2026-10-05 repo-side progress
 
-Day 11 runtime-code baseline evidence: `ff5aa528e04c9d84f3ba788d764a3304b8444dd4` (the following documentation-only commits do not change runtime code).
+Day 11 runtime-code baseline evidence: `22c233ab32b3f3022c956d7dd8fc7b552d48d703`.
 
 Completed in source/CI without touching the live Minecraft/Velocity processes:
 
-- Update Center fleet policy now supports per-server managed/manual/hold, Stable/Beta/Canary inheritance/override, signed release pinning and dry-run.
-- GSC/GSCM expose the fleet policy controls without restarting a server merely by saving policy.
+- GSC source/package target is now **4.3.0** while the last promoted live baseline remains 4.2.4 until host E2E.
+- Update Center fleet policy supports per-server managed/manual/hold, Stable/Beta/Canary inheritance/override, signed release pinning and dry-run.
+- GSC/GSCM expose fleet policy controls without restarting a server merely by saving policy.
 - Geyser/Floodgate/ViaVersion/ViaBackwards have official-metadata inventory plus SHA-256-gated **staging only**. Live proxy/backend JAR replacement is not claimed.
-- GSC self-update has signed manifest discovery, fail-open startup checking and verified artifact staging. Live helper replacement/relaunch rollback is still a runtime gate.
+- GSC self-update now has signed manifest discovery, fail-open startup checking, verified artifact staging and a **headless helper replacement path**. The helper creates a GSC-only backup, closes/relaunches only the GSC desktop client when needed, stops only the GSC Host service, replaces GSC binaries, runs an HTTP health gate and restores the previous GSC binaries on failure. Minecraft/Paper/Velocity are not targeted by this helper. Live self-update execution is still a runtime gate.
 - RCON authenticated health evidence is tied to the current server lifetime rather than a fixed 12-hour TTL.
-- Protection & Recovery adds backup source-size disk preflight, protected/checkpoint retention exemptions, retention **dry-run**, and a conservative delete guard while a pending update transaction exists.
-- GSC and GSCM expose backup retention preview; preview never deletes files.
-- GSCM target is `1.1.5+115`; Android release APK and unsigned iOS IPA CI builds both passed.
+- Protection & Recovery adds backup source-size disk preflight, protected/checkpoint retention exemptions, retention dry-run and active-transaction deletion guards.
+- Retention **apply** is now source-implemented as an all-or-nothing move to GSC Trash, not permanent deletion. It requires an explicit confirmation token, rechecks pending-update protection and rolls already-moved candidates back if the batch fails.
+- GSC and GSCM expose retention preview + confirmed retention apply.
+- GSCM target is `1.1.5+115`; Android release APK and unsigned iOS IPA CI builds pass.
 
-CI evidence:
+Latest CI/build evidence:
 
-- System CI run `37317107084`: **PASS** on the current main SHA.
-- Day 11 Host Test Package run `37317107060`: **PASS** including `go test ./...`, WindowsGUI Host/Client build, script parser and safety guard.
-- Host-test artifact `11349015100`, digest `sha256:c0193ba301bd7d3aa678e732b034f9a41ea1a10a1a29ad2ea17e3cd3bd60381a`.
-- GSCM Android run `37316499921`: **PASS**, artifact `GSCM-1.1.5-build115-Android`.
-- GSCM iOS run `37316499905`: **PASS**, artifact `GSCM-1.1.5-build115-iOS-unsigned`.
-- GSCM control tests run `37316500013`: **PASS**.
+- System CI run `37323031612`: **PASS** on runtime SHA `22c233ab32b3f3022c956d7dd8fc7b552d48d703`, including **GSC 4.3.0 / Go test** and **GSC 4.3.0 / assemble CI Setup**.
+- GSC 4.3.0 CI artifact `11350918253`, digest `sha256:37ec5fbb03b848ee2cfe2c7f53427ba6619af7ef9619e8504384d7a8ca69089b`.
+- Day 11 Host Test Package run `37323031699`: **PASS**. Artifact `11350348741`, digest `sha256:34c099789a8da85a125e54fe0cfc16231ec4290a3623eb207be60e2c067e82bf`.
+- GSCM Android run `37321966682`: **PASS**. Artifact `11349963322` (`GSCM-1.1.5-build115-Android`), digest `sha256:727b6abe091c735c1f46e51399c2a73d2b81f2df1e111d0942381c6bcb672d8e`.
+- GSCM iOS run `37321965954`: **PASS**. Artifact `11350847140` (`GSCM-1.1.5-build115-iOS-unsigned`), digest `sha256:4c1a5b15c675f07a97b44ab1cfba3e88f6e8c37a159d398ef75bfac035ed6f34`.
+- GSCM update/control tests run `37321966119`: **PASS**.
+- Day 10 GSC Dashboard UI regression run `37321966080`: **PASS** after retention UI changes.
 
-These are CI/build results only. They do **not** convert the remaining live host, Android/iOS device, Java, Bedrock, external-component apply/rollback or final E2E gates to PASS.
+These are source/CI/build results only. They do **not** convert live host, self-update helper execution, Android/iOS device, Java, Bedrock, external-component apply/rollback or final E2E gates to PASS.
 
 ## Completion boundary
 

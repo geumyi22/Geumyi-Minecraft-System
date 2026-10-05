@@ -4,8 +4,8 @@ Geumyi Server Center v4.3.0 — Day 11 Operations UX & Fleet Management
 - Added fleet update status APIs and UI controls.
 - Added player-aware update dry-run/safety.
 - Added official-metadata external component inventory and verified staging.
-- Added signed GSC self-update discovery and staging with fail-open startup checks.
+- Added signed GSC self-update discovery and staging with fail-open startup checks.\n- Added headless GSC-only self-update helper with GSC binary backup, Host-service-only restart, health gate and rollback.
 - Bound authenticated RCON health evidence to the current backend lifetime.
-- Expanded Protection & Recovery with disk preflight, retention dry-run and active-transaction deletion guards.
+- Expanded Protection & Recovery with disk preflight, retention dry-run and active-transaction deletion guards.\n- Added confirmed retention apply that moves eligible backups to Trash transactionally; it does not permanently delete them.
 - Preserved Day 9 transaction/health/automatic rollback foundations.
 - Live server-PC, external apply/rollback and real-device E2E remain separate runtime gates.
