@@ -88,3 +88,35 @@ func TestDay11GitHubPublicJSONUsesConfiguredAuth(t *testing.T) {
 		t.Fatalf("Authorization header missing or wrong: %q", gotAuth)
 	}
 }
+
+
+func TestDay11GitHubPublicJSONFreshBypassesFreshCache(t *testing.T) {
+	oldConfigPath := configPath
+	configPath = filepath.Join(t.TempDir(), "server.json")
+	defer func() { configPath = oldConfigPath }()
+
+	hits := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		w.Header().Set("Content-Type", "application/json")
+		if hits == 1 {
+			_, _ = w.Write([]byte(`{"release":"old"}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{"release":"new"}`))
+	}))
+	defer srv.Close()
+
+	client := &http.Client{Timeout: 2 * time.Second}
+	body, cached, err := githubPublicJSON(client, srv.URL+"?fresh=1", 1<<20)
+	if err != nil || cached || string(body) != `{"release":"old"}` {
+		t.Fatalf("initial request failed: cached=%v err=%v body=%s", cached, err, body)
+	}
+	body, cached, err = githubPublicJSONFresh(client, srv.URL+"?fresh=1", 1<<20)
+	if err != nil || cached || string(body) != `{"release":"new"}` {
+		t.Fatalf("forced refresh failed: cached=%v err=%v body=%s", cached, err, body)
+	}
+	if hits != 2 {
+		t.Fatalf("forced refresh must hit network, hits=%d", hits)
+	}
+}
