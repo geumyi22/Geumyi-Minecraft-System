@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../core/connection_store.dart';
 import '../core/dashboard_controller.dart';
@@ -29,6 +30,7 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int index = 0;
+  String? appVersion;
   late final List<Widget> pages;
   static const titles = ['Command Center', '활동 기록', '자동화', '설정'];
 
@@ -46,10 +48,24 @@ class _HomeShellState extends State<HomeShell> {
         onLogout: widget.onLogout,
       ),
     ];
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (!mounted) return;
+      setState(() => appVersion = info.version);
+    } catch (_) {
+      // Version text is optional UI metadata. Do not block the dashboard if
+      // platform package metadata cannot be read.
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final versionText = appVersion == null ? 'GSCM · GSC 4.2.1+' : 'GSCM $appVersion · GSC 4.2.1+';
+
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 16,
@@ -66,7 +82,7 @@ class _HomeShellState extends State<HomeShell> {
           const SizedBox(width: 10),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(titles[index], style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
-            if (index == 0) const Text('GSCM 1.1.2 · GSC 4.2.1+', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
+            if (index == 0) Text(versionText, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
           ]),
         ]),
         actions: [
