@@ -53,3 +53,38 @@ func TestDay11GitHubRateLimitErrorIncludesReset(t *testing.T) {
 		t.Fatal("expected diagnostic error")
 	}
 }
+
+
+func TestDay11GitHubPublicJSONUsesConfiguredAuth(t *testing.T) {
+	oldConfigPath := configPath
+	configPath = filepath.Join(t.TempDir(), "server.json")
+	defer func() { configPath = oldConfigPath }()
+
+	configMu.Lock()
+	oldCfg := cfg
+	cfg = defaultConfig()
+	cfg.GitHubToken = "github_pat_test_token_abcdefghijklmnopqrstuvwxyz"
+	configMu.Unlock()
+	defer func() {
+		configMu.Lock()
+		cfg = oldCfg
+		configMu.Unlock()
+	}()
+
+	gotAuth := ""
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotAuth = r.Header.Get("Authorization")
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"ok":true}`))
+	}))
+	defer srv.Close()
+
+	client := &http.Client{Timeout: 2 * time.Second}
+	_, _, err := githubPublicJSON(client, srv.URL+"?auth=1", 1<<20)
+	if err != nil {
+		t.Fatalf("authenticated request failed: %v", err)
+	}
+	if gotAuth != "Bearer "+cfg.GitHubToken {
+		t.Fatalf("Authorization header missing or wrong: %q", gotAuth)
+	}
+}

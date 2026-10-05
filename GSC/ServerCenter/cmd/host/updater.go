@@ -225,6 +225,40 @@ func registerUpdateRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/update/self/apply", requireAuth(apiV4GSCSelfUpdateApply))
 }
 
+func publicUpdateConfig(c Config) map[string]any {
+	u := normalizeUpdateConfig(c.Update)
+	return map[string]any{
+		"enabled": u.Enabled,
+		"repository": u.Repository,
+		"channel": u.Channel,
+		"public_key_path": u.PublicKeyPath,
+		"timeout_seconds": u.TimeoutSeconds,
+		"github_authenticated": strings.TrimSpace(c.GitHubToken) != "",
+	}
+}
+
+func validateGitHubToken(token string) error {
+	token = strings.TrimSpace(token)
+	if len(token) < 20 || strings.ContainsAny(token, "\r\n\x00") {
+		return errors.New("invalid GitHub token")
+	}
+	client := &http.Client{Timeout: 12 * time.Second}
+	req, _ := http.NewRequest(http.MethodGet, "https://api.github.com/rate_limit", nil)
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+	req.Header.Set("User-Agent", "GeumyiServerCenter/"+appVersion)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("GitHub token validation failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("GitHub token validation HTTP %d", resp.StatusCode)
+	}
+	return nil
+}
+
 func apiV4UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "GET required", http.StatusMethodNotAllowed)
@@ -244,13 +278,13 @@ func apiV4UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	for _, s := range c.Servers {
 		out = append(out, updateStatusFor(s.ID))
 	}
-	writeJSON(w, map[string]any{"settings": normalizeUpdateConfig(c.Update), "servers": out})
+	writeJSON(w, map[string]any{"settings": publicUpdateConfig(c), "servers": out})
 }
 
 func apiV4UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		writeJSON(w, normalizeUpdateConfig(configSnapshot().Update))
+		writeJSON(w, publicUpdateConfig(configSnapshot()))
 		return
 	case http.MethodPost:
 	default:
@@ -262,7 +296,9 @@ func apiV4UpdateSettings(w http.ResponseWriter, r *http.Request) {
 		Repository     *string `json:"repository"`
 		Channel        *string `json:"channel"`
 		PublicKeyPath  *string `json:"public_key_path"`
-		TimeoutSeconds *int    `json:"timeout_seconds"`
+		TimeoutSeconds  *int    `json:"timeout_seconds"`
+		GitHubToken     *string `json:"github_token"`
+		ClearGitHubToken bool   `json:"clear_github_token"`
 	}
 	if json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q) != nil {
 		http.Error(w, "bad json", http.StatusBadRequest)
@@ -270,6 +306,19 @@ func apiV4UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	c := configSnapshot()
 	u := c.Update
+	if q.ClearGitHubToken {
+		c.GitHubToken = ""
+	}
+	if q.GitHubToken != nil {
+		token := strings.TrimSpace(*q.GitHubToken)
+		if token != "" {
+			if err := validateGitHubToken(token); err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			c.GitHubToken = token
+		}
+	}
 	if q.Enabled != nil {
 		u.Enabled = *q.Enabled
 	}
@@ -306,7 +355,7 @@ func apiV4UpdateSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	appendV4Event("info", "update", "", "업데이트 설정 저장", fmt.Sprintf("enabled=%v channel=%s repository=%s", u.Enabled, u.Channel, u.Repository))
-	writeJSON(w, map[string]any{"ok": true, "settings": u})
+	writeJSON(w, map[string]any{"ok": true, "settings": publicUpdateConfig(c)})
 }
 
 func apiV4UpdatePolicy(w http.ResponseWriter, r *http.Request) {
@@ -407,7 +456,7 @@ func apiV4UpdateFleet(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, map[string]any{
 		"schema": 1,
-		"global": normalizeUpdateConfig(c.Update),
+		"global": publicUpdateConfig(c),
 		"servers": rows,
 	})
 }

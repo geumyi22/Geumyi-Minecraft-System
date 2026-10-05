@@ -116,6 +116,9 @@ func githubPublicJSON(client *http.Client, rawURL string, max int64) ([]byte, bo
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 	req.Header.Set("User-Agent", "GeumyiServerCenter/"+appVersion)
+	if token := strings.TrimSpace(configSnapshot().GitHubToken); token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {

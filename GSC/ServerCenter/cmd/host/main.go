@@ -32,6 +32,7 @@ const appVersion = "4.3.0"
 
 type Config struct {
 	Bind                string         `json:"bind"`
+	GitHubToken         string         `json:"github_token,omitempty"`
 	Port                int            `json:"port"`
 	APIToken            string         `json:"api_token"`
 	AllowLoopbackNoAuth bool           `json:"allow_loopback_no_auth"`
@@ -330,6 +331,11 @@ func loadOrCreateConfig(path string) (Config, error) {
 			return c, fmt.Errorf("API token decrypt failed: %w", err)
 		}
 		c.APIToken = plain
+		githubPlain, err := securestore.UnprotectString(c.GitHubToken)
+		if err != nil {
+			return c, fmt.Errorf("GitHub token decrypt failed: %w", err)
+		}
+		c.GitHubToken = githubPlain
 		if c.Port == 0 {
 			c.Port = 8787
 		}
@@ -504,6 +510,11 @@ func saveHostConfig(next Config) error {
 		return err
 	}
 	disk.APIToken = protected
+	githubProtected, err := securestore.ProtectString(next.GitHubToken, true)
+	if err != nil {
+		return err
+	}
+	disk.GitHubToken = githubProtected
 	b, err := json.MarshalIndent(disk, "", "  ")
 	if err != nil {
 		return err
