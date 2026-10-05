@@ -192,20 +192,12 @@ func fetchGeyserArtifact(project, expectedFile string) (ExternalArtifact, error)
 func fetchGitHubExternalArtifact(owner, repo, prefix string) (ExternalArtifact, error) {
 	client := externalHTTPClient()
 	api := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", url.PathEscape(owner), url.PathEscape(repo))
-	req, _ := http.NewRequest(http.MethodGet, api, nil)
-	req.Header.Set("Accept", "application/vnd.github+json")
-	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
-	req.Header.Set("User-Agent", "GeumyiServerCenter/"+appVersion)
-	resp, err := client.Do(req)
+	body, cached, err := githubPublicJSON(client, api, 4<<20)
 	if err != nil {
 		return ExternalArtifact{}, fmt.Errorf("%s release 조회 실패: %w", prefix, err)
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return ExternalArtifact{}, fmt.Errorf("%s release HTTP %d", prefix, resp.StatusCode)
-	}
 	var rel githubExternalRelease
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 4<<20)).Decode(&rel); err != nil {
+	if err := json.Unmarshal(body, &rel); err != nil {
 		return ExternalArtifact{}, fmt.Errorf("%s release 해석 실패: %w", prefix, err)
 	}
 	if rel.Draft || strings.TrimSpace(rel.TagName) == "" {
@@ -217,12 +209,16 @@ func fetchGitHubExternalArtifact(owner, repo, prefix string) (ExternalArtifact, 
 			continue
 		}
 		sha := parseSHA256Digest(a.Digest)
+		msg := map[bool]string{true: "GitHub asset SHA-256 digest 확인됨", false: "GitHub asset digest가 없어 자동 staging 차단"}[sha != ""]
+		if cached {
+			msg += " · GitHub API 캐시 사용"
+		}
 		return ExternalArtifact{
 			Component: strings.ToLower(prefix), Source: "GitHub official release",
 			Version: m[2], File: a.Name, URL: a.BrowserDownloadURL,
 			SHA256: sha, SHA256Verified: sha != "", StageSupported: sha != "",
 			Status: "unknown",
-			Message: map[bool]string{true: "GitHub asset SHA-256 digest 확인됨", false: "GitHub asset digest가 없어 자동 staging 차단"}[sha != ""],
+			Message: msg,
 		}, nil
 	}
 	return ExternalArtifact{}, fmt.Errorf("%s release에서 JAR asset을 찾지 못했습니다", prefix)

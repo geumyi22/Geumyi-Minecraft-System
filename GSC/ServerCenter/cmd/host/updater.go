@@ -767,20 +767,12 @@ func fetchVerifiedManifestPinned(c UpdateConfig, pin string) (DeploymentManifest
 	timeout := time.Duration(c.TimeoutSeconds) * time.Second
 	client := &http.Client{Timeout: timeout}
 	apiURL := "https://api.github.com/repos/" + url.PathEscape(parts[0]) + "/" + url.PathEscape(parts[1]) + "/releases?per_page=30"
-	req, _ := http.NewRequest(http.MethodGet, apiURL, nil)
-	req.Header.Set("Accept", "application/vnd.github+json")
-	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
-	req.Header.Set("User-Agent", "GeumyiServerCenter/"+appVersion)
-	resp, err := client.Do(req)
+	body, _, err := githubPublicJSON(client, apiURL, 4<<20)
 	if err != nil {
 		return zero, "", "", fmt.Errorf("GitHub release 조회 실패: %w", err)
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return zero, "", "", fmt.Errorf("GitHub release 조회 HTTP %d", resp.StatusCode)
-	}
 	var releases []githubRelease
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 4<<20)).Decode(&releases); err != nil {
+	if err := json.Unmarshal(body, &releases); err != nil {
 		return zero, "", "", fmt.Errorf("GitHub release 응답 해석 실패: %w", err)
 	}
 	manifestName := "deployment-" + c.Channel + ".json"
