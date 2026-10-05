@@ -826,7 +826,6 @@ func fetchVerifiedManifestPinnedMode(c UpdateConfig, pin string, forceNetwork bo
 	client := &http.Client{Timeout: timeout}
 	apiURL := "https://api.github.com/repos/" + url.PathEscape(parts[0]) + "/" + url.PathEscape(parts[1]) + "/releases?per_page=30"
 	var body []byte
-	var err error
 	if forceNetwork {
 		body, _, err = githubPublicJSONFresh(client, apiURL, 4<<20)
 	} else {
