@@ -1,6 +1,6 @@
 # Geumyi Minecraft System — Canonical Day Timeline
 
-기준일: 2026-10-04
+기준일: 2026-10-06
 
 이 문서는 프로젝트의 **일차 번호와 완료 상태를 결정하는 단일 기준(source of truth)** 입니다.
 기존 `DAY*-*.md`, CI run, release, E2E 보고서의 역사적 번호는 이 문서의 번호와 동일하게 유지합니다.
@@ -27,7 +27,7 @@
 | 8 | Secure Release & Update Foundation | ✅ 완료 | signed manifest, SHA-256, Stable/Beta/Canary, pre-start updater, Wild Technology 0.1.4 실제 update + Playground isolation E2E |
 | 9 | Transaction / Backup / Rollback | ✅ 완료 | transaction journal, backup/staging/atomic replacement, post-start health gate, interrupted recovery, automatic rollback, failure injection + 서버 PC Final E2E |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 | Java four-server/Lobby/routing/reboot E2E + Bedrock real-client routing/return/location behavior를 사용자 실기기 확인으로 PASS. See `DAY10-E2E-REPORT.md` |
-| 11 | Operations UX & Fleet Management | ⏳ 예정 | **GSC 4.3 / GSCM 1.1.5 목표**. Full Update Center, startup version check, channel/pin/hold, player-aware update/restart, Geyser/Floodgate/Via policy, 운영 상태 버그 수정 |
+| 11 | Operations UX & Fleet Management | 🔄 진행 중 | **GSC 4.3.2 / GSCM 1.1.5+116**. Phase 11.0~11.5 사용자/실서버 검증 완료; 11.6 Full Fleet UX, 11.7 Protection & Recovery 2.0, Final E2E 남음 |
 | 12 | Final Production Hardening & Closure | ⏳ 예정 | Golden baseline, managed Resource/DataPack, full health/storage/security hardening, trusted builds/offline cache, DR drill, final verifier/E2E/soak, Maintenance Mode handoff |
 
 ## Day 8 / Day 9 완료 상태
