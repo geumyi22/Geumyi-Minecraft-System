@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   mobile_scanner: 7.4.2
+  package_info_plus: 8.3.1
 
 dev_dependencies:
   flutter_test:
