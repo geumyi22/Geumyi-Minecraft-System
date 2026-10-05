@@ -26,6 +26,10 @@ type selfUpdateReport struct {
 	RolledBack       bool   `json:"rolled_back"`
 	HostHealth       bool   `json:"host_health"`
 	ClientRelaunched bool   `json:"client_relaunched"`
+	ClientSessionID  uint32 `json:"client_session_id,omitempty"`
+	ClientPID        uint32 `json:"client_pid,omitempty"`
+	ClientLaunchMethod string `json:"client_launch_method,omitempty"`
+	ClientRelaunchError string `json:"client_relaunch_error,omitempty"`
 	Error            string `json:"error,omitempty"`
 }
 
@@ -246,6 +250,21 @@ func restoreSelfUpdateFiles(files []selfUpdateFile) {
 	}
 }
 
+func relaunchSelfUpdateClient(report *selfUpdateReport, clientTarget string) {
+	launch, err := launchClientInInteractiveSession(clientTarget)
+	if err != nil {
+		report.ClientRelaunched = false
+		report.ClientRelaunchError = err.Error()
+		setupLog("self-update client relaunch failed: " + err.Error())
+		return
+	}
+	report.ClientRelaunched = true
+	report.ClientSessionID = launch.SessionID
+	report.ClientPID = launch.PID
+	report.ClientLaunchMethod = launch.Method
+	setupLog(fmt.Sprintf("self-update client relaunched: session=%d pid=%d method=%s", launch.SessionID, launch.PID, launch.Method))
+}
+
 func runSelfUpdateMode() {
 	report := selfUpdateReport{
 		Schema: 1,
@@ -345,7 +364,7 @@ func runSelfUpdateMode() {
 			report.Status = "failed"
 			report.Error = err.Error()
 			if clientWasRunning {
-				_ = exec.Command(clientTarget).Start()
+				relaunchSelfUpdateClient(&report, clientTarget)
 			}
 			return
 		}
@@ -365,9 +384,7 @@ func runSelfUpdateMode() {
 			}
 		}
 		if clientWasRunning {
-			if exec.Command(clientTarget).Start() == nil {
-				report.ClientRelaunched = true
-			}
+			relaunchSelfUpdateClient(&report, clientTarget)
 		}
 	}
 
@@ -402,9 +419,7 @@ func runSelfUpdateMode() {
 		report.HostHealth = true
 	}
 	if clientWasRunning {
-		if err := exec.Command(clientTarget).Start(); err == nil {
-			report.ClientRelaunched = true
-		}
+		relaunchSelfUpdateClient(&report, clientTarget)
 	}
 	report.Status = "success"
 	setupLog("self-update success: target=" + version + " backup=" + backupDir)
