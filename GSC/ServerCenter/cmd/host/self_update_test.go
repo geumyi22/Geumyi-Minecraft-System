@@ -1,0 +1,71 @@
+package main
+
+import (
+	"path/filepath"
+	"testing"
+)
+
+func TestDay11SelfUpdateComponentValidation(t *testing.T) {
+	good := DeploymentManifest{
+		Schema: 1,
+		Channel: "canary",
+		Release: "test",
+		Repository: "geumyi22/Geumyi-Minecraft-System",
+		Components: map[string]DeploymentComponent{
+			"gsc": {
+				Version: "4.3.0",
+				Kind: "gsc",
+				File: "GeumyiServerCenter-v4.3.0-Setup.exe",
+				URL: "https://github.com/example/release/GeumyiServerCenter-v4.3.0-Setup.exe",
+				SHA256: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+				Size: 123456,
+				Targets: []string{"host"},
+				RequiresRestart: true,
+			},
+		},
+	}
+	comp, err := selfUpdateComponent(good)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if comp.Version != "4.3.0" || comp.Kind != "gsc" {
+		t.Fatalf("unexpected component: %+v", comp)
+	}
+
+	badTarget := good
+	badTarget.Components = map[string]DeploymentComponent{"gsc": comp}
+	x := badTarget.Components["gsc"]
+	x.Targets = []string{"wild"}
+	badTarget.Components["gsc"] = x
+	if _, err := selfUpdateComponent(badTarget); err == nil {
+		t.Fatal("non-host GSC target accepted")
+	}
+
+	badFile := good
+	badFile.Components = map[string]DeploymentComponent{"gsc": comp}
+	x = badFile.Components["gsc"]
+	x.File = "../evil.exe"
+	badFile.Components["gsc"] = x
+	if _, err := selfUpdateComponent(badFile); err == nil {
+		t.Fatal("unsafe self-update file accepted")
+	}
+}
+
+func TestDay11SelfUpdateStagePathStaysUnderGSCStaging(t *testing.T) {
+	oldConfigPath := configPath
+	configPath = filepath.Join(t.TempDir(), "server.json")
+	defer func() { configPath = oldConfigPath }()
+
+	comp := DeploymentComponent{
+		File: "GeumyiServerCenter-v4.3.0-Setup.exe",
+	}
+	got := selfUpdateStagePath("../release", comp)
+	wantRoot := filepath.Join(v4Root(), "Staging", "GSC")
+	rel, err := filepath.Rel(wantRoot, got)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rel == ".." || len(rel) >= 3 && rel[:3] == ".."+string(filepath.Separator) {
+		t.Fatalf("stage path escaped root: %s", got)
+	}
+}
