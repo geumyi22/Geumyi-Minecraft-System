@@ -1,7 +1,7 @@
 # Day 11 — Operations UX & Fleet Management
 
-Status: **IN PROGRESS — Phase 11.0 live preflight PASS; latest Day 11 repo-side GSC/GSCM CI PASS; live host/device E2E still required before closure**
-Target: **GSC 4.3.0 / GSCM 1.1.5**
+Status: **IN PROGRESS — Phase 11.0~11.5 complete; Phase 11.6/11.7 and Day 11 Final E2E remain**
+Current verified target: **GSC 4.3.2 / GSCM 1.1.5+116**
 
 ## Safety rules
 
@@ -38,7 +38,7 @@ Key follow-ups:
 - backup footprint was ~198.6 GiB, so Protection & Recovery 2.0 is prioritized.
 - no pending update artifact was detected.
 
-## Phase 11.1 — Operations correctness
+## Phase 11.1 — Operations correctness — ✅ LIVE PASS
 
 - RCON false `관리 제한` suppression using passive listener + recent authenticated RCON success
 - exact console `stop` semantics: intentional stop -> desired_running=false; send failure restores prior desired state
@@ -66,7 +66,7 @@ Artifact target: `day11-phase1-gsc-host-test`.
 
 Live runtime PASS is not claimed until the user runs this package on the server PC.
 
-## Phase 11.2 — Update Center 2.0
+## Phase 11.2 — Update Center 2.0 — ✅ LIVE PASS
 
 - installed/latest verified version
 - Stable/Beta/Canary
@@ -76,7 +76,7 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - history, validation, rollback result
 - GSCM remote controls
 
-## Phase 11.3 — External proxy component management
+## Phase 11.3 — External proxy component management — ✅ LIVE PASS
 
 - Geyser/Floodgate/ViaVersion/ViaBackwards official metadata
 - staging + verification
@@ -86,7 +86,7 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - rollback
 - Paper remains separate notify/manual-approve by default
 
-## Phase 11.4 — GSC self-update
+## Phase 11.4 — GSC self-update — ✅ LIVE PASS
 
 - startup latest-verified-build check
 - helper-based replacement
@@ -95,13 +95,13 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - rollback
 - network/update lookup failures are fail-open
 
-## Phase 11.5 — GSCM 1.1.5 distribution
+## Phase 11.5 — GSCM 1.1.5 distribution — ✅ USER DEVICE PASS
 
 - Android in-place update with persistent signer
 - iOS update discovery respecting signing/provisioning constraints
 - no false claim of silent IPA installation
 
-## Phase 11.6 — Full fleet UX
+## Phase 11.6 — Full fleet UX — ⏳ NEXT
 
 - Update Center UI renewal
 - per-server policy and fleet state
@@ -109,7 +109,7 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - canary promotion
 - notifications/audit
 
-## Phase 11.7 — Protection & Recovery 2.0
+## Phase 11.7 — Protection & Recovery 2.0 — ⏳ PENDING
 
 - backup metadata/source reason
 - protect/pin
@@ -120,6 +120,17 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - retention + disk guard + dry-run
 - restore preflight/checkpoint/verify/health
 - GSCM controls
+
+## 2026-10-06 live progress
+
+- Phase 11.1 / 11.2 / 11.3: user confirmed remaining live checks complete; record as **LIVE PASS**.
+- GSC self-update: **4.3.1 → 4.3.2 LIVE PASS**. Helper report returned `status=success`, `rolled_back=false`, `host_health=true`, `client_relaunched=true`, Session 1 relaunch.
+- Wild RCON status after update: `online=true`, `java_port_open=true`, `rcon_port_open=true`, `gds_api_online=true`.
+- GSCM hard-coded `1.1.2` display was replaced with package metadata-based version display.
+- GSCM build advanced to **1.1.5+116** so Android versionCode increases for in-place update.
+- Secure beta Release `system-2026.10.06-day11-gscm116-beta` published successfully from commit `0e1c17c649cddb52829346311f013ed967f48b9a`.
+- Persistent-signed Android APK and unsigned iOS IPA were published; user confirmed device installation/distribution flow.
+- Day 11 is **not closed yet**: Phase 11.6, Phase 11.7, and Final E2E remain.
 
 ## 2026-10-05 repo-side progress
 
