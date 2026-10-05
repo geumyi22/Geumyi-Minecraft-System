@@ -186,7 +186,7 @@ func requireNewerGSCVersion(target string) error {
 	return nil
 }
 
-func checkGSCSelfUpdate() GSCSelfUpdateStatus {
+func checkGSCSelfUpdate(forceNetwork bool) GSCSelfUpdateStatus {
 	c := normalizeUpdateConfig(configSnapshot().Update)
 	st := GSCSelfUpdateStatus{
 		Installed: appVersion,
@@ -196,7 +196,14 @@ func checkGSCSelfUpdate() GSCSelfUpdateStatus {
 		Updated: time.Now().Format(time.RFC3339),
 		Message: "서명된 GSC release 확인 중",
 	}
-	m, _, release, err := fetchVerifiedManifest(c)
+	var m DeploymentManifest
+	var release string
+	var err error
+	if forceNetwork {
+		m, _, release, err = fetchVerifiedManifestFresh(c)
+	} else {
+		m, _, release, err = fetchVerifiedManifest(c)
+	}
 	if err != nil {
 		st.Message = "GSC 업데이트 확인 실패"
 		st.Error = err.Error()
@@ -248,7 +255,7 @@ func startGSCSelfUpdateStartupCheck() {
 		// Keep Host startup fail-open. Release discovery happens only after the
 		// local API/runtime is initialized and never blocks Minecraft startup.
 		time.Sleep(5 * time.Second)
-		st := checkGSCSelfUpdate()
+		st := checkGSCSelfUpdate(false)
 		if st.Error != "" {
 			appendV4Event("warn", "update", "", "GSC 시작 시 업데이트 확인 실패", st.Error)
 			return
@@ -265,7 +272,8 @@ func apiV4GSCSelfUpdateStatus(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "GET required", http.StatusMethodNotAllowed)
 		return
 	}
-	writeJSON(w, checkGSCSelfUpdate())
+	force := r.URL.Query().Get("fresh") == "1"
+	writeJSON(w, checkGSCSelfUpdate(force))
 }
 
 func apiV4GSCSelfUpdateStage(w http.ResponseWriter, r *http.Request) {
@@ -274,7 +282,7 @@ func apiV4GSCSelfUpdateStage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c := normalizeUpdateConfig(configSnapshot().Update)
-	m, _, release, err := fetchVerifiedManifest(c)
+	m, _, release, err := fetchVerifiedManifestFresh(c)
 	if err != nil {
 		http.Error(w, "signed GSC manifest verification failed: "+err.Error(), http.StatusBadGateway)
 		return
