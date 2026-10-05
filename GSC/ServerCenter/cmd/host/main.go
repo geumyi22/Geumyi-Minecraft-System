@@ -292,6 +292,7 @@ func runHostCore() error {
 	mux.HandleFunc("/api/settings/public", requireAuth(apiPublicSettings))
 	registerV4Routes(mux)
 	registerControlAPIRoutes(mux)
+	startGSCSelfUpdateStartupCheck()
 
 	srv := &http.Server{
 		Addr: fmt.Sprintf("0.0.0.0:%d", cfg.Port), Handler: securityHeaders(mobileNetworkGuard(mux)),
