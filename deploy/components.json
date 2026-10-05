@@ -77,18 +77,18 @@
       "requires_restart": true
     },
     "gscm_android": {
-      "version": "1.1.5+115",
+      "version": "1.1.5+116",
       "kind": "mobile",
-      "artifact_glob": "GSCM-v1.1.5+115-Android.apk",
+      "artifact_glob": "GSCM-v1.1.5+116-Android.apk",
       "targets": [
         "android"
       ],
       "requires_restart": false
     },
     "gscm_ios_unsigned": {
-      "version": "1.1.5+115",
+      "version": "1.1.5+116",
       "kind": "mobile",
-      "artifact_glob": "GSCM-v1.1.5+115-unsigned.ipa",
+      "artifact_glob": "GSCM-v1.1.5+116-unsigned.ipa",
       "targets": [
         "ios"
       ],
