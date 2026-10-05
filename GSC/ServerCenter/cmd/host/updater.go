@@ -71,12 +71,34 @@ type UpdateStatus struct {
 }
 
 type githubRelease struct {
-	TagName string `json:"tag_name"`
-	Draft   bool   `json:"draft"`
-	Assets  []struct {
+	TagName     string `json:"tag_name"`
+	Draft       bool   `json:"draft"`
+	CreatedAt   string `json:"created_at"`
+	PublishedAt string `json:"published_at"`
+	Assets      []struct {
 		Name               string `json:"name"`
 		BrowserDownloadURL string `json:"browser_download_url"`
 	} `json:"assets"`
+}
+
+func githubReleaseSortTime(r githubRelease) time.Time {
+	for _, raw := range []string{r.PublishedAt, r.CreatedAt} {
+		if t, err := time.Parse(time.RFC3339, strings.TrimSpace(raw)); err == nil {
+			return t
+		}
+	}
+	return time.Time{}
+}
+
+func sortGitHubReleasesNewestFirst(releases []githubRelease) {
+	sort.SliceStable(releases, func(i, j int) bool {
+		ti := githubReleaseSortTime(releases[i])
+		tj := githubReleaseSortTime(releases[j])
+		if ti.Equal(tj) {
+			return releases[i].TagName > releases[j].TagName
+		}
+		return ti.After(tj)
+	})
 }
 
 type updatePlanItem struct {
@@ -838,6 +860,10 @@ func fetchVerifiedManifestPinnedMode(c UpdateConfig, pin string, forceNetwork bo
 	if err := json.Unmarshal(body, &releases); err != nil {
 		return zero, "", "", fmt.Errorf("GitHub release 응답 해석 실패: %w", err)
 	}
+	if strings.TrimSpace(pin) == "" {
+		sortGitHubReleasesNewestFirst(releases)
+	}
+
 	manifestName := "deployment-" + c.Channel + ".json"
 	sigName := manifestName + ".sig"
 	pin = strings.TrimSpace(pin)
