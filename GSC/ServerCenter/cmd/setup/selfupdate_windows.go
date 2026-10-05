@@ -396,7 +396,7 @@ func runSelfUpdateMode() {
 			return
 		}
 		if !waitGSCHealth(35 * time.Second) {
-			rollback(errors.New("GSC 4.3.0 health gate timed out"))
+			rollback(errors.New("GSC "+version+" health gate timed out"))
 			return
 		}
 		report.HostHealth = true
