@@ -219,8 +219,9 @@ async function loadGSCSelfUpdate(force=false){
       (x.signature_verified?'<br>서명된 deployment manifest 검증됨':'')+
       (x.staged_path?'<br>Staging: '+esc(x.staged_path):'')+'</div>'+
       '<div class="actions"><button onclick="loadGSCSelfUpdate(true)">다시 확인</button>'+
-      '<button '+(x.signature_verified?'':'disabled')+' onclick="stageGSCSelfUpdate()">검증 후 Staging</button></div>'+
-      '<div class="notice" style="margin-top:10px">Staging은 실행 중인 GSC를 교체하지 않습니다. 실제 Self-update는 GSC-only 백업 → helper 교체 → Host health → 자동 rollback Gate를 통과한 뒤에만 허용합니다.</div>';
+      '<button '+(x.signature_verified?'':'disabled')+' onclick="stageGSCSelfUpdate()">검증 후 Staging</button>'+
+      '<button class="warning" '+(x.staged&&x.available?'':'disabled')+' onclick="applyGSCSelfUpdate()">실제 Self-update 적용</button></div>'+
+      '<div class="notice" style="margin-top:10px">Staging은 실행 중인 GSC를 교체하지 않습니다. 실제 적용은 GSC-only 백업 → helper 교체 → Host health → 자동 rollback Gate 순서이며 Minecraft/Paper/Velocity는 건드리지 않습니다.</div>';
   }catch(e){root.innerHTML='<div class="badtext">'+esc(koMessage(e.message))+'</div>'}
 }
 async function stageGSCSelfUpdate(){
@@ -230,6 +231,15 @@ async function stageGSCSelfUpdate(){
     const x=await req('/api/v4/update/self/stage',{method:'POST',body:'{}'});
     alert('GSC Self-update Staging 완료\n\n현재: '+(x.installed||'-')+'\n대상: '+(x.target||'-')+'\nRelease: '+(x.release||'-')+'\n\nLive 적용: 없음\n다음 단계: GSC-only helper + health/rollback 검증');
     loadGSCSelfUpdate();
+  }catch(e){toast(koMessage(e.message),true)}
+}
+
+async function applyGSCSelfUpdate(){
+  if(!confirm('검증된 Staging artifact로 GSC 본체를 업데이트합니다.\n\nGSC Client/Host만 잠시 재시작되며 Minecraft/Paper/Velocity는 건드리지 않습니다. 실패하면 GSC-only 백업으로 자동 rollback합니다. 계속할까요?'))return;
+  try{
+    toast('GSC Self-update helper 시작 중...');
+    const x=await req('/api/v4/update/self/apply',{method:'POST',body:JSON.stringify({confirm:'APPLY_GSC_SELF_UPDATE'})});
+    toast('GSC Self-update 시작됨 · 대상 '+(x.target||'-')+' · 관리창이 자동으로 다시 열립니다.');
   }catch(e){toast(koMessage(e.message),true)}
 }
 
