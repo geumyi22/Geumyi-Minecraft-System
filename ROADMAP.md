@@ -1,6 +1,6 @@
 # Geumyi Minecraft System — 작업 로드맵
 
-기준일: 2026-10-04
+기준일: 2026-10-06
 
 > **일차 번호와 상태의 단일 기준은 [DAY-TIMELINE.md](DAY-TIMELINE.md)입니다.**
 > Day 번호는 개발 날짜 수가 아니라 milestone 번호입니다. Day 4는 삭제된 일차가 아니라 **신규 구현 없이 실서버 E2E 검증/마감을 수행한 milestone**입니다.
@@ -17,7 +17,7 @@
 | 8 | Secure Release & Update Foundation | ✅ 완료 |
 | 9 | Transaction / Backup / Rollback | ✅ 완료 |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 |
-| 11 | Operations UX & Fleet Management — GSC 4.3 / GSCM 1.1.5 | ⏳ 예정 |
+| 11 | Operations UX & Fleet Management — GSC 4.3.2 / GSCM 1.1.5+116 | 🔄 진행 중 (11.0~11.5 완료) |
 | 12 | Final Production Hardening & Closure | ⏳ 예정 |
 
 ## Day 1~3 — 복구와 기반 정리
@@ -110,9 +110,15 @@ Bedrock:
 
 ## Day 11 — Operations UX & Fleet Management
 
-목표 버전:
-- **GSC 4.3**
-- **GSCM 1.1.5**
+현재 검증 기준:
+- **GSC 4.3.2 (beta live)**
+- **GSCM 1.1.5+116**
+
+진행 상태:
+- **11.0~11.5 완료**
+- **11.6 Full Fleet UX 남음**
+- **11.7 Protection & Recovery 2.0 남음**
+- **Day 11 Final E2E 남음**
 
 고정 범위:
 - GSC/GSCM 시작 시 최신 검증 빌드 확인
