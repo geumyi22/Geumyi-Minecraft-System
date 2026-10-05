@@ -1367,6 +1367,41 @@ class _BackupsSectionState extends State<_BackupsSection> {
     }
   }
 
+  Future<void> _retentionPreview() async {
+    if (busy) return;
+    setState(() => busy = true);
+    try {
+      final result = await widget.api.backupRetentionDryRun(widget.server.id, keepLatest: 2);
+      if (!mounted) return;
+      final candidates = jMapList(result['candidates']);
+      final reclaim = jInt(result['reclaim_bytes']);
+      final blocked = jString(result['blocked_reason']);
+      final details = candidates
+          .take(8)
+          .map((e) => '• ${jString(e['file'])} · ${_size(jInt(e['size']))}')
+          .join('\n');
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('백업 정리 Dry-run'),
+          content: Text(
+            '보존: 최신 2개 + 보호/체크포인트\n'
+            '삭제 후보: ${candidates.length}개\n'
+            '회수 예상: ${_size(reclaim)}'
+            '${details.isEmpty ? '' : '\n\n$details'}'
+            '${blocked.isEmpty ? '' : '\n\n차단: $blocked'}'
+            '\n\n파일은 삭제하지 않았습니다.',
+          ),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
+        ),
+      );
+    } on GscApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
   Future<void> _verify(BackupInfo b) async {
     setState(() => busy = true);
     try {
@@ -1460,6 +1495,11 @@ class _BackupsSectionState extends State<_BackupsSection> {
                 FilledButton.tonal(onPressed: busy ? null : () => _create('world'), child: const Text('월드')),
                 FilledButton.tonal(onPressed: busy ? null : () => _create('config'), child: const Text('설정')),
                 FilledButton.tonal(onPressed: busy ? null : () => _create('full'), child: const Text('전체')),
+                OutlinedButton.icon(
+                  onPressed: busy ? null : _retentionPreview,
+                  icon: const Icon(Icons.cleaning_services_outlined),
+                  label: const Text('정리 미리보기'),
+                ),
               ]),
             ),
             const SizedBox(height: 12),
