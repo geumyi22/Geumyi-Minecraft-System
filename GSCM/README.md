@@ -1,9 +1,14 @@
-# GSCM 1.1.2+113
+# GSCM 1.1.5+116
 
-Recovered Flutter application source, Android platform code, Kotlin secure storage, tests, Windows Android builders and iOS preparation scripts.
+Geumyi Server Center Mobile Flutter source for Android and iOS.
 
-Source of truth: this directory. Both root GitHub Actions workflows now copy GSCM into their existing app build directory. The previous base64 archive was decoded and removed to avoid two competing source copies.
+Source of truth: this directory. The app version comes only from `pubspec.yaml`; UI version text reads platform package metadata instead of hard-coded strings.
 
-The source is based on the recovered CLEAN 1.1.2 baseline; build 113 adds the Day-6 realtime status-accuracy hotfix. Android Gradle settings preserve the successful existing Actions compatibility configuration. A private-looking address in the QR test fixture was replaced with an example CGNAT address; pairing code 12345678 is synthetic test data.
+Current Day 11 status:
+- Android: persistent-signed `1.1.5+116` beta release published and user device update verified.
+- iOS: `1.1.5+116` unsigned IPA published; device installation still follows Apple signing/provisioning constraints.
+- Shared Control API / WebSocket / secure-storage behavior remains covered by CI tests.
 
-See [BUILD.md](BUILD.md). Version comes from pubspec.yaml (1.1.2+113). No real tokens, keystores or Apple signing credentials are included.
+Historical recovery baseline was GSCM 1.1.2. Current runtime development continues from that recovered source; historical reports keep their original version labels.
+
+See [BUILD.md](BUILD.md). No real tokens, keystores, RCON passwords, or Apple signing credentials belong in this repository.
