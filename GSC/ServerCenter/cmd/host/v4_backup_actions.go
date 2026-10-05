@@ -157,6 +157,76 @@ func sortBackupInfos(out []BackupInfo) {
 	sort.Slice(out, func(i, j int) bool { return out[i].Created > out[j].Created })
 }
 
+type BackupRetentionDryRun struct {
+	ServerID      string       `json:"server_id"`
+	DryRun        bool         `json:"dry_run"`
+	KeepLatest    int          `json:"keep_latest"`
+	Total         int          `json:"total"`
+	Kept          []BackupInfo `json:"kept"`
+	Candidates    []BackupInfo `json:"candidates"`
+	ReclaimBytes  int64        `json:"reclaim_bytes"`
+	BlockedReason string       `json:"blocked_reason,omitempty"`
+}
+
+func buildBackupRetentionDryRun(s ServerConfig, keepLatest int) BackupRetentionDryRun {
+	if keepLatest < 1 {
+		keepLatest = 2
+	}
+	if keepLatest > 100 {
+		keepLatest = 100
+	}
+	all := listBackups(s)
+	out := BackupRetentionDryRun{
+		ServerID: s.ID,
+		DryRun: true,
+		KeepLatest: keepLatest,
+		Total: len(all),
+		Kept: []BackupInfo{},
+		Candidates: []BackupInfo{},
+	}
+	if hasPendingUpdate(s) {
+		out.Kept = append(out.Kept, all...)
+		out.BlockedReason = "pending update transaction: retention deletion is blocked"
+		return out
+	}
+	regularKept := 0
+	for _, b := range all {
+		if b.Protected || b.Kind == "checkpoint" {
+			out.Kept = append(out.Kept, b)
+			continue
+		}
+		if regularKept < keepLatest {
+			regularKept++
+			out.Kept = append(out.Kept, b)
+			continue
+		}
+		out.Candidates = append(out.Candidates, b)
+		out.ReclaimBytes += b.Size
+	}
+	return out
+}
+
+func apiV4BackupRetentionDryRun(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST required", http.StatusMethodNotAllowed)
+		return
+	}
+	var q struct {
+		ID         string `json:"id"`
+		KeepLatest int    `json:"keep_latest"`
+	}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q); err != nil {
+		http.Error(w, "bad json", http.StatusBadRequest)
+		return
+	}
+	s, ok := serverByID(strings.TrimSpace(q.ID))
+	if !ok {
+		http.Error(w, "unknown server", http.StatusBadRequest)
+		return
+	}
+	writeJSON(w, buildBackupRetentionDryRun(s, q.KeepLatest))
+}
+
 func apiV4BackupTrash(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "GET required", http.StatusMethodNotAllowed)
@@ -205,6 +275,11 @@ func apiV4BackupAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer rel()
+
+	if (q.Action == "trash" || q.Action == "delete-permanent") && hasPendingUpdate(s) {
+		http.Error(w, "pending update transaction: backup deletion is blocked until recovery/commit completes", http.StatusConflict)
+		return
+	}
 
 	switch q.Action {
 	case "protect", "unprotect":
