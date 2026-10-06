@@ -1,6 +1,20 @@
 package main
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+func mustReadSourceForTest(t *testing.T, name string) string {
+	t.Helper()
+	b, err := os.ReadFile(filepath.Join(".", name))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
+}
 
 func TestDay11CanaryRolloutOrderMatchesFleetPlan(t *testing.T) {
 	c := Config{Servers: []ServerConfig{
@@ -86,5 +100,21 @@ func TestDay11CanaryUnknownServerDoesNotMutateConfig(t *testing.T) {
 	}
 	if c.Servers[0] != before {
 		t.Fatalf("failed promotion mutated config: before=%+v after=%+v", before, c.Servers[0])
+	}
+}
+
+
+func TestDay11ExplicitCanaryPinUsesFreshReleaseLookup(t *testing.T) {
+	// Regression guard for 4.3.5: an explicit canary tag may be published
+	// seconds after the cached GitHub release list was written. The production
+	// helper must route explicit pins through fetchVerifiedManifestPinnedMode
+	// with forceNetwork=true rather than the cached pinned lookup.
+	src := mustReadSourceForTest(t, "canary_rollout.go")
+	needle := "return fetchVerifiedManifestPinnedMode(c, release, true)"
+	if !strings.Contains(src, needle) {
+		t.Fatalf("explicit canary pin is not forced to a fresh release lookup")
+	}
+	if !strings.Contains(src, "return fetchVerifiedManifestFresh(c)") {
+		t.Fatalf("latest canary lookup is not forced fresh")
 	}
 }
