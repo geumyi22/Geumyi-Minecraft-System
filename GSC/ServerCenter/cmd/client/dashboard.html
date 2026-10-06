@@ -62,10 +62,58 @@ async function backupAction(id,file,action){if(action==='trash'&&!confirm('이 �
 async function loadMaintain(){let id=$('maintainServer').value;if(!id)return;$('maintainBody').innerHTML='<div class="card full">불러오는 중...</div>';try{let [h,i]=await Promise.all([req('/api/v4/health?id='+encodeURIComponent(id)),req('/api/v4/inventory?id='+encodeURIComponent(id))]);let statusKo=v=>v==='ok'?'정상':v==='fail'?'오류':'주의';let overallKo=v=>v==='ok'?'정상':v==='fail'?'오류 있음':'확인 필요';let checks=(h.checks||[]).map(c=>`<div class="health"><span class="status ${c.status==='ok'?'ok':c.status==='fail'?'bad':'warn'}"><span class="dot ${c.status==='ok'?'ok':c.status==='fail'?'bad':'warn'}"></span>${statusKo(c.status)}</span><b>${esc(koMessage(c.label))}</b><span>${esc(koMessage(c.message))}</span></div>`).join('');let plugins=(i.plugins||[]).map(p=>`<tr><td><span class="dot ${p.enabled?'ok':'bad'}"></span> ${esc(p.name||p.file)}</td><td>${esc(p.version||'-')}</td><td>${esc(p.file)}</td><td>${p.managed?'GSC 관리':'일반'}</td><td><button onclick="toggleItem('${esc(id)}','plugin','${esc(p.file)}',${!p.enabled})">${p.enabled?'비활성화':'활성화'}</button></td></tr>`).join('');let dp=(i.datapacks||[]).map(p=>`<tr><td><span class="dot ${p.enabled?'ok':'bad'}"></span> ${esc(p.file)}</td><td>${p.pack_format||'-'}</td><td>${esc(p.description||'')}</td><td><button onclick="toggleItem('${esc(id)}','datapack','${esc(p.file)}',${!p.enabled})">${p.enabled?'비활성화':'활성화'}</button></td></tr>`).join('');let r=i.resourcepacks||{};$('maintainBody').innerHTML=`<div class="card full"><div class="row spread"><div><div class="title">🩺 상태 진단 · ${esc(overallKo(h.overall))}</div><div class="small" style="margin-top:4px">서버 시작 전 필요한 항목과 연동 상태를 검사합니다.</div></div><button onclick="loadMaintain()">↻ 다시 검사</button></div><div class="health-list">${checks}</div></div><div class="card full"><div class="row spread"><div><div class="title">🧩 플러그인 관리</div><div class="small">서버 종료 후 활성/비활성 또는 GSC v4 연동 플러그인을 동기화합니다.</div></div><button class="primary" onclick="syncCompanion('${esc(id)}')">v4 연동 플러그인 동기화</button></div><div class="table-wrap" style="margin-top:10px"><table class="table"><tr><th>플러그인</th><th>버전</th><th>파일</th><th>관리 방식</th><th></th></tr>${plugins}</table></div></div><div class="card full"><div class="title">📦 데이터팩 관리</div><div class="table-wrap" style="margin-top:10px"><table class="table"><tr><th>데이터팩</th><th>팩 형식</th><th>설명</th><th></th></tr>${dp}</table></div></div><div class="card half"><div class="title">🎨 Java 리소스팩</div><div class="small server-detail">URL: ${esc(r.java_url||'-')}<br>SHA-1: ${esc(r.java_sha1||'-')}<br>필수 적용: ${r.required===true?'예':r.required===false?'아니요':esc(r.required||'-')}</div></div><div class="card half"><div class="title">🌉 Geyser 리소스팩</div><div class="small server-detail">${(r.geyser_packs||[]).map(esc).join('<br>')||'등록된 팩 없음'}</div></div>`}catch(e){$('maintainBody').innerHTML=`<div class="card full badtext">${esc(koMessage(e.message))}</div>`}}async function syncCompanion(id){if(!confirm('서버가 종료된 상태에서 GeumyiDiscordStatus / GeumyiServerTools만 v4 관리 버전으로 동기화합니다. 기존 JAR은 백업합니다.'))return;try{let x=await req('/api/v4/companion/sync',{method:'POST',body:JSON.stringify({id})});toast('동기화 완료 · '+(x.installed||[]).join(', '));loadMaintain()}catch(e){toast(e.message,true)}}async function toggleItem(id,kind,file,enable){try{await req('/api/v4/maintain/toggle',{method:'POST',body:JSON.stringify({id,kind,file,enable})});toast(enable?'활성화 예약 완료':'비활성화 완료');loadMaintain()}catch(e){toast(e.message,true)}}
 function updatePhaseLabel(v){return({idle:'대기',disabled:'비활성',checking:'확인 중',current:'최신',available:'업데이트 가능',downloading:'다운로드 / 검증 중',applied:'적용 완료',pending_health:'시작 후 검증 대기',held:'보류',manual:'수동 관리',blocked:'복구 필요',error:'오류'}[v]||v||'-')}
 function updatePhaseClass(v){return v==='error'?'bad':v==='available'||v==='checking'||v==='downloading'?'warn':v==='disabled'?'warn':'ok'}
+function renderCanaryRollout(r){
+  r=r||{};
+  const stages=(r.stages||[]).map(v=>{
+    const cls=v.promoted?(v.release_ready?'ok':'warn'):'';
+    const label=v.promoted?(v.release_ready?'검증 완료':'검증 대기'):'대기';
+    return '<div class="event"><div class="meta">'+esc(Number(v.index||0)+1)+'. '+esc(v.name||v.server_id||'-')+' · '+esc(v.role||'-')+'</div>'+
+      '<b class="'+(cls==='warn'?'warntext':'')+'">'+esc(label)+'</b>'+
+      ' <span class="small">policy='+esc(v.policy||'-')+' · channel='+esc(v.channel||'-')+
+      (v.pin?' · pin='+esc(v.pin):'')+(v.update_phase?' · '+esc(v.update_phase):'')+'</span></div>';
+  }).join('');
+  if(!r.active){
+    const done=r.completed?'<span class="status ok"><span class="dot ok"></span>최근 rollout 완료</span>':'<span class="status"><span class="dot"></span>대기</span>';
+    return '<div class="card full"><div class="row spread"><div><div class="title">🧪 Canary 순차 승격</div>'+
+      '<div class="small">Playground → Wild → Other → Lobby. 정책/Pin만 승격하며 서버를 자동 재시작하지 않습니다.</div></div>'+done+'</div>'+
+      '<div class="form-grid" style="margin-top:10px"><div class="field"><label>Canary Release Pin</label>'+
+      '<input id="canaryRelease" placeholder="비우면 최신 서명 Canary release"></div>'+
+      '<div><div class="notice">시작하면 Playground만 managed + canary + release pin으로 설정합니다. 다음 서버는 이전 단계 health PASS 뒤에만 승격할 수 있습니다.</div></div></div>'+
+      '<div class="actions"><button class="primary" onclick="startCanaryRollout()">Canary rollout 시작</button></div>'+
+      (r.release?'<div class="small" style="margin-top:8px">최근 release: '+esc(r.release)+'</div>':'')+'</div>';
+  }
+  const promoted=(r.promoted||[]).length, total=(r.order||[]).length;
+  const next=r.next_server||'';
+  const can=!!r.can_promote_preview;
+  return '<div class="card full"><div class="row spread"><div><div class="title">🧪 Canary 순차 승격</div>'+
+    '<div class="small">Release '+esc(r.release||'-')+' · '+promoted+'/'+total+' 서버 승격</div></div>'+
+    '<span class="status warn"><span class="dot warn"></span>진행 중</span></div>'+
+    '<div style="margin-top:8px">'+(stages||'<div class="small">단계 정보 없음</div>')+'</div>'+
+    '<div class="notice" style="margin-top:10px">'+esc(r.promotion_preview_reason||'이전 단계 health 검증을 기다리는 중입니다.')+'</div>'+
+    '<div class="actions">'+
+      (next?'<button class="primary" '+(can?'':'disabled')+' onclick="promoteCanaryRollout()">다음 서버 '+esc(next)+' 승격</button>':'')+
+      ((!next&&promoted===total&&total>0)?'<button class="primary" onclick="completeCanaryRollout()">Rollout 완료 확정</button>':'')+
+      '<button class="danger ghost" onclick="cancelCanaryRollout()">Rollout 취소 · 정책 복원</button></div>'+
+    '<div class="small" style="margin-top:8px">승격 작업 자체는 Minecraft/Paper/Velocity를 재시작하지 않습니다.</div></div>';
+}
+function renderUpdateNotifications(n){
+  const events=(n?.events||[]).slice(-16);
+  return '<div class="card full"><div class="row spread"><div><div class="title">🔔 업데이트 알림 / Audit</div>'+
+    '<div class="small">중복을 제거한 최근 update 이벤트입니다. 같은 이벤트는 GSC Control API/WebSocket에도 기록됩니다.</div></div>'+
+    '<button onclick="loadUpdates()">새로고침</button></div><div style="margin-top:8px">'+
+    (events.length?events.map(v=>'<div class="event"><div class="meta">'+esc(v.time||'-')+(v.server_id?' · '+esc(v.server_id):'')+'</div>'+
+      '<b class="'+(v.level==='error'?'badtext':v.level==='warn'?'warntext':'')+'">'+esc(v.message||'-')+'</b>'+
+      (v.detail?' <span class="small">'+esc(v.detail)+'</span>':'')+'</div>').join(''):'<div class="small">최근 업데이트 이벤트가 없습니다.</div>')+
+    '</div></div>';
+}
 async function loadUpdates(){
   if(!$('updateBody'))return;
   try{
-    const fleet=await req('/api/v4/update/fleet');
+    const [fleet,rollout,notices]=await Promise.all([
+      req('/api/v4/update/fleet'),
+      req('/api/v4/update/canary-rollout'),
+      req('/api/v4/update/notifications?limit=25')
+    ]);
     const u=fleet.global||{};
     const rows=fleet.servers||[];
     const cards=rows.map(row=>{
@@ -145,7 +193,7 @@ async function loadUpdates(){
         </div>
       </div>
       <div class="notice">서버별 채널/Pin은 기본 채널 위에 적용됩니다. 외부 프록시 구성요소와 Paper는 별도 안전 정책으로 관리합니다.</div>
-    </div>`+cards+
+    </div>`+renderCanaryRollout(rollout)+cards+renderUpdateNotifications(notices)+
       '<div id="gscSelfUpdateEntry" class="card full"><div class="title">GSC 본체 업데이트 확인 중...</div></div>'+
       '<div id="externalUpdateEntry" class="card full"><div class="title">외부 구성요소 확인 중...</div></div>'+
       '<div id="networkEntry" class="card full"><div class="title">네트워크 상태 확인 중...</div></div>';
@@ -155,6 +203,41 @@ async function loadUpdates(){
   }catch(e){
     $('updateBody').innerHTML=`<div class="card full badtext">${esc(koMessage(e.message))}</div>`;
   }
+}
+
+async function startCanaryRollout(){
+  const release=($('canaryRelease')?.value||'').trim();
+  if(!confirm('Canary rollout을 시작합니다.\n\nPlayground의 업데이트 정책/채널/Pin만 변경하며 서버는 재시작하지 않습니다. 계속할까요?'))return;
+  try{
+    toast('서명된 Canary release 확인 중...');
+    await req('/api/v4/update/canary-rollout',{method:'POST',body:JSON.stringify({action:'start',release,confirm:'START_CANARY_ROLLOUT'})});
+    toast('Canary rollout 시작됨 · Playground부터 검증합니다.');
+    loadUpdates();
+  }catch(e){toast(koMessage(e.message),true)}
+}
+async function promoteCanaryRollout(){
+  if(!confirm('이전 단계의 release/ONLINE/RCON/GDS health를 다시 확인한 뒤 다음 서버의 정책/Pin만 승격합니다. 서버 재시작은 수행하지 않습니다. 계속할까요?'))return;
+  try{
+    await req('/api/v4/update/canary-rollout',{method:'POST',body:JSON.stringify({action:'promote',confirm:'PROMOTE_CANARY'})});
+    toast('다음 Canary 대상 승격 완료 · 서버 재시작 없음');
+    loadUpdates();
+  }catch(e){toast(koMessage(e.message),true)}
+}
+async function completeCanaryRollout(){
+  if(!confirm('마지막 서버 health를 다시 확인하고 Canary rollout을 완료 처리할까요?'))return;
+  try{
+    await req('/api/v4/update/canary-rollout',{method:'POST',body:JSON.stringify({action:'complete',confirm:'COMPLETE_CANARY_ROLLOUT'})});
+    toast('Canary rollout 완료');
+    loadUpdates();
+  }catch(e){toast(koMessage(e.message),true)}
+}
+async function cancelCanaryRollout(){
+  if(!confirm('Canary rollout을 취소하고 시작 전 서버별 policy/channel/pin을 복원할까요?\n실행 중인 서버는 재시작하지 않습니다.'))return;
+  try{
+    await req('/api/v4/update/canary-rollout',{method:'POST',body:JSON.stringify({action:'cancel',confirm:'CANCEL_CANARY_ROLLOUT'})});
+    toast('Canary rollout 취소 · 이전 정책 복원 완료');
+    loadUpdates();
+  }catch(e){toast(koMessage(e.message),true)}
 }
 
 async function saveServerUpdatePolicy(id,key){
