@@ -53,7 +53,7 @@ concurrency:
 
 jobs:
   gsc:
-    name: GSC 4.3.4 / Go test
+    name: GSC 4.3.5 / Go test
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
@@ -452,7 +452,7 @@ jobs:
           PY
 
   gsc-package:
-    name: GSC 4.3.4 / assemble CI Setup
+    name: GSC 4.3.5 / assemble CI Setup
     needs: [gsc, statusagent, gds, gst]
     runs-on: windows-latest
     timeout-minutes: 20
@@ -495,7 +495,7 @@ jobs:
         run: |
           $root = 'GSC/ServerCenter'
           $files = @(
-            "$root/dist/GeumyiServerCenter-v4.3.4-Setup.exe",
+            "$root/dist/GeumyiServerCenter-v4.3.5-Setup.exe",
             "$root/cmd/setup/payload/GeumyiServerHost.exe",
             "$root/cmd/setup/payload/GeumyiServerCenter.exe"
           )
@@ -523,7 +523,7 @@ jobs:
       - name: Upload GSC CI package
         uses: actions/upload-artifact@v7
         with:
-          name: gsc-4.3.4-ci
+          name: gsc-4.3.5-ci
           path: GSC/ServerCenter/dist-ci/*
           if-no-files-found: error
           retention-days: 14
