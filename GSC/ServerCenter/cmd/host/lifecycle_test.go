@@ -289,6 +289,42 @@ func TestAuthenticatedRCONHealthPersistsForCurrentServerLifetime(t *testing.T) {
 	}
 }
 
+func TestRCONBootstrapIsBoundedPerBackendLifetime(t *testing.T) {
+	id := "bootstrap-bounded"
+	resetRCONBootstrap(id)
+	defer resetRCONBootstrap(id)
+
+	if attempt, ok := claimRCONBootstrap(id, time.Now()); !ok || attempt != 1 {
+		t.Fatalf("first bootstrap claim = attempt %d ok=%v", attempt, ok)
+	}
+	if _, ok := claimRCONBootstrap(id, time.Now().Add(time.Minute)); ok {
+		t.Fatal("in-flight bootstrap must not be duplicated")
+	}
+	finishRCONBootstrap(id)
+
+	// Retry delay prevents status polling from opening RCON sessions repeatedly.
+	if _, ok := claimRCONBootstrap(id, time.Now().Add(time.Second)); ok {
+		t.Fatal("bootstrap retry ignored cooldown")
+	}
+	if attempt, ok := claimRCONBootstrap(id, time.Now().Add(11*time.Second)); !ok || attempt != 2 {
+		t.Fatalf("second bootstrap claim = attempt %d ok=%v", attempt, ok)
+	}
+	finishRCONBootstrap(id)
+	if attempt, ok := claimRCONBootstrap(id, time.Now().Add(22*time.Second)); !ok || attempt != 3 {
+		t.Fatalf("third bootstrap claim = attempt %d ok=%v", attempt, ok)
+	}
+	finishRCONBootstrap(id)
+	if _, ok := claimRCONBootstrap(id, time.Now().Add(time.Hour)); ok {
+		t.Fatal("bootstrap exceeded per-lifetime attempt limit")
+	}
+
+	resetRCONBootstrap(id)
+	if attempt, ok := claimRCONBootstrap(id, time.Now().Add(2*time.Hour)); !ok || attempt != 1 {
+		t.Fatalf("new backend lifetime did not reset bootstrap: attempt %d ok=%v", attempt, ok)
+	}
+	finishRCONBootstrap(id)
+}
+
 func TestRCONAuthFailureDoesNotSendStop(t *testing.T) {
 	ln, e := net.Listen("tcp", "127.0.0.1:0")
 	if e != nil {
