@@ -77,7 +77,7 @@ $updateEvents = @($eventsResult.events | Where-Object { [string]$_.category -eq 
 })
 
 $checks = [ordered]@{
-    gsc_version_4_3_5 = ([string]$status.app_version -eq "4.3.5")
+    gsc_version_4_3_6 = ([string]$status.app_version -eq "4.3.6")
     fleet_schema_1 = ([int]$fleet.schema -eq 1)
     canary_promotion_supported = ([bool]$fleet.capabilities.canary_promotion -and [int]$rollout.schema -eq 1)
     health_gated_promotion = [bool]$fleet.capabilities.health_gated_promotion
