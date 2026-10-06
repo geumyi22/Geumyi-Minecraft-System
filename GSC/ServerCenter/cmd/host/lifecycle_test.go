@@ -294,32 +294,38 @@ func TestRCONBootstrapIsBoundedPerBackendLifetime(t *testing.T) {
 	resetRCONBootstrap(id)
 	defer resetRCONBootstrap(id)
 
-	if attempt, ok := claimRCONBootstrap(id, time.Now()); !ok || attempt != 1 {
-		t.Fatalf("first bootstrap claim = attempt %d ok=%v", attempt, ok)
+	base := time.Now()
+	for want := 1; want <= rconBootstrapMaxAttempts; want++ {
+		at := base.Add(time.Duration(want-1) * (rconBootstrapRetryDelay + time.Second))
+		attempt, ok := claimRCONBootstrap(id, at)
+		if !ok || attempt != want {
+			t.Fatalf("bootstrap claim %d = attempt %d ok=%v", want, attempt, ok)
+		}
+		if _, ok := claimRCONBootstrap(id, at.Add(time.Minute)); ok {
+			t.Fatal("in-flight bootstrap must not be duplicated")
+		}
+		finishRCONBootstrap(id)
+		if want < rconBootstrapMaxAttempts {
+			if _, ok := claimRCONBootstrap(id, at.Add(time.Second)); ok {
+				t.Fatal("bootstrap retry ignored cooldown")
+			}
+		}
 	}
-	if _, ok := claimRCONBootstrap(id, time.Now().Add(time.Minute)); ok {
-		t.Fatal("in-flight bootstrap must not be duplicated")
-	}
-	finishRCONBootstrap(id)
 
-	// Retry delay prevents status polling from opening RCON sessions repeatedly.
-	if _, ok := claimRCONBootstrap(id, time.Now().Add(time.Second)); ok {
-		t.Fatal("bootstrap retry ignored cooldown")
-	}
-	if attempt, ok := claimRCONBootstrap(id, time.Now().Add(11*time.Second)); !ok || attempt != 2 {
-		t.Fatalf("second bootstrap claim = attempt %d ok=%v", attempt, ok)
-	}
-	finishRCONBootstrap(id)
-	if attempt, ok := claimRCONBootstrap(id, time.Now().Add(22*time.Second)); !ok || attempt != 3 {
-		t.Fatalf("third bootstrap claim = attempt %d ok=%v", attempt, ok)
-	}
-	finishRCONBootstrap(id)
-	if _, ok := claimRCONBootstrap(id, time.Now().Add(time.Hour)); ok {
+	if _, ok := claimRCONBootstrap(id, base.Add(30*time.Minute)); ok {
 		t.Fatal("bootstrap exceeded per-lifetime attempt limit")
 	}
 
+	// The recovery window must cover a listener that appears well after the
+	// old three-attempt window. With the current bounded policy, attempt 12 is
+	// still available after more than two minutes of delayed startup.
+	late := base.Add(11 * (rconBootstrapRetryDelay + time.Second))
+	if late.Sub(base) < 2*time.Minute {
+		t.Fatalf("bootstrap recovery window too short: %s", late.Sub(base))
+	}
+
 	resetRCONBootstrap(id)
-	if attempt, ok := claimRCONBootstrap(id, time.Now().Add(2*time.Hour)); !ok || attempt != 1 {
+	if attempt, ok := claimRCONBootstrap(id, base.Add(time.Hour)); !ok || attempt != 1 {
 		t.Fatalf("new backend lifetime did not reset bootstrap: attempt %d ok=%v", attempt, ok)
 	}
 	finishRCONBootstrap(id)
