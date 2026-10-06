@@ -75,7 +75,7 @@ $updateEvents = @($eventsResult.events | Where-Object { [string]$_.category -eq 
 })
 
 $checks = [ordered]@{
-    gsc_version_4_3_2 = ([string]$status.app_version -eq "4.3.2")
+    gsc_version_4_3_3 = ([string]$status.app_version -eq "4.3.3")
     fleet_schema_1 = ([int]$fleet.schema -eq 1)
     four_or_more_servers = ($serverRows.Count -ge 4)
     policies_valid = $policyOK
