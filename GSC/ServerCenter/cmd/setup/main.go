@@ -25,7 +25,7 @@ import (
 	"unsafe"
 )
 
-const version = "4.3.2"
+const version = "4.3.3"
 const hostTaskName = "Geumyi Server Center Host"
 const hostServiceName = "Geumyi Server Center Host"
 
@@ -478,7 +478,7 @@ func doInstall(o InstallOptions) {
 		if data, e := os.ReadFile(cfgFile); e == nil {
 			backupDir := filepath.Join(dataDir, "Backup")
 			_ = os.MkdirAll(backupDir, 0755)
-			if e = os.WriteFile(filepath.Join(backupDir, "server-before-v4.3.2-"+time.Now().Format("20060102-150405")+".json"), data, 0600); e != nil {
+			if e = os.WriteFile(filepath.Join(backupDir, "server-before-v4.3.3-"+time.Now().Format("20060102-150405")+".json"), data, 0600); e != nil {
 				finishInstall(e)
 				return
 			}
