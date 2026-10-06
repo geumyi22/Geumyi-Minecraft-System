@@ -313,7 +313,7 @@ func proxyAPI(w http.ResponseWriter, r *http.Request) {
 	transport := clientProxyTransport
 	switch r.URL.Path {
 	case "/api/v4/backup", "/api/v4/backup/verify", "/api/v4/restore",
-		"/api/v4/update/external/apply-proxy":
+		"/api/v4/update/external/apply-proxy", "/api/v4/update/canary-rollout":
 		// These operations can legitimately spend minutes before the Host writes
 		// response headers. External proxy apply performs rolling stop -> verified
 		// JAR replace -> restart -> Java/Bedrock health gates for up to 3 proxies.
