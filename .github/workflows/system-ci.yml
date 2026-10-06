@@ -495,7 +495,7 @@ jobs:
         run: |
           $root = 'GSC/ServerCenter'
           $files = @(
-            "$root/dist/GeumyiServerCenter-v4.3.2-Setup.exe",
+            "$root/dist/GeumyiServerCenter-v4.3.3-Setup.exe",
             "$root/cmd/setup/payload/GeumyiServerHost.exe",
             "$root/cmd/setup/payload/GeumyiServerCenter.exe"
           )
@@ -523,7 +523,7 @@ jobs:
       - name: Upload GSC CI package
         uses: actions/upload-artifact@v7
         with:
-          name: gsc-4.3.2-ci
+          name: gsc-4.3.3-ci
           path: GSC/ServerCenter/dist-ci/*
           if-no-files-found: error
           retention-days: 14
