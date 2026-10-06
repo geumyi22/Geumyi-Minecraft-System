@@ -267,6 +267,20 @@ func canaryRolloutView(st canaryRolloutState) map[string]any {
 	}
 }
 
+func fetchVerifiedCanaryRolloutManifest(c UpdateConfig, release string) (DeploymentManifest, string, string, error) {
+	release = strings.TrimSpace(release)
+	if release == "" {
+		// Starting without an explicit pin is a deliberate "latest canary"
+		// request, so bypass the short GitHub release-list cache.
+		return fetchVerifiedManifestFresh(c)
+	}
+	// An explicit release pin may have been published seconds ago. Never use a
+	// previously fresh release-list cache for this lookup, otherwise the exact
+	// tag can be absent for up to githubPublicCacheFresh. The manifest and
+	// signature are still fetched and Ed25519/metadata verified fail-closed.
+	return fetchVerifiedManifestPinnedMode(c, release, true)
+}
+
 func apiV4CanaryRollout(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -327,11 +341,7 @@ func apiV4CanaryRollout(w http.ResponseWriter, r *http.Request) {
 		uc.Channel = serverUpdateChannelCanary
 		var manifest DeploymentManifest
 		var manifestHash, release string
-		if q.Release == "" {
-			manifest, manifestHash, release, err = fetchVerifiedManifestFresh(uc)
-		} else {
-			manifest, manifestHash, release, err = fetchVerifiedManifestPinned(uc, q.Release)
-		}
+		manifest, manifestHash, release, err = fetchVerifiedCanaryRolloutManifest(uc, q.Release)
 		if err != nil {
 			http.Error(w, "verified canary release lookup failed: "+err.Error(), http.StatusBadGateway)
 			return
