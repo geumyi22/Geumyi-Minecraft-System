@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-const appVersion = "4.3.3"
+const appVersion = "4.3.4"
 
 type Config struct {
 	Bind                string         `json:"bind"`
@@ -1418,7 +1418,7 @@ type rconBootstrapState struct {
 }
 
 const (
-	rconBootstrapMaxAttempts = 3
+	rconBootstrapMaxAttempts = 12
 	rconBootstrapRetryDelay  = 10 * time.Second
 )
 
@@ -1474,8 +1474,10 @@ func finishRCONBootstrap(id string) {
 
 // bootstrapRCONHealthAsync repairs the management-health cache after a GSC/PC
 // restart when Paper is already online but Windows passive listener discovery
-// misses the RCON socket. It is deliberately bounded to three attempts per
-// backend lifetime and never runs for an offline Java backend. A successful
+// misses the RCON socket. It is deliberately bounded to twelve attempts per
+// backend lifetime so slower Paper/RCON startup cannot exhaust the recovery
+// window a second before the listener becomes ready. It never runs for an
+// offline Java backend. A successful
 // authenticated "list" command is harmless and becomes lifetime-scoped proof
 // that RCON is usable. Ordinary status polling remains passive.
 func bootstrapRCONHealthAsync(s ServerConfig) {
