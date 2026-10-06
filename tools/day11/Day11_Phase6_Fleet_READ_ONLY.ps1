@@ -25,6 +25,8 @@ Write-Host ""
 $status = Get-Json "/api/status"
 $fleet = Get-Json "/api/v4/update/fleet"
 $eventsResult = Get-Json "/api/v4/events?limit=120"
+$rollout = Get-Json "/api/v4/update/canary-rollout"
+$notifications = Get-Json "/api/v4/update/notifications?limit=25"
 $dry = Post-Json "/api/v4/update/dry-run" @{}
 
 $serverRows = @($fleet.servers | ForEach-Object {
@@ -75,8 +77,12 @@ $updateEvents = @($eventsResult.events | Where-Object { [string]$_.category -eq 
 })
 
 $checks = [ordered]@{
-    gsc_version_4_3_4 = ([string]$status.app_version -eq "4.3.4")
+    gsc_version_4_3_5 = ([string]$status.app_version -eq "4.3.5")
     fleet_schema_1 = ([int]$fleet.schema -eq 1)
+    canary_promotion_supported = ([bool]$fleet.capabilities.canary_promotion -and [int]$rollout.schema -eq 1)
+    health_gated_promotion = [bool]$fleet.capabilities.health_gated_promotion
+    update_notifications_supported = ([bool]$fleet.capabilities.update_notifications -and [int]$notifications.schema -eq 1)
+    promotion_is_policy_only = ([bool]$fleet.capabilities.policy_only_promotion -and [bool]$rollout.policy_only -and -not [bool]$rollout.server_restart_performed)
     four_or_more_servers = ($serverRows.Count -ge 4)
     policies_valid = $policyOK
     channels_valid = $channelOK
@@ -114,6 +120,25 @@ $report = [ordered]@{
         restart_performed = [bool]$dry.restart_performed
         servers = $dryServers
     }
+    canary_rollout = [ordered]@{
+        active = [bool]$rollout.active
+        completed = [bool]$rollout.completed
+        release = [string]$rollout.release
+        next_server = [string]$rollout.next_server
+        promoted = @($rollout.promoted)
+        order = @($rollout.order)
+        can_promote_preview = [bool]$rollout.can_promote_preview
+        policy_only = [bool]$rollout.policy_only
+        server_restart_performed = [bool]$rollout.server_restart_performed
+    }
+    update_notifications = @($notifications.events | ForEach-Object {
+        [ordered]@{
+            time = [string]$_.time
+            level = [string]$_.level
+            server_id = [string]$_.server_id
+            message = [string]$_.message
+        }
+    })
     update_events = $updateEvents
     checks = $checks
 }
@@ -126,6 +151,8 @@ Write-Host "GSC VERSION : $($report.gsc_version)"
 Write-Host "FLEET       : $($serverRows.Count) servers / global channel=$($report.fleet_global.channel)"
 Write-Host "DRY-RUN     : release=$($report.dry_run.release) / signature=$($report.dry_run.signature_verified)"
 Write-Host "CHANGES     : install=$($report.dry_run.install_performed) / restart=$($report.dry_run.restart_performed)"
+Write-Host "CANARY      : active=$($report.canary_rollout.active) / promoted=$(@($report.canary_rollout.promoted).Count)/$(@($report.canary_rollout.order).Count) / policy-only=$($report.canary_rollout.policy_only)"
+Write-Host "NOTIFY      : $(@($report.update_notifications).Count) deduped update events"
 Write-Host ""
 foreach ($s in $dryServers) {
     Write-Host ("{0,-12} online={1,-5} players={2,-3} blocked={3,-5} restart_safe={4,-5} items={5}" -f $s.server_id,$s.online,$s.players,$s.player_aware_block,$s.restart_safe,$s.available_items)
