@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-const appVersion = "4.3.2"
+const appVersion = "4.3.3"
 
 type Config struct {
 	Bind                string         `json:"bind"`
@@ -169,6 +169,8 @@ var (
 	udpRefreshInFlight  atomic.Bool
 	rconRecentMu        sync.RWMutex
 	rconRecentSuccess   = map[int]time.Time{}
+	rconBootstrapMu     sync.Mutex
+	rconBootstrap       = map[string]rconBootstrapState{}
 	agentMu             sync.RWMutex
 	agentStartMu        sync.Mutex
 	lastAgentErr        string
@@ -1409,6 +1411,17 @@ func rconRecentlyUsable(port int, ttl time.Duration) bool {
 	return !last.IsZero() && time.Since(last) <= ttl
 }
 
+type rconBootstrapState struct {
+	InFlight    bool
+	Attempts    int
+	LastAttempt time.Time
+}
+
+const (
+	rconBootstrapMaxAttempts = 3
+	rconBootstrapRetryDelay  = 10 * time.Second
+)
+
 func rconAuthenticatedForCurrentLifetime(port int) bool {
 	if port <= 0 {
 		return false
@@ -1417,6 +1430,88 @@ func rconAuthenticatedForCurrentLifetime(port int) bool {
 	_, ok := rconRecentSuccess[port]
 	rconRecentMu.RUnlock()
 	return ok
+}
+
+func resetRCONBootstrap(id string) {
+	id = strings.ToLower(strings.TrimSpace(id))
+	if id == "" {
+		return
+	}
+	rconBootstrapMu.Lock()
+	delete(rconBootstrap, id)
+	rconBootstrapMu.Unlock()
+}
+
+func claimRCONBootstrap(id string, now time.Time) (int, bool) {
+	id = strings.ToLower(strings.TrimSpace(id))
+	if id == "" {
+		return 0, false
+	}
+	rconBootstrapMu.Lock()
+	defer rconBootstrapMu.Unlock()
+	st := rconBootstrap[id]
+	if st.InFlight || st.Attempts >= rconBootstrapMaxAttempts {
+		return st.Attempts, false
+	}
+	if !st.LastAttempt.IsZero() && now.Sub(st.LastAttempt) < rconBootstrapRetryDelay {
+		return st.Attempts, false
+	}
+	st.InFlight = true
+	st.Attempts++
+	st.LastAttempt = now
+	rconBootstrap[id] = st
+	return st.Attempts, true
+}
+
+func finishRCONBootstrap(id string) {
+	id = strings.ToLower(strings.TrimSpace(id))
+	rconBootstrapMu.Lock()
+	st := rconBootstrap[id]
+	st.InFlight = false
+	rconBootstrap[id] = st
+	rconBootstrapMu.Unlock()
+}
+
+// bootstrapRCONHealthAsync repairs the management-health cache after a GSC/PC
+// restart when Paper is already online but Windows passive listener discovery
+// misses the RCON socket. It is deliberately bounded to three attempts per
+// backend lifetime and never runs for an offline Java backend. A successful
+// authenticated "list" command is harmless and becomes lifetime-scoped proof
+// that RCON is usable. Ordinary status polling remains passive.
+func bootstrapRCONHealthAsync(s ServerConfig) {
+	s = normalizeServerConfig(s)
+	if s.ID == "" || s.JavaPort <= 0 || s.RCONPort <= 0 || rconAuthenticatedForCurrentLifetime(s.RCONPort) {
+		return
+	}
+	attempt, ok := claimRCONBootstrap(s.ID, time.Now())
+	if !ok {
+		return
+	}
+	go func() {
+		defer finishRCONBootstrap(s.ID)
+
+		// Re-check online state inside the goroutine. A server that stopped after
+		// the status snapshot must not receive an RCON bootstrap attempt.
+		if !tcpOpen("127.0.0.1", s.JavaPort, 400*time.Millisecond) {
+			resetRCONBootstrap(s.ID)
+			return
+		}
+		pass, err := readServerProperty(resolveServerDir(s), "rcon.password")
+		if err != nil || strings.TrimSpace(pass) == "" {
+			if attempt >= rconBootstrapMaxAttempts {
+				appendV4Event("warn", "server", s.ID, "RCON 상태 자동 확인 실패", "server.properties의 RCON 인증 정보를 확인하지 못했습니다")
+			}
+			return
+		}
+		if _, err = rconCommand("127.0.0.1", s.RCONPort, pass, "list"); err != nil {
+			clearRCONSuccess(s.RCONPort)
+			if attempt >= rconBootstrapMaxAttempts {
+				appendV4Event("warn", "server", s.ID, "RCON 상태 자동 확인 실패", err.Error())
+			}
+			return
+		}
+		appendV4Event("info", "server", s.ID, "RCON 상태 자동 확인 완료", "GSC/PC 재시작 후 authenticated bootstrap")
+	}()
 }
 
 func isIntentionalStopCommand(command string) bool {
@@ -1489,9 +1584,9 @@ func getServerStatus(s ServerConfig) ServerStatus {
 	st.Online = st.JavaPortOpen
 	if !st.JavaPortOpen {
 		// A confirmed offline backend invalidates any prior authenticated RCON
-		// success. This keeps the long-lived success cache tied to the current
-		// server lifetime instead of surviving a normal stop.
+		// success and permits a fresh bootstrap on the next backend lifetime.
 		clearRCONSuccess(s.RCONPort)
+		resetRCONBootstrap(s.ID)
 	}
 
 	// Do not probe RCON with net.Dial here. Minecraft logs every TCP connect to
@@ -1506,6 +1601,9 @@ func getServerStatus(s ServerConfig) ServerStatus {
 	// when the backend is observed offline, when a new server start begins,
 	// or when an RCON command fails.
 	st.RCONPortOpen = cachedTCPListener(s.RCONPort) || nativeTCPListener(s.RCONPort) || rconAuthenticatedForCurrentLifetime(s.RCONPort)
+	if st.JavaPortOpen && !st.RCONPortOpen {
+		bootstrapRCONHealthAsync(s)
+	}
 
 	st.BedrockUDPListening, st.BedrockMode, st.BedrockPublicPort = topologyBedrockStatus(s)
 	st.GDSAPIOnline = httpOK(fmt.Sprintf("http://127.0.0.1:%d/health", s.GDSAPIPort))
