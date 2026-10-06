@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-const appVersion = "4.3.5"
+const appVersion = "4.3.6"
 
 type Config struct {
 	Bind                string         `json:"bind"`
