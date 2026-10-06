@@ -101,11 +101,11 @@ func TestDay11GSCVersionComparisonBlocksDowngrade(t *testing.T) {
 		a, b string
 		want int
 	}{
-		{"4.3.4", "4.3.4", 0},
-		{"4.3.3", "4.3.4", -1},
-		{"4.3.4", "4.3.3", 1},
+		{"4.3.5", "4.3.5", 0},
+		{"4.3.4", "4.3.5", -1},
+		{"4.3.5", "4.3.4", 1},
 		{"4.10.0", "4.9.9", 1},
-		{"v4.3.4", "4.3.4+117", 0},
+		{"v4.3.5", "4.3.5+118", 0},
 	}
 	for _, tc := range cases {
 		got, err := compareGSCVersions(tc.a, tc.b)
@@ -116,16 +116,16 @@ func TestDay11GSCVersionComparisonBlocksDowngrade(t *testing.T) {
 			t.Fatalf("%s vs %s: got %d want %d", tc.a, tc.b, got, tc.want)
 		}
 	}
-	if err := requireNewerGSCVersion("4.3.2"); err == nil {
-		t.Fatal("older signed release was accepted as self-update target")
-	}
 	if err := requireNewerGSCVersion("4.3.3"); err == nil {
 		t.Fatal("older signed release was accepted as self-update target")
 	}
 	if err := requireNewerGSCVersion("4.3.4"); err == nil {
+		t.Fatal("older signed release was accepted as self-update target")
+	}
+	if err := requireNewerGSCVersion("4.3.5"); err == nil {
 		t.Fatal("same version was accepted as self-update target")
 	}
-	if err := requireNewerGSCVersion("4.3.5"); err != nil {
+	if err := requireNewerGSCVersion("4.3.6"); err != nil {
 		t.Fatalf("newer version was rejected: %v", err)
 	}
 }
