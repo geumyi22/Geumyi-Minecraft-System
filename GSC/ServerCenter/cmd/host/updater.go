@@ -239,6 +239,8 @@ func registerUpdateRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/update/decision", requireAuth(apiV4UpdateDecision))
 	mux.HandleFunc("/api/v4/update/policy", requireAuth(apiV4UpdatePolicy))
 	mux.HandleFunc("/api/v4/update/fleet", requireAuth(apiV4UpdateFleet))
+	mux.HandleFunc("/api/v4/update/canary-rollout", requireAuth(apiV4CanaryRollout))
+	mux.HandleFunc("/api/v4/update/notifications", requireAuth(apiV4UpdateNotifications))
 	mux.HandleFunc("/api/v4/update/external/status", requireAuth(apiV4ExternalUpdateStatus))
 	mux.HandleFunc("/api/v4/update/external/stage", requireAuth(apiV4ExternalUpdateStage))
 	mux.HandleFunc("/api/v4/update/external/apply-proxy", requireAuth(apiV4ExternalUpdateApplyProxy))
@@ -480,6 +482,12 @@ func apiV4UpdateFleet(w http.ResponseWriter, r *http.Request) {
 		"schema": 1,
 		"global": publicUpdateConfig(c),
 		"servers": rows,
+		"capabilities": map[string]any{
+			"canary_promotion": true,
+			"health_gated_promotion": true,
+			"update_notifications": true,
+			"policy_only_promotion": true,
+		},
 	})
 }
 
