@@ -4,9 +4,9 @@
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
-| GSC | 4.3.7 live beta / 4.3.8 candidate | GSC/ServerCenter | 11.6 fleet + Client/Host split live verified; 4.3.8 Protection & Recovery 2.0 source/CI candidate |
+| GSC | 4.3.8 live | GSC/ServerCenter | Client/Host split, 4.3.7→4.3.8 Client/Host self-update, Protection & Recovery 2.0 and Day-11 Final E2E verified |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction; JDK 21 clean build succeeds |
-| GSCM | 1.1.5+116 live / +117 candidate | GSCM | Build116 user-device distribution verified; build117 adds Phase 11.7 recovery controls and is awaiting release/live verification |
+| GSCM | 1.1.5+117 live verified | GSCM | Protection & Recovery 2.0 controls included; final two requested Day-11 GSCM device checks user-confirmed PASS |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | Exact HOTFIX/overlay delta recovered and matched against final deployed JAR; legacy 0.1.5 core remains binary-only |
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full plugin source, stubs and tests |
 | GeumyiNetwork | 0.1.0 | Plugins/GeumyiNetwork | Day 10 four-server transfer/last-location routing plugin; Java host E2E verified |
@@ -27,8 +27,8 @@
 |---|---|
 | Day 1~9 | ✅ 완료 |
 | Day 10 | ✅ Java + Bedrock four-server/Lobby real-client E2E 완료 |
-| Day 11 | 🔄 진행 중 — 11.0~11.7 + Final READ-ONLY E2E + Java/Bedrock real-client smoke PASS, GSCM build117 device check 남음 |
-| Day 12 | ⏳ Final Production Hardening & Closure |
+| Day 11 | ✅ 완료 — GSC 4.3.8 / GSCM 1.1.5+117, Final READ-ONLY E2E + Java/Bedrock smoke + final GSCM checks PASS |
+| Day 12 | ⏳ 시작 준비 완료 — Final Production Hardening & Closure |
 
 Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/마감을 수행한 milestone**입니다. Day 8과 Day 9는 모두 완료 상태이며, 각 E2E PASS는 완료의 근거입니다.
 
@@ -49,6 +49,7 @@ Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/
 - Day 10 Full E2E/Lobby 네트워크 고정 계획: [DAY10-PLAN.md](DAY10-PLAN.md)
 - Day 10 실제 서버 검증 결과: [DAY10-E2E-REPORT.md](DAY10-E2E-REPORT.md)
 - Day 11 Protection & Recovery 2.0 실서버 검증: [DAY11-PHASE7-REPORT.md](DAY11-PHASE7-REPORT.md)
+- Day 11 최종 마감 보고: [DAY11-FINAL-REPORT.md](DAY11-FINAL-REPORT.md)
 - 이후 작업 순서와 장기 계획: [ROADMAP.md](ROADMAP.md)
 - 자동 빌드/Release/서버 자동 업데이트/rollback 장기 설계: [DEPLOYMENT-ARCHITECTURE.md](DEPLOYMENT-ARCHITECTURE.md)
 
