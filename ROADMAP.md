@@ -1,6 +1,6 @@
 # Geumyi Minecraft System — 작업 로드맵
 
-기준일: 2026-10-06
+기준일: 2026-10-07
 
 > **일차 번호와 상태의 단일 기준은 [DAY-TIMELINE.md](DAY-TIMELINE.md)입니다.**
 > Day 번호는 개발 날짜 수가 아니라 milestone 번호입니다. Day 4는 삭제된 일차가 아니라 **신규 구현 없이 실서버 E2E 검증/마감을 수행한 milestone**입니다.
@@ -17,7 +17,7 @@
 | 8 | Secure Release & Update Foundation | ✅ 완료 |
 | 9 | Transaction / Backup / Rollback | ✅ 완료 |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 |
-| 11 | Operations UX & Fleet Management — GSC 4.3.2 / GSCM 1.1.5+116 | 🔄 진행 중 (11.0~11.5 완료) |
+| 11 | Operations UX & Fleet Management — GSC 4.3.6 live / 4.3.7 candidate / GSCM 1.1.5+116 | 🔄 진행 중 (11.0~11.6 완료) |
 | 12 | Final Production Hardening & Closure | ⏳ 예정 |
 
 ## Day 1~3 — 복구와 기반 정리
@@ -111,12 +111,13 @@ Bedrock:
 ## Day 11 — Operations UX & Fleet Management
 
 현재 검증 기준:
-- **GSC 4.3.2 (beta live)**
+- **GSC 4.3.6 (beta live)**
+- **GSC 4.3.7 (source/CI candidate; local Client / remote Host update separation, live pending)**
 - **GSCM 1.1.5+116**
 
 진행 상태:
-- **11.0~11.5 완료**
-- **11.6 Full Fleet UX 남음**
+- **11.0~11.6 완료**
+- **11.6 Full Fleet UX LIVE PASS**
 - **11.7 Protection & Recovery 2.0 남음**
 - **Day 11 Final E2E 남음**
 
@@ -132,6 +133,13 @@ Bedrock:
 - update history/audit/notifications
 - Geyser/Floodgate/ViaVersion/ViaBackwards 업데이트 정책
 - Paper는 별도 호환성/승인 정책
+
+Day 11 11.6 live evidence:
+- signed Canary rollout Playground -> Wild -> Other -> Lobby
+- offline Other health gate fail-closed 확인
+- Other 백업/SHA 검증 후 Technology 0.1.4 실제 적용 + post-start health PASS
+- rollout 완료 후 전 서버 `managed + inherit + no pin`, global beta 복귀
+- GSC 4.3.7에서 원격 관리 PC의 **로컬 Client 업데이트**와 서버 PC의 **Host 업데이트** UI/실행 경로를 분리했으며 현재 source/CI PASS, live 검증 대기
 
 Day 11 안정화 버그:
 - RCON `관리 제한` 오탐 방지
