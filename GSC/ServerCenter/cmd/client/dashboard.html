@@ -194,10 +194,12 @@ async function loadUpdates(){
       </div>
       <div class="notice">서버별 채널/Pin은 기본 채널 위에 적용됩니다. 외부 프록시 구성요소와 Paper는 별도 안전 정책으로 관리합니다.</div>
     </div>`+renderCanaryRollout(rollout)+cards+renderUpdateNotifications(notices)+
-      '<div id="gscSelfUpdateEntry" class="card full"><div class="title">GSC 본체 업데이트 확인 중...</div></div>'+
+      '<div id="gscClientUpdateEntry" class="card full"><div class="title">이 PC GSC Client 업데이트 확인 중...</div></div>'+
+      '<div id="gscHostUpdateEntry" class="card full"><div class="title">서버 PC GSC Host 업데이트 확인 중...</div></div>'+
       '<div id="externalUpdateEntry" class="card full"><div class="title">외부 구성요소 확인 중...</div></div>'+
       '<div id="networkEntry" class="card full"><div class="title">네트워크 상태 확인 중...</div></div>';
-    loadGSCSelfUpdate();
+    loadGSCClientUpdate();
+    loadGSCHostUpdate();
     loadExternalUpdates();
     loadNetworkEntryStatus();
   }catch(e){
@@ -288,41 +290,78 @@ async function applyUpdateAndRestart(id){
     loadUpdates()
   }catch(e){toast(koMessage(e.message),true)}
 }
-async function loadGSCSelfUpdate(force=false){
-  const root=$('gscSelfUpdateEntry');if(!root)return;
+async function loadGSCClientUpdate(force=false){
+  const root=$('gscClientUpdateEntry');if(!root)return;
+  try{
+    const x=await req('/client/update/status'+(force?'?fresh=1':''));
+    const cls=x.error?'bad':x.available?'warn':'ok';
+    const staged=x.staged?' · Staged':'';
+    root.innerHTML='<div class="row spread"><div><div class="title">💻 이 PC의 GSC Client</div>'+
+      '<div class="small">이 PC 설치 '+esc(x.installed||'-')+' → 검증 Release '+esc(x.latest||'-')+' · '+esc(x.channel||'-')+staged+'</div></div>'+
+      '<span class="status '+cls+'"><span class="dot '+cls+'"></span>'+esc(x.error?'확인 실패':x.available?'업데이트 가능':'현재 버전')+'</span></div>'+
+      '<div class="small server-detail" style="margin-top:8px">'+esc(x.message||'')+
+      (x.host_installed?'<br>연결된 서버 PC Host: v'+esc(x.host_installed):'')+
+      (x.error?'<br><span class="badtext">'+esc(x.error)+'</span>':'')+
+      (x.signature_verified?'<br>서버 PC가 검증한 서명 release + 이 PC SHA-256 검증 사용':'')+
+      (x.staged_path?'<br>이 PC Staging: '+esc(x.staged_path):'')+'</div>'+
+      '<div class="actions"><button onclick="loadGSCClientUpdate(true)">다시 확인</button>'+
+      '<button '+(x.signature_verified&&x.available?'':'disabled')+' onclick="stageGSCClientUpdate()">이 PC에 검증 후 Staging</button>'+
+      '<button class="warning" '+(x.staged&&x.available?'':'disabled')+' onclick="applyGSCClientUpdate()">이 PC Client 업데이트</button></div>'+
+      '<div class="notice" style="margin-top:10px">이 항목은 지금 보고 있는 관리 PC의 Client만 업데이트합니다. 연결된 서버 PC Host, Minecraft/Paper/Velocity는 변경하지 않습니다.</div>';
+  }catch(e){root.innerHTML='<div class="badtext">'+esc(koMessage(e.message))+'</div>'}
+}
+async function stageGSCClientUpdate(){
+  if(!confirm('현재 관리 PC에 서명된 release의 GSC 설치 파일을 다운로드하고 SHA-256을 검증해 Staging합니다.\n\n서버 PC Host와 Minecraft/Paper/Velocity는 변경하지 않습니다. 계속할까요?'))return;
+  try{
+    toast('이 PC GSC Client update artifact 검증 / staging 중...');
+    const x=await req('/client/update/stage',{method:'POST',body:'{}'});
+    alert('이 PC GSC Client Staging 완료\n\n현재: '+(x.installed||'-')+'\n대상: '+(x.target||'-')+'\n서버 PC Host: '+(x.host_installed||'-')+'\nRelease: '+(x.release||'-')+'\n\n서버 PC 변경: 없음\nMinecraft/Velocity 변경: 없음');
+    loadGSCClientUpdate();
+  }catch(e){toast(koMessage(e.message),true)}
+}
+async function applyGSCClientUpdate(){
+  if(!confirm('검증된 Staging 설치 파일로 이 PC의 GSC Client만 업데이트합니다.\n\n현재 관리창은 닫혔다가 새 Client로 다시 열립니다. 서버 PC Host와 Minecraft/Paper/Velocity는 건드리지 않습니다. 계속할까요?'))return;
+  try{
+    toast('이 PC GSC Client update helper 시작 중...');
+    const x=await req('/client/update/apply',{method:'POST',body:JSON.stringify({confirm:'APPLY_LOCAL_GSC_CLIENT_UPDATE'})});
+    toast('이 PC Client 업데이트 시작됨 · 대상 '+(x.target||'-')+' · 관리창이 잠시 닫힙니다.');
+  }catch(e){toast(koMessage(e.message),true)}
+}
+
+async function loadGSCHostUpdate(force=false){
+  const root=$('gscHostUpdateEntry');if(!root)return;
   try{
     const x=await req('/api/v4/update/self/status'+(force?'?fresh=1':''));
     const cls=x.error?'bad':x.available?'warn':'ok';
     const staged=x.staged?' · Staged':'';
-    root.innerHTML='<div class="row spread"><div><div class="title">🖥 GSC 본체 Self-update</div>'+
-      '<div class="small">설치 '+esc(x.installed||'-')+' → 검증 Release '+esc(x.latest||'-')+' · '+esc(x.channel||'-')+staged+'</div></div>'+
+    root.innerHTML='<div class="row spread"><div><div class="title">🖥 서버 PC의 GSC Host</div>'+
+      '<div class="small">서버 PC 설치 '+esc(x.installed||'-')+' → 검증 Release '+esc(x.latest||'-')+' · '+esc(x.channel||'-')+staged+'</div></div>'+
       '<span class="status '+cls+'"><span class="dot '+cls+'"></span>'+esc(x.error?'확인 실패':x.available?'업데이트 가능':'현재 버전')+'</span></div>'+
       '<div class="small server-detail" style="margin-top:8px">'+esc(x.message||'')+
       (x.error?'<br><span class="badtext">'+esc(x.error)+'</span>':'')+
       (x.signature_verified?'<br>서명된 deployment manifest 검증됨':'')+
-      (x.staged_path?'<br>Staging: '+esc(x.staged_path):'')+'</div>'+
-      '<div class="actions"><button onclick="loadGSCSelfUpdate(true)">다시 확인</button>'+
-      '<button '+(x.signature_verified?'':'disabled')+' onclick="stageGSCSelfUpdate()">검증 후 Staging</button>'+
-      '<button class="warning" '+(x.staged&&x.available?'':'disabled')+' onclick="applyGSCSelfUpdate()">실제 Self-update 적용</button></div>'+
-      '<div class="notice" style="margin-top:10px">Staging은 실행 중인 GSC를 교체하지 않습니다. 실제 적용은 GSC-only 백업 → helper 교체 → Host health → 자동 rollback Gate 순서이며 Minecraft/Paper/Velocity는 건드리지 않습니다.</div>';
+      (x.staged_path?'<br>서버 PC Staging: '+esc(x.staged_path):'')+'</div>'+
+      '<div class="actions"><button onclick="loadGSCHostUpdate(true)">Host 다시 확인</button>'+
+      '<button '+(x.signature_verified&&x.available?'':'disabled')+' onclick="stageGSCHostUpdate()">Host 검증 후 Staging</button>'+
+      '<button class="warning" '+(x.staged&&x.available?'':'disabled')+' onclick="applyGSCHostUpdate()">서버 PC Host 업데이트</button></div>'+
+      '<div class="notice" style="margin-top:10px">이 항목은 연결된 서버 PC의 GSC Host용입니다. 원격 관리 PC의 Client 버전과 별개이며, 적용 시 GSC Host만 재시작하고 Minecraft/Paper/Velocity는 건드리지 않습니다.</div>';
   }catch(e){root.innerHTML='<div class="badtext">'+esc(koMessage(e.message))+'</div>'}
 }
-async function stageGSCSelfUpdate(){
-  if(!confirm('서명/해시 검증된 GSC 설치 artifact를 Staging 폴더에만 준비합니다. 실행 중인 GSC와 Minecraft/Velocity는 변경하지 않습니다. 계속할까요?'))return;
+async function stageGSCHostUpdate(){
+  if(!confirm('서버 PC에 서명/해시 검증된 GSC 설치 artifact를 Staging 폴더에만 준비합니다. 실행 중인 Minecraft/Velocity는 변경하지 않습니다. 계속할까요?'))return;
   try{
-    toast('GSC Self-update artifact 검증 / staging 중...');
+    toast('서버 PC GSC Host artifact 검증 / staging 중...');
     const x=await req('/api/v4/update/self/stage',{method:'POST',body:'{}'});
-    alert('GSC Self-update Staging 완료\n\n현재: '+(x.installed||'-')+'\n대상: '+(x.target||'-')+'\nRelease: '+(x.release||'-')+'\n\nLive 적용: 없음\n다음 단계: GSC-only helper + health/rollback 검증');
-    loadGSCSelfUpdate();
+    alert('서버 PC GSC Host Staging 완료\n\n현재: '+(x.installed||'-')+'\n대상: '+(x.target||'-')+'\nRelease: '+(x.release||'-')+'\n\nLive 적용: 없음');
+    loadGSCHostUpdate();
   }catch(e){toast(koMessage(e.message),true)}
 }
-
-async function applyGSCSelfUpdate(){
-  if(!confirm('검증된 Staging artifact로 GSC 본체를 업데이트합니다.\n\nGSC Client/Host만 잠시 재시작되며 Minecraft/Paper/Velocity는 건드리지 않습니다. 실패하면 GSC-only 백업으로 자동 rollback합니다. 계속할까요?'))return;
+async function applyGSCHostUpdate(){
+  if(!confirm('검증된 Staging artifact로 서버 PC의 GSC Host를 업데이트합니다.\n\nGSC Host만 잠시 재시작되며 Minecraft/Paper/Velocity는 건드리지 않습니다. 실패하면 GSC-only 백업으로 자동 rollback합니다. 계속할까요?'))return;
   try{
-    toast('GSC Self-update helper 시작 중...');
+    toast('서버 PC GSC Host self-update helper 시작 중...');
     const x=await req('/api/v4/update/self/apply',{method:'POST',body:JSON.stringify({confirm:'APPLY_GSC_SELF_UPDATE'})});
-    toast('GSC Self-update 시작됨 · 대상 '+(x.target||'-')+' · 관리창이 자동으로 다시 열립니다.');
+    toast('서버 PC GSC Host 업데이트 시작됨 · 대상 '+(x.target||'-'));
   }catch(e){toast(koMessage(e.message),true)}
 }
 
