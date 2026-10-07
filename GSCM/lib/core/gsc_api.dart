@@ -228,7 +228,7 @@ class GscApi {
   }
 
   Future<BackupInfo> createBackup(String id, String scope) async {
-    final json = await _request('POST', '/api/v1/backups', body: {'id': id, 'scope': scope}, timeout: const Duration(minutes: 10));
+    final json = await _request('POST', '/api/v1/backups', body: {'id': id, 'scope': scope, 'reason': 'manual-gscm'}, timeout: const Duration(minutes: 10));
     return BackupInfo.fromJson(jMap(json['backup']));
   }
 
@@ -253,13 +253,21 @@ class GscApi {
           timeout: const Duration(minutes: 2));
 
   Future<void> backupAction(String id, String file, String action) async {
-    await _request('POST', '/api/v1/backups/action', body: {'id': id, 'file': file, 'action': action}, timeout: const Duration(minutes: 2));
+    final body = <String, dynamic>{'id': id, 'file': file, 'action': action};
+    if (action == 'delete-permanent') {
+      body['confirm'] = 'DELETE_PERMANENT_BACKUP';
+      body['confirm_file'] = file;
+    }
+    await _request('POST', '/api/v1/backups/action', body: body, timeout: const Duration(minutes: 2));
   }
 
-  Future<String> restoreBackup(String id, String file) async {
-    final json = await _request('POST', '/api/v1/backups/restore', body: {'id': id, 'file': file}, timeout: const Duration(minutes: 20));
-    return jString(json['checkpoint']);
-  }
+  Future<Map<String, dynamic>> restoreBackupPreflight(String id, String file) =>
+      _request('POST', '/api/v1/backups/restore/preflight',
+          body: {'id': id, 'file': file}, timeout: const Duration(minutes: 10));
+
+  Future<Map<String, dynamic>> restoreBackup(String id, String file) =>
+      _request('POST', '/api/v1/backups/restore',
+          body: {'id': id, 'file': file}, timeout: const Duration(minutes: 20));
 
   Future<List<GscAutomation>> automations() async {
     final json = await _request('GET', '/api/v1/automations');
