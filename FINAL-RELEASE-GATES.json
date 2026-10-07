@@ -2,11 +2,11 @@
   "schema": 1,
   "status": "BLOCKED_UNTIL_ALL_MANDATORY_GATES_PASS",
   "repository_gates": {
-    "day12_read_only_safety_ci": "PENDING_CURRENT_RUN",
-    "day12_security_sbom_ci": "PENDING",
-    "gsc_reproducibility": "PENDING",
-    "system_ci_after_final_source_cleanup": "PENDING",
-    "synthetic_dr_ci": "PENDING"
+    "day12_read_only_safety_ci": "PASS",
+    "day12_security_sbom_ci": "PASS",
+    "gsc_reproducibility": "PASS",
+    "system_ci_after_final_source_cleanup": "PASS",
+    "synthetic_dr_ci": "PASS"
   },
   "live_gates": {
     "phase_12_0A_baseline_capture": "PENDING_LIVE",
@@ -23,5 +23,12 @@
   "release": {
     "stable_release_allowed": false,
     "maintenance_mode_allowed": false
+  },
+  "repository_evidence": {
+    "day12_read_only_safety_ci_run": 37670902211,
+    "day12_security_sbom_reproducibility_run": 37670892834,
+    "synthetic_dr_recovery_kit_run": 37670892599,
+    "system_ci_after_installer_cleanup_run": 37669908817,
+    "host_test_after_installer_cleanup_run": 37669908646
   }
 }
