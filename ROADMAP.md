@@ -17,7 +17,7 @@
 | 8 | Secure Release & Update Foundation | ✅ 완료 |
 | 9 | Transaction / Backup / Rollback | ✅ 완료 |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 |
-| 11 | Operations UX & Fleet Management — GSC 4.3.7 live / 4.3.8 candidate / GSCM 1.1.5+116 live +117 candidate | 🔄 진행 중 (11.0~11.6 완료, 11.7 진행 중) |
+| 11 | Operations UX & Fleet Management — GSC 4.3.8 live / GSCM 1.1.5+116 live +117 candidate | 🔄 진행 중 (11.0~11.7 완료, Final E2E 남음) |
 | 12 | Final Production Hardening & Closure | ⏳ 예정 |
 
 ## Day 1~3 — 복구와 기반 정리
@@ -118,7 +118,7 @@ Bedrock:
 진행 상태:
 - **11.0~11.6 완료**
 - **11.6 Full Fleet UX LIVE PASS**
-- **11.7 Protection & Recovery 2.0 진행 중**
+- **11.7 Protection & Recovery 2.0 LIVE PASS**
 - **Day 11 Final E2E 남음**
 
 고정 범위:
@@ -144,7 +144,8 @@ Day 11 11.6 live evidence:
 - 원격 관리 PC의 **인앱 Client-only 4.3.7 → 4.3.8 self-update** 사용자 실기기 E2E PASS
 - 서버 PC GSC Host도 사용자 확인 기준 **4.3.7 → 4.3.8 self-update PASS**
 - 11.7 Phase 7 READ-ONLY 실서버 검증 **PASS**: GSC 4.3.8, 4개 서버 inventory/retention 조회, Other 기존 full backup restore-preflight PASS, 영구삭제 확인 게이트 400 PASS, mutation=false
-- 이제 11.7의 safe disposable config-backup lifecycle E2E만 남음
+- 11.7 safe disposable config-backup lifecycle E2E도 PASS: protect/409 deny, Trash/restore, permanent-delete missing-confirm 400, retention dry-run, restore preflight, final recoverable Trash
+- **Phase 11.7 완료.** 세부 근거: `DAY11-PHASE7-REPORT.md`
 
 Day 11 안정화 버그:
 - RCON `관리 제한` 오탐 방지
