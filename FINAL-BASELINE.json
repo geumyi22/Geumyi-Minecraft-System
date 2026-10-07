@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "phase": "12.0",
+  "status": "PENDING_LIVE_CAPTURE",
+  "frozen_from": "Day 11 final closure",
+  "repository_day11_closure_head": "c96e02a17b8f4f527e1f630c1f9d5159fb47dab5",
+  "runtime_release": {
+    "tag": "system-2026.10.07-day11-gsc438-beta",
+    "target_commit": "a17975030ed3f9b71d8632a7897c1c206d9bfcdf",
+    "secure_release_run": "37627140918"
+  },
+  "components": {
+    "gsc": {
+      "version": "4.3.8",
+      "state": "live_verified",
+      "ci_run": "37617403835",
+      "ci_artifact_id": "11479763609",
+      "ci_artifact_digest": "sha256:cab175afdd9a9b07e0d199dee9ff5ddf4383c216062ed8f2b12a7a528cb235cb"
+    },
+    "gscm": {
+      "version": "1.1.5+117",
+      "state": "user_device_verified",
+      "android_ci_run": "37617292391",
+      "android_artifact_id": "11481027221",
+      "ios_ci_run": "37617292404",
+      "ios_artifact_id": "11480667126"
+    },
+    "status_agent": {
+      "version": "0.5.4"
+    },
+    "gst": {
+      "version": "1.1.1 HOTFIX"
+    },
+    "gds": {
+      "version": "1.1.1"
+    },
+    "technology": {
+      "version": "0.1.4",
+      "targets": [
+        "wild",
+        "other"
+      ]
+    },
+    "chemistry": {
+      "version": "0.4.1",
+      "targets": [
+        "wild",
+        "other"
+      ]
+    },
+    "network": {
+      "version": "0.1.0"
+    },
+    "lobby": {
+      "version": "0.1.0"
+    },
+    "paper": {
+      "version": "26.3",
+      "targets": [
+        "wild",
+        "playground",
+        "other",
+        "lobby"
+      ]
+    }
+  },
+  "validation": {
+    "day11_phase7": "PASS",
+    "day11_final_read_only_e2e": "PASS",
+    "java_real_client_smoke": "USER PASS",
+    "bedrock_real_client_smoke": "USER PASS",
+    "final_gscm_checks": "USER PASS"
+  },
+  "live_capture": {
+    "status": "PENDING",
+    "tool": "tools/day12/Day12_Phase0_Golden_Baseline_READ_ONLY.cmd",
+    "expected_report": "Geumyi-Day12-Phase0-GoldenBaseline-*.json",
+    "required_before_golden_checkpoint": true
+  },
+  "golden_checkpoint": {
+    "status": "PENDING_12.0B",
+    "must_be_protected": true,
+    "exempt_from_automatic_retention": true
+  },
+  "public_repository_redaction": {
+    "full_local_paths_committed": false,
+    "secrets_committed": false,
+    "live_config_contents_committed": false
+  }
+}
