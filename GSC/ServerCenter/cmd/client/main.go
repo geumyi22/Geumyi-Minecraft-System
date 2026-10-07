@@ -181,6 +181,8 @@ var (
 	pShellNotifyIcon     = shell32.NewProc("Shell_NotifyIconW")
 	cfg                  ClientConfig
 	clientConfigMu       sync.RWMutex
+	clientUpdateApplyMu  sync.Mutex
+	clientUpdateApplying bool
 	cfgPath, localURL    string
 	mainHWND, iconH      uintptr
 	lastTrayOpen         time.Time
@@ -693,9 +695,20 @@ func clientUpdateApplyAPI(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "검증된 이 PC Client staging 설치 파일이 필요합니다", http.StatusConflict)
 		return
 	}
+	clientUpdateApplyMu.Lock()
+	if clientUpdateApplying {
+		clientUpdateApplyMu.Unlock()
+		http.Error(w, "이 PC Client update helper가 이미 시작되었습니다", http.StatusConflict)
+		return
+	}
+	clientUpdateApplying = true
+	clientUpdateApplyMu.Unlock()
 	cmd := exec.Command(stage, "--client-self-update")
 	cmd.Dir = filepath.Dir(stage)
 	if err = cmd.Start(); err != nil {
+		clientUpdateApplyMu.Lock()
+		clientUpdateApplying = false
+		clientUpdateApplyMu.Unlock()
 		http.Error(w, "이 PC Client update helper 시작 실패: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -707,11 +720,6 @@ func clientUpdateApplyAPI(w http.ResponseWriter, r *http.Request) {
 	if f, ok := w.(http.Flusher); ok {
 		f.Flush()
 	}
-	go func() {
-		time.Sleep(1200 * time.Millisecond)
-		_ = closeDashboardBrowsers()
-		requestClientQuit()
-	}()
 }
 func proxyAPI(w http.ResponseWriter, r *http.Request) {
 	cfg := clientConfigSnapshot()
