@@ -1,4 +1,4 @@
-# Build GSC 4.3.7
+# Build GSC 4.3.8
 
 Requires Go 1.23.2 or compatible on Windows. Run `powershell -File build.ps1`.
 
