@@ -48,3 +48,4 @@ Write-Host ("DR SYNTHETIC: "+$result)
 foreach($step in @($steps)){ $errText=""; if($null -ne $step.PSObject.Properties["error"]){$errText=" error="+[string]$step.error}; Write-Host ("- "+[string]$step.case+" pass="+[string]$step.pass+$errText) }
 Write-Host ("Report: "+$out)
 if($result -ne "PASS"){exit 2}
+exit 0
