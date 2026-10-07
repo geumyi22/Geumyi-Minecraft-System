@@ -1,0 +1,97 @@
+name: Day 12 Security SBOM Reproducibility
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'GSC/**'
+      - 'GSCM/**'
+      - 'Plugins/**'
+      - 'deploy/**'
+      - 'tools/day12/**'
+      - '.github/workflows/day12-security-ci.yml'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Source secret scan
+        run: python tools/day12/source_secret_scan.py --output day12-secret-scan.json
+      - name: Generate declared-component CycloneDX SBOM
+        run: python tools/day12/generate_sbom.py --output FINAL-SBOM.cdx.json
+      - name: Validate SBOM contract
+        run: |
+          python - <<'PY'
+          import json
+          j=json.load(open('FINAL-SBOM.cdx.json',encoding='utf-8'))
+          assert j['bomFormat']=='CycloneDX' and j['specVersion']=='1.5'
+          assert len(j['components']) >= 7
+          print('SBOM components',len(j['components']))
+          PY
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-security-sbom
+          path: |
+            day12-secret-scan.json
+            FINAL-SBOM.cdx.json
+          retention-days: 30
+
+  gsc-reproducibility:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: GSC/ServerCenter/go.mod
+          cache: false
+      - name: Go tests
+        working-directory: GSC/ServerCenter
+        run: go test ./...
+      - name: Build GSC Host and Client twice
+        shell: powershell
+        working-directory: GSC/ServerCenter
+        run: |
+          New-Item -ItemType Directory -Force repro/a,repro/b | Out-Null
+          foreach($d in @('a','b')){
+            go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui" -o "repro/$d/GeumyiServerHost.exe" ./cmd/host
+            if($LASTEXITCODE -ne 0){throw 'Host build failed'}
+            go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui" -o "repro/$d/GeumyiServerCenter.exe" ./cmd/client
+            if($LASTEXITCODE -ne 0){throw 'Client build failed'}
+          }
+          foreach($f in @('GeumyiServerHost.exe','GeumyiServerCenter.exe')){
+            $a=(Get-FileHash "repro/a/$f" -Algorithm SHA256).Hash
+            $b=(Get-FileHash "repro/b/$f" -Algorithm SHA256).Hash
+            Write-Host "$f A=$a B=$b"
+            if($a -ne $b){throw "$f is not reproducible in identical clean inputs"}
+          }
+      - name: Reproducibility manifest
+        shell: powershell
+        working-directory: GSC/ServerCenter
+        run: |
+          $m=[ordered]@{
+            schema=1
+            source_commit='${{ github.sha }}'
+            buildvcs=$false
+            trimpath=$true
+            host_sha256=(Get-FileHash repro/a/GeumyiServerHost.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+            client_sha256=(Get-FileHash repro/a/GeumyiServerCenter.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+            identical_double_build=$true
+          }
+          $m|ConvertTo-Json|Set-Content repro/reproducibility.json -Encoding UTF8
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc-reproducibility
+          path: GSC/ServerCenter/repro/reproducibility.json
+          retention-days: 30
