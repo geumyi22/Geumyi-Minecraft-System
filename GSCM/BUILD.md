@@ -1,4 +1,4 @@
-# Build GSCM 1.1.5+116
+# Build GSCM 1.1.5+117
 
 ## GitHub Actions
 
@@ -9,8 +9,8 @@ Artifact names are derived from `pubspec.yaml`:
 - iOS: `GSCM-1.1.5-build116-iOS-unsigned`
 
 Files inside the artifacts retain the full Flutter build identifier:
-- `GSCM-v1.1.5+116-Android.apk`
-- `GSCM-v1.1.5+116-unsigned.ipa`
+- `GSCM-v1.1.5+117-Android.apk`
+- `GSCM-v1.1.5+117-unsigned.ipa`
 
 Analyze and tests run before release builds. Secure system releases invoke Android with the persistent release signer; ordinary push CI artifacts are build/test artifacts and must not be substituted for the persistently signed in-place-update APK.
 
