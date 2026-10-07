@@ -358,6 +358,7 @@ class BackupInfo {
     required this.kind,
     required this.protected,
     required this.trashed,
+    required this.sourceReason,
   });
   final String file;
   final String scope;
@@ -368,6 +369,7 @@ class BackupInfo {
   final String kind;
   final bool protected;
   final bool trashed;
+  final String sourceReason;
   factory BackupInfo.fromJson(Map<String, dynamic> json) => BackupInfo(
         file: jString(json['file']),
         scope: jString(json['scope']),
@@ -378,6 +380,7 @@ class BackupInfo {
         kind: jString(json['kind'], 'backup'),
         protected: jBool(json['protected']),
         trashed: jBool(json['trashed']),
+        sourceReason: jString(json['source_reason']),
       );
 }
 
