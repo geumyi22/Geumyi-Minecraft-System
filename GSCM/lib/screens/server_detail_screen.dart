@@ -1466,7 +1466,9 @@ class _BackupsSectionState extends State<_BackupsSection> {
         }
         return;
       }
-      final checks = jStringList(pre['checks']).map((e) => '• $e').join('\n');
+      final checks = (pre['checks'] is List ? (pre['checks'] as List).map((e) => e.toString()) : const <String>[])
+          .map((e) => '• $e')
+          .join('\n');
       if (!mounted) return;
       final ok = await widget.confirm(
         '백업 복원 · Preflight PASS',
