@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.5 — Build 117 — Day-11 final
+- Added Protection & Recovery 2.0 mobile controls for backup provenance, restore preflight, protection/Trash state and destructive-action safeguards.
+- Coordinated with GSC 4.3.8.
+- Android/iOS CI artifacts passed; platform signing/provisioning constraints remain unchanged.
+- Final two requested Day-11 GSCM device checks were user-confirmed PASS on 2026-10-07.
+- Day 11 closed on GSCM 1.1.5+117.
+
+
 ## 1.1.2
 
 ### Build 113 — Day-6 realtime status hotfix
