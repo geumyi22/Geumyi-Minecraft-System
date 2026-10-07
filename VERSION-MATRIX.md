@@ -29,13 +29,13 @@ CI:
 - Day-11 4.3.8/build117 Secure beta Release run `37627140918`: PASS; tag `system-2026.10.07-day11-gsc438-beta`, target commit `a17975030ed3f9b71d8632a7897c1c206d9bfcdf`.
 - Day-11 Phase 11.7 READ-ONLY live report (2026-10-07 22:31 KST): PASS on GSC 4.3.8; four-server inventory/retention readable, Other full-backup restore preflight PASS, permanent-delete confirmation gate PASS, mutation=false.
 - Day-11 Phase 11.7 disposable backup E2E (2026-10-07 22:34 KST): PASS on Other; `other-config-backup-20261007-223415.zip`, SHA-256 `96936c8aaeeabaa5b24675c3a1ec946551beb03896829dc7c18bba140b71f7d3`; protect/Trash deny/Trash restore/permanent-delete confirm gate/retention dry-run/restore preflight all passed; final location Trash; no server lifecycle action or Minecraft data restore.
-- Day-11 Final integrated READ-ONLY E2E (2026-10-07 22:44 KST): PASS on GSC 4.3.8; local Client/Host 4.3.8, signed update dry-run, fleet policy, canary completion, Java/Bedrock entry probes, health, mobile security, external read-only status and Protection & Recovery checks all passed; failed_checks/api_errors empty; mutation=false. Real player login/routing and GSCM build117 device smoke remain separate closure gates.
+- Day-11 Final integrated READ-ONLY E2E (2026-10-07 22:44 KST): PASS on GSC 4.3.8; local Client/Host 4.3.8, signed update dry-run, fleet policy, canary completion, Java/Bedrock entry probes, health, mobile security, external read-only status and Protection & Recovery checks all passed; failed_checks/api_errors empty; mutation=false. Subsequent Java/Bedrock real-client smoke and the final two requested GSCM build117 device checks were user-confirmed PASS, closing Day 11.
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
 | GSC | 4.3.8 live | GSC/ServerCenter | Client/Host split live verified; remote Client in-app 4.3.7→4.3.8 self-update E2E PASS; server Host 4.3.7→4.3.8 self-update user-confirmed PASS |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction present; Day-7 JDK 21 clean build/artifact succeeds; byte-identical historical rebuild is not claimed |
-| GSCM | 1.1.5+116 live / +117 candidate | GSCM | build116 device distribution verified; build117 adds backup provenance/restore-preflight/destructive-action safeguards, release/live pending |
+| GSCM | 1.1.5+117 live verified | GSCM | build117 adds backup provenance/restore-preflight/destructive-action safeguards; final Day-11 GSCM device verification user-confirmed PASS |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | HOTFIX overlay source tracked; Day-7 JDK 21 overlay build + CoreTests + artifact passes; legacy core remains binary-only and uses a pinned verified reference in CI |
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full source/stubs/tests; Day-7 JDK 21 build + CoreTests + artifact passes |
 | GeumyiNetwork | 0.1.0 | Plugins/GeumyiNetwork | Four-server transfer and last-location routing; Java host E2E PASS on 2026-10-03 |
@@ -82,4 +82,5 @@ On 2026-10-03 the user verified the real server PC after cutover and after a Win
 
 The original live run recorded Bedrock as `SKIPPED_UPSTREAM_UNSUPPORTED`; that remains historical evidence for the first skipped test. On 2026-10-04 the user later confirmed real Bedrock client operation and approved Day-10 closure. Day 10 is therefore **complete** by user real-client verification. See `DAY10-E2E-REPORT.md`.
 
-- Day-11 post-4.3.8 real-client smoke: user confirmed both Java and Bedrock routing worked after the final integrated read-only E2E. GSCM 1.1.5+117 device update/launch check remains the final Day 11 closure gate.
+- Day-11 post-4.3.8 real-client smoke: user confirmed both Java and Bedrock routing worked after the final integrated read-only E2E.
+- Day-11 final GSCM closure: the user confirmed both remaining requested GSCM tests passed on build 1.1.5+117. Day 11 is complete.
