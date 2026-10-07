@@ -24,20 +24,22 @@ type BackupManifest struct {
 	Created        string   `json:"created"`
 	Roots          []string `json:"roots"`
 	SourcePath     string   `json:"source_path"`
+	SourceReason   string   `json:"source_reason,omitempty"`
 	OnlineSnapshot bool     `json:"online_snapshot"`
 }
 
 type BackupInfo struct {
-	File      string `json:"file"`
-	Path      string `json:"path"`
-	Scope     string `json:"scope"`
-	Created   string `json:"created"`
-	Size      int64  `json:"size"`
-	Verified  bool   `json:"verified"`
-	SHA256    string `json:"sha256,omitempty"`
-	Kind      string `json:"kind,omitempty"`
-	Protected bool   `json:"protected,omitempty"`
-	Trashed   bool   `json:"trashed,omitempty"`
+	File         string `json:"file"`
+	Path         string `json:"path"`
+	Scope        string `json:"scope"`
+	Created      string `json:"created"`
+	Size         int64  `json:"size"`
+	Verified     bool   `json:"verified"`
+	SHA256       string `json:"sha256,omitempty"`
+	Kind         string `json:"kind,omitempty"`
+	Protected    bool   `json:"protected,omitempty"`
+	Trashed      bool   `json:"trashed,omitempty"`
+	SourceReason string `json:"source_reason,omitempty"`
 }
 
 func backupBase(serverID string, checkpoints bool) string {
@@ -211,7 +213,25 @@ func addPathToZip(zw *zip.Writer, base, rel string) error {
 	})
 }
 
+func normalizeBackupReason(reason string, checkpoints bool) string {
+	reason = strings.TrimSpace(strings.NewReplacer("\r", " ", "\n", " ").Replace(reason))
+	if reason == "" {
+		if checkpoints {
+			return "restore-checkpoint"
+		}
+		return "manual"
+	}
+	if len(reason) > 160 {
+		reason = reason[:160]
+	}
+	return reason
+}
+
 func createBackup(s ServerConfig, scope string, checkpoints bool) (BackupInfo, error) {
+	return createBackupWithReason(s, scope, checkpoints, "")
+}
+
+func createBackupWithReason(s ServerConfig, scope string, checkpoints bool, reason string) (BackupInfo, error) {
 	dir := resolveServerDir(s)
 	if dir == "" {
 		return BackupInfo{}, fmt.Errorf("server path missing")
@@ -244,7 +264,8 @@ func createBackup(s ServerConfig, scope string, checkpoints bool) (BackupInfo, e
 	name := fmt.Sprintf("%s-%s-%s-%s.zip", s.ID, scope, kind, stamp)
 	out := filepath.Join(root, name)
 	tmp := out + ".tmp"
-	manifest := BackupManifest{Format: 1, GSCVersion: appVersion, ServerID: s.ID, ServerName: s.Name, Scope: scope, Created: time.Now().Format(time.RFC3339), Roots: roots, SourcePath: dir, OnlineSnapshot: tcpOpen("127.0.0.1", s.JavaPort, 200*time.Millisecond)}
+	reason = normalizeBackupReason(reason, checkpoints)
+	manifest := BackupManifest{Format: 1, GSCVersion: appVersion, ServerID: s.ID, ServerName: s.Name, Scope: scope, Created: time.Now().Format(time.RFC3339), Roots: roots, SourcePath: dir, SourceReason: reason, OnlineSnapshot: tcpOpen("127.0.0.1", s.JavaPort, 200*time.Millisecond)}
 	do := func() error {
 		f, e := os.Create(tmp)
 		if e != nil {
@@ -302,8 +323,8 @@ func createBackup(s ServerConfig, scope string, checkpoints bool) (BackupInfo, e
 		protected = true
 	}
 	st, _ := os.Stat(out)
-	bi := BackupInfo{File: filepath.Base(out), Path: out, Scope: scope, Created: manifest.Created, Size: st.Size(), Verified: true, SHA256: sha, Kind: map[bool]string{true: "checkpoint", false: "backup"}[checkpoints], Protected: protected}
-	appendV4Event("info", "backup", s.ID, "백업 완료: "+bi.File, fmt.Sprintf("scope=%s size=%d protected=%v", scope, bi.Size, protected))
+	bi := BackupInfo{File: filepath.Base(out), Path: out, Scope: scope, Created: manifest.Created, Size: st.Size(), Verified: true, SHA256: sha, Kind: map[bool]string{true: "checkpoint", false: "backup"}[checkpoints], Protected: protected, SourceReason: manifest.SourceReason}
+	appendV4Event("info", "backup", s.ID, "백업 완료: "+bi.File, fmt.Sprintf("scope=%s size=%d protected=%v reason=%s", scope, bi.Size, protected, manifest.SourceReason))
 	return bi, nil
 }
 
@@ -375,7 +396,7 @@ func verifyBackup(p string) (BackupInfo, error) {
 		}
 	}
 	st, _ := os.Stat(p)
-	return BackupInfo{File: filepath.Base(p), Path: p, Scope: m.Scope, Created: m.Created, Size: st.Size(), Verified: true, SHA256: sha}, nil
+	return BackupInfo{File: filepath.Base(p), Path: p, Scope: m.Scope, Created: m.Created, Size: st.Size(), Verified: true, SHA256: sha, SourceReason: m.SourceReason}, nil
 }
 
 func listBackups(s ServerConfig) []BackupInfo {
@@ -401,7 +422,7 @@ func listBackups(s ServerConfig) []BackupInfo {
 				}
 			}
 			meta := readBackupMeta(p)
-			out = append(out, BackupInfo{File: e.Name(), Path: p, Scope: m.Scope, Created: m.Created, Size: st.Size(), Verified: sha != "", SHA256: sha, Kind: map[bool]string{true: "checkpoint", false: "backup"}[checkpoint], Protected: meta.Protected})
+			out = append(out, BackupInfo{File: e.Name(), Path: p, Scope: m.Scope, Created: m.Created, Size: st.Size(), Verified: sha != "", SHA256: sha, Kind: map[bool]string{true: "checkpoint", false: "backup"}[checkpoint], Protected: meta.Protected, SourceReason: m.SourceReason})
 		}
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].Created > out[j].Created })
@@ -425,7 +446,11 @@ func apiV4Backup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "POST required", 405)
 		return
 	}
-	var q struct{ ID, Scope string }
+	var q struct {
+		ID     string `json:"id"`
+		Scope  string `json:"scope"`
+		Reason string `json:"reason"`
+	}
 	if json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q) != nil {
 		http.Error(w, "bad json", 400)
 		return
@@ -444,7 +469,7 @@ func apiV4Backup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer rel()
-	bi, e := createBackup(s, q.Scope, false)
+	bi, e := createBackupWithReason(s, q.Scope, false, q.Reason)
 	if e != nil {
 		appendV4Event("error", "backup", s.ID, "백업 실패", e.Error())
 		http.Error(w, e.Error(), 500)
@@ -540,41 +565,148 @@ func extractBackup(p, dst string, m BackupManifest) error {
 	return nil
 }
 
-func restoreBackup(s ServerConfig, p string) (string, error) {
-	if tcpOpen("127.0.0.1", s.JavaPort, 300*time.Millisecond) || launchAlive(s.ID) {
-		return "", fmt.Errorf("복원은 서버를 완전히 종료한 뒤 실행하세요")
+type RestorePreflight struct {
+	ServerID          string   `json:"server_id"`
+	File              string   `json:"file"`
+	Scope             string   `json:"scope,omitempty"`
+	SourceReason      string   `json:"source_reason,omitempty"`
+	ServerOffline     bool     `json:"server_offline"`
+	BackupVerified    bool     `json:"backup_verified"`
+	ServerMatch       bool     `json:"server_match"`
+	CheckpointReady   bool     `json:"checkpoint_ready"`
+	PendingUpdate     bool     `json:"pending_update"`
+	Ready             bool     `json:"ready"`
+	Checks            []string `json:"checks"`
+	BlockedReason     string   `json:"blocked_reason,omitempty"`
+}
+
+type RestoreHealth struct {
+	OK     bool     `json:"ok"`
+	Checks []string `json:"checks"`
+}
+
+func buildRestorePreflight(s ServerConfig, p string) RestorePreflight {
+	out := RestorePreflight{ServerID: s.ID, File: filepath.Base(p), Checks: []string{}}
+	out.PendingUpdate = hasPendingUpdate(s)
+	if out.PendingUpdate {
+		out.BlockedReason = "pending update transaction: restore is blocked until recovery/commit completes"
+		out.Checks = append(out.Checks, "active update transaction blocks restore")
+		return out
+	}
+	out.ServerOffline = !tcpOpen("127.0.0.1", s.JavaPort, 300*time.Millisecond) && !launchAlive(s.ID)
+	if !out.ServerOffline {
+		out.BlockedReason = "복원은 서버를 완전히 종료한 뒤 실행하세요"
+		out.Checks = append(out.Checks, "server must be fully offline")
+		return out
+	}
+	out.Checks = append(out.Checks, "server offline")
+	m, err := readBackupManifest(p)
+	if err != nil {
+		out.BlockedReason = "backup manifest: " + err.Error()
+		return out
+	}
+	out.Scope = m.Scope
+	out.SourceReason = m.SourceReason
+	out.ServerMatch = m.ServerID == s.ID
+	if !out.ServerMatch {
+		out.BlockedReason = "다른 서버의 백업입니다: " + m.ServerID
+		return out
+	}
+	out.Checks = append(out.Checks, "backup server id matched")
+	if _, err = verifyBackup(p); err != nil {
+		out.BlockedReason = "백업 검증 실패: " + err.Error()
+		return out
+	}
+	out.BackupVerified = true
+	out.Checks = append(out.Checks, "zip + SHA-256 verified")
+	dir := resolveServerDir(s)
+	roots, err := backupRoots(dir, m.Scope)
+	if err != nil {
+		out.BlockedReason = "복원 전 체크포인트 범위 확인 실패: " + err.Error()
+		return out
+	}
+	sourceBytes, err := estimateBackupSourceBytes(dir, roots)
+	if err != nil {
+		out.BlockedReason = "복원 전 체크포인트 크기 계산 실패: " + err.Error()
+		return out
+	}
+	freeBytes := int64(getHostStats().DiskFreeGB * 1073741824)
+	if err = backupDiskGuardForFree(sourceBytes, freeBytes); err != nil {
+		out.BlockedReason = "복원 전 체크포인트 디스크 가드: " + err.Error()
+		return out
+	}
+	out.CheckpointReady = true
+	out.Checks = append(out.Checks, "checkpoint disk guard passed")
+	out.Ready = true
+	return out
+}
+
+func restoreOfflineHealth(s ServerConfig, m BackupManifest) RestoreHealth {
+	out := RestoreHealth{OK: true, Checks: []string{}}
+	dir := resolveServerDir(s)
+	if st, err := os.Stat(dir); err != nil || !st.IsDir() {
+		return RestoreHealth{OK: false, Checks: []string{"server directory missing after restore"}}
+	}
+	for _, root := range m.Roots {
+		target := dir
+		if root != "." {
+			target = filepath.Join(dir, filepath.FromSlash(root))
+		}
+		if _, err := os.Stat(target); err != nil {
+			out.OK = false
+			out.Checks = append(out.Checks, "missing restored root: "+root)
+		} else {
+			out.Checks = append(out.Checks, "restored root present: "+root)
+		}
+	}
+	if m.Scope == "full" {
+		props := filepath.Join(dir, "server.properties")
+		if _, err := os.Stat(props); err != nil {
+			out.OK = false
+			out.Checks = append(out.Checks, "server.properties missing")
+		} else {
+			out.Checks = append(out.Checks, "server.properties present")
+		}
+	}
+	return out
+}
+
+func restoreBackup(s ServerConfig, p string) (string, RestoreHealth, error) {
+	pre := buildRestorePreflight(s, p)
+	if !pre.Ready {
+		return "", RestoreHealth{}, fmt.Errorf("%s", pre.BlockedReason)
 	}
 	m, e := readBackupManifest(p)
 	if e != nil {
-		return "", e
+		return "", RestoreHealth{}, e
 	}
-	if m.ServerID != s.ID {
-		return "", fmt.Errorf("다른 서버의 백업입니다: %s", m.ServerID)
-	}
-	if _, e = verifyBackup(p); e != nil {
-		return "", fmt.Errorf("백업 검증 실패: %w", e)
-	}
-	cp, e := createBackup(s, m.Scope, true)
+	cp, e := createBackupWithReason(s, m.Scope, true, "restore-checkpoint:"+filepath.Base(p))
 	if e != nil {
-		return "", fmt.Errorf("복원 전 체크포인트 실패: %w", e)
+		return "", RestoreHealth{}, fmt.Errorf("복원 전 체크포인트 실패: %w", e)
 	}
 	dir := resolveServerDir(s)
 	if m.Scope == "full" {
 		old := dir + ".gsc-pre-restore-" + time.Now().Format("20060102-150405")
 		if e = os.Rename(dir, old); e != nil {
-			return cp.File, e
+			return cp.File, RestoreHealth{}, e
 		}
 		if e = os.MkdirAll(dir, 0755); e != nil {
 			_ = os.Rename(old, dir)
-			return cp.File, e
+			return cp.File, RestoreHealth{}, e
 		}
 		if e = extractBackup(p, dir, m); e != nil {
 			_ = os.RemoveAll(dir)
 			_ = os.Rename(old, dir)
-			return cp.File, e
+			return cp.File, RestoreHealth{}, e
 		}
-		appendV4Event("warn", "restore", s.ID, "전체 서버 복원 완료", "이전 폴더: "+old)
-		return cp.File, nil
+		health := restoreOfflineHealth(s, m)
+		if !health.OK {
+			_ = os.RemoveAll(dir)
+			_ = os.Rename(old, dir)
+			return cp.File, health, fmt.Errorf("복원 후 offline health 실패: %s", strings.Join(health.Checks, "; "))
+		}
+		appendV4Event("warn", "restore", s.ID, "전체 서버 복원 완료", "이전 폴더: "+old+" checkpoint="+cp.File)
+		return cp.File, health, nil
 	}
 	if m.Scope == "world" {
 		for _, root := range m.Roots {
@@ -582,10 +714,40 @@ func restoreBackup(s ServerConfig, p string) (string, error) {
 		}
 	}
 	if e = extractBackup(p, dir, m); e != nil {
-		return cp.File, e
+		return cp.File, RestoreHealth{}, e
 	}
-	appendV4Event("warn", "restore", s.ID, "백업 복원 완료: "+filepath.Base(p), "checkpoint="+cp.File)
-	return cp.File, nil
+	health := restoreOfflineHealth(s, m)
+	if !health.OK {
+		return cp.File, health, fmt.Errorf("복원 후 offline health 실패: %s", strings.Join(health.Checks, "; "))
+	}
+	appendV4Event("warn", "restore", s.ID, "백업 복원 완료: "+filepath.Base(p), "checkpoint="+cp.File+" offline_health=pass")
+	return cp.File, health, nil
+}
+
+func apiV4RestorePreflight(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST required", http.StatusMethodNotAllowed)
+		return
+	}
+	var q struct {
+		ID   string `json:"id"`
+		File string `json:"file"`
+	}
+	if json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q) != nil {
+		http.Error(w, "bad json", http.StatusBadRequest)
+		return
+	}
+	s, ok := serverByID(strings.TrimSpace(q.ID))
+	if !ok {
+		http.Error(w, "unknown server", http.StatusBadRequest)
+		return
+	}
+	p, err := safeBackupPath(s, q.File)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	writeJSON(w, buildRestorePreflight(s, p))
 }
 
 func apiV4Restore(w http.ResponseWriter, r *http.Request) {
@@ -614,11 +776,12 @@ func apiV4Restore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer rel()
-	cp, e := restoreBackup(s, p)
+	cp, health, e := restoreBackup(s, p)
 	if e != nil {
 		appendV4Event("error", "restore", s.ID, "복원 실패", e.Error())
 		http.Error(w, e.Error(), 500)
 		return
 	}
-	writeJSON(w, map[string]any{"ok": true, "checkpoint": cp})
+	appendAudit(r, "backup.restore", s.ID+":"+filepath.Base(p), "completed", "checkpoint="+cp+" offline_health=pass")
+	writeJSON(w, map[string]any{"ok": true, "checkpoint": cp, "health": health})
 }
