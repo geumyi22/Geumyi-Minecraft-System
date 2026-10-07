@@ -7,13 +7,13 @@ param(
   [switch]$Synthetic
 )
 Set-StrictMode -Version Latest;$ErrorActionPreference="Stop"
-function H([string]$p){(Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant()}
+function Get-Sha256([string]$p){(Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant()}
 if([string]::IsNullOrWhiteSpace($OutputDir)){$OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Day12-Phase7"}
 New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
 $out=Join-Path $OutputDir ("Geumyi-Day12-Phase7-Cache-"+(Get-Date -Format "yyyyMMdd-HHmmss")+".json")
 if($Synthetic){
   $t=Join-Path $env:TEMP ("Geumyi-Cache-"+[guid]::NewGuid().ToString("N"));New-Item -ItemType Directory -Force -Path $t|Out-Null
-  try{$a=Join-Path $t "a.bin";Set-Content $a "known-good" -NoNewline;Copy-Item $a (Join-Path $t "copy.bin");$ok=(H $a)-eq(H (Join-Path $t "copy.bin"));[ordered]@{schema=1;phase="12.7";synthetic=$true;result=$(if($ok){"SYNTHETIC_PASS"}else{"FAIL"})}|ConvertTo-Json|Set-Content $out -Encoding UTF8;if(-not$ok){exit 2}}finally{Remove-Item $t -Recurse -Force -ErrorAction SilentlyContinue};exit 0
+  try{$a=Join-Path $t "a.bin";Set-Content $a "known-good" -NoNewline;Copy-Item $a (Join-Path $t "copy.bin");$ok=(Get-Sha256 $a)-eq(H (Join-Path $t "copy.bin"));[ordered]@{schema=1;phase="12.7";synthetic=$true;result=$(if($ok){"SYNTHETIC_PASS"}else{"FAIL"})}|ConvertTo-Json|Set-Content $out -Encoding UTF8;if(-not$ok){exit 2}}finally{Remove-Item $t -Recurse -Force -ErrorAction SilentlyContinue};exit 0
 }
 $pd=if($env:PROGRAMDATA){$env:PROGRAMDATA}else{"C:\ProgramData"};$root=Join-Path $pd "GeumyiServerCenter";$cacheRoot=Join-Path $root "ArtifactCache\known-good\day12"
 if($Mode -eq "Build"){
@@ -26,11 +26,11 @@ if($Mode -eq "Build"){
 $files=New-Object System.Collections.ArrayList
 function AddFile([string]$src,[string]$logical){
   if(-not(Test-Path -LiteralPath $src -PathType Leaf)){return}
-  $sha=H $src;$size=[int64](Get-Item $src).Length
+  $sha=Get-Sha256 $src;$size=[int64](Get-Item $src).Length
   if($Mode -eq "Build"){
     $safe=($logical -replace '[^A-Za-z0-9_.-]','_');$dst=Join-Path $cacheRoot $safe
     Copy-Item -LiteralPath $src -Destination $dst -Force
-    if((H $dst)-ne$sha){throw "cache hash mismatch: $logical"}
+    if((Get-Sha256 $dst)-ne$sha){throw "cache hash mismatch: $logical"}
   }
   [void]$files.Add([ordered]@{logical=$logical;name=[IO.Path]::GetFileName($src);size=$size;sha256=$sha})
 }
