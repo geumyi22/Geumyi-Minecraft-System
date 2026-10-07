@@ -47,20 +47,35 @@ func selfUpdateReportPath() string {
 	return filepath.Join(selfUpdateDataDir(), "Updates", "gsc-self-update-last.json")
 }
 
+func clientSelfUpdateReportPath() string {
+	return filepath.Join(selfUpdateDataDir(), "Updates", "gsc-client-self-update-last.json")
+}
+
 func selfUpdateLockPath() string {
 	return filepath.Join(selfUpdateDataDir(), "Updates", "gsc-self-update.lock")
 }
 
-func writeSelfUpdateReport(r selfUpdateReport) {
+func clientSelfUpdateLockPath() string {
+	return filepath.Join(selfUpdateDataDir(), "Updates", "gsc-client-self-update.lock")
+}
+
+func writeSelfUpdateReportAt(p string, r selfUpdateReport) {
 	r.Finished = time.Now().Format(time.RFC3339)
 	b, _ := json.MarshalIndent(r, "", "  ")
-	p := selfUpdateReportPath()
 	_ = os.MkdirAll(filepath.Dir(p), 0755)
 	tmp := p + ".tmp"
 	if os.WriteFile(tmp, append(b, '\n'), 0600) == nil {
 		_ = os.Remove(p)
 		_ = os.Rename(tmp, p)
 	}
+}
+
+func writeSelfUpdateReport(r selfUpdateReport) {
+	writeSelfUpdateReportAt(selfUpdateReportPath(), r)
+}
+
+func writeClientSelfUpdateReport(r selfUpdateReport) {
+	writeSelfUpdateReportAt(clientSelfUpdateReportPath(), r)
 }
 
 func installedGSCDir() string {
@@ -281,8 +296,13 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 		Started: time.Now().Format(time.RFC3339),
 	}
 	defer func() {
-		_ = os.Remove(selfUpdateLockPath())
-		writeSelfUpdateReport(report)
+		if clientOnly {
+			_ = os.Remove(clientSelfUpdateLockPath())
+			writeClientSelfUpdateReport(report)
+		} else {
+			_ = os.Remove(selfUpdateLockPath())
+			writeSelfUpdateReport(report)
+		}
 	}()
 	// Give the API response that launched this helper time to leave the old Host.
 	time.Sleep(1500 * time.Millisecond)
