@@ -27,7 +27,7 @@
 |---|---|
 | Day 1~9 | ✅ 완료 |
 | Day 10 | ✅ Java + Bedrock four-server/Lobby real-client E2E 완료 |
-| Day 11 | 🔄 진행 중 — 11.0~11.7 완료, Final E2E 남음 |
+| Day 11 | 🔄 진행 중 — 11.0~11.7 + Final READ-ONLY E2E PASS, real client/device smoke 남음 |
 | Day 12 | ⏳ Final Production Hardening & Closure |
 
 Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/마감을 수행한 milestone**입니다. Day 8과 Day 9는 모두 완료 상태이며, 각 E2E PASS는 완료의 근거입니다.
