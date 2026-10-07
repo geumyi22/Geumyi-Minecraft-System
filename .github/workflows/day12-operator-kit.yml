@@ -1,0 +1,47 @@
+name: Day 12 Operator Kit
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'tools/day12/**'
+      - 'deploy/day12-*.json'
+      - 'DAY12-LIVE-RUNBOOK.md'
+      - 'DAY12-REPO-PROGRESS.md'
+      - 'FINAL-*.json'
+      - 'FINAL-*.md'
+      - '.github/workflows/day12-operator-kit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Parse operator PowerShell
+        shell: powershell
+        run: |
+          $files=Get-ChildItem tools/day12 -Filter '*.ps1' -File -Recurse
+          foreach($file in $files){
+            $t=$null;$e=$null
+            [void][Management.Automation.Language.Parser]::ParseFile($file.FullName,[ref]$t,[ref]$e)
+            if($e.Count){throw "Parse failed: $($file.FullName)"}
+          }
+      - name: Build clean operator kit
+        shell: powershell
+        run: |
+          $k='Day12-Operator-Kit'
+          New-Item -ItemType Directory -Force "$k/tools","$k/deploy"|Out-Null
+          Copy-Item tools/day12 "$k/tools/day12" -Recurse
+          Copy-Item deploy/day12-*.json "$k/deploy/"
+          Copy-Item DAY12-LIVE-RUNBOOK.md,DAY12-REPO-PROGRESS.md,FINAL-BASELINE.json,FINAL-VERSION-MATRIX.md,FINAL-NETWORK-TOPOLOGY.json,FINAL-RELEASE-GATES.json,OPERATOR-KIT-README.txt "$k/"
+          Compress-Archive -Path "$k/*" -DestinationPath Day12-Operator-Kit.zip -Force
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-operator-kit
+          path: Day12-Operator-Kit.zip
+          retention-days: 30
