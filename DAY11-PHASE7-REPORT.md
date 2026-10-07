@@ -97,6 +97,14 @@ CI/static evidence for those guarded paths is already covered by the GSC 4.3.8 c
 
 **Phase 11.7 Protection & Recovery 2.0 is complete.**
 
-Day 11 status after this report:
+Day 11 status immediately after this Phase report:
 - 11.0~11.7: **complete**
-- Day 11 Final E2E: **pending**
+- Day 11 Final E2E: was still pending at the time of this report
+
+Subsequent closure:
+- Final integrated READ-ONLY E2E: **PASS**
+- Java + Bedrock post-update real-client smoke: **USER PASS**
+- final two requested GSCM 1.1.5+117 device checks: **USER PASS**
+- Day 11: **COMPLETE**
+
+See `DAY11-FINAL-REPORT.md` for the consolidated closure record.
