@@ -131,7 +131,7 @@ func backupInfoAt(p, kind string, trashed bool) (BackupInfo, error) {
 	return BackupInfo{
 		File: filepath.Base(p), Path: p, Scope: m.Scope, Created: m.Created,
 		Size: st.Size(), Verified: sha != "", SHA256: sha,
-		Kind: kind, Protected: meta.Protected, Trashed: trashed,
+		Kind: kind, Protected: meta.Protected, Trashed: trashed, SourceReason: m.SourceReason,
 	}, nil
 }
 
@@ -381,9 +381,11 @@ func apiV4BackupAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var q struct {
-		ID     string `json:"id"`
-		File   string `json:"file"`
-		Action string `json:"action"`
+		ID          string `json:"id"`
+		File        string `json:"file"`
+		Action      string `json:"action"`
+		Confirm     string `json:"confirm"`
+		ConfirmFile string `json:"confirm_file"`
 	}
 	if json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q) != nil {
 		http.Error(w, "bad json", http.StatusBadRequest)
@@ -395,6 +397,16 @@ func apiV4BackupAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q.Action = strings.ToLower(strings.TrimSpace(q.Action))
+	if q.Action == "delete-permanent" {
+		if q.Confirm != "DELETE_PERMANENT_BACKUP" {
+			http.Error(w, "confirm must be DELETE_PERMANENT_BACKUP", http.StatusBadRequest)
+			return
+		}
+		if strings.TrimSpace(q.ConfirmFile) != filepath.Base(strings.TrimSpace(q.File)) {
+			http.Error(w, "confirm_file must exactly match the backup filename", http.StatusBadRequest)
+			return
+		}
+	}
 	if q.Action != "protect" && q.Action != "unprotect" && q.Action != "trash" && q.Action != "restore-trash" && q.Action != "delete-permanent" {
 		http.Error(w, "unsupported backup action", http.StatusBadRequest)
 		return
