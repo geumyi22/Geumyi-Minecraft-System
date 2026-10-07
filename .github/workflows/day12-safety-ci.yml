@@ -115,7 +115,9 @@ jobs:
           & tools/day12/Day12_Phase3_Health_READ_ONLY.ps1 -Synthetic -OutputDir (Join-Path $env:RUNNER_TEMP 'p3')
           if($LASTEXITCODE -ne 0){throw "Phase3 synthetic failed"}
           & tools/day12/Day12_Phase4_Storage_Log_DRY_RUN.ps1 -Synthetic -OutputDir (Join-Path $env:RUNNER_TEMP 'p4')
-          if($LASTEXITCODE -ne 0){throw "Phase4 synthetic failed"}
+          if($LASTEXITCODE -ne 0){throw "Phase4 dry-run synthetic failed"}
+          & tools/day12/Day12_Phase4_Lifecycle_Apply.ps1 -Synthetic -PolicyPath deploy/day12-lifecycle-policy.json -OutputDir (Join-Path $env:RUNNER_TEMP 'p4apply')
+          if($LASTEXITCODE -ne 0){throw "Phase4 apply synthetic failed"}
           & tools/day12/Day12_Phase5_Security_Audit_READ_ONLY.ps1 -Synthetic -OutputDir (Join-Path $env:RUNNER_TEMP 'p5')
           if($LASTEXITCODE -ne 0){throw "Phase5 synthetic failed"}
 
