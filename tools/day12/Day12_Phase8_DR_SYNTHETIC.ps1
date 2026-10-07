@@ -45,6 +45,6 @@ try{
 $r=[ordered]@{schema=1;phase="12.8";mode="SYNTHETIC_NON_PRODUCTION";generated_at=(Get-Date).ToString("o");result=$result;production_files_touched=$false;steps=@($steps)}
 $r|ConvertTo-Json -Depth 10|Set-Content $out -Encoding UTF8
 Write-Host ("DR SYNTHETIC: "+$result)
-foreach($step in @($steps)){ Write-Host ("- "+[string]$step.case+" pass="+[string]$step.pass+" "+$(if($step.error){"error="+[string]$step.error}else{""})) }
+foreach($step in @($steps)){ $errText=""; if($null -ne $step.PSObject.Properties["error"]){$errText=" error="+[string]$step.error}; Write-Host ("- "+[string]$step.case+" pass="+[string]$step.pass+$errText) }
 Write-Host ("Report: "+$out)
 if($result -ne "PASS"){exit 2}
