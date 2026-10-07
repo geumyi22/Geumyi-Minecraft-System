@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "status": "BLOCKED_UNTIL_ALL_MANDATORY_GATES_PASS",
+  "repository_gates": {
+    "day12_read_only_safety_ci": "PENDING_CURRENT_RUN",
+    "day12_security_sbom_ci": "PENDING",
+    "gsc_reproducibility": "PENDING",
+    "system_ci_after_final_source_cleanup": "PENDING",
+    "synthetic_dr_ci": "PENDING"
+  },
+  "live_gates": {
+    "phase_12_0A_baseline_capture": "PENDING_LIVE",
+    "phase_12_0B_protected_golden_checkpoint": "PENDING_LIVE",
+    "phase_12_1_managed_content_live_e2e": "PENDING_LIVE",
+    "phase_12_2_component_inventory": "PENDING_LIVE",
+    "phase_12_3_whole_system_health": "PENDING_LIVE",
+    "phase_12_4_lifecycle_dry_run_review": "PENDING_LIVE",
+    "phase_12_5_runtime_security_review": "PENDING_LIVE",
+    "phase_12_7_offline_known_good_startup": "PENDING_LIVE",
+    "phase_12_11_final_live_e2e": "PENDING_LIVE",
+    "phase_12_12_soak": "PENDING_LIVE"
+  },
+  "release": {
+    "stable_release_allowed": false,
+    "maintenance_mode_allowed": false
+  }
+}
