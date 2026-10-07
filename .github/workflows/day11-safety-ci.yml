@@ -146,6 +146,78 @@ jobs:
             throw 'Disposable E2E must report server lifecycle action=false'
           }
 
+      - name: Parse Day 11 final read-only E2E
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $path = 'tools/day11/Day11_Final_E2E_READ_ONLY.ps1'
+          $tokens = $null
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $path),
+            [ref]$tokens,
+            [ref]$errors
+          )
+          if($errors.Count -gt 0){
+            $errors | Format-List | Out-String | Write-Host
+            throw 'Day 11 final E2E PowerShell parse failed'
+          }
+
+      - name: Enforce Day 11 final E2E read-only boundary
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $raw = Get-Content -LiteralPath 'tools/day11/Day11_Final_E2E_READ_ONLY.ps1' -Raw
+          $forbidden = @(
+            '(?i)\bStop-Process\b',
+            '(?i)\btaskkill(?:\.exe)?\b',
+            '(?i)\bRemove-Item\b',
+            '(?i)\bMove-Item\b',
+            '(?i)\bCopy-Item\b',
+            '(?i)\bRestart-Computer\b',
+            '(?i)\bStop-Computer\b',
+            '(?i)\bStop-Service\b',
+            '(?i)\bStart-Service\b',
+            '(?i)DELETE_PERMANENT_BACKUP',
+            '(?i)MOVE_TO_TRASH',
+            '(?i)/api/v1/servers/.+/(actions|schedule|command|player-action)',
+            '(?i)/api/server/action',
+            '(?i)/api/v4/update/(decision|policy|external/stage|external/apply-proxy|self/stage|self/apply)',
+            '(?i)/api/v4/backup/action',
+            '(?i)/api/v4/backup/retention/apply',
+            '(?i)Post-Json\s+["'']/api/v4/restore["'']'
+          )
+          foreach($pattern in $forbidden){
+            if($raw -match $pattern){
+              throw "Day 11 final E2E contains forbidden mutation path: $pattern"
+            }
+          }
+
+          $allowedPost = @(
+            '/api/v4/update/dry-run',
+            '/api/v4/backup/retention/dry-run',
+            '/api/v4/restore/preflight'
+          )
+          $matches = [regex]::Matches($raw, 'Post-Json\s+["'']([^"'']+)["'']')
+          foreach($m in $matches){
+            $endpoint = [string]$m.Groups[1].Value
+            if($allowedPost -notcontains $endpoint){
+              throw "Day 11 final E2E POST endpoint is not explicitly read-only: $endpoint"
+            }
+          }
+          foreach($flag in @(
+            'mutation_performed = $false',
+            'update_stage_or_apply_performed = $false',
+            'policy_change_performed = $false',
+            'server_lifecycle_action_performed = $false',
+            'minecraft_data_restore_performed = $false',
+            'backup_move_or_delete_performed = $false'
+          )){
+            if($raw -notlike ('*' + $flag + '*')){
+              throw "Missing final E2E safety declaration: $flag"
+            }
+          }
+
       - name: Reject destructive preflight commands
         shell: powershell
         run: |
