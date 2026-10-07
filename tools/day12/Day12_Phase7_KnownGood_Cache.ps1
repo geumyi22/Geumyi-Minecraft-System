@@ -13,7 +13,7 @@ New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
 $out=Join-Path $OutputDir ("Geumyi-Day12-Phase7-Cache-"+(Get-Date -Format "yyyyMMdd-HHmmss")+".json")
 if($Synthetic){
   $t=Join-Path $env:TEMP ("Geumyi-Cache-"+[guid]::NewGuid().ToString("N"));New-Item -ItemType Directory -Force -Path $t|Out-Null
-  try{$a=Join-Path $t "a.bin";Set-Content $a "known-good" -NoNewline;Copy-Item $a (Join-Path $t "copy.bin");$ok=(Get-Sha256 $a)-eq(H (Join-Path $t "copy.bin"));[ordered]@{schema=1;phase="12.7";synthetic=$true;result=$(if($ok){"SYNTHETIC_PASS"}else{"FAIL"})}|ConvertTo-Json|Set-Content $out -Encoding UTF8;if(-not$ok){exit 2}}finally{Remove-Item $t -Recurse -Force -ErrorAction SilentlyContinue};exit 0
+  try{$a=Join-Path $t "a.bin";Set-Content $a "known-good" -NoNewline;Copy-Item $a (Join-Path $t "copy.bin");$ok=(Get-Sha256 $a) -eq (Get-Sha256 (Join-Path $t "copy.bin"));[ordered]@{schema=1;phase="12.7";synthetic=$true;result=$(if($ok){"SYNTHETIC_PASS"}else{"FAIL"})}|ConvertTo-Json|Set-Content $out -Encoding UTF8;if(-not$ok){exit 2}}finally{Remove-Item $t -Recurse -Force -ErrorAction SilentlyContinue};exit 0
 }
 $pd=if($env:PROGRAMDATA){$env:PROGRAMDATA}else{"C:\ProgramData"};$root=Join-Path $pd "GeumyiServerCenter";$cacheRoot=Join-Path $root "ArtifactCache\known-good\day12"
 if($Mode -eq "Build"){
