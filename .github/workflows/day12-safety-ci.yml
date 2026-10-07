@@ -1,15 +1,21 @@
-name: Day 12 Final Verifier Safety CI
+name: Day 12 Read-Only Safety CI
 
 on:
   push:
     paths:
       - 'tools/day12/**'
+      - 'FINAL-BASELINE.json'
+      - 'FINAL-VERSION-MATRIX.md'
+      - 'FINAL-NETWORK-TOPOLOGY.json'
       - 'DAY12-PLAN.md'
       - '.github/workflows/day12-safety-ci.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'tools/day12/**'
+      - 'FINAL-BASELINE.json'
+      - 'FINAL-VERSION-MATRIX.md'
+      - 'FINAL-NETWORK-TOPOLOGY.json'
       - 'DAY12-PLAN.md'
       - '.github/workflows/day12-safety-ci.yml'
   workflow_dispatch:
@@ -18,23 +24,32 @@ permissions:
   contents: read
 
 jobs:
-  verifier-safety:
+  read-only-safety:
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-      - name: Parse PowerShell
+
+      - name: Parse read-only PowerShell
         shell: powershell
         run: |
-          $p='tools/day12/Day12_Final_Verification_READ_ONLY.ps1'
-          $tokens=$null;$errors=$null
-          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tokens,[ref]$errors)
-          if($errors.Count -gt 0){$errors | Format-List | Out-String | Write-Host; throw 'PowerShell parse failed'}
+          $files=@(
+            'tools/day12/Day12_Phase0_Golden_Baseline_READ_ONLY.ps1',
+            'tools/day12/Day12_Final_Verification_READ_ONLY.ps1'
+          )
+          foreach($p in $files){
+            $tokens=$null;$errors=$null
+            [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tokens,[ref]$errors)
+            if($errors.Count -gt 0){
+              $errors | Format-List | Out-String | Write-Host
+              throw "PowerShell parse failed: $p"
+            }
+          }
+
       - name: Mutation guard
         shell: powershell
         run: |
-          $p='tools/day12/Day12_Final_Verification_READ_ONLY.ps1'
-          $text=Get-Content -LiteralPath $p -Raw
+          $files=Get-ChildItem 'tools/day12' -Filter '*READ_ONLY.ps1' -File
           $forbidden=@(
             'Stop-Process','Stop-Service','Restart-Service','Start-Service',
             'Remove-Item','Move-Item','Rename-Item','Copy-Item',
@@ -42,14 +57,46 @@ jobs:
             'Register-ScheduledTask','Unregister-ScheduledTask',
             'Restart-Computer','Stop-Computer'
           )
-          foreach($f in $forbidden){if($text -match [regex]::Escape($f)){throw "Read-only verifier contains forbidden mutation: $f"}}
-      - name: Synthetic verifier run
+          foreach($file in $files){
+            $text=Get-Content -LiteralPath $file.FullName -Raw
+            foreach($f in $forbidden){
+              if($text -match [regex]::Escape($f)){throw "$($file.Name) contains forbidden mutation: $f"}
+            }
+            if($text -match '(?i)-Method\s+(POST|PUT|PATCH|DELETE)'){
+              throw "$($file.Name) contains a mutating HTTP method"
+            }
+          }
+
+      - name: Validate baseline JSON
+        shell: powershell
+        run: |
+          foreach($p in @('FINAL-BASELINE.json','FINAL-NETWORK-TOPOLOGY.json')){
+            $j=Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
+            if([int]$j.schema -ne 1){throw "Unexpected schema: $p"}
+          }
+
+      - name: Synthetic Phase 0A
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'day12-phase0'
+          & tools/day12/Day12_Phase0_Golden_Baseline_READ_ONLY.ps1 -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw "Phase 0A synthetic failed: $LASTEXITCODE"}
+          $report=Get-ChildItem -LiteralPath $out -Filter 'Geumyi-Day12-Phase0-GoldenBaseline-*.json' | Select-Object -First 1
+          if($null -eq $report){throw 'Phase 0A synthetic report missing'}
+          $j=Get-Content -LiteralPath $report.FullName -Raw | ConvertFrom-Json
+          if(-not [bool]$j.synthetic -or -not [bool]$j.ready_for_phase_12_0B -or [bool]$j.mutation.performed){
+            throw 'Phase 0A synthetic report contract failed'
+          }
+
+      - name: Synthetic final verifier
         shell: powershell
         run: |
           $out=Join-Path $env:RUNNER_TEMP 'day12-verifier'
           & tools/day12/Day12_Final_Verification_READ_ONLY.ps1 -Synthetic -OutputDir $out
-          if($LASTEXITCODE -ne 0){throw "Synthetic verifier failed: $LASTEXITCODE"}
+          if($LASTEXITCODE -ne 0){throw "Final verifier synthetic failed: $LASTEXITCODE"}
           $report=Get-ChildItem -LiteralPath $out -Filter '*.json' | Select-Object -First 1
-          if($null -eq $report){throw 'Synthetic report missing'}
+          if($null -eq $report){throw 'Synthetic final verifier report missing'}
           $j=Get-Content -LiteralPath $report.FullName -Raw | ConvertFrom-Json
-          if(-not [bool]$j.read_only -or -not [bool]$j.synthetic -or [int]$j.summary.fail -ne 0){throw 'Synthetic report contract failed'}
+          if(-not [bool]$j.read_only -or -not [bool]$j.synthetic -or [int]$j.summary.fail -ne 0){
+            throw 'Synthetic final verifier report contract failed'
+          }
