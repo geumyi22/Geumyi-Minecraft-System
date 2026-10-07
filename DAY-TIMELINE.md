@@ -27,8 +27,8 @@
 | 8 | Secure Release & Update Foundation | ✅ 완료 | signed manifest, SHA-256, Stable/Beta/Canary, pre-start updater, Wild Technology 0.1.4 실제 update + Playground isolation E2E |
 | 9 | Transaction / Backup / Rollback | ✅ 완료 | transaction journal, backup/staging/atomic replacement, post-start health gate, interrupted recovery, automatic rollback, failure injection + 서버 PC Final E2E |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 | Java four-server/Lobby/routing/reboot E2E + Bedrock real-client routing/return/location behavior를 사용자 실기기 확인으로 PASS. See `DAY10-E2E-REPORT.md` |
-| 11 | Operations UX & Fleet Management | 🔄 진행 중 | **GSC 4.3.7 live / 4.3.8 source+CI candidate / GSCM 1.1.5+116 live +117 candidate**. Phase 11.0~11.7 실서버 검증 완료; Client/Host 분리 및 4.3.7→4.3.8 업데이트 E2E PASS; Protection & Recovery 2.0 read-only + disposable backup lifecycle LIVE PASS; Final integrated READ-ONLY E2E PASS; real Java/Bedrock client smoke USER PASS; GSCM build117 device smoke 남음 |
-| 12 | Final Production Hardening & Closure | ⏳ 예정 | Golden baseline, managed Resource/DataPack, full health/storage/security hardening, trusted builds/offline cache, DR drill, final verifier/E2E/soak, Maintenance Mode handoff |
+| 11 | Operations UX & Fleet Management | ✅ 완료 | **GSC 4.3.8 live / GSCM 1.1.5+117 live verified**. Phase 11.0~11.7, Client/Host self-update, Protection & Recovery 2.0, Final integrated READ-ONLY E2E, Java/Bedrock real-client smoke 및 마지막 GSCM 2개 device check까지 사용자 확인 PASS. See `DAY11-FINAL-REPORT.md` |
+| 12 | Final Production Hardening & Closure | ⏳ 시작 준비 완료 | Golden baseline, managed Resource/DataPack, full health/storage/security hardening, trusted builds/offline cache, DR drill, final verifier/E2E/soak, Maintenance Mode handoff |
 
 ## Day 8 / Day 9 완료 상태
 
@@ -70,6 +70,20 @@
 Bedrock 쪽도 2026-10-04 사용자 실기기 확인에서 **정상 작동이 확인되어 PASS**로 닫습니다. 이 PASS는 사용자 확인 결과이며 assistant가 직접 클라이언트를 실행한 것으로 기록하지 않습니다.
 
 따라서 Day 10은 Java + Bedrock 범위 모두 완료입니다.
+
+## Day 11 완료 상태
+
+Day 11은 2026-10-07 기준 **완료**입니다.
+
+최종 기준:
+- GSC **4.3.8 live**
+- GSCM **1.1.5+117 live verified**
+- Phase 11.0~11.7 완료
+- Final integrated READ-ONLY E2E PASS
+- Java + Bedrock post-update real-client smoke USER PASS
+- 마지막 GSCM 2개 실기기 확인 항목 USER PASS
+
+최종 근거: [DAY11-FINAL-REPORT.md](DAY11-FINAL-REPORT.md)
 
 ## Day 11 고정 목표
 
