@@ -1,0 +1,7 @@
+{
+  "schema": 2,
+  "phase": "12.10",
+  "status": "PENDING_LIVE_FINAL_VERIFICATION",
+  "tool": "tools/day12/Geumyi_Final_Verification.cmd",
+  "result": "PENDING"
+}
