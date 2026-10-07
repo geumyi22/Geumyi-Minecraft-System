@@ -28,7 +28,7 @@
 | 9 | Transaction / Backup / Rollback | ✅ 완료 | transaction journal, backup/staging/atomic replacement, post-start health gate, interrupted recovery, automatic rollback, failure injection + 서버 PC Final E2E |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 | Java four-server/Lobby/routing/reboot E2E + Bedrock real-client routing/return/location behavior를 사용자 실기기 확인으로 PASS. See `DAY10-E2E-REPORT.md` |
 | 11 | Operations UX & Fleet Management | ✅ 완료 | **GSC 4.3.8 live / GSCM 1.1.5+117 live verified**. Phase 11.0~11.7, Client/Host self-update, Protection & Recovery 2.0, Final integrated READ-ONLY E2E, Java/Bedrock real-client smoke 및 마지막 GSCM 2개 device check까지 사용자 확인 PASS. See `DAY11-FINAL-REPORT.md` |
-| 12 | Final Production Hardening & Closure | ⏳ 시작 준비 완료 | Golden baseline, managed Resource/DataPack, full health/storage/security hardening, trusted builds/offline cache, DR drill, final verifier/E2E/soak, Maintenance Mode handoff |
+| 12 | Final Production Hardening & Closure | 🔄 진행 중 | **12.0A 시작** — source/evidence baseline 3종과 READ-ONLY capture tool 준비 완료; real server-PC capture 및 12.0B protected Golden checkpoint는 아직 미완료 |
 
 ## Day 8 / Day 9 완료 상태
 
@@ -109,6 +109,19 @@ Day 11은 2026-10-07 기준 **완료**입니다.
 - 정상 종료 후 `자동 복구 중`으로 보이는 상태 오류
 - GSC 콘솔의 의도적 `stop`도 `desired_running=false`로 처리
 - 원칙: 의도적 종료 -> OFFLINE, 실제 crash -> RECOVERING -> 자동 재시작
+
+## Day 12 현재 진행 상태
+
+- Day 12: **IN PROGRESS**
+- 12.0A source/evidence baseline seed: **완료**
+  - `FINAL-BASELINE.json`
+  - `FINAL-VERSION-MATRIX.md`
+  - `FINAL-NETWORK-TOPOLOGY.json`
+- 12.0A real server-PC READ-ONLY capture: **대기**
+- 12.0B protected Golden Recovery Checkpoint: **대기**
+- 12.0 자체는 아직 완료 처리하지 않음
+
+실행 도구: `tools/day12/Day12_Phase0_Golden_Baseline_READ_ONLY.cmd`
 
 ## Day 12 고정 목표
 
