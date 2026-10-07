@@ -135,8 +135,15 @@ Candidate/release evidence:
 - GSCM build117 Android `37617292391` / iOS `37617292404` / controls `37617292420`: PASS.
 - Secure beta release `system-2026.10.07-day11-gsc438-beta` workflow run `37627140918`: PASS, published from `a17975030ed3f9b71d8632a7897c1c206d9bfcdf`.
 
+Live validation progress:
+- Phase 7 READ-ONLY report at 2026-10-07 22:31 KST: **PASS** on GSC 4.3.8.
+- Four-server backup inventory/retention dry-run was readable.
+- Existing Other full backup passed restore preflight: server offline, server ID matched, ZIP/SHA-256 verified, checkpoint disk guard passed, no pending update.
+- Permanent-delete missing-confirm probe returned the expected HTTP 400.
+- Report explicitly recorded no mutation, no server lifecycle action, no restore and no permanent delete.
+
 Still required before LIVE PASS:
-- Phase 7 read-only live report and safe disposable backup lifecycle checks
+- safe disposable config-backup lifecycle E2E
 
 ## 2026-10-07 live/source progress
 
