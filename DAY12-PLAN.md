@@ -1,6 +1,6 @@
 # Day 12 — Final Production Hardening & Closure
 
-Status: **PLANNED — starts only after Day 11 GSC 4.3.0 / GSCM 1.1.5 closure**
+Status: **READY TO START — Day 11 closed on GSC 4.3.8 / GSCM 1.1.5+117**
 Role: **final project milestone before Maintenance Mode**
 
 Day 12 is not a feature-dump. Its purpose is to leave Geumyi Minecraft System in a state where normal operation no longer depends on manual file copying or frequent development work.
@@ -265,3 +265,22 @@ Day 12 is complete only when:
 - GSCM real-device flows are checked;
 - soak test has no unresolved critical defect;
 - no unverified item is labeled PASS.
+
+
+## Execution responsibility split
+
+### ChatGPT / repository-side work
+- prepare source changes, scripts, manifests, validation tools and rollback logic;
+- update GitHub documentation/version matrices as each Phase is verified;
+- review logs/reports supplied by the operator and determine PASS/WARN/FAIL without inventing runtime results;
+- keep changes reversible and preserve historical recovery evidence;
+- prepare final release/verification artifacts only after their required gates pass.
+
+### Operator / user-side work
+- run scripts that require the real Windows server or management PC;
+- perform real Java/Bedrock/GSCM device tests when a Phase requires them;
+- provide generated JSON/log reports or exact error output when a live gate fails;
+- approve intentional live mutations such as restart/update/restore tests when the Phase reaches that gate;
+- perform the final reboot, live-client E2E and soak window.
+
+The repository-side work may proceed ahead of live gates, but no live item is marked PASS until the corresponding real-machine evidence is supplied.
