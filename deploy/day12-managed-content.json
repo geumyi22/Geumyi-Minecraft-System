@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "status": "CONFIGURE_BEFORE_LIVE_APPLY",
+  "notes": [
+    "Do not commit private download URLs or credentials.",
+    "Entries are disabled until source artifacts and hashes are verified.",
+    "Bedrock/Geyser pack deployment remains inventory/preflight-only until the exact live pack directory is confirmed by Phase 12.1."
+  ],
+  "resourcepacks": [
+    {
+      "id": "wild-java-resourcepack",
+      "enabled": false,
+      "server_id": "wild",
+      "kind": "java_resourcepack",
+      "source_zip": "",
+      "public_url": "",
+      "resource_pack_id": "",
+      "expected_sha1": "",
+      "expected_sha256": ""
+    }
+  ],
+  "datapacks": [
+    {
+      "id": "wild-datapack-example",
+      "enabled": false,
+      "server_id": "wild",
+      "kind": "datapack",
+      "source_zip": "",
+      "target_file": "",
+      "expected_sha256": ""
+    }
+  ]
+}
