@@ -18,7 +18,7 @@
 | 9 | Transaction / Backup / Rollback | ✅ 완료 |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 |
 | 11 | Operations UX & Fleet Management — GSC 4.3.8 / GSCM 1.1.5+117 | ✅ 완료 |
-| 12 | Final Production Hardening & Closure | 🔄 진행 중 — 12.0A Golden Baseline capture |
+| 12 | Final Production Hardening & Closure | 🔄 진행 중 — repository/CI prep verified; live closure gates pending |
 
 ## Day 1~3 — 복구와 기반 정리
 
