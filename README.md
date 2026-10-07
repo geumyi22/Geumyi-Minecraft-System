@@ -28,7 +28,7 @@
 | Day 1~9 | ✅ 완료 |
 | Day 10 | ✅ Java + Bedrock four-server/Lobby real-client E2E 완료 |
 | Day 11 | ✅ 완료 — GSC 4.3.8 / GSCM 1.1.5+117, Final READ-ONLY E2E + Java/Bedrock smoke + final GSCM checks PASS |
-| Day 12 | 🔄 진행 중 — 12.0A Golden Baseline READ-ONLY live capture 대기 |
+| Day 12 | 🔄 진행 중 — repository/CI hardening 준비 완료, 실제 서버·클라이언트 live gates 대기 |
 
 Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/마감을 수행한 milestone**입니다. Day 8과 Day 9는 모두 완료 상태이며, 각 E2E PASS는 완료의 근거입니다.
 
@@ -50,6 +50,8 @@ Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/
 - Day 10 실제 서버 검증 결과: [DAY10-E2E-REPORT.md](DAY10-E2E-REPORT.md)
 - Day 11 Protection & Recovery 2.0 실서버 검증: [DAY11-PHASE7-REPORT.md](DAY11-PHASE7-REPORT.md)
 - Day 11 최종 마감 보고: [DAY11-FINAL-REPORT.md](DAY11-FINAL-REPORT.md)
+- Day 12 repository/live 진행 분리: [DAY12-REPO-PROGRESS.md](DAY12-REPO-PROGRESS.md)
+- Day 12 나중에 실행할 순서: [DAY12-LIVE-RUNBOOK.md](DAY12-LIVE-RUNBOOK.md)
 - Day 12 Golden Baseline: [FINAL-BASELINE.json](FINAL-BASELINE.json), [FINAL-VERSION-MATRIX.md](FINAL-VERSION-MATRIX.md), [FINAL-NETWORK-TOPOLOGY.json](FINAL-NETWORK-TOPOLOGY.json)
 - 이후 작업 순서와 장기 계획: [ROADMAP.md](ROADMAP.md)
 - 자동 빌드/Release/서버 자동 업데이트/rollback 장기 설계: [DEPLOYMENT-ARCHITECTURE.md](DEPLOYMENT-ARCHITECTURE.md)
