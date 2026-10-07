@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "phase": "12.5",
+  "status": "PENDING_RUNTIME_AND_CI_REVIEW",
+  "source_secret_scan": "PENDING_CURRENT_CI",
+  "sbom": "PENDING_CURRENT_CI",
+  "gsc_reproducibility": "PENDING_CURRENT_CI",
+  "runtime_acl_firewall_api_review": "PENDING_LIVE",
+  "critical_findings": [],
+  "final_result": "PENDING"
+}
