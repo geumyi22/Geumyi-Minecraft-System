@@ -9,10 +9,10 @@ func TestClientVersionComparison(t *testing.T) {
 		a, b string
 		want int
 	}{
-		{"4.3.2", "4.3.7", -1},
-		{"4.3.7", "4.3.7", 0},
-		{"4.3.8", "4.3.7", 1},
-		{"v4.3.7", "4.3.7+120", 0},
+		{"4.3.7", "4.3.8", -1},
+		{"4.3.8", "4.3.8", 0},
+		{"4.3.9", "4.3.8", 1},
+		{"v4.3.8", "4.3.8+120", 0},
 	}
 	for _, tc := range cases {
 		got, err := compareClientVersions(tc.a, tc.b)
