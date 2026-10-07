@@ -141,5 +141,8 @@ jobs:
         shell: powershell
         run: |
           python tools/day12/validate_final_release_gates.py FINAL-RELEASE-GATES.json
-          if($LASTEXITCODE -eq 0){throw 'Final release gate unexpectedly opened while PENDING gates exist'}
-          Write-Host "Fail-closed release gate verified."
+          $gateExit=$LASTEXITCODE
+          if($gateExit -eq 0){throw 'Final release gate unexpectedly opened while PENDING gates exist'}
+          Write-Host "Fail-closed release gate verified. Validator exit=$gateExit"
+          $global:LASTEXITCODE=0
+          exit 0
