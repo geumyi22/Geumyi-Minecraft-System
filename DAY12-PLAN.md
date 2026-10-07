@@ -1,6 +1,6 @@
 # Day 12 — Final Production Hardening & Closure
 
-Status: **READY TO START — Day 11 closed on GSC 4.3.8 / GSCM 1.1.5+117**
+Status: **IN PROGRESS — Phase 12.0A source baseline/tooling prepared; real server-PC READ-ONLY capture pending**
 Role: **final project milestone before Maintenance Mode**
 
 Day 12 is not a feature-dump. Its purpose is to leave Geumyi Minecraft System in a state where normal operation no longer depends on manual file copying or frequent development work.
@@ -28,6 +28,23 @@ After Day 11 closes:
   - `FINAL-NETWORK-TOPOLOGY.json`
 
 The Golden Baseline is immutable to automatic retention.
+
+### 12.0 current progress
+
+**12.0A — READ-ONLY capture**
+- source/evidence baseline files seeded;
+- network topology expected state seeded;
+- `tools/day12/Day12_Phase0_Golden_Baseline_READ_ONLY.cmd` added;
+- public repository output omits full local paths and all secret values;
+- real server-PC report is still required;
+- no server/config/firewall/backup mutation has been performed.
+
+**12.0B — Golden Recovery Checkpoint**
+- starts only after the 12.0A report has no unresolved mandatory CHECK;
+- will create a dedicated recovery checkpoint and immediately protect it from normal retention;
+- is **not started yet**.
+
+12.0 is complete only after both 12.0A capture review and 12.0B protected checkpoint verification pass.
 
 ## 12.1 — ResourcePack / DataPack managed deployment
 
