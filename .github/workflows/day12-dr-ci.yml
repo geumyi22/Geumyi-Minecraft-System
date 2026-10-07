@@ -1,0 +1,49 @@
+name: Day 12 Synthetic DR and Recovery Kit
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'tools/day12/Day12_Phase8_DR_SYNTHETIC.ps1'
+      - 'tools/day12/recovery-kit/**'
+      - '.github/workflows/day12-dr-ci.yml'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-dr:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Parse scripts
+        shell: powershell
+        run: |
+          foreach($p in @('tools/day12/Day12_Phase8_DR_SYNTHETIC.ps1','tools/day12/recovery-kit/Verify-KnownGood.ps1','tools/day12/recovery-kit/Restore-Verified-File.ps1')){
+            $t=$null;$e=$null;[void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$t,[ref]$e);if($e.Count){$e|Format-List|Out-String|Write-Host;throw "Parse failed $p"}
+          }
+      - name: Run synthetic DR
+        shell: powershell
+        run: |
+          $o=Join-Path $env:RUNNER_TEMP 'day12-dr'
+          & tools/day12/Day12_Phase8_DR_SYNTHETIC.ps1 -OutputDir $o
+          if($LASTEXITCODE -ne 0){throw 'Synthetic DR failed'}
+          $r=Get-ChildItem $o -Filter 'FINAL-DR-REPORT-*.json'|Select-Object -First 1
+          $j=Get-Content $r.FullName -Raw|ConvertFrom-Json
+          if($j.result -ne 'PASS' -or [bool]$j.production_files_touched){throw 'DR report contract failed'}
+          Copy-Item $r.FullName FINAL-DR-REPORT.json
+      - name: Package Recovery Kit
+        shell: powershell
+        run: |
+          Compress-Archive -Path tools/day12/recovery-kit/* -DestinationPath Geumyi-Recovery-Kit.zip -Force
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-dr-recovery-kit-${{ github.sha }}
+          path: |
+            FINAL-DR-REPORT.json
+            Geumyi-Recovery-Kit.zip
+          retention-days: 30
