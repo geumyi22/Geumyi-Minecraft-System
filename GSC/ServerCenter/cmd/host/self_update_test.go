@@ -125,7 +125,7 @@ func TestDay11GSCVersionComparisonBlocksDowngrade(t *testing.T) {
 	if err := requireNewerGSCVersion("4.3.7"); err == nil {
 		t.Fatal("same version was accepted as self-update target")
 	}
-	if err := requireNewerGSCVersion("4.3.7"); err != nil {
+	if err := requireNewerGSCVersion("4.3.8"); err != nil {
 		t.Fatalf("newer version was rejected: %v", err)
 	}
 }
