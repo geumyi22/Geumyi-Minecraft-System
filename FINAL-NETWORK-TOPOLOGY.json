@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "status": "EXPECTED_TOPOLOGY_PENDING_PHASE_12_0A_LIVE_CAPTURE",
+  "entry_model": "three isolated Velocity/Geyser public aliases, all enter Lobby first",
+  "public_entrypoints": [
+    {
+      "id": "wild",
+      "java": {
+        "protocol": "tcp",
+        "port": 25565
+      },
+      "bedrock": {
+        "protocol": "udp",
+        "port": 19132
+      },
+      "first_destination": "lobby"
+    },
+    {
+      "id": "playground",
+      "java": {
+        "protocol": "tcp",
+        "port": 25566
+      },
+      "bedrock": {
+        "protocol": "udp",
+        "port": 19133
+      },
+      "first_destination": "lobby"
+    },
+    {
+      "id": "other",
+      "java": {
+        "protocol": "tcp",
+        "port": 25567
+      },
+      "bedrock": {
+        "protocol": "udp",
+        "port": 19134
+      },
+      "first_destination": "lobby"
+    }
+  ],
+  "paper_backends": [
+    {
+      "id": "wild",
+      "bind": "127.0.0.1",
+      "java_port": 25570,
+      "rcon_port": 25575,
+      "public_direct": false
+    },
+    {
+      "id": "playground",
+      "bind": "127.0.0.1",
+      "java_port": 25571,
+      "rcon_port": 25576,
+      "public_direct": false
+    },
+    {
+      "id": "other",
+      "bind": "127.0.0.1",
+      "java_port": 25572,
+      "rcon_port": 25577,
+      "public_direct": false
+    },
+    {
+      "id": "lobby",
+      "bind": "127.0.0.1",
+      "java_port": 25573,
+      "rcon_port": 25579,
+      "public_direct": false
+    }
+  ],
+  "routing": {
+    "public_join": "lobby",
+    "lobby_targets": [
+      "wild",
+      "playground",
+      "other"
+    ],
+    "return_command": "/lobby",
+    "last_safe_position_restore": true
+  },
+  "plugin_targeting": {
+    "technology": [
+      "wild",
+      "other"
+    ],
+    "chemistry": [
+      "wild",
+      "other"
+    ],
+    "excluded": [
+      "playground",
+      "lobby"
+    ]
+  },
+  "security": {
+    "velocity_modern_forwarding": true,
+    "forwarding_secret_committed": false,
+    "floodgate_private_key_committed": false,
+    "paper_backends_private": true
+  }
+}
