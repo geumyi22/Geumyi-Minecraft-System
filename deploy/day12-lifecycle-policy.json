@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "status": "PROPOSED_DEFAULTS_REVIEW_AFTER_LIVE_DRY_RUN",
+  "backup": {
+    "recent": 5,
+    "daily_days": 7,
+    "weekly_weeks": 4,
+    "protected_exempt": true,
+    "checkpoint_exempt": true,
+    "golden_reason_regex": "(?i)golden|day12",
+    "active_transaction_exempt": true,
+    "apply_mode": "trash_only"
+  },
+  "trash": {
+    "retention_days": 14,
+    "permanent_delete_automatic": false
+  },
+  "logs": {
+    "normal_retention_days": 14,
+    "crash_retention_days": 30,
+    "preserve_recent_incident_hours": 24,
+    "max_total_gib_warning": 5
+  },
+  "disk": {
+    "minimum_free_gib": 50,
+    "warning_free_gib": 75
+  }
+}
