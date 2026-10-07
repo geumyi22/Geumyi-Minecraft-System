@@ -45,6 +45,56 @@ jobs:
             throw 'Day 11 preflight PowerShell parse failed'
           }
 
+      - name: Parse Phase 7 protection verifier
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $path = 'tools/day11/Day11_Phase7_Protection_READ_ONLY.ps1'
+          $tokens = $null
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $path),
+            [ref]$tokens,
+            [ref]$errors
+          )
+          if($errors.Count -gt 0){
+            $errors | Format-List | Out-String | Write-Host
+            throw 'Day 11 Phase 7 PowerShell parse failed'
+          }
+
+      - name: Reject destructive Phase 7 verifier commands
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $raw = Get-Content -LiteralPath 'tools/day11/Day11_Phase7_Protection_READ_ONLY.ps1' -Raw
+          $forbidden = @(
+            '(?i)\bStop-Process\b',
+            '(?i)\btaskkill(?:\.exe)?\b',
+            '(?i)\bRemove-Item\b',
+            '(?i)\bMove-Item\b',
+            '(?i)\bCopy-Item\b',
+            '(?i)\bRestart-Computer\b',
+            '(?i)\bStop-Computer\b',
+            '(?i)\bStop-Service\b',
+            '(?i)\bStart-Service\b',
+            '(?i)DELETE_PERMANENT_BACKUP',
+            '(?i)MOVE_TO_TRASH',
+            '(?i)/api/v[14]/servers/.+/(actions|schedule)',
+            '(?i)/api/v4/restore["'']',
+            '(?i)Post-Json\s+["'']/api/v4/backup["'']'
+          )
+          foreach($pattern in $forbidden){
+            if($raw -match $pattern){
+              throw "Phase 7 READ ONLY verifier contains forbidden mutation pattern: $pattern"
+            }
+          }
+          if($raw -notmatch '__day11_phase7_confirmation_probe_DOES_NOT_EXIST__'){
+            throw 'Permanent-delete confirmation probe must use the impossible disposable filename'
+          }
+          if($raw -notmatch 'mutation_performed\s*=\s*\$false'){
+            throw 'Phase 7 report must explicitly declare mutation_performed=false'
+          }
+
       - name: Reject destructive preflight commands
         shell: powershell
         run: |
