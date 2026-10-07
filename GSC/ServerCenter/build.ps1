@@ -15,7 +15,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "Host build failed" }
     & $Go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui" -o cmd/setup/payload/GeumyiServerCenter.exe ./cmd/client
     if ($LASTEXITCODE -ne 0) { throw "Client build failed" }
-    & $Go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui" -o dist/GeumyiServerCenter-v4.3.7-Setup.exe ./cmd/setup
+    & $Go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui" -o dist/GeumyiServerCenter-v4.3.8-Setup.exe ./cmd/setup
     if ($LASTEXITCODE -ne 0) { throw "Setup build failed" }
-    Write-Host "Created dist/GeumyiServerCenter-v4.3.7-Setup.exe"
+    Write-Host "Created dist/GeumyiServerCenter-v4.3.8-Setup.exe"
 } finally { Pop-Location }
