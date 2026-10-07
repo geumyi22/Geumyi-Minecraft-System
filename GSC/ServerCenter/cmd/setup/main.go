@@ -432,7 +432,8 @@ func doInstall(o InstallOptions) {
 	_ = os.MkdirAll(o.InstallDir, 0755)
 	setProgress(18, "Geumyi Server Center v4 프로그램 설치 중...", "")
 	mustExtract("payload/GeumyiServerCenter.ico", filepath.Join(o.InstallDir, "GeumyiServerCenter.ico"))
-	mustExtract("payload/README-v4.3.0.txt", filepath.Join(o.InstallDir, "README-v4.3.0.txt"))
+	mustExtract("payload/README-v4.3.8.txt", filepath.Join(o.InstallDir, "README-v4.3.8.txt"))
+	_ = os.Remove(filepath.Join(o.InstallDir, "README-v4.3.0.txt"))
 	if hasClientRole(o.Role) {
 		mustExtract("payload/GeumyiServerCenter.exe", filepath.Join(o.InstallDir, "GeumyiServerCenter.exe"))
 	}
