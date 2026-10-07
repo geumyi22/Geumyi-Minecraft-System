@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "phase": "12.8",
+  "status": "PENDING_CURRENT_SYNTHETIC_DR_CI",
+  "mode": "SYNTHETIC_NON_PRODUCTION",
+  "production_files_touched": false,
+  "result": "PENDING"
+}
