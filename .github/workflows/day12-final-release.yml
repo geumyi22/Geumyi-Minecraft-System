@@ -1,0 +1,136 @@
+name: Day 12 Final Stable Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Final immutable Stable tag (for example system-2026.10.08-final)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: day12-final-stable-release
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Verify final closure evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Final release gates
+        run: python tools/day12/validate_final_release_gates.py FINAL-RELEASE-GATES.json
+      - name: Closure documents finalized
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for n in ['FINAL-BASELINE.json','FINAL-SECURITY-REPORT.json','FINAL-HEALTH-REPORT.json','FINAL-DR-REPORT.json','FINAL-SOAK-REPORT.json']:
+              j=json.loads(Path(n).read_text(encoding='utf-8-sig'))
+              raw=json.dumps(j)
+              if 'PENDING' in raw or 'CHECK_REQUIRED' in raw:
+                  raise SystemExit(f'{n} still pending')
+          e=Path('FINAL-E2E-REPORT.md').read_text(encoding='utf-8')
+          if 'PENDING LIVE' in e or '**PENDING' in e:
+              raise SystemExit('FINAL-E2E-REPORT.md still pending')
+          PY
+      - name: Validate release tag
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          [[ "$TAG" =~ ^[A-Za-z0-9._-]+$ ]] || { echo 'invalid tag'; exit 1; }
+
+  safety:
+    needs: gate
+    uses: ./.github/workflows/day12-safety-ci.yml
+
+  security:
+    needs: gate
+    uses: ./.github/workflows/day12-security-ci.yml
+
+  system:
+    needs: gate
+    uses: ./.github/workflows/system-ci.yml
+
+  android:
+    needs: gate
+    uses: ./.github/workflows/android-build.yml
+    with:
+      require_release_signing: true
+    secrets:
+      ANDROID_RELEASE_KEYSTORE_B64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_B64 }}
+      ANDROID_RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+      ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+      ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+
+  ios:
+    needs: gate
+    uses: ./.github/workflows/ios-build.yml
+
+  publish:
+    name: Publish signed final Stable release
+    needs: [gate, safety, security, system, android, ios]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag }}
+      DEPLOYMENT_PRIVATE_KEY_B64: ${{ secrets.DEPLOYMENT_ED25519_PRIVATE_KEY_B64 }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Refuse existing tag and missing signing key
+        run: |
+          set -euo pipefail
+          [[ -n "$DEPLOYMENT_PRIVATE_KEY_B64" ]] || { echo 'missing deployment signing key'; exit 1; }
+          if gh release view "$TAG" >/dev/null 2>&1; then echo 'release already exists'; exit 1; fi
+      - name: Download all verified artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: release-assets
+          pattern: '*'
+          merge-multiple: true
+      - name: Verify checksum sidecars
+        run: |
+          set -euo pipefail
+          mapfile -t sums < <(find release-assets -type f -name '*.sha256' | sort)
+          ((${#sums[@]} > 0))
+          for sum in "${sums[@]}"; do (cd "$(dirname "$sum")" && sha256sum -c "$(basename "$sum")"); done
+          if [[ -f release-assets/SHA256SUMS.txt ]]; then (cd release-assets && sha256sum -c SHA256SUMS.txt); fi
+      - name: Generate Stable deployment manifest
+        run: |
+          set -euo pipefail
+          BASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}"
+          python3 tools/release/generate_manifest.py --catalog deploy/components.json --assets release-assets --channel stable --tag "$TAG" --base-url "$BASE_URL" --output deployment-stable.json
+      - name: Sign and verify deployment manifest
+        run: |
+          set -euo pipefail
+          printf '%s' "$DEPLOYMENT_PRIVATE_KEY_B64" | base64 --decode > "$RUNNER_TEMP/deployment-private.pem"
+          chmod 600 "$RUNNER_TEMP/deployment-private.pem"
+          openssl pkey -in "$RUNNER_TEMP/deployment-private.pem" -check -noout
+          openssl pkeyutl -sign -rawin -inkey "$RUNNER_TEMP/deployment-private.pem" -in deployment-stable.json -out deployment-stable.json.sig
+          openssl pkey -in "$RUNNER_TEMP/deployment-private.pem" -pubout -out deployment-public.pem
+          openssl pkeyutl -verify -rawin -pubin -inkey deployment-public.pem -in deployment-stable.json -sigfile deployment-stable.json.sig
+          sha256sum deployment-stable.json > deployment-stable.json.sha256
+      - name: Add final evidence to release assets
+        run: |
+          cp deployment-stable.json deployment-stable.json.sig deployment-stable.json.sha256 deployment-public.pem release-assets/
+          cp FINAL-BASELINE.json FINAL-VERSION-MATRIX.md FINAL-NETWORK-TOPOLOGY.json FINAL-PROVENANCE.json FINAL-SECURITY-REPORT.json FINAL-HEALTH-REPORT.json FINAL-DR-REPORT.json FINAL-SOAK-REPORT.json FINAL-E2E-REPORT.md MAINTENANCE-MODE.md release-assets/
+      - name: Publish final immutable Stable release
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" release-assets/* --target "$GITHUB_SHA" --title "Geumyi System Final Stable $TAG" --notes "Day 12 final production closure · Stable · all repository and live gates passed."
+      - name: Summary
+        run: |
+          echo '### Day 12 Final Stable' >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tag: $TAG" >> "$GITHUB_STEP_SUMMARY"
+          echo '- Channel: stable' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Gate: all repository + live closure evidence required before build/publish' >> "$GITHUB_STEP_SUMMARY"
