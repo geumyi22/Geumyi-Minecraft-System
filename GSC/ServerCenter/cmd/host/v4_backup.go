@@ -671,6 +671,42 @@ func restoreOfflineHealth(s ServerConfig, m BackupManifest) RestoreHealth {
 	return out
 }
 
+func rollbackNonFullRestoreFromCheckpoint(s ServerConfig, checkpointFile string, target BackupManifest) error {
+	cpPath, err := safeBackupPath(s, checkpointFile)
+	if err != nil {
+		return fmt.Errorf("checkpoint not found: %w", err)
+	}
+	cpManifest, err := readBackupManifest(cpPath)
+	if err != nil {
+		return fmt.Errorf("checkpoint manifest: %w", err)
+	}
+	if cpManifest.ServerID != s.ID || cpManifest.Scope != target.Scope {
+		return fmt.Errorf("checkpoint scope/server mismatch")
+	}
+	if _, err = verifyBackup(cpPath); err != nil {
+		return fmt.Errorf("checkpoint verification: %w", err)
+	}
+	dir := resolveServerDir(s)
+	for _, root := range target.Roots {
+		if root == "." {
+			return fmt.Errorf("non-full rollback received full root")
+		}
+		if err = os.RemoveAll(filepath.Join(dir, filepath.FromSlash(root))); err != nil {
+			return fmt.Errorf("rollback cleanup %s: %w", root, err)
+		}
+	}
+	if err = extractBackup(cpPath, dir, cpManifest); err != nil {
+		return fmt.Errorf("checkpoint extraction: %w", err)
+	}
+	health := restoreOfflineHealth(s, cpManifest)
+	if !health.OK {
+		return fmt.Errorf("checkpoint offline health: %s", strings.Join(health.Checks, "; "))
+	}
+	appendV4Event("warn", "restore", s.ID, "복원 실패 자동 rollback 완료",
+		"checkpoint="+checkpointFile+" scope="+target.Scope)
+	return nil
+}
+
 func restoreBackup(s ServerConfig, p string) (string, RestoreHealth, error) {
 	pre := buildRestorePreflight(s, p)
 	if !pre.Ready {
@@ -710,15 +746,27 @@ func restoreBackup(s ServerConfig, p string) (string, RestoreHealth, error) {
 	}
 	if m.Scope == "world" {
 		for _, root := range m.Roots {
-			_ = os.RemoveAll(filepath.Join(dir, filepath.FromSlash(root)))
+			if e = os.RemoveAll(filepath.Join(dir, filepath.FromSlash(root))); e != nil {
+				if rb := rollbackNonFullRestoreFromCheckpoint(s, cp.File, m); rb != nil {
+					return cp.File, RestoreHealth{}, fmt.Errorf("복원 대상 정리 실패: %v; checkpoint rollback 실패: %v", e, rb)
+				}
+				return cp.File, RestoreHealth{}, fmt.Errorf("복원 대상 정리 실패: %w; checkpoint rollback 완료", e)
+			}
 		}
 	}
 	if e = extractBackup(p, dir, m); e != nil {
-		return cp.File, RestoreHealth{}, e
+		if rb := rollbackNonFullRestoreFromCheckpoint(s, cp.File, m); rb != nil {
+			return cp.File, RestoreHealth{}, fmt.Errorf("백업 추출 실패: %v; checkpoint rollback 실패: %v", e, rb)
+		}
+		return cp.File, RestoreHealth{}, fmt.Errorf("백업 추출 실패: %w; checkpoint rollback 완료", e)
 	}
 	health := restoreOfflineHealth(s, m)
 	if !health.OK {
-		return cp.File, health, fmt.Errorf("복원 후 offline health 실패: %s", strings.Join(health.Checks, "; "))
+		cause := fmt.Errorf("복원 후 offline health 실패: %s", strings.Join(health.Checks, "; "))
+		if rb := rollbackNonFullRestoreFromCheckpoint(s, cp.File, m); rb != nil {
+			return cp.File, health, fmt.Errorf("%v; checkpoint rollback 실패: %v", cause, rb)
+		}
+		return cp.File, health, fmt.Errorf("%v; checkpoint rollback 완료", cause)
 	}
 	appendV4Event("warn", "restore", s.ID, "백업 복원 완료: "+filepath.Base(p), "checkpoint="+cp.File+" offline_health=pass")
 	return cp.File, health, nil
