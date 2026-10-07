@@ -1,8 +1,8 @@
 # Day 11 — Operations UX & Fleet Management
 
-Status: **IN PROGRESS — Phase 11.0~11.7 complete; Final integrated READ-ONLY E2E PASS; real Java/Bedrock client smoke + GSCM 1.1.5+117 device check remain**
-Current live verified target: **GSC 4.3.7 / GSCM 1.1.5+116**
-Current source/CI candidate: **GSC 4.3.8 / GSCM 1.1.5+117** (Protection & Recovery 2.0; live validation pending)
+Status: **✅ COMPLETE — Phase 11.0~11.7, Final integrated READ-ONLY E2E, Java/Bedrock real-client smoke and final GSCM checks PASS**
+Final live verified baseline: **GSC 4.3.8 / GSCM 1.1.5+117**
+Closure report: **DAY11-FINAL-REPORT.md**
 
 ## Safety rules
 
@@ -154,8 +154,11 @@ Live disposable config-backup lifecycle E2E:
 
 **Phase 11.7 is LIVE PASS.** See `DAY11-PHASE7-REPORT.md`.
 
-Remaining Day 11 gate:
-- Day 11 Final E2E
+Day 11 final gates:
+- Day 11 Final integrated READ-ONLY E2E — **PASS**
+- Java + Bedrock post-update real-client smoke — **USER PASS**
+- Final two requested GSCM build117 device checks — **USER PASS**
+- Day 11 — **COMPLETE**
 
 ## 2026-10-07 live/source progress
 
@@ -170,7 +173,7 @@ Remaining Day 11 gate:
 - Secure beta Release `system-2026.10.07-day11-gsc437-beta` was published successfully. The server PC and remote management PC were both installed on 4.3.7, and the remote UI showed the local Client and connected Host as separate 4.3.7 current-version cards. The **Client/Host update-state split and local version detection are LIVE PASS**.
 - The **in-app local Client version replacement path is now LIVE PASS**: the remote management PC staged the signed 4.3.8 release from local Client 4.3.7, then applied the Client-only updater and came back on 4.3.8 while the server PC Host remained on 4.3.7.
 - The user then completed the server-PC Host 4.3.7 -> 4.3.8 self-update. Record the server Host as **user-confirmed LIVE 4.3.8**; Minecraft/Paper/Velocity were not part of that GSC-only replacement path.
-- Phase 11.7 source work then started on GSC 4.3.8 / GSCM 1.1.5+117; no 11.7 LIVE PASS is claimed yet.
+- Phase 11.7 subsequently reached LIVE PASS on GSC 4.3.8 / GSCM 1.1.5+117; see the Phase 11.7 report and final closure report.
 
 ## 2026-10-06 live progress
 
@@ -216,7 +219,7 @@ These are source/CI/build results only. They do **not** convert live host, self-
 
 - After GSC Client/Host 4.3.8 and the Final integrated READ-ONLY E2E PASS, the user confirmed **both Java and Bedrock real-client smoke tests worked**.
 - Treat the Java/Bedrock post-update routing gate as **USER DEVICE PASS**.
-- The only remaining Day 11 closure gate is **GSCM 1.1.5+117 real-device update/launch/connect check** (Android/iOS as applicable).
+- The final two requested GSCM 1.1.5+117 device checks were subsequently user-confirmed **PASS**. Day 11 is closed.
 
 ## Completion boundary
 
@@ -227,3 +230,8 @@ Day 11 is complete only after:
 - Android/iOS flows are checked on real devices as applicable;
 - Java and Bedrock routing remain healthy after the update work;
 - no unverified item is labeled PASS.
+
+
+## Final closure — 2026-10-07
+
+Day 11 is **COMPLETE**. The final evidence and closure boundaries are consolidated in [DAY11-FINAL-REPORT.md](DAY11-FINAL-REPORT.md).
