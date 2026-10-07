@@ -136,7 +136,6 @@ Candidate/release evidence:
 - Secure beta release `system-2026.10.07-day11-gsc438-beta` workflow run `37627140918`: PASS, published from `a17975030ed3f9b71d8632a7897c1c206d9bfcdf`.
 
 Still required before LIVE PASS:
-- server-PC 4.3.7 -> 4.3.8 update
 - Phase 7 read-only live report and safe disposable backup lifecycle checks
 
 ## 2026-10-07 live/source progress
@@ -151,6 +150,7 @@ Still required before LIVE PASS:
 - GSC 4.3.7 source/CI evidence: System CI run `37583159508` PASS; artifact `gsc-4.3.7-ci` id `11465376458`, digest `sha256:ecdd1b20cc2166fde1b627d7a5630935793d92d68d8590afb1df47696cc36b33`. Day 11 Host Test Package run `37583159609` PASS; artifact id `11465776442`, digest `sha256:60b70a732da3ac20ac420fee79d16ae7f4aeb1dffc59f6f1638c2569f2bcb335`.
 - Secure beta Release `system-2026.10.07-day11-gsc437-beta` was published successfully. The server PC and remote management PC were both installed on 4.3.7, and the remote UI showed the local Client and connected Host as separate 4.3.7 current-version cards. The **Client/Host update-state split and local version detection are LIVE PASS**.
 - The **in-app local Client version replacement path is now LIVE PASS**: the remote management PC staged the signed 4.3.8 release from local Client 4.3.7, then applied the Client-only updater and came back on 4.3.8 while the server PC Host remained on 4.3.7.
+- The user then completed the server-PC Host 4.3.7 -> 4.3.8 self-update. Record the server Host as **user-confirmed LIVE 4.3.8**; Minecraft/Paper/Velocity were not part of that GSC-only replacement path.
 - Phase 11.7 source work then started on GSC 4.3.8 / GSCM 1.1.5+117; no 11.7 LIVE PASS is claimed yet.
 
 ## 2026-10-06 live progress
