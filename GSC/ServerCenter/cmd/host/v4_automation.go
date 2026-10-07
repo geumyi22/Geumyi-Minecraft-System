@@ -272,14 +272,24 @@ func pruneScheduledBackups(id string, keep int) {
 	if !ok {
 		return
 	}
-	plan := buildBackupRetentionDryRun(s, keep)
-	if plan.BlockedReason != "" {
-		appendV4Event("warn", "backup", s.ID, "자동 백업 retention 보류", plan.BlockedReason)
+	if keep < 1 {
+		keep = 14
+	}
+	if hasPendingUpdate(s) {
+		appendV4Event("warn", "backup", s.ID, "자동 백업 retention 보류", "pending update transaction")
 		return
 	}
+	kept := 0
 	moved := 0
-	for _, candidate := range plan.Candidates {
-		if _, err := trashBackupFile(s, candidate.File); err != nil {
+	for _, b := range listBackups(s) {
+		if b.Kind == "checkpoint" || b.Protected || !strings.HasPrefix(b.SourceReason, "automation:") {
+			continue
+		}
+		if kept < keep {
+			kept++
+			continue
+		}
+		if _, err := trashBackupFile(s, b.File); err != nil {
 			appendV4Event("warn", "backup", s.ID, "자동 백업 retention 중단", err.Error())
 			return
 		}
@@ -287,7 +297,7 @@ func pruneScheduledBackups(id string, keep int) {
 	}
 	if moved > 0 {
 		appendV4Event("info", "backup", s.ID, "자동 백업 retention 휴지통 이동",
-			fmt.Sprintf("moved=%d keep_latest=%d", moved, plan.KeepLatest))
+			fmt.Sprintf("moved=%d keep_latest_automation=%d", moved, keep))
 	}
 }
 
