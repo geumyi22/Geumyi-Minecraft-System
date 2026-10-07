@@ -1,6 +1,15 @@
-# GSC 4.2.3 / StatusAgent 0.5.4
+# GSC 4.3.8 / StatusAgent 0.5.4
 
-- [ServerCenter](ServerCenter/): recovered Go source, web UI, installer templates, tests and build script.
-- [StatusAgent](StatusAgent/): recovered 0.5.4 compatibility-overlay source.
+- [ServerCenter](ServerCenter/): current GSC 4.3.8 Go source, web UI, Host/Client split, installer templates, tests and build scripts.
+- [StatusAgent](StatusAgent/): StatusAgent 0.5.4 source/recovery material.
 
-StatusAgent helper sources (Codec, Json, MetricsLog, MinecraftPing, ServerState) are **source not yet recovered**. The original build depends on the 0.4.5 base JAR; this binary is excluded from Git. Do not mistake the overlay for a complete source-only rebuild. See the component BUILD documents.
+## Day 11 verified baseline
+
+- GSC Host: **4.3.8 live**
+- remote/local GSC Client: **4.3.8 live**
+- Client-only and Host self-update paths: **user-confirmed LIVE PASS**
+- Protection & Recovery 2.0: **LIVE PASS**
+- Final integrated READ-ONLY E2E: **PASS**
+- paired GSCM baseline: **1.1.5+117**
+
+Historical recovery limitations and exact provenance remain documented in the component BUILD/RECOVERY files and `VERSION-MATRIX.md`. Do not remove recovery evidence merely because the runtime version has advanced.
