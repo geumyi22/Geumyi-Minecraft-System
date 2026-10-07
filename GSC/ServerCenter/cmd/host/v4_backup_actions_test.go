@@ -3,10 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -296,6 +298,132 @@ func TestBackupSourceReasonAndRestorePreflight(t *testing.T) {
 	pre := buildRestorePreflight(s, p)
 	if !pre.Ready || !pre.ServerOffline || !pre.BackupVerified || !pre.ServerMatch || !pre.CheckpointReady {
 		t.Fatalf("unexpected restore preflight: %+v", pre)
+	}
+}
+
+func TestNonFullRestoreRollbackUsesProtectedCheckpoint(t *testing.T) {
+	root := t.TempDir()
+	serverDir := filepath.Join(root, "server")
+	if err := os.MkdirAll(serverDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	props := filepath.Join(serverDir, "server.properties")
+	bukkit := filepath.Join(serverDir, "bukkit.yml")
+	if err := os.WriteFile(props, []byte("server-port=25570\nmotd=before\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(bukkit, []byte("settings: before\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	configMu.Lock()
+	oldCfg := cfg
+	oldConfigPath := configPath
+	cfg = Config{Servers: []ServerConfig{{ID: "test", Name: "Test", Path: serverDir, JavaPort: 0}}}
+	configPath = filepath.Join(root, "server.json")
+	configMu.Unlock()
+	defer func() {
+		configMu.Lock()
+		cfg = oldCfg
+		configPath = oldConfigPath
+		configMu.Unlock()
+	}()
+
+	s, _ := serverByID("test")
+	target, err := createBackupWithReason(s, "config", false, "target-before")
+	if err != nil {
+		t.Fatal(err)
+	}
+	targetPath, err := safeBackupPath(s, target.File)
+	if err != nil {
+		t.Fatal(err)
+	}
+	targetManifest, err := readBackupManifest(targetPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = os.WriteFile(props, []byte("server-port=25570\nmotd=checkpoint\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(bukkit, []byte("settings: checkpoint\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	cp, err := createBackupWithReason(s, "config", true, "restore-checkpoint:test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cp.Protected {
+		t.Fatal("checkpoint must be protected")
+	}
+
+	if err = os.WriteFile(props, []byte("server-port=25570\nmotd=partial-target\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.Remove(bukkit); err != nil {
+		t.Fatal(err)
+	}
+	if err = rollbackNonFullRestoreFromCheckpoint(s, cp.File, targetManifest); err != nil {
+		t.Fatal(err)
+	}
+	gotProps, err := os.ReadFile(props)
+	if err != nil {
+		t.Fatal(err)
+	}
+	gotBukkit, err := os.ReadFile(bukkit)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Contains(gotProps, []byte("motd=checkpoint")) || !bytes.Contains(gotBukkit, []byte("settings: checkpoint")) {
+		t.Fatalf("checkpoint rollback did not restore previous config: props=%q bukkit=%q", gotProps, gotBukkit)
+	}
+}
+
+func TestScheduledPruneMovesOnlyAutomationOwnedBackupsToTrash(t *testing.T) {
+	s, cleanup := setupBackupPolicyTest(t)
+	defer cleanup()
+
+	auto, err := createBackupWithReason(s, "config", false, "automation:test-nightly")
+	if err != nil {
+		t.Fatal(err)
+	}
+	autoPath, err := safeBackupPath(s, auto.File)
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := backupBase(s.ID, false)
+	for i := 1; i <= 4; i++ {
+		copyTestBackup(t, autoPath, filepath.Join(root, fmt.Sprintf("auto-copy-%d.zip", i)))
+	}
+	_ = os.Remove(autoPath)
+	_ = os.Remove(autoPath + ".sha256")
+
+	manual, err := createBackupWithReason(s, "config", false, "manual-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pruneScheduledBackups(s.ID, 1)
+
+	if _, err = safeBackupPath(s, manual.File); err != nil {
+		t.Fatalf("manual backup was pruned: %v", err)
+	}
+	activeAuto := 0
+	for _, b := range listBackups(s) {
+		if strings.HasPrefix(b.SourceReason, "automation:") {
+			activeAuto++
+		}
+	}
+	if activeAuto != 1 {
+		t.Fatalf("expected exactly one active automation backup, got %d", activeAuto)
+	}
+	trashedAuto := 0
+	for _, b := range listTrashedBackups(s) {
+		if strings.HasPrefix(b.SourceReason, "automation:") {
+			trashedAuto++
+		}
+	}
+	if trashedAuto != 3 {
+		t.Fatalf("expected three automation backups in trash, got %d", trashedAuto)
 	}
 }
 
