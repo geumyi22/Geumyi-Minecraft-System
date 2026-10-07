@@ -27,7 +27,7 @@
 |---|---|
 | Day 1~9 | ✅ 완료 |
 | Day 10 | ✅ Java + Bedrock four-server/Lobby real-client E2E 완료 |
-| Day 11 | 🔄 진행 중 — 11.0~11.6 완료, 11.7 진행 중 + Final E2E 남음 |
+| Day 11 | 🔄 진행 중 — 11.0~11.7 완료, Final E2E 남음 |
 | Day 12 | ⏳ Final Production Hardening & Closure |
 
 Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/마감을 수행한 milestone**입니다. Day 8과 Day 9는 모두 완료 상태이며, 각 E2E PASS는 완료의 근거입니다.
@@ -48,6 +48,7 @@ Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/
 - Day 9 transaction/backup/rollback 완료 상태: [ROADMAP.md](ROADMAP.md#day-9--transaction--backup--rollback--완료)
 - Day 10 Full E2E/Lobby 네트워크 고정 계획: [DAY10-PLAN.md](DAY10-PLAN.md)
 - Day 10 실제 서버 검증 결과: [DAY10-E2E-REPORT.md](DAY10-E2E-REPORT.md)
+- Day 11 Protection & Recovery 2.0 실서버 검증: [DAY11-PHASE7-REPORT.md](DAY11-PHASE7-REPORT.md)
 - 이후 작업 순서와 장기 계획: [ROADMAP.md](ROADMAP.md)
 - 자동 빌드/Release/서버 자동 업데이트/rollback 장기 설계: [DEPLOYMENT-ARCHITECTURE.md](DEPLOYMENT-ARCHITECTURE.md)
 
