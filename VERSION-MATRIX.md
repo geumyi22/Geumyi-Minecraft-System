@@ -81,3 +81,5 @@ Day 9 is closed. GSC 4.2.4 transaction backup/staging/commit, interrupted-transa
 On 2026-10-03 the user verified the real server PC after cutover and after a Windows reboot. Velocity startup tasks for wild/playground/other were Running; public TCP 25565/25566/25567 were LISTEN; UDP 19132/19133/19134 were BOUND. A real Java client entered Lobby and successfully routed to Wild, Playground and Other, returned with `/lobby`, and restored each backend's previous position.
 
 The original live run recorded Bedrock as `SKIPPED_UPSTREAM_UNSUPPORTED`; that remains historical evidence for the first skipped test. On 2026-10-04 the user later confirmed real Bedrock client operation and approved Day-10 closure. Day 10 is therefore **complete** by user real-client verification. See `DAY10-E2E-REPORT.md`.
+
+- Day-11 post-4.3.8 real-client smoke: user confirmed both Java and Bedrock routing worked after the final integrated read-only E2E. GSCM 1.1.5+117 device update/launch check remains the final Day 11 closure gate.
