@@ -4,22 +4,22 @@ Set-StrictMode -Version Latest;$ErrorActionPreference="Stop"
 if([string]::IsNullOrWhiteSpace($OutputDir)){$OutputDir=Join-Path $env:TEMP "Geumyi-Day12-DR"}
 New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
 $out=Join-Path $OutputDir ("FINAL-DR-REPORT-"+(Get-Date -Format "yyyyMMdd-HHmmss")+".json")
-function H([string]$p){(Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant()}
+function Get-Sha256([string]$p){(Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant()}
 $root=Join-Path $env:TEMP ("Geumyi-Day12-DR-"+[guid]::NewGuid().ToString("N"));New-Item -ItemType Directory -Force -Path $root|Out-Null
 $steps=New-Object System.Collections.ArrayList
 try{
   # 1 damaged binary -> known-good rollback
   $live=Join-Path $root "GeumyiServerHost.exe";$kg=Join-Path $root "GeumyiServerHost.known-good.exe"
   Set-Content $kg "known-good-host" -NoNewline;Copy-Item $kg $live
-  $expected=H $kg;Set-Content $live "corrupted-host" -NoNewline
-  $detected=(H $live)-ne$expected;if(-not$detected){throw "damaged binary not detected"}
-  Copy-Item $kg $live -Force;$restored=(H $live)-eq$expected;if(-not$restored){throw "binary rollback failed"}
+  $expected=Get-Sha256 $kg;Set-Content $live "corrupted-host" -NoNewline
+  $detected=(Get-Sha256 $live)-ne$expected;if(-not$detected){throw "damaged binary not detected"}
+  Copy-Item $kg $live -Force;$restored=(Get-Sha256 $live)-eq$expected;if(-not$restored){throw "binary rollback failed"}
   [void]$steps.Add([ordered]@{case="damaged_gsc_binary";detect=$detected;rollback=$restored;pass=$true})
 
   # 2 damaged plugin -> verified replacement
   $plugin=Join-Path $root "plugin.jar";$pluginGood=Join-Path $root "plugin.known-good.jar";Set-Content $pluginGood "known-good-plugin" -NoNewline;Copy-Item $pluginGood $plugin
-  $pHash=H $pluginGood;Set-Content $plugin "bad-plugin" -NoNewline;$pDetected=((H $plugin) -ne $pHash);Copy-Item $pluginGood $plugin -Force
-  $pRestored=((H $plugin) -eq $pHash)
+  $pHash=Get-Sha256 $pluginGood;Set-Content $plugin "bad-plugin" -NoNewline;$pDetected=((Get-Sha256 $plugin) -ne $pHash);Copy-Item $pluginGood $plugin -Force
+  $pRestored=((Get-Sha256 $plugin) -eq $pHash)
   [void]$steps.Add([ordered]@{case="damaged_plugin";detect=$pDetected;rollback=$pRestored;pass=($pDetected -and $pRestored)})
 
   # 3 interrupted transaction journal
