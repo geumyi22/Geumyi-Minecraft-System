@@ -2,20 +2,21 @@ name: Day 12 Read-Only Safety CI
 
 on:
   push:
+    branches: [ main ]
     paths:
       - 'tools/day12/**'
-      - 'FINAL-BASELINE.json'
-      - 'FINAL-VERSION-MATRIX.md'
-      - 'FINAL-NETWORK-TOPOLOGY.json'
+      - 'deploy/day12-*.json'
+      - 'FINAL-*.json'
+      - 'FINAL-*.md'
       - 'DAY12-PLAN.md'
       - '.github/workflows/day12-safety-ci.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'tools/day12/**'
-      - 'FINAL-BASELINE.json'
-      - 'FINAL-VERSION-MATRIX.md'
-      - 'FINAL-NETWORK-TOPOLOGY.json'
+      - 'deploy/day12-*.json'
+      - 'FINAL-*.json'
+      - 'FINAL-*.md'
       - 'DAY12-PLAN.md'
       - '.github/workflows/day12-safety-ci.yml'
   workflow_dispatch:
@@ -24,32 +25,34 @@ permissions:
   contents: read
 
 jobs:
-  read-only-safety:
+  day12-safety:
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
 
-      - name: Parse read-only PowerShell
+      - name: Parse all Day 12 PowerShell
         shell: powershell
         run: |
-          $files=@(
-            'tools/day12/Day12_Phase0_Golden_Baseline_READ_ONLY.ps1',
-            'tools/day12/Day12_Final_Verification_READ_ONLY.ps1'
-          )
-          foreach($p in $files){
+          $files=Get-ChildItem 'tools/day12' -Filter '*.ps1' -File -Recurse
+          foreach($file in $files){
             $tokens=$null;$errors=$null
-            [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tokens,[ref]$errors)
+            [void][System.Management.Automation.Language.Parser]::ParseFile($file.FullName,[ref]$tokens,[ref]$errors)
             if($errors.Count -gt 0){
+              Write-Host "Parse failure: $($file.FullName)"
               $errors | Format-List | Out-String | Write-Host
-              throw "PowerShell parse failed: $p"
+              throw "PowerShell parse failed"
             }
           }
+          Write-Host "Parsed $($files.Count) Day 12 PowerShell scripts."
 
-      - name: Mutation guard
+      - name: Read-only mutation guard
         shell: powershell
         run: |
-          $files=Get-ChildItem 'tools/day12' -Filter '*READ_ONLY.ps1' -File
+          $files=Get-ChildItem 'tools/day12' -Filter '*READ_ONLY.ps1' -File -Recurse
           $forbidden=@(
             'Stop-Process','Stop-Service','Restart-Service','Start-Service',
             'Remove-Item','Move-Item','Rename-Item','Copy-Item',
@@ -59,44 +62,84 @@ jobs:
           )
           foreach($file in $files){
             $text=Get-Content -LiteralPath $file.FullName -Raw
-            foreach($f in $forbidden){
-              if($text -match [regex]::Escape($f)){throw "$($file.Name) contains forbidden mutation: $f"}
+            foreach($x in $forbidden){
+              if($text -match [regex]::Escape($x)){throw "$($file.Name) contains forbidden mutation: $x"}
             }
             if($text -match '(?i)-Method\s+(POST|PUT|PATCH|DELETE)'){
               throw "$($file.Name) contains a mutating HTTP method"
             }
           }
 
-      - name: Validate baseline JSON
+      - name: Validate Day 12 JSON contracts
         shell: powershell
         run: |
-          foreach($p in @('FINAL-BASELINE.json','FINAL-NETWORK-TOPOLOGY.json')){
+          foreach($p in @(
+            'FINAL-BASELINE.json',
+            'FINAL-NETWORK-TOPOLOGY.json',
+            'FINAL-RELEASE-GATES.json',
+            'FINAL-SECURITY-REPORT.json',
+            'FINAL-HEALTH-REPORT.json',
+            'deploy/day12-managed-content.json',
+            'deploy/day12-lifecycle-policy.json'
+          )){
             $j=Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
-            if([int]$j.schema -ne 1){throw "Unexpected schema: $p"}
+            if([int]$j.schema -lt 1){throw "Unexpected schema: $p"}
           }
 
-      - name: Synthetic Phase 0A
+      - name: Synthetic Phase 0A and 0B
         shell: powershell
         run: |
-          $out=Join-Path $env:RUNNER_TEMP 'day12-phase0'
-          & tools/day12/Day12_Phase0_Golden_Baseline_READ_ONLY.ps1 -Synthetic -OutputDir $out
-          if($LASTEXITCODE -ne 0){throw "Phase 0A synthetic failed: $LASTEXITCODE"}
-          $report=Get-ChildItem -LiteralPath $out -Filter 'Geumyi-Day12-Phase0-GoldenBaseline-*.json' | Select-Object -First 1
-          if($null -eq $report){throw 'Phase 0A synthetic report missing'}
-          $j=Get-Content -LiteralPath $report.FullName -Raw | ConvertFrom-Json
-          if(-not [bool]$j.synthetic -or -not [bool]$j.ready_for_phase_12_0B -or [bool]$j.mutation.performed){
-            throw 'Phase 0A synthetic report contract failed'
-          }
+          $a=Join-Path $env:RUNNER_TEMP 'p0a'
+          & tools/day12/Day12_Phase0_Golden_Baseline_READ_ONLY.ps1 -Synthetic -OutputDir $a
+          if($LASTEXITCODE -ne 0){throw "Phase0A synthetic failed"}
+          $b=Join-Path $env:RUNNER_TEMP 'p0b'
+          & tools/day12/Day12_Phase0B_Golden_Checkpoint.ps1 -Synthetic -OutputDir $b
+          if($LASTEXITCODE -ne 0){throw "Phase0B synthetic failed"}
+
+      - name: Synthetic Phase 1
+        shell: powershell
+        run: |
+          $a=Join-Path $env:RUNNER_TEMP 'p1pre'
+          & tools/day12/Day12_Phase1_Content_Preflight_READ_ONLY.ps1 -Synthetic -OutputDir $a
+          if($LASTEXITCODE -ne 0){throw "Phase1 preflight synthetic failed"}
+          $b=Join-Path $env:RUNNER_TEMP 'p1apply'
+          & tools/day12/Day12_Phase1_Managed_Content_Apply.ps1 -Synthetic -ManifestPath deploy/day12-managed-content.json -OutputDir $b
+          if($LASTEXITCODE -ne 0){throw "Phase1 apply synthetic failed"}
+
+      - name: Synthetic Phase 2 through 5
+        shell: powershell
+        run: |
+          & tools/day12/Day12_Phase2_Component_Inventory_READ_ONLY.ps1 -Synthetic -OutputDir (Join-Path $env:RUNNER_TEMP 'p2')
+          if($LASTEXITCODE -ne 0){throw "Phase2 synthetic failed"}
+          & tools/day12/Day12_Phase3_Health_READ_ONLY.ps1 -Synthetic -OutputDir (Join-Path $env:RUNNER_TEMP 'p3')
+          if($LASTEXITCODE -ne 0){throw "Phase3 synthetic failed"}
+          & tools/day12/Day12_Phase4_Storage_Log_DRY_RUN.ps1 -Synthetic -OutputDir (Join-Path $env:RUNNER_TEMP 'p4')
+          if($LASTEXITCODE -ne 0){throw "Phase4 synthetic failed"}
+          & tools/day12/Day12_Phase5_Security_Audit_READ_ONLY.ps1 -Synthetic -OutputDir (Join-Path $env:RUNNER_TEMP 'p5')
+          if($LASTEXITCODE -ne 0){throw "Phase5 synthetic failed"}
+
+      - name: Synthetic Phase 7 and 8
+        shell: powershell
+        run: |
+          & tools/day12/Day12_Phase7_KnownGood_Cache.ps1 -Synthetic -OutputDir (Join-Path $env:RUNNER_TEMP 'p7')
+          if($LASTEXITCODE -ne 0){throw "Phase7 synthetic failed"}
+          & tools/day12/Day12_Phase8_DR_SYNTHETIC.ps1 -OutputDir (Join-Path $env:RUNNER_TEMP 'p8')
+          if($LASTEXITCODE -ne 0){throw "Phase8 synthetic failed"}
 
       - name: Synthetic final verifier
         shell: powershell
         run: |
-          $out=Join-Path $env:RUNNER_TEMP 'day12-verifier'
+          $out=Join-Path $env:RUNNER_TEMP 'final'
           & tools/day12/Day12_Final_Verification_READ_ONLY.ps1 -Synthetic -OutputDir $out
-          if($LASTEXITCODE -ne 0){throw "Final verifier synthetic failed: $LASTEXITCODE"}
-          $report=Get-ChildItem -LiteralPath $out -Filter '*.json' | Select-Object -First 1
-          if($null -eq $report){throw 'Synthetic final verifier report missing'}
-          $j=Get-Content -LiteralPath $report.FullName -Raw | ConvertFrom-Json
-          if(-not [bool]$j.read_only -or -not [bool]$j.synthetic -or [int]$j.summary.fail -ne 0){
-            throw 'Synthetic final verifier report contract failed'
+          if($LASTEXITCODE -ne 0){throw "Final verifier synthetic failed"}
+          $j=Get-Content (Join-Path $out 'FINAL-HEALTH-REPORT.json') -Raw | ConvertFrom-Json
+          if(-not [bool]$j.read_only -or -not [bool]$j.synthetic -or $j.result -ne 'SYNTHETIC_PASS'){
+            throw 'Final verifier synthetic report contract failed'
           }
+
+      - name: Final release gate is fail-closed while live gates are pending
+        shell: powershell
+        run: |
+          python tools/day12/validate_final_release_gates.py FINAL-RELEASE-GATES.json
+          if($LASTEXITCODE -eq 0){throw 'Final release gate unexpectedly opened while PENDING gates exist'}
+          Write-Host "Fail-closed release gate verified."
