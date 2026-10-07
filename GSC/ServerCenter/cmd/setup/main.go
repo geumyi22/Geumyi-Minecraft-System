@@ -25,7 +25,7 @@ import (
 	"unsafe"
 )
 
-const version = "4.3.6"
+const version = "4.3.7"
 const hostTaskName = "Geumyi Server Center Host"
 const hostServiceName = "Geumyi Server Center Host"
 
@@ -116,6 +116,14 @@ func hideCmd(c *exec.Cmd) {
 }
 
 func main() {
+	if hasArg("--client-self-update") {
+		if !isAdmin() {
+			elevate("--elevated --client-self-update")
+			return
+		}
+		runClientSelfUpdateMode()
+		return
+	}
 	if hasArg("--self-update") {
 		if !isAdmin() {
 			elevate("--elevated --self-update")
@@ -478,7 +486,7 @@ func doInstall(o InstallOptions) {
 		if data, e := os.ReadFile(cfgFile); e == nil {
 			backupDir := filepath.Join(dataDir, "Backup")
 			_ = os.MkdirAll(backupDir, 0755)
-			if e = os.WriteFile(filepath.Join(backupDir, "server-before-v4.3.6-"+time.Now().Format("20060102-150405")+".json"), data, 0600); e != nil {
+			if e = os.WriteFile(filepath.Join(backupDir, "server-before-v4.3.7-"+time.Now().Format("20060102-150405")+".json"), data, 0600); e != nil {
 				finishInstall(e)
 				return
 			}
