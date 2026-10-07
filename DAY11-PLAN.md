@@ -212,6 +212,12 @@ Latest CI/build evidence:
 
 These are source/CI/build results only. They do **not** convert live host, self-update helper execution, Android/iOS device, Java, Bedrock, external-component apply/rollback or final E2E gates to PASS.
 
+## 2026-10-07 post-final real-client smoke
+
+- After GSC Client/Host 4.3.8 and the Final integrated READ-ONLY E2E PASS, the user confirmed **both Java and Bedrock real-client smoke tests worked**.
+- Treat the Java/Bedrock post-update routing gate as **USER DEVICE PASS**.
+- The only remaining Day 11 closure gate is **GSCM 1.1.5+117 real-device update/launch/connect check** (Android/iOS as applicable).
+
 ## Completion boundary
 
 Day 11 is complete only after:
