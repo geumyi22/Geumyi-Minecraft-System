@@ -1,7 +1,8 @@
 # Day 11 — Operations UX & Fleet Management
 
-Status: **IN PROGRESS — Phase 11.0~11.5 complete; Phase 11.6/11.7 and Day 11 Final E2E remain**
-Current verified target: **GSC 4.3.2 / GSCM 1.1.5+116**
+Status: **IN PROGRESS — Phase 11.0~11.6 complete; Phase 11.7 and Day 11 Final E2E remain**
+Current live verified target: **GSC 4.3.6 / GSCM 1.1.5+116**
+Current source/CI candidate: **GSC 4.3.7** (local Client vs remote Host update separation; live validation pending)
 
 ## Safety rules
 
@@ -101,13 +102,18 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - iOS update discovery respecting signing/provisioning constraints
 - no false claim of silent IPA installation
 
-## Phase 11.6 — Full fleet UX — ⏳ NEXT
+## Phase 11.6 — Full fleet UX — ✅ LIVE PASS
 
 - Update Center UI renewal
 - per-server policy and fleet state
 - player-aware scheduling
 - canary promotion
 - notifications/audit
+- signed Canary rollout verified live in order: Playground -> Wild -> Other -> Lobby
+- offline Other correctly blocked the next promotion (fail-closed health gate)
+- Other was backed up and verified before start; Technology 0.1.4 applied and post-start health passed
+- rollout completed with `active=false`, `completed=true`, and `server_restart_performed=false`
+- all server update policies were restored to `managed + inherit` with empty pins and global `beta`
 
 ## Phase 11.7 — Protection & Recovery 2.0 — ⏳ PENDING
 
@@ -121,6 +127,18 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - restore preflight/checkpoint/verify/health
 - GSCM controls
 
+## 2026-10-07 live/source progress
+
+- Phase 11.6 Full Fleet UX: **LIVE PASS** on GSC 4.3.6.
+- Canary release `system-2026.10.07-day11-116-canary.1` was promoted Playground -> Wild -> Other -> Lobby with health gating.
+- Offline Other correctly blocked Lobby promotion until Other was intentionally started; no automatic server start/restart was performed by Canary promotion.
+- Other full backup was created and SHA-256 verified before start. Its managed update applied GeumyiTechnology 0.1.4 and post-start health verification passed.
+- Canary rollout then completed and the four server policies were restored to `managed / inherit / no pin`; global channel is `beta`.
+- A remote-management UX defect was then found: a remote Windows GSC Client showed the server PC Host self-update state as if it were the local Client update state.
+- GSC 4.3.7 source/CI separates **this PC GSC Client** update from **server PC GSC Host** update. Local Client staging uses the signed release metadata supplied by the trusted Host, downloads the Setup artifact on the local PC, verifies size + SHA-256, and runs a client-only helper that does not stop or replace the remote Host.
+- GSC 4.3.7 source/CI evidence: System CI run `37583159508` PASS; artifact `gsc-4.3.7-ci` id `11465376458`, digest `sha256:ecdd1b20cc2166fde1b627d7a5630935793d92d68d8590afb1df47696cc36b33`. Day 11 Host Test Package run `37583159609` PASS; artifact id `11465776442`, digest `sha256:60b70a732da3ac20ac420fee79d16ae7f4aeb1dffc59f6f1638c2569f2bcb335`.
+- This 4.3.7 local-Client update path is **SOURCE/CI PASS only** until a signed release is published and exercised on a real remote management PC.
+
 ## 2026-10-06 live progress
 
 - Phase 11.1 / 11.2 / 11.3: user confirmed remaining live checks complete; record as **LIVE PASS**.
@@ -130,7 +148,7 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - GSCM build advanced to **1.1.5+116** so Android versionCode increases for in-place update.
 - Secure beta Release `system-2026.10.06-day11-gscm116-beta` published successfully from commit `0e1c17c649cddb52829346311f013ed967f48b9a`.
 - Persistent-signed Android APK and unsigned iOS IPA were published; user confirmed device installation/distribution flow.
-- Day 11 is **not closed yet**: Phase 11.6, Phase 11.7, and Final E2E remain.
+- Day 11 is **not closed yet**: Phase 11.7 and Final E2E remain.
 
 ## 2026-10-05 repo-side progress
 
