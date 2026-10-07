@@ -86,7 +86,7 @@ if($Synthetic){
     Write-AtomicText $target $text
     $entries=@([pscustomobject]@{id="synthetic";kind="java_resourcepack";target_path=$target;backup_path=$backup;target_existed=$true})
     $changed=(Get-Content $target -Raw) -match "resource-pack-sha1="
-    $undo=Undo-Entries $entries
+    $undo=@(Undo-Entries $entries)
     $restored=((Get-Content $target -Raw) -notmatch "resource-pack-sha1=")
     $pass=$changed -and $restored -and $undo.Count -eq 0
     [ordered]@{
@@ -226,7 +226,7 @@ try{
   $result="APPLIED_PENDING_RESTART_E2E"
 }catch{
   $failure=[string]$_.Exception.Message
-  $rollbackErrors=Undo-Entries @($entries)
+  $rollbackErrors=@(Undo-Entries @($entries))
   if($rollbackErrors.Count -eq 0){
     Save-Transaction $txRoot @($entries) "failed_rolled_back"
     $result="FAILED_ROLLED_BACK"
