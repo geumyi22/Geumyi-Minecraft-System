@@ -130,9 +130,12 @@ Implemented in the 4.3.8 / GSCM build117 candidate:
 - GSC dashboard and GSCM expose provenance, restore preflight and destructive-action safeguards
 - `tools/day11/Day11_Phase7_Protection_READ_ONLY.cmd` provides a no-mutation live verifier
 
+Candidate/release evidence:
+- GSC 4.3.8 System CI `37617403835`: PASS; `gsc-4.3.8-ci` artifact id `11479763609`, digest `sha256:cab175afdd9a9b07e0d199dee9ff5ddf4383c216062ed8f2b12a7a528cb235cb`.
+- GSCM build117 Android `37617292391` / iOS `37617292404` / controls `37617292420`: PASS.
+- Secure beta release `system-2026.10.07-day11-gsc438-beta` workflow run `37627140918`: PASS, published from `a17975030ed3f9b71d8632a7897c1c206d9bfcdf`.
+
 Still required before LIVE PASS:
-- final GSC/GSCM CI/build evidence for the 4.3.8/build117 candidate
-- signed beta release
 - server-PC 4.3.7 -> 4.3.8 update
 - remote-PC in-app Client 4.3.7 -> 4.3.8 update E2E
 - Phase 7 read-only live report and safe disposable backup lifecycle checks
