@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-07 — Day 11 closure
+
+- Promoted the verified Day-11 runtime baseline to **GSC 4.3.8** and **GSCM 1.1.5+117**.
+- Recorded successful Client-only and Host 4.3.7 -> 4.3.8 self-update paths.
+- Phase 11.7 Protection & Recovery 2.0 live read-only and disposable-backup lifecycle checks passed.
+- Final integrated Day-11 READ-ONLY E2E passed with no mutation and no API/check failures.
+- User confirmed Java and Bedrock post-update real-client smoke tests passed.
+- User confirmed both remaining requested GSCM build117 device checks passed.
+- Marked **Day 11 COMPLETE** and moved Day 12 to ready-to-start state.
+- Repository cleanup removed two unreferenced root-level GSC 4.3.0 metadata/document copies; historical recovery/HOTFIX evidence was intentionally retained.
+
+
 ## 2026-10-04 — Day 10 Bedrock closure
 
 - User confirmed real Bedrock client operation on the Day-10 Velocity/Geyser/Lobby network.
