@@ -27,7 +27,7 @@
 | 8 | Secure Release & Update Foundation | ✅ 완료 | signed manifest, SHA-256, Stable/Beta/Canary, pre-start updater, Wild Technology 0.1.4 실제 update + Playground isolation E2E |
 | 9 | Transaction / Backup / Rollback | ✅ 완료 | transaction journal, backup/staging/atomic replacement, post-start health gate, interrupted recovery, automatic rollback, failure injection + 서버 PC Final E2E |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 | Java four-server/Lobby/routing/reboot E2E + Bedrock real-client routing/return/location behavior를 사용자 실기기 확인으로 PASS. See `DAY10-E2E-REPORT.md` |
-| 11 | Operations UX & Fleet Management | 🔄 진행 중 | **GSC 4.3.7 live / 4.3.8 source+CI candidate / GSCM 1.1.5+116 live +117 candidate**. Phase 11.0~11.6 실서버 검증 완료; 4.3.7 local Client/remote Host 상태 분리 LIVE PASS + remote Client 인앱 4.3.7→4.3.8 업데이트 E2E PASS; 11.7 Protection & Recovery 2.0 구현/검증 진행 중; Final E2E 남음 |
+| 11 | Operations UX & Fleet Management | 🔄 진행 중 | **GSC 4.3.7 live / 4.3.8 source+CI candidate / GSCM 1.1.5+116 live +117 candidate**. Phase 11.0~11.6 실서버 검증 완료; 4.3.7 local Client/remote Host 상태 분리 LIVE PASS + remote Client 인앱 4.3.7→4.3.8 업데이트 E2E PASS + server Host 4.3.7→4.3.8 사용자 확인 PASS; 11.7 Protection & Recovery 2.0 live 검증 진행 중; Final E2E 남음 |
 | 12 | Final Production Hardening & Closure | ⏳ 예정 | Golden baseline, managed Resource/DataPack, full health/storage/security hardening, trusted builds/offline cache, DR drill, final verifier/E2E/soak, Maintenance Mode handoff |
 
 ## Day 8 / Day 9 완료 상태
