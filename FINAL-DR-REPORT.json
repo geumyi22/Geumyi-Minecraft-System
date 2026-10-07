@@ -1,8 +1,18 @@
 {
   "schema": 1,
   "phase": "12.8",
-  "status": "PENDING_CURRENT_SYNTHETIC_DR_CI",
+  "status": "PASS",
   "mode": "SYNTHETIC_NON_PRODUCTION",
   "production_files_touched": false,
-  "result": "PENDING"
+  "result": "PASS",
+  "workflow_run": 37670892599,
+  "cases": [
+    "damaged GSC binary -> known-good rollback",
+    "damaged plugin -> verified rollback",
+    "interrupted transaction -> rollback-before-commit",
+    "invalid config -> known-good restore",
+    "failed health gate -> candidate not promoted"
+  ],
+  "recovery_kit_artifact": "day12-dr-recovery-kit-e82ae3aeef6d7eb5bd50aae403c2e2cfab5c3532",
+  "note": "CI synthetic/non-production evidence only; no production server files were touched."
 }
