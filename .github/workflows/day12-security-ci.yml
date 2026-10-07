@@ -1,6 +1,7 @@
 name: Day 12 Security SBOM Reproducibility
 
 on:
+  workflow_call:
   push:
     branches: [ main ]
     paths:
