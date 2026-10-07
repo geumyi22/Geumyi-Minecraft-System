@@ -1,6 +1,6 @@
 # Day 11 — Operations UX & Fleet Management
 
-Status: **IN PROGRESS — Phase 11.0~11.6 complete; Phase 11.7 and Day 11 Final E2E remain**
+Status: **IN PROGRESS — Phase 11.0~11.7 complete; Day 11 Final E2E remains**
 Current live verified target: **GSC 4.3.7 / GSCM 1.1.5+116**
 Current source/CI candidate: **GSC 4.3.8 / GSCM 1.1.5+117** (Protection & Recovery 2.0; live validation pending)
 
@@ -115,7 +115,7 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - rollout completed with `active=false`, `completed=true`, and `server_restart_performed=false`
 - all server update policies were restored to `managed + inherit` with empty pins and global `beta`
 
-## Phase 11.7 — Protection & Recovery 2.0 — 🔄 SOURCE/CI IN PROGRESS
+## Phase 11.7 — Protection & Recovery 2.0 — ✅ LIVE PASS
 
 Implemented in the 4.3.8 / GSCM build117 candidate:
 - backup metadata/source reason (`manual-dashboard`, `manual-gscm`, `automation:<id>`, restore checkpoint reason)
@@ -142,8 +142,20 @@ Live validation progress:
 - Permanent-delete missing-confirm probe returned the expected HTTP 400.
 - Report explicitly recorded no mutation, no server lifecycle action, no restore and no permanent delete.
 
-Still required before LIVE PASS:
-- safe disposable config-backup lifecycle E2E
+Live disposable config-backup lifecycle E2E:
+- Other disposable config backup `other-config-backup-20261007-223415.zip` created with provenance `day11-phase7-disposable-e2e`.
+- ZIP/SHA-256 verification PASS; SHA-256 `96936c8aaeeabaa5b24675c3a1ec946551beb03896829dc7c18bba140b71f7d3`.
+- Protect PASS; protected Trash attempt correctly denied with HTTP 409.
+- Unprotect -> Trash -> restore from Trash -> verify PASS.
+- Permanent-delete request without confirmation correctly denied with HTTP 400.
+- Retention dry-run PASS; restore preflight PASS.
+- Final disposable backup location is recoverable Trash.
+- No server lifecycle action, no Minecraft data restore, no confirmed permanent delete.
+
+**Phase 11.7 is LIVE PASS.** See `DAY11-PHASE7-REPORT.md`.
+
+Remaining Day 11 gate:
+- Day 11 Final E2E
 
 ## 2026-10-07 live/source progress
 
