@@ -1,6 +1,6 @@
 # Version and source recovery matrix
 
-Confirmed runtime baseline: 2026-10-06. Recovery/verification status updated 2026-10-06.
+Confirmed runtime baseline updated 2026-10-07. Recovery/verification status updated 2026-10-07.
 
 CI:
 - System CI run 36299122264: GSC, GDS and ResourcePack validation passed.
@@ -23,11 +23,15 @@ CI:
 - Day-10 recovery-safe exact-main Hotfix CI run 37113499045: Windows PowerShell 5.1 Day10 hotfix/rollback guards passed.
 - Day-10 recovery-safe exact-main System CI run 37113499031: full System CI completed successfully for commit `0e1490bfe75975eb278526df0f89a430109e28d8`.
 
+- Day-11 Phase 11.7 candidate System CI run `37617403835`: GSC 4.3.8 Go tests and Setup assembly passed; artifact `gsc-4.3.8-ci` id `11479763609`, digest `sha256:cab175afdd9a9b07e0d199dee9ff5ddf4383c216062ed8f2b12a7a528cb235cb`.
+- Day-11 GSCM build117 Android run `37617292391` and iOS run `37617292404`: PASS; artifacts `11481027221` and `11480667126`.
+- Day-11 Phase 7 read-only safety guard run `37617914875`: PASS.
+
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
-| GSC | 4.3.2 | GSC/ServerCenter | Day 11 live self-update 4.3.1→4.3.2 PASS; Host health gate/client relaunch/RCON status verification completed |
+| GSC | 4.3.7 live / 4.3.8 candidate | GSC/ServerCenter | 4.3.7 server-PC + remote-PC Client/Host split live verified; 4.3.8 Protection & Recovery 2.0 source/CI candidate, live pending |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction present; Day-7 JDK 21 clean build/artifact succeeds; byte-identical historical rebuild is not claimed |
-| GSCM | 1.1.5+116 | GSCM | Day 11 version-display fix; persistent-signed Android release and unsigned iOS IPA published; user device distribution verification completed |
+| GSCM | 1.1.5+116 live / +117 candidate | GSCM | build116 device distribution verified; build117 adds backup provenance/restore-preflight/destructive-action safeguards, release/live pending |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | HOTFIX overlay source tracked; Day-7 JDK 21 overlay build + CoreTests + artifact passes; legacy core remains binary-only and uses a pinned verified reference in CI |
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full source/stubs/tests; Day-7 JDK 21 build + CoreTests + artifact passes |
 | GeumyiNetwork | 0.1.0 | Plugins/GeumyiNetwork | Four-server transfer and last-location routing; Java host E2E PASS on 2026-10-03 |
