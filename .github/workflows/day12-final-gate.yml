@@ -1,0 +1,46 @@
+name: Day 12 Final Closure Gate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  closure-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Validate all final gates
+        run: python tools/day12/validate_final_release_gates.py FINAL-RELEASE-GATES.json
+      - name: Validate closure artifacts are no longer pending
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for name in ('FINAL-BASELINE.json','FINAL-SECURITY-REPORT.json','FINAL-HEALTH-REPORT.json','FINAL-DR-REPORT.json','FINAL-SOAK-REPORT.json'):
+              p=Path(name)
+              if not p.exists():
+                  raise SystemExit(f'missing {name}')
+              j=json.loads(p.read_text(encoding='utf-8-sig'))
+              raw=json.dumps(j)
+              if 'PENDING' in raw or 'CHECK_REQUIRED' in raw:
+                  raise SystemExit(f'{name} still contains a pending gate')
+          text=Path('FINAL-E2E-REPORT.md').read_text(encoding='utf-8')
+          if 'PENDING LIVE' in text or '**PENDING' in text:
+              raise SystemExit('FINAL-E2E-REPORT.md is still pending')
+          print('Closure artifacts are finalized.')
+          PY
+      - name: Build closure evidence bundle
+        run: |
+          mkdir closure-evidence
+          cp FINAL-BASELINE.json FINAL-VERSION-MATRIX.md FINAL-NETWORK-TOPOLOGY.json              FINAL-RELEASE-GATES.json FINAL-SECURITY-REPORT.json FINAL-HEALTH-REPORT.json              FINAL-DR-REPORT.json FINAL-SOAK-REPORT.json FINAL-E2E-REPORT.md              MAINTENANCE-MODE.md closure-evidence/
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-final-closure-evidence
+          path: closure-evidence/
+          retention-days: 90
