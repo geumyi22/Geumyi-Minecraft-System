@@ -142,7 +142,9 @@ Day 11 11.6 live evidence:
 - GSC 4.3.7에서 원격 관리 PC의 **로컬 Client 업데이트**와 서버 PC의 **Host 업데이트** UI/실행 경로를 분리했고, 두 PC 4.3.7 설치 후 실제 원격 화면에서 분리 상태/버전 감지 LIVE PASS
 - 11.7은 GSC 4.3.8 / GSCM build117 후보에서 provenance, 보호/Trash, 영구삭제 서버 확인 토큰, retention, restore preflight/checkpoint/offline-health/rollback 경로를 구현/검증 중
 - 원격 관리 PC의 **인앱 Client-only 4.3.7 → 4.3.8 self-update** 사용자 실기기 E2E PASS
-- 서버 PC GSC Host도 사용자 확인 기준 **4.3.7 → 4.3.8 self-update PASS**; 이제 11.7 read-only/live backup lifecycle 검증만 남음
+- 서버 PC GSC Host도 사용자 확인 기준 **4.3.7 → 4.3.8 self-update PASS**
+- 11.7 Phase 7 READ-ONLY 실서버 검증 **PASS**: GSC 4.3.8, 4개 서버 inventory/retention 조회, Other 기존 full backup restore-preflight PASS, 영구삭제 확인 게이트 400 PASS, mutation=false
+- 이제 11.7의 safe disposable config-backup lifecycle E2E만 남음
 
 Day 11 안정화 버그:
 - RCON `관리 제한` 오탐 방지
