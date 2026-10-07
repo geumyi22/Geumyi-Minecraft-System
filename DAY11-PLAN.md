@@ -1,8 +1,8 @@
 # Day 11 — Operations UX & Fleet Management
 
 Status: **IN PROGRESS — Phase 11.0~11.6 complete; Phase 11.7 and Day 11 Final E2E remain**
-Current live verified target: **GSC 4.3.6 / GSCM 1.1.5+116**
-Current source/CI candidate: **GSC 4.3.7** (local Client vs remote Host update separation; live validation pending)
+Current live verified target: **GSC 4.3.7 / GSCM 1.1.5+116**
+Current source/CI candidate: **GSC 4.3.8 / GSCM 1.1.5+117** (Protection & Recovery 2.0; live validation pending)
 
 ## Safety rules
 
@@ -115,17 +115,27 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - rollout completed with `active=false`, `completed=true`, and `server_restart_performed=false`
 - all server update policies were restored to `managed + inherit` with empty pins and global `beta`
 
-## Phase 11.7 — Protection & Recovery 2.0 — ⏳ PENDING
+## Phase 11.7 — Protection & Recovery 2.0 — 🔄 SOURCE/CI IN PROGRESS
 
-- backup metadata/source reason
-- protect/pin
-- delete -> trash/quarantine
-- restore from trash
-- permanent delete with confirmation
-- deny deletion of active rollback/transaction references
-- retention + disk guard + dry-run
-- restore preflight/checkpoint/verify/health
-- GSCM controls
+Implemented in the 4.3.8 / GSCM build117 candidate:
+- backup metadata/source reason (`manual-dashboard`, `manual-gscm`, `automation:<id>`, restore checkpoint reason)
+- protect/pin metadata
+- delete -> trash/quarantine and restore from trash
+- permanent delete requires both a server-side confirmation token and exact filename confirmation
+- deletion/retention remains blocked while an update transaction is pending
+- scheduled backup pruning now moves **only automation-owned** backups to Trash; it no longer directly deletes files or prunes manual backups
+- retention dry-run + confirmed all-or-nothing Trash apply + disk guard
+- restore preflight verifies offline state, server identity, backup SHA/ZIP and checkpoint disk capacity before mutation
+- restore creates a protected checkpoint, verifies offline post-restore roots, and automatically rolls non-full restore failures back from the checkpoint
+- GSC dashboard and GSCM expose provenance, restore preflight and destructive-action safeguards
+- `tools/day11/Day11_Phase7_Protection_READ_ONLY.cmd` provides a no-mutation live verifier
+
+Still required before LIVE PASS:
+- final GSC/GSCM CI/build evidence for the 4.3.8/build117 candidate
+- signed beta release
+- server-PC 4.3.7 -> 4.3.8 update
+- remote-PC in-app Client 4.3.7 -> 4.3.8 update E2E
+- Phase 7 read-only live report and safe disposable backup lifecycle checks
 
 ## 2026-10-07 live/source progress
 
@@ -137,7 +147,9 @@ Live runtime PASS is not claimed until the user runs this package on the server 
 - A remote-management UX defect was then found: a remote Windows GSC Client showed the server PC Host self-update state as if it were the local Client update state.
 - GSC 4.3.7 source/CI separates **this PC GSC Client** update from **server PC GSC Host** update. Local Client staging uses the signed release metadata supplied by the trusted Host, downloads the Setup artifact on the local PC, verifies size + SHA-256, and runs a client-only helper that does not stop or replace the remote Host.
 - GSC 4.3.7 source/CI evidence: System CI run `37583159508` PASS; artifact `gsc-4.3.7-ci` id `11465376458`, digest `sha256:ecdd1b20cc2166fde1b627d7a5630935793d92d68d8590afb1df47696cc36b33`. Day 11 Host Test Package run `37583159609` PASS; artifact id `11465776442`, digest `sha256:60b70a732da3ac20ac420fee79d16ae7f4aeb1dffc59f6f1638c2569f2bcb335`.
-- This 4.3.7 local-Client update path is **SOURCE/CI PASS only** until a signed release is published and exercised on a real remote management PC.
+- Secure beta Release `system-2026.10.07-day11-gsc437-beta` was published successfully. The server PC and remote management PC were both installed on 4.3.7, and the remote UI showed the local Client and connected Host as separate 4.3.7 current-version cards. The **Client/Host update-state split and local version detection are LIVE PASS**.
+- The actual **in-app** local Client version replacement path remains intentionally pending for 4.3.7 -> 4.3.8, because 4.3.7 on the remote PC was bootstrapped with the installer rather than the new in-app updater.
+- Phase 11.7 source work then started on GSC 4.3.8 / GSCM 1.1.5+117; no 11.7 LIVE PASS is claimed yet.
 
 ## 2026-10-06 live progress
 
