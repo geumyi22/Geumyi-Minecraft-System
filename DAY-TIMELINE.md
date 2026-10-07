@@ -28,7 +28,7 @@
 | 9 | Transaction / Backup / Rollback | ✅ 완료 | transaction journal, backup/staging/atomic replacement, post-start health gate, interrupted recovery, automatic rollback, failure injection + 서버 PC Final E2E |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 | Java four-server/Lobby/routing/reboot E2E + Bedrock real-client routing/return/location behavior를 사용자 실기기 확인으로 PASS. See `DAY10-E2E-REPORT.md` |
 | 11 | Operations UX & Fleet Management | ✅ 완료 | **GSC 4.3.8 live / GSCM 1.1.5+117 live verified**. Phase 11.0~11.7, Client/Host self-update, Protection & Recovery 2.0, Final integrated READ-ONLY E2E, Java/Bedrock real-client smoke 및 마지막 GSCM 2개 device check까지 사용자 확인 PASS. See `DAY11-FINAL-REPORT.md` |
-| 12 | Final Production Hardening & Closure | 🔄 진행 중 | **12.0A 시작** — source/evidence baseline 3종과 READ-ONLY capture tool 준비 완료; real server-PC capture 및 12.0B protected Golden checkpoint는 아직 미완료 |
+| 12 | Final Production Hardening & Closure | 🔄 진행 중 | repository-side toolchain/CI/security/SBOM/reproducibility/synthetic DR/Recovery Kit 준비 및 검증 완료; **실제 서버 PC Golden baseline, live hardening, final E2E/soak/Stable**은 대기 |
 
 ## Day 8 / Day 9 완료 상태
 
@@ -113,15 +113,23 @@ Day 11은 2026-10-07 기준 **완료**입니다.
 ## Day 12 현재 진행 상태
 
 - Day 12: **IN PROGRESS**
-- 12.0A source/evidence baseline seed: **완료**
-  - `FINAL-BASELINE.json`
-  - `FINAL-VERSION-MATRIX.md`
-  - `FINAL-NETWORK-TOPOLOGY.json`
-- 12.0A real server-PC READ-ONLY capture: **대기**
-- 12.0B protected Golden Recovery Checkpoint: **대기**
-- 12.0 자체는 아직 완료 처리하지 않음
+- repository/tooling preparation: **✅ verified**
+  - Day 12 Safety CI `37670902211`: PASS
+  - Security + declared-component SBOM + GSC reproducibility `37670892834`: PASS
+  - Synthetic DR + Recovery Kit `37670892599`: PASS
+  - installer cleanup 후 System CI `37669908817`: PASS
+  - installer Host Test `37669908646`: PASS
+- 12.0A real server-PC READ-ONLY capture: **⏳ PENDING LIVE**
+- 12.0B protected Golden Recovery Checkpoint: **⏳ PENDING LIVE**
+- 12.1~12.7 live verification/apply gates: **⏳ PENDING LIVE**
+- 12.8 synthetic DR: **✅ PASS**
+- 12.9 installer stale payload cleanup: **✅ source/CI PASS**
+- 12.10 final verifier: **✅ tool prepared / ⏳ live FAIL=0 report pending**
+- 12.11 Final live E2E: **⏳**
+- 12.12 Soak: **⏳**
+- 12.13 Stable + Maintenance Mode: **🔒 BLOCKED until all gates PASS**
 
-실행 도구: `tools/day12/Day12_Phase0_Golden_Baseline_READ_ONLY.cmd`
+세부 구분: `DAY12-REPO-PROGRESS.md` / 실행 순서: `DAY12-LIVE-RUNBOOK.md`
 
 ## Day 12 고정 목표
 
