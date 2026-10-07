@@ -95,6 +95,57 @@ jobs:
             throw 'Phase 7 report must explicitly declare mutation_performed=false'
           }
 
+      - name: Parse disposable Phase 7 backup E2E
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $path = 'tools/day11/Day11_Phase7_Disposable_Backup_E2E.ps1'
+          $tokens = $null
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $path),
+            [ref]$tokens,
+            [ref]$errors
+          )
+          if($errors.Count -gt 0){
+            $errors | Format-List | Out-String | Write-Host
+            throw 'Day 11 disposable Phase 7 PowerShell parse failed'
+          }
+
+      - name: Guard disposable Phase 7 backup E2E boundary
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $raw = Get-Content -LiteralPath 'tools/day11/Day11_Phase7_Disposable_Backup_E2E.ps1' -Raw
+          $forbidden = @(
+            '(?i)\bStop-Process\b',
+            '(?i)\btaskkill(?:\.exe)?\b',
+            '(?i)\bRemove-Item\b',
+            '(?i)\bMove-Item\b',
+            '(?i)\bCopy-Item\b',
+            '(?i)\bRestart-Computer\b',
+            '(?i)\bStop-Computer\b',
+            '(?i)\bStop-Service\b',
+            '(?i)\bStart-Service\b',
+            '(?i)DELETE_PERMANENT_BACKUP',
+            '(?i)/api/v[14]/servers/.+/(actions|schedule)',
+            '(?i)Post-Json\s+["'']/api/v4/restore["'']'
+          )
+          foreach($pattern in $forbidden){
+            if($raw -match $pattern){
+              throw "Disposable Phase 7 E2E escaped backup-only safety boundary: $pattern"
+            }
+          }
+          if($raw -notmatch 'scope\s*=\s*["'']config["'']'){
+            throw 'Disposable E2E must create config-scope backup only'
+          }
+          if($raw -notmatch 'minecraft_data_restore_performed\s*=\s*\$false'){
+            throw 'Disposable E2E must report Minecraft data restore=false'
+          }
+          if($raw -notmatch 'server_lifecycle_action_performed\s*=\s*\$false'){
+            throw 'Disposable E2E must report server lifecycle action=false'
+          }
+
       - name: Reject destructive preflight commands
         shell: powershell
         run: |
