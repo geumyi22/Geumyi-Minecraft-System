@@ -141,6 +141,7 @@ Day 11 11.6 live evidence:
 - rollout 완료 후 전 서버 `managed + inherit + no pin`, global beta 복귀
 - GSC 4.3.7에서 원격 관리 PC의 **로컬 Client 업데이트**와 서버 PC의 **Host 업데이트** UI/실행 경로를 분리했고, 두 PC 4.3.7 설치 후 실제 원격 화면에서 분리 상태/버전 감지 LIVE PASS
 - 11.7은 GSC 4.3.8 / GSCM build117 후보에서 provenance, 보호/Trash, 영구삭제 서버 확인 토큰, retention, restore preflight/checkpoint/offline-health/rollback 경로를 구현/검증 중
+- 원격 관리 PC의 **인앱 Client-only 4.3.7 → 4.3.8 self-update** 사용자 실기기 E2E PASS; 서버 PC Host는 테스트 중 4.3.7 유지
 
 Day 11 안정화 버그:
 - RCON `관리 제한` 오탐 방지
