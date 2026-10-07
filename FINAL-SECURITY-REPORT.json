@@ -1,11 +1,12 @@
 {
   "schema": 1,
   "phase": "12.5",
-  "status": "PENDING_RUNTIME_AND_CI_REVIEW",
-  "source_secret_scan": "PENDING_CURRENT_CI",
-  "sbom": "PENDING_CURRENT_CI",
-  "gsc_reproducibility": "PENDING_CURRENT_CI",
+  "status": "PARTIAL_PASS_RUNTIME_REVIEW_PENDING",
+  "source_secret_scan": "PASS",
+  "sbom": "PASS_DECLARED_COMPONENT_CYCLONEDX_1_5",
+  "gsc_reproducibility": "PASS_IDENTICAL_DOUBLE_BUILD",
   "runtime_acl_firewall_api_review": "PENDING_LIVE",
   "critical_findings": [],
-  "final_result": "PENDING"
+  "final_result": "PENDING_RUNTIME_REVIEW",
+  "repository_ci_run": 37670892834
 }
