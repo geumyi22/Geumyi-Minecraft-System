@@ -1,9 +1,19 @@
 # Day 12 — Final Production Hardening & Closure
 
-Status: **IN PROGRESS — Phase 12.0A source baseline/tooling prepared; real server-PC READ-ONLY capture pending**
+Status: **IN PROGRESS — repository/CI hardening toolchain verified; real server-PC/client closure gates pending**
 Role: **final project milestone before Maintenance Mode**
 
 Day 12 is not a feature-dump. Its purpose is to leave Geumyi Minecraft System in a state where normal operation no longer depends on manual file copying or frequent development work.
+
+## Repository-side verified evidence
+
+- Day 12 full synthetic/read-only Safety CI: **PASS** — run `37670902211`
+- source secret scan + declared-component CycloneDX SBOM + GSC identical double-build reproducibility: **PASS** — run `37670892834`
+- synthetic non-production disaster-recovery drill + Recovery Kit packaging: **PASS** — run `37670892599`
+- GSC 4.3.8 installer stale-payload cleanup 후 full System CI: **PASS** — run `37669908817`
+- same cleanup 기준 Day 11 Host Test Package: **PASS** — run `37669908646`
+
+These PASS results validate repository-side code/tooling only. They do not close any real server/client gate.
 
 ## Non-negotiable safety rules
 
