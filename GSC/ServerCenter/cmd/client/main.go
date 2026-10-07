@@ -3,7 +3,9 @@
 package main
 
 import (
+	"crypto/sha256"
 	_ "embed"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"geumyi/servercenter/internal/securestore"
@@ -16,6 +18,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -23,7 +26,7 @@ import (
 	"unsafe"
 )
 
-const appVersion = "4.3.6"
+const appVersion = "4.3.7"
 const localPort = 8790
 
 //go:embed dashboard.html
@@ -35,6 +38,37 @@ var appIcon []byte
 type ClientConfig struct {
 	HostURL string `json:"host_url"`
 	Token   string `json:"token"`
+}
+
+type remoteGSCSelfUpdateStatus struct {
+	Installed         string `json:"installed"`
+	Latest            string `json:"latest"`
+	Channel           string `json:"channel"`
+	Release           string `json:"release"`
+	File              string `json:"file"`
+	SHA256            string `json:"sha256"`
+	Size              int64  `json:"size"`
+	SignatureVerified bool   `json:"signature_verified"`
+}
+
+type localClientUpdateStatus struct {
+	Installed         string `json:"installed"`
+	HostInstalled     string `json:"host_installed,omitempty"`
+	Latest            string `json:"latest,omitempty"`
+	Available         bool   `json:"available"`
+	DowngradeBlocked  bool   `json:"downgrade_blocked"`
+	TargetRelation    string `json:"target_relation,omitempty"`
+	Channel           string `json:"channel,omitempty"`
+	Release           string `json:"release,omitempty"`
+	File              string `json:"file,omitempty"`
+	SHA256            string `json:"sha256,omitempty"`
+	Size              int64  `json:"size,omitempty"`
+	SignatureVerified bool   `json:"signature_verified"`
+	Staged            bool   `json:"staged"`
+	StagedPath        string `json:"staged_path,omitempty"`
+	Scope             string `json:"scope"`
+	Message           string `json:"message"`
+	Error             string `json:"error,omitempty"`
 }
 
 type POINT struct{ X, Y int32 }
@@ -195,6 +229,9 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveDashboard)
 	mux.HandleFunc("/client/config", clientConfigAPI)
+	mux.HandleFunc("/client/update/status", clientUpdateStatusAPI)
+	mux.HandleFunc("/client/update/stage", clientUpdateStageAPI)
+	mux.HandleFunc("/client/update/apply", clientUpdateApplyAPI)
 	mux.HandleFunc("/app.ico", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/x-icon")
 		_, _ = w.Write(appIcon)
@@ -296,6 +333,385 @@ func clientConfigAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(204)
+}
+
+
+const defaultUpdateRepository = "geumyi22/Geumyi-Minecraft-System"
+
+func clientUpdateHostJSON(path string, out any) error {
+	cfg := clientConfigSnapshot()
+	base := strings.TrimRight(strings.TrimSpace(cfg.HostURL), "/")
+	if base == "" {
+		return fmt.Errorf("Host URL이 설정되지 않았습니다")
+	}
+	req, err := http.NewRequest(http.MethodGet, base+path, nil)
+	if err != nil {
+		return err
+	}
+	if cfg.Token != "" {
+		req.Header.Set("Authorization", "Bearer "+cfg.Token)
+	}
+	h := &http.Client{Timeout: 45 * time.Second}
+	resp, err := h.Do(req)
+	if err != nil {
+		return fmt.Errorf("서버 PC 업데이트 정보 확인 실패: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode/100 != 2 {
+		b, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+		msg := strings.TrimSpace(string(b))
+		if msg == "" {
+			msg = resp.Status
+		}
+		return fmt.Errorf("서버 PC 업데이트 정보 확인 실패: %s", msg)
+	}
+	if err = json.NewDecoder(io.LimitReader(resp.Body, 4<<20)).Decode(out); err != nil {
+		return fmt.Errorf("서버 PC 업데이트 응답 해석 실패: %w", err)
+	}
+	return nil
+}
+
+func parseClientVersion(v string) ([]int, error) {
+	v = strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(v, "v"), "V"))
+	if i := strings.IndexAny(v, "-+"); i >= 0 {
+		v = v[:i]
+	}
+	parts := strings.Split(v, ".")
+	if len(parts) < 2 || len(parts) > 4 {
+		return nil, fmt.Errorf("지원하지 않는 버전 형식: %s", v)
+	}
+	out := make([]int, len(parts))
+	for i, p := range parts {
+		n, err := strconv.Atoi(p)
+		if err != nil || n < 0 {
+			return nil, fmt.Errorf("지원하지 않는 버전 형식: %s", v)
+		}
+		out[i] = n
+	}
+	return out, nil
+}
+
+func compareClientVersions(a, b string) (int, error) {
+	av, err := parseClientVersion(a)
+	if err != nil {
+		return 0, err
+	}
+	bv, err := parseClientVersion(b)
+	if err != nil {
+		return 0, err
+	}
+	n := len(av)
+	if len(bv) > n {
+		n = len(bv)
+	}
+	for i := 0; i < n; i++ {
+		ai, bi := 0, 0
+		if i < len(av) {
+			ai = av[i]
+		}
+		if i < len(bv) {
+			bi = bv[i]
+		}
+		if ai < bi {
+			return -1, nil
+		}
+		if ai > bi {
+			return 1, nil
+		}
+	}
+	return 0, nil
+}
+
+func safeClientUpdatePart(v string) string {
+	v = strings.TrimSpace(v)
+	var b strings.Builder
+	for _, r := range v {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '.' || r == '-' || r == '_' {
+			b.WriteRune(r)
+		} else {
+			b.WriteByte('_')
+		}
+	}
+	if b.Len() == 0 {
+		return "unknown"
+	}
+	return b.String()
+}
+
+func clientUpdateStagePath(st remoteGSCSelfUpdateStatus) string {
+	root := os.Getenv("LOCALAPPDATA")
+	if strings.TrimSpace(root) == "" {
+		root = filepath.Dir(cfgPath)
+	}
+	return filepath.Join(root, "GeumyiServerCenter", "Staging", "Client", safeClientUpdatePart(st.Release), filepath.Base(st.File))
+}
+
+func clientFileSHA256(p string) (string, error) {
+	f, err := os.Open(p)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	h := sha256.New()
+	if _, err = io.Copy(h, f); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func verifyClientUpdateStage(p string, st remoteGSCSelfUpdateStatus) bool {
+	info, err := os.Stat(p)
+	if err != nil || info.IsDir() {
+		return false
+	}
+	if st.Size > 0 && info.Size() != st.Size {
+		return false
+	}
+	sum, err := clientFileSHA256(p)
+	return err == nil && len(st.SHA256) == 64 && strings.EqualFold(sum, st.SHA256)
+}
+
+func validGitHubRepository(repo string) bool {
+	parts := strings.Split(strings.TrimSpace(repo), "/")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return false
+	}
+	for _, part := range parts {
+		for _, r := range part {
+			if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '.' || r == '-' || r == '_') {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func clientUpdateRepository() string {
+	var overview struct {
+		Settings struct {
+			Repository string `json:"repository"`
+		} `json:"settings"`
+	}
+	if err := clientUpdateHostJSON("/api/v4/update/status", &overview); err == nil && validGitHubRepository(overview.Settings.Repository) {
+		return strings.TrimSpace(overview.Settings.Repository)
+	}
+	return defaultUpdateRepository
+}
+
+func queryClientUpdateTarget(fresh bool) (remoteGSCSelfUpdateStatus, error) {
+	var st remoteGSCSelfUpdateStatus
+	path := "/api/v4/update/self/status"
+	if fresh {
+		path += "?fresh=1"
+	}
+	if err := clientUpdateHostJSON(path, &st); err != nil {
+		return st, err
+	}
+	if !st.SignatureVerified {
+		return st, fmt.Errorf("서버 PC가 검증된 서명 정보를 제공하지 않았습니다")
+	}
+	if strings.TrimSpace(st.Latest) == "" || strings.TrimSpace(st.Release) == "" || strings.TrimSpace(st.File) == "" || len(st.SHA256) != 64 || st.Size <= 0 {
+		return st, fmt.Errorf("검증된 GSC release metadata가 불완전합니다")
+	}
+	if filepath.Base(st.File) != st.File || !strings.HasSuffix(strings.ToLower(st.File), ".exe") {
+		return st, fmt.Errorf("검증된 GSC 설치 파일명이 안전하지 않습니다")
+	}
+	return st, nil
+}
+
+func buildLocalClientUpdateStatus(fresh bool) localClientUpdateStatus {
+	out := localClientUpdateStatus{Installed: appVersion, Scope: "local_client", Message: "이 PC의 GSC Client 업데이트 확인 중"}
+	remote, err := queryClientUpdateTarget(fresh)
+	if err != nil {
+		out.Error = err.Error()
+		out.Message = "이 PC Client 업데이트 확인 실패"
+		return out
+	}
+	out.HostInstalled = remote.Installed
+	out.Latest = remote.Latest
+	out.Channel = remote.Channel
+	out.Release = remote.Release
+	out.File = remote.File
+	out.SHA256 = remote.SHA256
+	out.Size = remote.Size
+	out.SignatureVerified = remote.SignatureVerified
+	cmp, err := compareClientVersions(appVersion, remote.Latest)
+	if err != nil {
+		out.Error = err.Error()
+		out.Message = "이 PC Client 버전 비교 실패"
+		return out
+	}
+	switch {
+	case cmp < 0:
+		out.Available = true
+		out.TargetRelation = "newer"
+		out.Message = "이 PC의 GSC Client 업데이트 사용 가능"
+	case cmp == 0:
+		out.TargetRelation = "same"
+		out.Message = "이 PC의 GSC Client가 현재 검증 release와 일치합니다"
+	default:
+		out.TargetRelation = "older"
+		out.DowngradeBlocked = true
+		out.Message = "이 PC의 GSC Client가 검증 release보다 최신입니다 · 다운그레이드 차단"
+	}
+	stage := clientUpdateStagePath(remote)
+	if verifyClientUpdateStage(stage, remote) {
+		out.Staged = true
+		out.StagedPath = stage
+	}
+	return out
+}
+
+func clientUpdateStatusAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "GET required", http.StatusMethodNotAllowed)
+		return
+	}
+	force := r.URL.Query().Get("fresh") == "1"
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	_ = json.NewEncoder(w).Encode(buildLocalClientUpdateStatus(force))
+}
+
+func downloadClientUpdateArtifact(downloadURL, dst string, expectedSize int64, expectedSHA string) error {
+	req, err := http.NewRequest(http.MethodGet, downloadURL, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("User-Agent", "GeumyiServerCenter/"+appVersion)
+	h := &http.Client{Timeout: 20 * time.Minute}
+	resp, err := h.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode/100 != 2 {
+		return fmt.Errorf("설치 파일 다운로드 HTTP %d", resp.StatusCode)
+	}
+	if err = os.MkdirAll(filepath.Dir(dst), 0700); err != nil {
+		return err
+	}
+	tmp := dst + ".tmp"
+	_ = os.Remove(tmp)
+	f, err := os.OpenFile(tmp, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	hh := sha256.New()
+	n, cpErr := io.Copy(io.MultiWriter(f, hh), resp.Body)
+	closeErr := f.Close()
+	if cpErr != nil {
+		_ = os.Remove(tmp)
+		return cpErr
+	}
+	if closeErr != nil {
+		_ = os.Remove(tmp)
+		return closeErr
+	}
+	if expectedSize > 0 && n != expectedSize {
+		_ = os.Remove(tmp)
+		return fmt.Errorf("설치 파일 크기 불일치: expected=%d actual=%d", expectedSize, n)
+	}
+	got := hex.EncodeToString(hh.Sum(nil))
+	if !strings.EqualFold(got, expectedSHA) {
+		_ = os.Remove(tmp)
+		return fmt.Errorf("설치 파일 SHA-256 불일치")
+	}
+	_ = os.Remove(dst)
+	if err = os.Rename(tmp, dst); err != nil {
+		_ = os.Remove(tmp)
+		return err
+	}
+	return nil
+}
+
+func clientUpdateStageAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST required", http.StatusMethodNotAllowed)
+		return
+	}
+	remote, err := queryClientUpdateTarget(true)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	cmp, err := compareClientVersions(appVersion, remote.Latest)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	if cmp >= 0 {
+		http.Error(w, "이 PC의 GSC Client는 이미 검증 target 이상입니다", http.StatusConflict)
+		return
+	}
+	repo := clientUpdateRepository()
+	if !validGitHubRepository(repo) {
+		http.Error(w, "GitHub repository 설정이 안전하지 않습니다", http.StatusConflict)
+		return
+	}
+	downloadURL := "https://github.com/" + repo + "/releases/download/" + url.PathEscape(remote.Release) + "/" + url.PathEscape(remote.File)
+	dst := clientUpdateStagePath(remote)
+	if err = downloadClientUpdateArtifact(downloadURL, dst, remote.Size, remote.SHA256); err != nil {
+		http.Error(w, "이 PC Client update staging 실패: "+err.Error(), http.StatusBadGateway)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"ok": true, "scope": "local_client", "installed": appVersion, "target": remote.Latest,
+		"host_installed": remote.Installed, "release": remote.Release, "sha256": remote.SHA256,
+		"staged_path": dst, "host_modified": false, "minecraft_velocity_touched": false,
+	})
+}
+
+func clientUpdateApplyAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST required", http.StatusMethodNotAllowed)
+		return
+	}
+	var q struct {
+		Confirm string `json:"confirm"`
+	}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&q); err != nil {
+		http.Error(w, "bad json", http.StatusBadRequest)
+		return
+	}
+	if q.Confirm != "APPLY_LOCAL_GSC_CLIENT_UPDATE" {
+		http.Error(w, "confirm must be APPLY_LOCAL_GSC_CLIENT_UPDATE", http.StatusBadRequest)
+		return
+	}
+	remote, err := queryClientUpdateTarget(false)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	cmp, err := compareClientVersions(appVersion, remote.Latest)
+	if err != nil || cmp >= 0 {
+		http.Error(w, "이 PC의 GSC Client에 적용할 newer verified target이 없습니다", http.StatusConflict)
+		return
+	}
+	stage := clientUpdateStagePath(remote)
+	if !verifyClientUpdateStage(stage, remote) {
+		http.Error(w, "검증된 이 PC Client staging 설치 파일이 필요합니다", http.StatusConflict)
+		return
+	}
+	cmd := exec.Command(stage, "--client-self-update")
+	cmd.Dir = filepath.Dir(stage)
+	if err = cmd.Start(); err != nil {
+		http.Error(w, "이 PC Client update helper 시작 실패: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"ok": true, "accepted": true, "scope": "local_client", "installed": appVersion,
+		"target": remote.Latest, "host_modified": false, "minecraft_velocity_touched": false,
+	})
+	if f, ok := w.(http.Flusher); ok {
+		f.Flush()
+	}
+	go func() {
+		time.Sleep(1200 * time.Millisecond)
+		_ = closeDashboardBrowsers()
+		requestClientQuit()
+	}()
 }
 func proxyAPI(w http.ResponseWriter, r *http.Request) {
 	cfg := clientConfigSnapshot()
