@@ -19,14 +19,18 @@
       "result": "PASS"
     },
     "security_sbom_reproducibility": {
-      "result": "PASS_OBSERVED_ON_MULTIPLE_DAY12_COMMITS",
-      "latest_final_run": "TO_RECORD_AFTER_TOOLCHAIN_STABILIZES"
+      "run": 37670892834,
+      "source_security": "PASS",
+      "declared_component_sbom": "PASS",
+      "gsc_double_build_reproducibility": "PASS"
     },
     "read_only_safety": {
-      "result": "PENDING_FINAL_TOOLCHAIN_RUN"
+      "run": 37670902211,
+      "result": "PASS"
     },
     "synthetic_dr": {
-      "result": "PENDING_FINAL_TOOLCHAIN_RUN"
+      "run": 37670892599,
+      "result": "PASS"
     }
   },
   "build_chain": [
