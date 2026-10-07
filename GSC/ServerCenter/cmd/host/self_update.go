@@ -236,9 +236,11 @@ func checkGSCSelfUpdate(forceNetwork bool) GSCSelfUpdateStatus {
 		st.DowngradeBlocked = true
 	}
 	stage := selfUpdateStagePath(release, comp)
-	if ok, _ := verifyArtifactFile(stage, comp); ok {
-		st.Staged = true
-		st.StagedPath = stage
+	if st.Available {
+		if ok, _ := verifyArtifactFile(stage, comp); ok {
+			st.Staged = true
+			st.StagedPath = stage
+		}
 	}
 	if st.Available {
 		st.Message = "검증된 GSC 업데이트 사용 가능"
