@@ -266,6 +266,14 @@ func relaunchSelfUpdateClient(report *selfUpdateReport, clientTarget string) {
 }
 
 func runSelfUpdateMode() {
+	runSelfUpdateModeScoped(false)
+}
+
+func runClientSelfUpdateMode() {
+	runSelfUpdateModeScoped(true)
+}
+
+func runSelfUpdateModeScoped(clientOnly bool) {
 	report := selfUpdateReport{
 		Schema: 1,
 		TargetVersion: version,
@@ -287,13 +295,21 @@ func runSelfUpdateMode() {
 	setupTarget := filepath.Join(installDir, "GeumyiServerCenter-Setup.exe")
 	hostExists := false
 	clientExists := false
-	if st, err := os.Stat(hostTarget); err == nil && !st.IsDir() {
-		hostExists = true
+	if !clientOnly {
+		if st, err := os.Stat(hostTarget); err == nil && !st.IsDir() {
+			hostExists = true
+		}
 	}
 	if st, err := os.Stat(clientTarget); err == nil && !st.IsDir() {
 		clientExists = true
 	}
-	if !hostExists && !clientExists {
+	if clientOnly && !clientExists {
+		report.Status = "failed"
+		report.Error = "installed GSC Client binary was not found"
+		setupLog("client self-update failed: " + report.Error)
+		return
+	}
+	if !clientOnly && !hostExists && !clientExists {
 		report.Status = "failed"
 		report.Error = "installed GSC Host/Client binaries were not found"
 		setupLog("self-update failed: " + report.Error)
@@ -330,8 +346,10 @@ func runSelfUpdateMode() {
 		}
 		files = append(files, f)
 	}
-	if b, err := os.ReadFile(filepath.Join(dataDir, "server.json")); err == nil {
-		_ = os.WriteFile(filepath.Join(backupDir, "server.json"), b, 0600)
+	if !clientOnly {
+		if b, err := os.ReadFile(filepath.Join(dataDir, "server.json")); err == nil {
+			_ = os.WriteFile(filepath.Join(backupDir, "server.json"), b, 0600)
+		}
 	}
 
 	stageDir := filepath.Join(dataDir, "Staging", "GSC", "helper-"+stamp)
@@ -422,5 +440,9 @@ func runSelfUpdateMode() {
 		relaunchSelfUpdateClient(&report, clientTarget)
 	}
 	report.Status = "success"
-	setupLog("self-update success: target=" + version + " backup=" + backupDir)
+	if clientOnly {
+		setupLog("client-only self-update success: target=" + version + " backup=" + backupDir + " host_touched=false")
+	} else {
+		setupLog("self-update success: target=" + version + " backup=" + backupDir)
+	}
 }
