@@ -28,6 +28,7 @@ CI:
 - Day-11 Phase 7 read-only safety guard run `37617914875`: PASS.
 - Day-11 4.3.8/build117 Secure beta Release run `37627140918`: PASS; tag `system-2026.10.07-day11-gsc438-beta`, target commit `a17975030ed3f9b71d8632a7897c1c206d9bfcdf`.
 - Day-11 Phase 11.7 READ-ONLY live report (2026-10-07 22:31 KST): PASS on GSC 4.3.8; four-server inventory/retention readable, Other full-backup restore preflight PASS, permanent-delete confirmation gate PASS, mutation=false.
+- Day-11 Phase 11.7 disposable backup E2E (2026-10-07 22:34 KST): PASS on Other; `other-config-backup-20261007-223415.zip`, SHA-256 `96936c8aaeeabaa5b24675c3a1ec946551beb03896829dc7c18bba140b71f7d3`; protect/Trash deny/Trash restore/permanent-delete confirm gate/retention dry-run/restore preflight all passed; final location Trash; no server lifecycle action or Minecraft data restore.
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
