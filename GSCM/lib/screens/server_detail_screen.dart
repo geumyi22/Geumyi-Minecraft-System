@@ -1455,18 +1455,33 @@ class _BackupsSectionState extends State<_BackupsSection> {
   }
 
   Future<void> _restore(BackupInfo b) async {
-    final ok = await widget.confirm(
-      '백업 복원',
-      '${b.file}\n\n현재 서버 데이터를 이 백업으로 복원합니다. GSC가 복원 전 체크포인트를 자동 생성합니다.',
-      action: '복원',
-      dangerous: true,
-    );
-    if (!ok) return;
     setState(() => busy = true);
     try {
-      final cp = await widget.api.restoreBackup(widget.server.id, b.file);
+      final pre = await widget.api.restoreBackupPreflight(widget.server.id, b.file);
+      if (!jBool(pre['ready'])) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('복원 차단: ${jString(pre['blocked_reason'], 'Preflight 실패')}')),
+          );
+        }
+        return;
+      }
+      final checks = jStringList(pre['checks']).map((e) => '• $e').join('\n');
+      if (!mounted) return;
+      final ok = await widget.confirm(
+        '백업 복원 · Preflight PASS',
+        '${b.file}\n\n$checks\n\n복원 전 보호된 체크포인트를 자동 생성하고 복원 후 offline health를 확인합니다. 서버는 자동 시작하지 않습니다.',
+        action: '복원',
+        dangerous: true,
+      );
+      if (!ok) return;
+      final result = await widget.api.restoreBackup(widget.server.id, b.file);
+      final cp = jString(result['checkpoint']);
+      final health = jMap(result['health']);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('복원 완료 · 체크포인트 $cp')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('복원 완료 · 체크포인트 $cp · offline health ${jBool(health['ok']) ? 'PASS' : '확인 필요'}')),
+        );
       }
       await _load();
     } on GscApiException catch (e) {
@@ -1561,6 +1576,7 @@ class _BackupsSectionState extends State<_BackupsSection> {
                       title: Text(b.file, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700)),
                       subtitle: Text(
                         '${b.kind == 'checkpoint' ? '체크포인트' : '백업'} · ${b.scope} · ${_size(b.size)} · ${b.created == null ? '-' : _ServerDetailScreenState._formatDateTime(b.created!)}'
+                        '${b.sourceReason.isEmpty ? '' : '\n생성 이유: ${b.sourceReason}'}'
                         '${b.protected ? '\n보호됨 · 휴지통 이동 차단' : ''}'
                         '${b.sha256.isEmpty ? '' : '\nSHA256 ${b.sha256.substring(0, b.sha256.length < 16 ? b.sha256.length : 16)}…'}',
                       ),
