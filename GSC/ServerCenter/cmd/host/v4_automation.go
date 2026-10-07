@@ -225,7 +225,7 @@ func runAutomation(a V4Automation) string {
 			return e.Error()
 		}
 		defer rel()
-		_, e = createBackup(s, a.BackupScope, false)
+		_, e = createBackupWithReason(s, a.BackupScope, false, "automation:"+a.ID)
 		if e != nil {
 			return e.Error()
 		}
@@ -242,7 +242,7 @@ func runAutomation(a V4Automation) string {
 		if e != nil {
 			return e.Error()
 		}
-		_, e = createBackup(s, a.BackupScope, false)
+		_, e = createBackupWithReason(s, a.BackupScope, false, "automation:"+a.ID)
 		rel()
 		if e != nil {
 			return e.Error()
@@ -269,26 +269,29 @@ func runAutomation(a V4Automation) string {
 	return "unknown"
 }
 func pruneScheduledBackups(id string, keep int) {
-	root := backupBase(id, false)
-	es, _ := os.ReadDir(root)
-	type f struct {
-		name string
-		t    time.Time
+	s, ok := serverByID(id)
+	if !ok {
+		return
 	}
-	arr := []f{}
-	for _, e := range es {
-		if e.IsDir() || !strings.HasSuffix(strings.ToLower(e.Name()), ".zip") {
-			continue
+	plan := buildBackupRetentionDryRun(s, keep)
+	if plan.BlockedReason != "" {
+		appendV4Event("warn", "backup", s.ID, "자동 백업 retention 보류", plan.BlockedReason)
+		return
+	}
+	moved := 0
+	for _, candidate := range plan.Candidates {
+		if _, err := trashBackupFile(s, candidate.File); err != nil {
+			appendV4Event("warn", "backup", s.ID, "자동 백업 retention 중단", err.Error())
+			return
 		}
-		st, _ := e.Info()
-		arr = append(arr, f{e.Name(), st.ModTime()})
+		moved++
 	}
-	sort.Slice(arr, func(i, j int) bool { return arr[i].t.After(arr[j].t) })
-	for i := keep; i < len(arr); i++ {
-		_ = os.Remove(filepath.Join(root, arr[i].name))
-		_ = os.Remove(filepath.Join(root, arr[i].name) + ".sha256")
+	if moved > 0 {
+		appendV4Event("info", "backup", s.ID, "자동 백업 retention 휴지통 이동",
+			fmt.Sprintf("moved=%d keep_latest=%d", moved, plan.KeepLatest))
 	}
 }
+
 func v4AutomationLoop() {
 	t := time.NewTicker(20 * time.Second)
 	defer t.Stop()
