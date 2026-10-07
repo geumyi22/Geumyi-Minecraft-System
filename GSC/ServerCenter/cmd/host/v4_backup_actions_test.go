@@ -10,13 +10,23 @@ import (
 	"testing"
 )
 
-func postBackupActionForTest(t *testing.T, id, file, action string) *httptest.ResponseRecorder {
+func postBackupActionRawForTest(t *testing.T, bodyMap map[string]string) *httptest.ResponseRecorder {
 	t.Helper()
-	body, _ := json.Marshal(map[string]string{"id": id, "file": file, "action": action})
+	body, _ := json.Marshal(bodyMap)
 	req := httptest.NewRequest(http.MethodPost, "/api/v4/backup/action", bytes.NewReader(body))
 	w := httptest.NewRecorder()
 	apiV4BackupAction(w, req)
 	return w
+}
+
+func postBackupActionForTest(t *testing.T, id, file, action string) *httptest.ResponseRecorder {
+	t.Helper()
+	body := map[string]string{"id": id, "file": file, "action": action}
+	if action == "delete-permanent" {
+		body["confirm"] = "DELETE_PERMANENT_BACKUP"
+		body["confirm_file"] = filepath.Base(file)
+	}
+	return postBackupActionRawForTest(t, body)
 }
 
 func TestBackupProtectionTrashRestoreAndPermanentDelete(t *testing.T) {
@@ -166,6 +176,126 @@ func TestBackupActionRejectsPathTraversalAndActivePermanentDelete(t *testing.T) 
 	}
 	if _, err = safeBackupPath(s, bi.File); err != nil {
 		t.Fatal("active backup was changed by invalid permanent-delete request")
+	}
+}
+
+func TestPermanentDeleteRequiresExplicitServerSideConfirmation(t *testing.T) {
+	root := t.TempDir()
+	serverDir := filepath.Join(root, "server")
+	if err := os.MkdirAll(serverDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(serverDir, "server.properties"), []byte("server-port=25570\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	configMu.Lock()
+	oldCfg := cfg
+	oldConfigPath := configPath
+	cfg = Config{Servers: []ServerConfig{{ID: "test", Name: "Test", Path: serverDir, JavaPort: 0}}}
+	configPath = filepath.Join(root, "server.json")
+	configMu.Unlock()
+	defer func() {
+		configMu.Lock()
+		cfg = oldCfg
+		configPath = oldConfigPath
+		configMu.Unlock()
+	}()
+
+	v4OpMu.Lock()
+	oldOps := v4Operations
+	v4Operations = map[string]string{}
+	v4OpMu.Unlock()
+	defer func() {
+		v4OpMu.Lock()
+		v4Operations = oldOps
+		v4OpMu.Unlock()
+	}()
+
+	s, _ := serverByID("test")
+	bi, err := createBackupWithReason(s, "config", false, "confirmation-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = trashBackupFile(s, bi.File); err != nil {
+		t.Fatal(err)
+	}
+
+	w := postBackupActionRawForTest(t, map[string]string{
+		"id": "test", "file": bi.File, "action": "delete-permanent",
+	})
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("missing confirm token must fail: %d %s", w.Code, w.Body.String())
+	}
+	if _, _, err = safeTrashBackupPath(s, bi.File); err != nil {
+		t.Fatalf("missing-confirm request changed trash: %v", err)
+	}
+
+	w = postBackupActionRawForTest(t, map[string]string{
+		"id": "test", "file": bi.File, "action": "delete-permanent",
+		"confirm": "DELETE_PERMANENT_BACKUP", "confirm_file": "wrong.zip",
+	})
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("wrong confirm_file must fail: %d %s", w.Code, w.Body.String())
+	}
+	if _, _, err = safeTrashBackupPath(s, bi.File); err != nil {
+		t.Fatalf("wrong-file confirmation changed trash: %v", err)
+	}
+
+	w = postBackupActionForTest(t, "test", bi.File, "delete-permanent")
+	if w.Code != http.StatusOK {
+		t.Fatalf("confirmed permanent delete failed: %d %s", w.Code, w.Body.String())
+	}
+}
+
+func TestBackupSourceReasonAndRestorePreflight(t *testing.T) {
+	root := t.TempDir()
+	serverDir := filepath.Join(root, "server")
+	if err := os.MkdirAll(serverDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(serverDir, "server.properties"), []byte("server-port=25570\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(serverDir, "bukkit.yml"), []byte("settings: {}\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	configMu.Lock()
+	oldCfg := cfg
+	oldConfigPath := configPath
+	cfg = Config{Servers: []ServerConfig{{ID: "test", Name: "Test", Path: serverDir, JavaPort: 0}}}
+	configPath = filepath.Join(root, "server.json")
+	configMu.Unlock()
+	defer func() {
+		configMu.Lock()
+		cfg = oldCfg
+		configPath = oldConfigPath
+		configMu.Unlock()
+	}()
+
+	s, _ := serverByID("test")
+	bi, err := createBackupWithReason(s, "config", false, "manual-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bi.SourceReason != "manual-test" {
+		t.Fatalf("backup reason=%q", bi.SourceReason)
+	}
+	p, err := safeBackupPath(s, bi.File)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m, err := readBackupManifest(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m.SourceReason != "manual-test" {
+		t.Fatalf("manifest reason=%q", m.SourceReason)
+	}
+	pre := buildRestorePreflight(s, p)
+	if !pre.Ready || !pre.ServerOffline || !pre.BackupVerified || !pre.ServerMatch || !pre.CheckpointReady {
+		t.Fatalf("unexpected restore preflight: %+v", pre)
 	}
 }
 
