@@ -17,7 +17,7 @@
 | 8 | Secure Release & Update Foundation | ✅ 완료 |
 | 9 | Transaction / Backup / Rollback | ✅ 완료 |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 |
-| 11 | Operations UX & Fleet Management — GSC 4.3.6 live / 4.3.7 candidate / GSCM 1.1.5+116 | 🔄 진행 중 (11.0~11.6 완료) |
+| 11 | Operations UX & Fleet Management — GSC 4.3.7 live / 4.3.8 candidate / GSCM 1.1.5+116 live +117 candidate | 🔄 진행 중 (11.0~11.6 완료, 11.7 진행 중) |
 | 12 | Final Production Hardening & Closure | ⏳ 예정 |
 
 ## Day 1~3 — 복구와 기반 정리
@@ -111,14 +111,14 @@ Bedrock:
 ## Day 11 — Operations UX & Fleet Management
 
 현재 검증 기준:
-- **GSC 4.3.6 (beta live)**
-- **GSC 4.3.7 (source/CI candidate; local Client / remote Host update separation, live pending)**
-- **GSCM 1.1.5+116**
+- **GSC 4.3.7 (beta live)**
+- **GSC 4.3.8 (Protection & Recovery source/CI candidate; live pending)**
+- **GSCM 1.1.5+116 (live) / 1.1.5+117 (source/CI candidate)**
 
 진행 상태:
 - **11.0~11.6 완료**
 - **11.6 Full Fleet UX LIVE PASS**
-- **11.7 Protection & Recovery 2.0 남음**
+- **11.7 Protection & Recovery 2.0 진행 중**
 - **Day 11 Final E2E 남음**
 
 고정 범위:
@@ -139,7 +139,8 @@ Day 11 11.6 live evidence:
 - offline Other health gate fail-closed 확인
 - Other 백업/SHA 검증 후 Technology 0.1.4 실제 적용 + post-start health PASS
 - rollout 완료 후 전 서버 `managed + inherit + no pin`, global beta 복귀
-- GSC 4.3.7에서 원격 관리 PC의 **로컬 Client 업데이트**와 서버 PC의 **Host 업데이트** UI/실행 경로를 분리했으며 현재 source/CI PASS, live 검증 대기
+- GSC 4.3.7에서 원격 관리 PC의 **로컬 Client 업데이트**와 서버 PC의 **Host 업데이트** UI/실행 경로를 분리했고, 두 PC 4.3.7 설치 후 실제 원격 화면에서 분리 상태/버전 감지 LIVE PASS
+- 11.7은 GSC 4.3.8 / GSCM build117 후보에서 provenance, 보호/Trash, 영구삭제 서버 확인 토큰, retention, restore preflight/checkpoint/offline-health/rollback 경로를 구현/검증 중
 
 Day 11 안정화 버그:
 - RCON `관리 제한` 오탐 방지
