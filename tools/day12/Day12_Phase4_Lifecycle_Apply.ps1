@@ -104,7 +104,7 @@ if($free -lt ([int64]$policy.disk.minimum_free_gib*1GB)){
 $backupSteps=New-Object System.Collections.ArrayList
 foreach($id in @($fleet.servers|ForEach-Object{[string]$_.server_id})){
   $dry=Post-Json "/api/v4/backup/retention/dry-run" @{id=$id;keep_latest=[int]$policy.backup.recent}
-  if(-not[string]::IsNullOrWhiteSpace([string]$dry.blocked_reason){
+  if(-not [string]::IsNullOrWhiteSpace([string]$dry.blocked_reason)){
     throw ("Retention blocked for "+$id+": "+[string]$dry.blocked_reason)
   }
   $candidates=@($dry.candidates)
