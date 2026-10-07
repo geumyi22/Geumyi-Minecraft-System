@@ -17,8 +17,8 @@
 | 8 | Secure Release & Update Foundation | ✅ 완료 |
 | 9 | Transaction / Backup / Rollback | ✅ 완료 |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 |
-| 11 | Operations UX & Fleet Management — GSC 4.3.8 live / GSCM 1.1.5+116 live +117 candidate | 🔄 진행 중 (11.0~11.7 + Final READ-ONLY E2E PASS; real client/device smoke 남음) |
-| 12 | Final Production Hardening & Closure | ⏳ 예정 |
+| 11 | Operations UX & Fleet Management — GSC 4.3.8 / GSCM 1.1.5+117 | ✅ 완료 |
+| 12 | Final Production Hardening & Closure | ⏳ 시작 준비 완료 |
 
 ## Day 1~3 — 복구와 기반 정리
 
@@ -110,10 +110,9 @@ Bedrock:
 
 ## Day 11 — Operations UX & Fleet Management
 
-현재 검증 기준:
-- **GSC 4.3.7 (beta live)**
-- **GSC 4.3.8 (Protection & Recovery source/CI candidate; live pending)**
-- **GSCM 1.1.5+116 (live) / 1.1.5+117 (source/CI candidate)**
+최종 검증 기준:
+- **GSC 4.3.8 (live)**
+- **GSCM 1.1.5+117 (live verified; final two requested device checks user-confirmed PASS)**
 
 진행 상태:
 - **11.0~11.6 완료**
@@ -121,7 +120,8 @@ Bedrock:
 - **11.7 Protection & Recovery 2.0 LIVE PASS**
 - **Day 11 Final READ-ONLY integrated E2E PASS**
 - **real Java + Bedrock client smoke USER PASS**
-- **마지막 GSCM 1.1.5+117 device check 남음**
+- **마지막 GSCM 1.1.5+117 관련 2개 device check USER PASS**
+- **Day 11 COMPLETE** — 세부 근거: `DAY11-FINAL-REPORT.md`
 
 고정 범위:
 - GSC/GSCM 시작 시 최신 검증 빌드 확인
