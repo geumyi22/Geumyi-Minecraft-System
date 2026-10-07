@@ -120,7 +120,8 @@ Bedrock:
 - **11.6 Full Fleet UX LIVE PASS**
 - **11.7 Protection & Recovery 2.0 LIVE PASS**
 - **Day 11 Final READ-ONLY integrated E2E PASS**
-- **마지막 real Java/Bedrock client smoke + GSCM 1.1.5+117 device check 남음**
+- **real Java + Bedrock client smoke USER PASS**
+- **마지막 GSCM 1.1.5+117 device check 남음**
 
 고정 범위:
 - GSC/GSCM 시작 시 최신 검증 빌드 확인
