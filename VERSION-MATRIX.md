@@ -30,7 +30,7 @@ CI:
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
-| GSC | 4.3.7 live / 4.3.8 candidate | GSC/ServerCenter | 4.3.7 server-PC + remote-PC Client/Host split live verified; 4.3.8 Protection & Recovery 2.0 source/CI candidate, live pending |
+| GSC | 4.3.7 server Host live / 4.3.8 remote Client live + Host candidate | GSC/ServerCenter | Client/Host split live verified; remote Client in-app 4.3.7→4.3.8 self-update E2E PASS; server Host 4.3.8 live update still pending |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction present; Day-7 JDK 21 clean build/artifact succeeds; byte-identical historical rebuild is not claimed |
 | GSCM | 1.1.5+116 live / +117 candidate | GSCM | build116 device distribution verified; build117 adds backup provenance/restore-preflight/destructive-action safeguards, release/live pending |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | HOTFIX overlay source tracked; Day-7 JDK 21 overlay build + CoreTests + artifact passes; legacy core remains binary-only and uses a pinned verified reference in CI |
