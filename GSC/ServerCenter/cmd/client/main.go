@@ -26,7 +26,7 @@ import (
 	"unsafe"
 )
 
-const appVersion = "4.3.7"
+const appVersion = "4.3.8"
 const localPort = 8790
 
 //go:embed dashboard.html
