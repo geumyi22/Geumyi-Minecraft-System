@@ -18,8 +18,9 @@ try{
 
   # 2 damaged plugin -> verified replacement
   $plugin=Join-Path $root "plugin.jar";$pluginGood=Join-Path $root "plugin.known-good.jar";Set-Content $pluginGood "known-good-plugin" -NoNewline;Copy-Item $pluginGood $plugin
-  $pHash=H $pluginGood;Set-Content $plugin "bad-plugin" -NoNewline;$pDetected=(H $plugin)-ne$pHash;Copy-Item $pluginGood $plugin -Force
-  [void]$steps.Add([ordered]@{case="damaged_plugin";detect=$pDetected;rollback=((H $plugin)-eq$pHash);pass=($pDetected -and (H $plugin)-eq$pHash)})
+  $pHash=H $pluginGood;Set-Content $plugin "bad-plugin" -NoNewline;$pDetected=((H $plugin) -ne $pHash);Copy-Item $pluginGood $plugin -Force
+  $pRestored=((H $plugin) -eq $pHash)
+  [void]$steps.Add([ordered]@{case="damaged_plugin";detect=$pDetected;rollback=$pRestored;pass=($pDetected -and $pRestored)})
 
   # 3 interrupted transaction journal
   $journal=Join-Path $root "transaction.json";[ordered]@{phase="replacing";committed=$false;backup=$kg;target=$live}|ConvertTo-Json|Set-Content $journal -Encoding UTF8
@@ -43,4 +44,7 @@ try{
 }finally{Remove-Item $root -Recurse -Force -ErrorAction SilentlyContinue}
 $r=[ordered]@{schema=1;phase="12.8";mode="SYNTHETIC_NON_PRODUCTION";generated_at=(Get-Date).ToString("o");result=$result;production_files_touched=$false;steps=@($steps)}
 $r|ConvertTo-Json -Depth 10|Set-Content $out -Encoding UTF8
-Write-Host ("DR SYNTHETIC: "+$result);Write-Host ("Report: "+$out);if($result -ne "PASS"){exit 2}
+Write-Host ("DR SYNTHETIC: "+$result)
+foreach($step in @($steps)){ Write-Host ("- "+[string]$step.case+" pass="+[string]$step.pass+" "+$(if($step.error){"error="+[string]$step.error}else{""})) }
+Write-Host ("Report: "+$out)
+if($result -ne "PASS"){exit 2}
