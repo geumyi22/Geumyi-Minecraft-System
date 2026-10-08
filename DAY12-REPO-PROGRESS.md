@@ -21,6 +21,15 @@ This file separates **work that can be completed from GitHub/CI** from **work th
 | 12.12 Soak | ✅ start/end collector prepared | ⏳ 8–12 h where practical + review |
 | 12.13 Final release | ✅ maintenance handoff + fail-closed closure workflow prepared | ⏳ signed Stable release after gates |
 
+## 2026-10-09 04:19 KST — operator TCP diagnostic evidence
+
+- Real Windows read-only capture `Day12-TCP-Diagnostic-20261009-041918.json` (timestamp 04:19:20 KST): `result=CAPTURED`, `mutation_performed=false`.
+- The previous PowerShell `$PID` assignment exception is fixed: netstat provider now reports `OK`, exit 0, with 924 lines scanned. No target-port `LISTENING` rows were returned; displayed remote-port samples are `TIME_WAIT` and are **not** proof of listening/bind addresses.
+- Native Windows TCP listener inventory reports `127.0.0.1:25571` and `127.0.0.1:8790`. PowerShell and .NET each enumerate 9 total listeners but match none of the expected target ports.
+- Loopback connect succeeds for TCP 25570/25571/25573; a successful localhost connection **cannot** establish whether a socket also binds a public interface. No 25572 listener proof was captured.
+- **12.10 remains FAIL/PENDING.** Do not alter `FINAL-RELEASE-GATES.json`, promote Stable, or infer private binding for absent listener rows.
+- Safe next step: inspect `Day12_Collect_All_READ_ONLY.cmd` runtime inventory and review the real server lifecycle/listeners together before any configuration change. This is not a request to repeat already-protected Golden backups.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
