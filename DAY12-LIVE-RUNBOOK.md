@@ -42,6 +42,14 @@
 - 최신 Operator Kit의 `Day12_Phase10_Bind_Evidence_READ_ONLY.cmd`는 이제 Windows Native `GetExtendedTcpTable`, Java 프로세스 PID, 관리자 권한 여부와 포트 프록시 *포트 번호 언급 여부만* 추가로 출력합니다. 관리자가 실행해도 운영 설정·서비스·방화벽은 변경하지 않습니다.
 - 필요할 때 서버 PC에서 **마우스 우클릭 → 관리자 권한으로 실행**하여 한 번만 재수집하고 `Geumyi-Day12-Bind-Evidence\\Day12-Bind-Evidence-*.json`을 검토합니다. 전체 ZIP·백업·복구 포인트를 다시 만들 필요는 없습니다.
 
+## 다음 테스트 — 별도 Windows PC의 LAN 접근성 (05:40 진단 이후)
+
+- 관리자 권한 진단에서 Windows Native `GetExtendedTcpTable`은 **Playground 25571만** `127.0.0.1` 리스너로 확인했습니다. Wild와 Lobby의 25570/25573은 GSC ONLINE + 로컬 TCP 접속 성공이지만 실제 리스너 주소가 수집되지 않아 최종 보안 게이트를 여전히 통과할 수 없습니다.
+- **서버 PC가 아닌 서브 Windows PC**에서 최신 Day12 Operator Kit의 `tools\\day12\\Day12_Phase10_LAN_Proof_READ_ONLY.cmd` 실행. 서버 PC의 사설 LAN IPv4를 입력합니다(127.0.0.1이나 공인 IP 금지). 해당 IP는 보고서에 저장되지 않습니다.
+- 다른 PC에서 공개 입구 25565/25566/25567과 비공개 Java 25570–25573 및 RCON 25575/25576/25577/25579를 TCP 연결만으로 교차 검사합니다. 결과 `바탕화면\\Geumyi-Day12-LAN-Proof\\Day12-LAN-Proof-*.json`을 이 대화에 제출합니다. 원본을 공개 GitHub에 업로드하지 않습니다.
+- **주의:** Java/RCON 비공개 포트가 원격에서 CONNECTED이면 보안 검토가 필요합니다. 모든 비공개 포트가 NO_CONNECTION이어도 방화벽 또는 네트워크 경로 영향이 있으므로 *바인딩 127.0.0.1의 증명*으로 간주하면 안 됩니다. 공개 대조 포트도 모두 NO_CONNECTION이면 LAN 테스트 자체가 미검증입니다.
+- 테스트 이후에도 12.10과 Final Stable/Maintenance는 실제 증거 기준 FAIL/PENDING을 유지합니다. 서버 설정·방화벽·백업·서버 실행 상태는 변경하지 않습니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
