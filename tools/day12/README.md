@@ -40,3 +40,8 @@ Historical Day 8–11 recovery evidence is intentionally retained.
 - Checks public Java TCP 25565–25567 as positive controls and backend Java 25570–25573 plus RCON 25575/25576/25577/25579 for possible LAN access. All reports redact the server LAN IPv4, include no credentials, and are always `CAPTURED_REVIEW_REQUIRED`, never `PASS` for the final release.
 - Private TCP CONNECTED = possible exposure, investigate before changes. NO_CONNECTION = inconclusive about binding; could be firewall or routing. Public ports all unreachable = remote control path unverified. Continue to require the canonical 12.10 verifier and live E2E evidence.
 
+
+### Phase 12.5: ActiveStore broad-allow review
+
+- `Day12_Phase5_Firewall_Scope_READ_ONLY.cmd`: one-time follow-up **on server PC only** after the combined 12.2/12.5 scan. Reads current firewall ActiveStore inbound enabled Allow rules, current network category set and active firewall profile policy; reviews the Any-port/Any-application TCP/UDP/Any-protocol subset against interface, address, service and security filters.
+- No raw firewall rule name/ID, program path, private IP, host/interface name, token or username is exported. Any filter/query error is recorded as a bounded error category and the result stays `CHECK_REQUIRED`; a successful result is `CAPTURED_FOR_REVIEW`, **never a release/security PASS**. It cannot infer actual socket binding or WFP packet authorization. A full scan does **not** need to be repeated just to run this narrowed check.
