@@ -221,6 +221,19 @@ jobs:
             throw 'LAN proof synthetic contract failed'
           }
 
+      - name: Synthetic component fingerprint and security-scope inspection
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'phase2-5-integrity'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase2_5_Integrity_Security_READ_ONLY.ps1 -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw "Phase 2+5 synthetic failed"}
+          $reports=@(Get-ChildItem -LiteralPath $out -Filter '*.json' -File)
+          if($reports.Count -ne 1){throw "Phase 2+5 expected exactly one synthetic report"}
+          $r=Get-Content -LiteralPath $reports[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.read_only -or -not $r.synthetic -or $r.mutation_performed){
+            throw "Phase 2+5 synthetic report contract failed"
+          }
+
       - name: Golden report discovery and manual-path regression
         shell: powershell
         run: |
