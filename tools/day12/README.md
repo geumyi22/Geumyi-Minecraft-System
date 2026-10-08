@@ -55,3 +55,8 @@ Historical Day 8–11 recovery evidence is intentionally retained.
 
 - Original 06:35 operator report's five `target_role` strings all displayed `BUILTIN_USERS` due to case-insensitive `$Role` parameter / `$role` local variable collision. The records are in deterministic order: GSC ProgramData dir, `server.json`, Runtime dir, Runtime/Agent dir, Agent 0.5.4 JAR. Corrected source uses `$principalGroup` and asserts role label preservation on an already-created temp directory in synthetic Windows CI.
 - The ACL collector now also emits `delete_children` from NTFS `DeleteSubdirectoriesAndFiles` bit for directories. `server.json` and Agent JAR direct BUILTIN_USERS ACL had no mutating Allow in the **06:35 capture**, while parent GSC/Runtime directory inherited ACEs allow creation. Parent `DeleteChild` and effective access **were not covered by the old report**; no access changes approved. Full firewall rules/ActiveStore scan already CAPTURED and need not be repeated for this fix.
+
+### Phase 12.5: minimal ACL-only follow-up (no firewall loop)
+
+- `Day12_Phase5_ACL_Only_READ_ONLY.cmd` runs `Day12_Phase5_Rule_ACL_Review_READ_ONLY.ps1 -AclOnly`. Read-only, **server PC only**, five configured GSC file and directory ACLs. No 266-rule ActiveStore enumeration, API request, TCP test, Java/JAR modification, or backup scan.
+- Verifies all five output target labels remain uncorrupted, captures NTFS `DeleteSubdirectoriesAndFiles` as `delete_children` separately from child-file `Delete`, emits `firewall_enumeration=NOT_EXECUTED_ACL_ONLY`, and reports `CHECK_REQUIRED` on any missing/failed ACL. This mode cannot prove a user's effective access or grant permission to modify ACLs.
