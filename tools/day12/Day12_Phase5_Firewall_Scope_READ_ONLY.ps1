@@ -34,12 +34,14 @@ if([string]::IsNullOrWhiteSpace($OutputDir)){
 New-Item -ItemType Directory -Path $OutputDir -Force|Out-Null
 $out=Join-Path $OutputDir ("Day12-Firewall-Scope-"+(Get-Date -Format "yyyyMMdd-HHmmss")+".json")
 if($Synthetic){
-  if(-not(BroadCandidate ([pscustomobject]@{Protocol="TCP";LocalPort="Any"}) ([pscustomobject]@{Program="Any"})) -or
-      (BroadCandidate ([pscustomobject]@{Protocol="UDP";LocalPort="19132"}) ([pscustomobject]@{Program="Any"}) -or
-      (BroadCandidate ([pscustomobject]@{Protocol="41";LocalPort="Any"}) ([pscustomobject]@{Program="Any"}) -or
-      -not(CurrentProfileMatches "Domain, Private" @("Private")) -or
-      (CurrentProfileMatches "Public" @("Private")) -or
-      (Scope "10.0.0.10") -ne "RESTRICTED_OR_COMPOSITE_REDACTED"){
+  $t1=BroadCandidate ([pscustomobject]@{Protocol="TCP";LocalPort="Any"}) ([pscustomobject]@{Program="Any"})
+  $t2=BroadCandidate ([pscustomobject]@{Protocol="UDP";LocalPort="19132"}) ([pscustomobject]@{Program="Any"})
+  $t3=BroadCandidate ([pscustomobject]@{Protocol="41";LocalPort="Any"}) ([pscustomobject]@{Program="Any"})
+  $t4=CurrentProfileMatches "Domain, Private" @("Private")
+  $t5=CurrentProfileMatches "Public" @("Private")
+  $t6=Scope "10.0.0.10"
+  if((-not $t1) -or $t2 -or $t3 -or (-not $t4) -or $t5 -or
+     $t6 -ne "RESTRICTED_OR_COMPOSITE_REDACTED"){
     throw "Synthetic firewall-scope rules failed"
   }
   [ordered]@{
@@ -86,7 +88,8 @@ try{
       $pf=Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop
       $app=Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop
     }catch{$filtersFailed++;continue}
-    if(-not(BroadCandidate $pf $app)){continue}
+    $isBroad=BroadCandidate $pf $app
+    if(-not $isBroad){continue}
     $address=$null;$interfaceType=$null;$iface=$null;$service=$null;$security=$null
     try{$address=Get-NetFirewallAddressFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop}catch{$errors+="ADDRESS_FILTER_UNAVAILABLE"}
     try{$interfaceType=Get-NetFirewallInterfaceTypeFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop}catch{$errors+="INTERFACE_TYPE_FILTER_UNAVAILABLE"}
