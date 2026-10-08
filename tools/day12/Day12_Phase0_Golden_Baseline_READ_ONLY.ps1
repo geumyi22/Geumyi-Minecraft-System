@@ -39,6 +39,14 @@ function Hash-File([string]$Path){
     if([string]::IsNullOrWhiteSpace($Path) -or -not(Test-Path -LiteralPath $Path -PathType Leaf)){ return "" }
     try { return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() } catch { return "" }
 }
+# Backup API JSON intentionally omits false/empty fields (Go omitempty).
+# Never assume optional properties exist under Set-StrictMode.
+function Read-BackupField([object]$Backup,[string]$Field,[object]$Default=$null){
+    if($null -eq $Backup){ return $Default }
+    $prop=$Backup.PSObject.Properties[$Field]
+    if($null -eq $prop -or $null -eq $prop.Value){ return $Default }
+    return $prop.Value
+}
 function Json-File([string]$Path){
     if(-not(Test-Path -LiteralPath $Path -PathType Leaf)){ return $null }
     try { return (Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json) } catch { return $null }
@@ -99,6 +107,11 @@ $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $outPath = Join-Path $OutputDir ("Geumyi-Day12-Phase0-GoldenBaseline-"+$stamp+".json")
 
 if($Synthetic){
+    # Regression: unprotected backup records omit 'protected' and source_reason.
+    $unprotected=[pscustomobject]@{file="fixture.zip";created_at="2026-01-01T00:00:00Z"}
+    if([bool](Read-BackupField $unprotected "protected" $false) -or [string](Read-BackupField $unprotected "source_reason" "") -ne ""){
+        throw "Omitted optional backup metadata regression"
+    }
     $report=[ordered]@{
         schema=1
         phase="12.0A"
@@ -207,24 +220,24 @@ foreach($id in $serverIds){
         $backupRows += [ordered]@{server_id=$id; readable=$false}
         continue
     }
-    $activeRows=@($active.backups)
-    $trashRows=@($trash.backups)
+    $activeRows=@($active.backups | Where-Object { $null -ne $_ })
+    $trashRows=@($trash.backups | Where-Object { $null -ne $_ })
     $latest=$activeRows | Sort-Object created_at -Descending | Select-Object -First 1
     $backupRows += [ordered]@{
         server_id=$id
         readable=$true
         active_count=$activeRows.Count
         trash_count=$trashRows.Count
-        protected_count=@($activeRows | Where-Object {[bool]$_.protected}).Count
-        checkpoint_count=@($activeRows | Where-Object {[string]$_.kind -eq "checkpoint"}).Count
-        golden_count=@(($activeRows+$trashRows) | Where-Object {[string]$_.source_reason -match "(?i)golden|day12"}).Count
+        protected_count=@($activeRows | Where-Object {[bool](Read-BackupField $_ "protected" $false)}).Count
+        checkpoint_count=@($activeRows | Where-Object {[string](Read-BackupField $_ "kind" "") -eq "checkpoint"}).Count
+        golden_count=@(($activeRows+$trashRows) | Where-Object {[string](Read-BackupField $_ "source_reason" "") -match "(?i)golden|day12"}).Count
         latest_active=$(if($null -eq $latest){$null}else{
             [ordered]@{
-                file=[string]$latest.file
-                kind=[string]$latest.kind
-                protected=[bool]$latest.protected
-                source_reason=[string]$latest.source_reason
-                sha256=[string]$latest.sha256
+                file=[string](Read-BackupField $latest "file" "")
+                kind=[string](Read-BackupField $latest "kind" "")
+                protected=[bool](Read-BackupField $latest "protected" $false)
+                source_reason=[string](Read-BackupField $latest "source_reason" "")
+                sha256=[string](Read-BackupField $latest "sha256" "")
             }
         })
     }
