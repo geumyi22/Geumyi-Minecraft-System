@@ -70,6 +70,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Updated the read-only bind collector to also capture an independent **GetExtendedTcpTable** IP Helper provider, non-sensitive Java PID listing, elevation status, and **redacted netsh portproxy target-port mentions**. Native provider and portproxy metadata still cannot turn missing socket evidence into PASS.
 - **12.10 remains FAIL/PENDING; final signed Stable/Maintenance gate remains blocked.** Do not edit configurations, RCON settings or firewall rules from these observations alone.
 
+## 2026-10-09 05:40 KST — actual native TCP comparison and remote LAN probe plan
+
+- Operator-submitted `Day12-Bind-Evidence-20261009-054006.json` reviewed locally, **not uploaded** to public GitHub. Read-only, elevated=true; native `GetExtendedTcpTable` reports `127.0.0.1:25571` (Java PID present in process list) and `127.0.0.1:8790`, stable over 2 passes. No target port was reported by `Get-NetTCPConnection`, .NET `IPGlobalProperties`, or `netstat`; native reported 11 total listener rows, other APIs 9. This is a genuine cross-provider enumeration inconsistency.
+- Wild/Playground/Lobby remain GSC ONLINE both before/after capture and Java 25570/25571/25573 accept localhost TCP. Other is OFFLINE and 25572 does not accept localhost. All four Paper profiles retain `server-ip=127.0.0.1`. No relevant Windows `netsh portproxy` target port mentioned. RCON actual binds were not observed.
+- **Confirmed runtime loopback listener proof only for Playground 25571**. Wild/Lobby listener binds, all RCON bind addresses, and remote reachability remain UNVERIFIED. The absence of a listed non-loopback listener is not proof of an inaccessible port. Do not mark 12.10 PASS, loosen the mandatory gate or alter the production configuration.
+- Prepared `tools/day12/Day12_Phase10_LAN_Proof_READ_ONLY.cmd` for execution on a **different Windows PC** on the same LAN. It prompts for the server's private IPv4 (not exported), checks public TCP 25565/25566/25567 as positive controls and private Java+RCON TCP ports as negative/alert candidates, exports only boolean reachability by port. No networking policy, credentials, or runtime files are changed. Even all-negative results do not prove loopback bind; any reachable private port requires investigation.
+- CI synthetic test and Operator Kit packaging added; still require user-performed remote test. This is a new evidence path, not an E2E success assertion.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
