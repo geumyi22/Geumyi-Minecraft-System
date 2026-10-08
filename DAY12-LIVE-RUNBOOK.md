@@ -25,6 +25,14 @@
 - 12.10 Final Verification은 **18 PASS / 0 WARN / 1 FAIL**, `backend_ports_private` 실패입니다. 먼저 서버의 리스너/실제 바인딩 정보를 읽기 전용으로 확인합니다. 로컬 접속 성공만으로 보안 PASS 처리하지 않습니다.
 - 이미 PASS인 Golden 4개 백업과 캐시를 재생성하지 않습니다. 다른 단계가 CAPTURED라는 이유로 서버 재시작·팩 적용·Trash 이동을 진행하지 않습니다.
 
+## 다음 증거 수집 — 12.10 TCP 바인딩 검사 (2026-10-09)
+
+- 사용자 제출 04:22–04:23 전체 READ-ONLY ZIP 기준 12.3은 15 PASS, 12.10은 `backend_ports_private` 단독 FAIL. Golden 백업은 재실행하지 않습니다.
+- 새 `tools\\day12\\Day12_Phase10_Bind_Evidence_READ_ONLY.cmd`는 실제 서버 PC에서 4개 Paper의 `server.properties` 중 **네트워크 관련 필드만** 읽고, Windows TCP 리스너 목록을 두 번 수집합니다. 읽기 전용이며 다른 properties, 비밀번호, 전체 경로는 보고서에 넣지 않습니다.
+- 결과는 `바탕화면\\Geumyi-Day12-Bind-Evidence\\Day12-Bind-Evidence-*.json`으로 저장됩니다. 보고서 `CAPTURED_REVIEW_REQUIRED`는 정상 수집 결과이지 보안 PASS가 아닙니다.
+- `server-ip`가 비어 있거나 wildcard/non-loopback이라면 운영 중 직접 설정을 바꾸지 않고 **백업·서버별 점검·승인된 재시작 계획**을 세웁니다. 다른 진단 제공자가 리스너를 찾지 못하면 최종 검사기는 계속 FAIL로 둡니다.
+- 실서버 바인딩 확인 전에는 `FINAL-RELEASE-GATES.json`과 Stable/Maintenance를 변경하지 않습니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
