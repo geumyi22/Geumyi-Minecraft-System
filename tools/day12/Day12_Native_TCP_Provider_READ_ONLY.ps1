@@ -4,7 +4,7 @@
 function Get-Day12NativeTcpInventory {
   [CmdletBinding()]
   param([int[]]$WantedPorts)
-  if(-not $IsWindows -and $PSVersionTable.PSEdition -eq "Core"){
+  if($PSVersionTable.PSEdition -eq "Core" -and -not $IsWindows){
     return [pscustomobject]@{status="UNSUPPORTED";rows=@();providers=@();error_categories=@("NON_WINDOWS")}
   }
   $source=@'
@@ -85,7 +85,13 @@ public static class GeumyiDay12TcpListenerV2 {
   $errors=@()
   foreach($item in $methods){
     try{
-      $raw=@([GeumyiDay12TcpListenerV2]::($item.method)())
+      $raw=@()
+      switch($item.method){
+        "ReadOwnerV4" {$raw=@([GeumyiDay12TcpListenerV2]::ReadOwnerV4())}
+        "ReadOwnerV6" {$raw=@([GeumyiDay12TcpListenerV2]::ReadOwnerV6())}
+        "ReadBasicV4" {$raw=@([GeumyiDay12TcpListenerV2]::ReadBasicV4())}
+        default {throw "UNEXPECTED_NATIVE_METHOD"}
+      }
       $matches=0
       foreach($row in $raw){
         if($null -eq $row){continue}
