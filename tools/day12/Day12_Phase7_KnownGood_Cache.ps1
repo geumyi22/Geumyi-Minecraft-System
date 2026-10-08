@@ -50,9 +50,31 @@ function AddFile([string]$src,[string]$logical){
   # The recovery kit requires the physical cache_name, not only the original basename.
   [void]$files.Add([ordered]@{logical=$logical;cache_name=$safe;name=[IO.Path]::GetFileName($src);size=$size;sha256=$sha})
 }
-$pf=if($env:ProgramFiles){$env:ProgramFiles}else{"C:\Program Files"};$inst=Join-Path $pf "Geumyi Server Center"
-AddFile (Join-Path $inst "GeumyiServerHost.exe") "gsc-host"
-AddFile (Join-Path $inst "GeumyiServerCenter.exe") "gsc-client"
+$pf=if($env:ProgramFiles){$env:ProgramFiles}else{"C:\Program Files"}
+# A test fixture may override this locator only inside GitHub Actions.
+if($env:GITHUB_ACTIONS -eq "true" -and $env:DAY12_TEST_PROGRAMFILES){
+  $pf=[string]$env:DAY12_TEST_PROGRAMFILES
+}
+$inst=Join-Path $pf "Geumyi Server Center"
+if($env:GITHUB_ACTIONS -ne "true" -or -not $env:DAY12_TEST_PROGRAMFILES){
+  try {
+    $service=Get-CimInstance Win32_Service -Filter "Name='Geumyi Server Center Host'" -ErrorAction Stop
+    $raw=[string]$service.PathName
+    $candidate=""
+    if($raw -match '^"([^"]+\.exe)"'){$candidate=$Matches[1]}
+    elseif($raw -match '^(.+?\.exe)(?:\s|$)'){$candidate=$Matches[1]}
+    if($candidate -and (Test-Path -LiteralPath $candidate -PathType Leaf)){
+      $inst=Split-Path -Parent $candidate
+    }
+  }catch{}
+}
+$hostBinary=Join-Path $inst "GeumyiServerHost.exe"
+$clientBinary=Join-Path $inst "GeumyiServerCenter.exe"
+if($Mode -eq "Build" -and (-not(Test-Path -LiteralPath $hostBinary -PathType Leaf) -or -not(Test-Path -LiteralPath $clientBinary -PathType Leaf))){
+  throw "GSC Host/Client executables are missing; refusing incomplete known-good cache"
+}
+AddFile $hostBinary "gsc-host"
+AddFile $clientBinary "gsc-client"
 $cfgPath=Join-Path $root "server.json"
 if(Test-Path $cfgPath){$cfg=Get-Content $cfgPath -Raw -Encoding UTF8|ConvertFrom-Json;foreach($s in @($cfg.servers)){foreach($j in Get-ChildItem (Join-Path ([string]$s.path) "plugins") -Filter *.jar -File -ErrorAction SilentlyContinue){AddFile $j.FullName ("server-"+[string]$s.id+"-"+$j.Name)}}}
 $proxy=Join-Path $root "Network\FourServer";foreach($id in @("wild","playground","other")){foreach($j in Get-ChildItem (Join-Path $proxy ($id+"\plugins")) -Filter *.jar -File -ErrorAction SilentlyContinue){AddFile $j.FullName ("proxy-"+$id+"-"+$j.Name)}}
