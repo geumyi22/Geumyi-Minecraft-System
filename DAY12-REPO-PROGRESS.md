@@ -123,6 +123,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Previously established separate-PC LAN proof remains 3/3 public TCP accessible, **0/8** private backend/RCON accessible from tested LAN path. That does not rule out other interfaces or firewall profile changes. **12.5 effective exposure review remains OPEN and 12.10 backend bind canonical gate FAIL**. Do not promote Stable or edit `FINAL-RELEASE-GATES.json`.
 - Next useful work: narrow **38 broad Any/Any Allow candidates** by active profile, rule origin/policy store, interface/service/application/package restrictions **without changing firewall**; independently validate canonical backend bind evidence. No repeat of Golden/cache/previous LAN testing.
 
+## 2026-10-09 — follow-up ActiveStore rule-origin evidence tool (repository-only)
+
+- Based on the 06:13 full host firewall inventory, added `tools/day12/Day12_Phase5_Firewall_Scope_READ_ONLY.ps1/.cmd`. It reads **ActiveStore** (currently effective Windows Firewall rules from applicable stores, distinct from only local PersistentStore), current network categories, firewall profiles and the **Any-port + Any-program Allow candidate** subset. Microsoft's NetSecurity commands support these filtered read-only queries.
+- Reports *sanitized* profile, origin-type, active-network-category overlap, interface type/scope, local/remote address scope, service/authentication/edge flags for only broad candidates; never exports rule names/IDs, IPs, interface aliases, program paths, tokens, or hostnames. Reports fail-closed `CHECK_REQUIRED` if relevant rule/profile queries fail, never 12.5 security PASS.
+- The 06:13 full scan, prior LAN reachability proof, component hashes, backups and GSC baseline **remain valid**. Do not repeat the previous full collector; when needed run the **narrow ActiveStore scope** only on the actual server PC, administrator privileges, one time.
+- This tool does not alter Windows Firewall settings, OS ACL, server processes, known-good cache, GSC update policy, or `FINAL-RELEASE-GATES.json`.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
