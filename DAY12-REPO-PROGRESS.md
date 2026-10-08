@@ -16,7 +16,7 @@ This file separates **work that can be completed from GitHub/CI** from **work th
 | 12.7 Offline/cache | ✅ known-good cache audit/build and recovery kit tooling prepared | ✅ Build PASS (2026-10-09 03:45 KST); 84 cache artifacts with per-file SHA-256 in report. ⏳ Actual offline startup/recovery E2E still pending |
 | 12.8 DR | ✅ synthetic DR + Recovery Kit **PASS** — run `37670892599` | production files untouched; synthetic/non-production scope satisfied |
 | 12.9 UX cleanup | ✅ obsolete installer 4.3.0 README payload retired; installer baseline = 4.3.8/+117; System CI `37669908817` PASS | ⏳ only runtime UI observations if any |
-| 12.10 Final verifier | ✅ canonical read-only verifier; multi-provider TCP listener inspection repaired in commit `1296611c` | ⏳ Live run 2026-10-09 03:47 KST: 18 PASS / 0 WARN / 1 FAIL (`backend_ports_private`: no TCP listener inventory). New run required; never mark exposed ports safe without address proof |
+| 12.10 Final verifier | ✅ canonical read-only verifier; multi-provider TCP listener inspection improved in `1296611c`; native TCP bind READ-ONLY diagnostic + synthetic Windows CI added through `0e4c5db` | ❌ Live run 2026-10-09 03:47 KST: 18 PASS / 0 WARN / 1 FAIL (`backend_ports_private`: no TCP listener inventory). Run diagnostic and repeat live verifier; never mark exposed ports safe without address proof |
 | 12.11 Final E2E | ✅ exact report/checklist prepared | ⏳ reboot + Java + Bedrock + GSCM + operations |
 | 12.12 Soak | ✅ start/end collector prepared | ⏳ 8–12 h where practical + review |
 | 12.13 Final release | ✅ maintenance handoff + fail-closed closure workflow prepared | ⏳ signed Stable release after gates |
@@ -28,7 +28,7 @@ No live item above is marked PASS unless real-machine/client evidence exists. In
 
 ## Verified repository evidence
 
-- Latest Day 12 Safety CI on current pre-live toolchain: `37672459192` — **PASS**
+- Latest Day 12 Safety CI on commit `0e4c5db`: `37828017071` — **PASS** (includes synthetic Windows native TCP diagnostic; not a live-port security PASS)
 - Latest Security / SBOM / GSC reproducibility on current pre-live toolchain: `37672459736` — **PASS**
 - Synthetic DR / Recovery Kit: `37670892599` — **PASS**
 - System CI after installer cleanup: `37669908817` — **PASS**
