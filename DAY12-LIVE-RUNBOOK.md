@@ -9,6 +9,13 @@
 - Golden backup / managed content / known-good cache 같은 변경 단계는 명시 확인 문자열이 없으면 실행되지 않습니다.
 - 실제 Java/Bedrock/GSCM 확인 없이 Day 12 COMPLETE 또는 Stable final을 선언하지 않습니다.
 
+## 2026-10-09 실행 상태 — 중복 실행 방지
+
+- 12.0A READY (02:45), 12.0B Golden 4/4 PASS (03:23), 12.7 cache Build PASS (03:45)는 `DAY12-REPO-PROGRESS.md`의 운영자 기록으로 확인했습니다. 이미 확보된 복구 지점을 임의로 새로 만들거나 덮어쓰지 않습니다.
+- 12.10 Final Verification 실제 실행(03:47)은 **18 PASS / 0 WARN / 1 FAIL**, 실패 항목은 `backend_ports_private`입니다. 다음 우선 작업은 실서버 Windows의 **읽기 전용 TCP 바인딩 진단**(`tools\\day12\\Day12_TCP_Bind_Diagnostic_READ_ONLY.cmd`)으로 25570~25573 backend 포트가 실제로 루프백에만 바인딩되는지 확인하는 것입니다.
+- 진단이 불명확하거나 외부 바인딩이 발견되면 `12.10` PASS로 처리하지 않습니다. 방화벽/서버 바인딩을 이 수집 도구가 자동으로 변경하지 않습니다.
+- 아래 1~3단계는 전체 절차의 참고용이며, 이미 PASS인 지점을 **다시 실행하라는 지시가 아닙니다**. 아직 대기인 단계부터 진행합니다. 모든 `FINAL-RELEASE-GATES.json` live gate는 실제 근거 검토 후에만 닫습니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
