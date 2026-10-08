@@ -45,3 +45,8 @@ Historical Day 8–11 recovery evidence is intentionally retained.
 
 - `Day12_Phase5_Firewall_Scope_READ_ONLY.cmd`: one-time follow-up **on server PC only** after the combined 12.2/12.5 scan. Reads current firewall ActiveStore inbound enabled Allow rules, current network category set and active firewall profile policy; reviews the Any-port/Any-application TCP/UDP/Any-protocol subset against interface, address, service and security filters.
 - No raw firewall rule name/ID, program path, private IP, host/interface name, token or username is exported. Any filter/query error is recorded as a bounded error category and the result stays `CHECK_REQUIRED`; a successful result is `CAPTURED_FOR_REVIEW`, **never a release/security PASS**. It cannot infer actual socket binding or WFP packet authorization. A full scan does **not** need to be repeated just to run this narrowed check.
+
+### Phase 12.5: rule and ACL review
+
+- `Day12_Phase5_Rule_ACL_Review_READ_ONLY.cmd`: one-time **server PC** follow-up after the ActiveStore policy capture. Examines only current ActiveStore inbound Allow rules with Any program+Any port (not a full redundant scan of all component hashes). Classifies local rule display strings **only in memory** to heuristic, non-verified categories; does not export firewall rule names/IDs, raw IPs, usernames or executable paths. 
+- Reads **only NTFS ACL metadata** (not contents or credentials) for GSC ProgramData, `server.json`, Runtime, Runtime/Agent and Agent 0.5.4 JAR. Reports per-ACE mutating rights as explicit bit flags and role groups, not effective user permissions. Write actions and release-gate edits are forbidden; `CAPTURED_FOR_REVIEW` is not a 12.5 security PASS. The output JSON is private evidence, not a GitHub artifact.
