@@ -89,6 +89,23 @@ function Get-Day12TcpInventory([int[]]$WantedPorts){
   }
   return $dedup.ToArray()
 }
+# Require positive native observation for every ONLINE Java+RCON port.
+# An offline fleet, missing native provider or unobserved listener must FAIL.
+function Test-Day12PrivateListenerEvidence {
+  param([object[]]$Rows,[int[]]$ExpectedJava,[int[]]$ExpectedRcon,[string]$NativeStatus)
+  $expectedAll=@($ExpectedJava)+@($ExpectedRcon)
+  if($NativeStatus -ne "CAPTURED" -or $ExpectedJava.Count -eq 0 -or $ExpectedRcon.Count -eq 0){return $false}
+  $privatePorts=@(25570,25571,25572,25573,25575,25576,25577,25579)
+  $relevant=@($Rows|Where-Object{$privatePorts -contains [int]$_.port})
+  if($relevant.Count -eq 0){return $false}
+  foreach($row in $relevant){
+    if([string]$row.address -notin @("127.0.0.1","::1","::ffff:127.0.0.1")){return $false}
+  }
+  foreach($target in $expectedAll){
+    if(@($relevant|Where-Object{[int]$_.port -eq [int]$target}).Count -eq 0){return $false}
+  }
+  return $true
+}
 if([string]::IsNullOrWhiteSpace($OutputDir)){$OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Final-Verification"}
 New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
 $stamp=Get-Date -Format "yyyyMMdd-HHmmss";$out=Join-Path $OutputDir ("Geumyi-Final-Verification-"+$stamp+".json");$canonical=Join-Path $OutputDir "FINAL-HEALTH-REPORT.json"
@@ -103,6 +120,21 @@ if($Synthetic){
   }
   $fixture=[pscustomobject]@{server_id="wild";status=[pscustomobject]@{phase="idle"}}
   if([bool](Optional $fixture "status.block_start" $false)){throw "optional fleet metadata regression"}
+  $safeFixture=@(
+    [pscustomobject]@{port=25570;address="127.0.0.1"},
+    [pscustomobject]@{port=25575;address="::1"}
+  )
+  $passSafe=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED"
+  $failMissing=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @(25570) -ExpectedRcon @(25575,25576) -NativeStatus "CAPTURED"
+  $failNoNative=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "ERROR"
+  $failNoFleet=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @() -ExpectedRcon @() -NativeStatus "CAPTURED"
+  $failWildcard=Test-Day12PrivateListenerEvidence -Rows @(
+    [pscustomobject]@{port=25570;address="0.0.0.0"},
+    [pscustomobject]@{port=25575;address="::1"}
+  ) -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED"
+  if(-not $passSafe -or $failMissing -or $failNoNative -or $failNoFleet -or $failWildcard){
+    throw "Private listener gate fail-closed regression"
+  }
   $r=[ordered]@{schema=2;tool="Geumyi Final Verification";read_only=$true;synthetic=$true;result="SYNTHETIC_PASS";summary=[ordered]@{pass=1;warn=0;fail=0};checks=@(Check "synthetic" "PASS" "CI contract")}
   $r|ConvertTo-Json -Depth 8|Set-Content $out -Encoding UTF8;$r|ConvertTo-Json -Depth 8|Set-Content $canonical -Encoding UTF8;exit 0
 }
@@ -189,13 +221,7 @@ if($fleet){
 }
 $missingRcon=@($requiredRcon|Where-Object{$target=$_;@($privateListeners|Where-Object{[int]$_.port -eq $target}).Count -eq 0})
 # Do not turn a no-listeners / no-fleet / missing-native situation into PASS.
-$privacyOK=(
-  $nativeResult.status -eq "CAPTURED" -and
-  $requiredJava.Count -gt 0 -and
-  $backendPublic.Count -eq 0 -and
-  $missingJava.Count -eq 0 -and $missingRcon.Count -eq 0 -and
-  $privateListeners.Count -gt 0
-)
+$privacyOK=Test-Day12PrivateListenerEvidence -Rows $portRows -ExpectedJava $requiredJava -ExpectedRcon $requiredRcon -NativeStatus ([string]$nativeResult.status)
 [void]$checks.Add((Check "backend_ports_private" $(if($privacyOK){"PASS"}else{"FAIL"}) (
   "public_backend_listener_observations="+$backendPublic.Count+
   "; private_listener_observations="+$privateListeners.Count+
@@ -219,7 +245,7 @@ foreach($pr in @($portRows)){
   }
 }
 $r=[ordered]@{
-  schema=3;tool="Geumyi Final Verification";read_only=$true;synthetic=$false
+  schema=2;tool="Geumyi Final Verification";read_only=$true;synthetic=$false
   fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o")
   result=$(if($fail -eq 0){"PASS"}else{"FAIL"})
   summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail}
