@@ -161,6 +161,8 @@ jobs:
           if($failed.result -ne 'CHECK_REQUIRED' -or @($failed.steps|Where-Object{$_.status -eq 'CAPTURED'}).Count -gt 0){
             throw "Missing scripts were falsely marked CAPTURED"
           }
+          # The exit=2 above is expected; don't leak it into the workflow shell exit.
+          $global:LASTEXITCODE=0
 
       - name: Final release gate is fail-closed while live gates are pending
         shell: powershell
