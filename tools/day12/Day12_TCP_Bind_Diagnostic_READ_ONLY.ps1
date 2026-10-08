@@ -93,7 +93,7 @@ if($Synthetic){
     throw 'Day12 netstat TCP parser synthetic regression'
   }
 }
-$results=[ordered]@{
+$results=[ordered]@{}
 try{
   Add-Type -TypeDefinition $nativeSource -ErrorAction Stop
   $results.native=[ordered]@{status="OK";rows=@([Day12TcpTableInspector]::Read() | Where-Object {$ports -contains $_.port})}
