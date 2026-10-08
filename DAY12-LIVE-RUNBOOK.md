@@ -91,6 +91,13 @@
 - StatusAgent 0.5.4 JAR과 설정 일치, 구버전 파일 공존 확인. 현재 **실행 파일 버전**과 GitHub 공식 SHA-256 신뢰성은 별도 판정. 서브 PC LAN 접근 차단은 기존 증거 유효.
 - 남은 것: 12.5 실제 정책/ACL 확인, 12.10 백엔드 Java/RCON 소켓 바인딩, 12.11 Java+Bedrock+GSCM 실기기 E2E 등. `FINAL-RELEASE-GATES.json` 및 Stable 전환 보류. 새로운 변경/증거가 생기지 않는 한 기존 전체 보고서/Golden/LAN 테스트 재실행하지 않습니다.
 
+## 06:13 다음 단일 검사 — 광범위 방화벽 정책 ActiveStore 확인
+
+- 기존 12.5 전체 검사는 `CAPTURED`로 성공했으며 **같은 전체 진단을 다시 실행하지 않습니다**. 38개 광범위 Allow 후보의 실제 적용 범위(ActiveStore·네트워크 프로필·인터페이스 종류·IPsec 조건 등)만 확인합니다.
+- 서버 PC에서 최신 Operator Kit의 `tools\\day12\\Day12_Phase5_Firewall_Scope_READ_ONLY.cmd`를 관리자 권한으로 **읽기 전용 실행**. 출력: 바탕화면 `Geumyi-Day12-Firewall-Scope\\Day12-Firewall-Scope-*.json`. **새 JSON 하나**를 대화에 제출하고, 원본은 공개 GitHub에 올리지 않습니다.
+- 해당 결과는 **실제 Windows Filtering Platform 패킷 접근의 최종 증명은 아닙니다**. 과도한 광범위 규칙이 밝혀져도 현재 서버 운영에 영향을 줄 수 있으므로, 어떤 규칙도 임의로 삭제/수정하지 않고 근거를 먼저 검토합니다. 필요할 경우 추후 별도 승인과 롤백 계획을 세웁니다.
+- 12.10/12.13 릴리즈 게이트 유지. Golden/캐시/이전 LAN 재검사 불필요.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
