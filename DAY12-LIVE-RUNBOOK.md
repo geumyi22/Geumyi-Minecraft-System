@@ -82,6 +82,15 @@
 - 최신 Operator Kit Safety CI를 확인한 후 **서버 PC에서만** `tools\\day12\\Day12_Phase2_5_Integrity_Security_READ_ONLY.cmd` 관리자 권한 실행 → 새 JSON **하나** 제출. 이전 LAN 검사/Golden 백업/기존 보고서를 재실행하지 않습니다.
 - 진행 중인 서버나 Windows 방화벽/폴더 ACL/플러그인/Agent 프로세스를 진단을 위해 변경하지 않습니다. 12.10 최종 보안 검증 및 Stable 게이트는 계속 미통과입니다.
 
+## 06:13 후속 — 방화벽 수집 성공, 이제 범위 위험성 검토
+
+- `Day12-Integrity-Security-20261009-061224.json` 확인: `firewall.status=CAPTURED`, 268/268 인바운드 활성 규칙 처리 완료, 규칙/필터 오류 모두 0. 따라서 **같은 12.2+12.5 전체 수집을 반복할 필요 없습니다**.
+- 대상 47개 허용 규칙 중 38개는 `Any` 포트/프로그램/서비스와 원격주소 `Any`로 분류된 **광범위 규칙 후보**입니다. 이 규칙들이 해당 PC에서 실제로 적용되는지는 활성 방화벽 프로필, 규칙 출처, 인터페이스/패키지·기타 보안 조건까지 검토해야 합니다. 현 시점에 즉시 규칙을 일괄 비활성화하거나 삭제하면 기존 마인크래프트·Tailscale·원격 관리 연결에 영향을 줄 수 있으므로 **변경 금지**.
+- 명시적 대상 허용: `TCP 25565,25566` 원격 Any, `UDP 19132,19133` 원격 Any, `TCP 8787` 원격 LocalSubnet. 특히 관리 API 8787은 **실제 바인딩 주소/인증/방화벽 효과**를 별도로 확인해야 합니다. 이전 Native 8790 loopback 증거는 8787 바인딩 증거를 대신하지 않습니다.
+- GSC ProgramData의 상속된 BUILTIN_USERS 쓰기 Allow 1건은 수정하지 말고, 장기적으로 서비스/백업 권한을 포함한 유효 권한 확인 후 계획적으로 최소 권한화합니다.
+- StatusAgent 0.5.4 JAR과 설정 일치, 구버전 파일 공존 확인. 현재 **실행 파일 버전**과 GitHub 공식 SHA-256 신뢰성은 별도 판정. 서브 PC LAN 접근 차단은 기존 증거 유효.
+- 남은 것: 12.5 실제 정책/ACL 확인, 12.10 백엔드 Java/RCON 소켓 바인딩, 12.11 Java+Bedrock+GSCM 실기기 E2E 등. `FINAL-RELEASE-GATES.json` 및 Stable 전환 보류. 새로운 변경/증거가 생기지 않는 한 기존 전체 보고서/Golden/LAN 테스트 재실행하지 않습니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
