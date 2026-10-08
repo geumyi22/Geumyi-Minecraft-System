@@ -167,7 +167,7 @@ jobs:
             $cacheRoot=Join-Path $root 'ArtifactCache\known-good\day12'
             $manifest=Join-Path $cacheRoot 'known-good-manifest.json'
             $m=Get-Content $manifest -Raw|ConvertFrom-Json
-            if($m.result -ne 'PASS' -or @($m.files).Count -ne 9){throw "Cache Build manifest contract failed"}
+            if($m.result -ne 'PASS' -or @($m.files).Count -ne 9){throw ("Cache Build manifest contract failed; count="+@($m.files).Count+"; names="+((@($m.files)|ForEach-Object{$_.logical}) -join ","))}
             if(@($m.files|Where-Object{-not $_.cache_name -or -not $_.sha256}).Count -ne 0){throw "Cache manifest missing cache_name or hash"}
             & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/recovery-kit/Verify-KnownGood.ps1 -ManifestPath $manifest -Root $cacheRoot
             if($LASTEXITCODE -ne 0){throw "Recovery Kit could not verify built cache"}
