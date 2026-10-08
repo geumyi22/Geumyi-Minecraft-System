@@ -18,6 +18,7 @@ Day 12 is the final production-hardening milestone. Tools are intentionally spli
 - **12.7** `Day12_Phase7_KnownGood_Cache.ps1` — Audit or explicit-confirmation Build; Build requires a Phase 12.0B PASS report.
 - **12.8** `Day12_Phase8_DR_SYNTHETIC.ps1` — temp-only disaster-recovery drill used by CI.
 - **12.10** `Geumyi_Final_Verification.cmd` — canonical final read-only verifier.
+  - `Day12_TCP_Bind_Diagnostic_READ_ONLY.cmd` — native Windows TCP listener/bind evidence collection for a fail-closed `backend_ports_private` investigation; synthetic Windows CI PASS does not prove live listener privacy.
 - **12.12** `Day12_Phase12_Soak_READ_ONLY.cmd` — soak start/end snapshots.
 
 ## Recovery Kit
