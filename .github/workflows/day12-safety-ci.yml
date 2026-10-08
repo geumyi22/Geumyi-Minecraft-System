@@ -195,6 +195,20 @@ jobs:
           if($r.result -ne 'SYNTHETIC_CAPTURED' -or -not $r.read_only -or $r.mutation_performed -or -not $r.providers.native){throw 'TCP native diagnostic contract failed'}
           if([string]$r.providers.native.status -ne 'OK'){throw ('Native Windows TCP table call failed: '+[string]$r.providers.native.error)}
 
+      - name: Windows native TCP Owner PID vs Basic IPv4 controlled listener
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'day12-native-crosscheck'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_Native_Listener_Crosscheck_READ_ONLY.ps1 -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Native controlled listener crosscheck failed'}
+          $reports=@(Get-ChildItem -LiteralPath $out -Filter '*.json' -File)
+          if($reports.Count -ne 1){throw 'Native crosscheck expected a single report'}
+          $r=Get-Content -LiteralPath $reports[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.read_only -or -not $r.synthetic -or
+            -not $r.controlled_listener_observed_basic -or -not $r.controlled_listener_observed_owner -or $r.mutation_performed){
+            throw 'Native controlled listener report contract failed'
+          }
+
       - name: Synthetic 12.10 configuration and bind evidence (fail-closed)
         shell: powershell
         run: |
