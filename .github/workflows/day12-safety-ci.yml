@@ -208,6 +208,19 @@ jobs:
             throw 'Binding evidence synthetic contract failed'
           }
 
+      - name: Synthetic second-PC LAN probe validation (no network traffic)
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'lan-proof'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_LAN_Proof_READ_ONLY.ps1 -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Phase 12.10 LAN proof synthetic failed'}
+          $reports=@(Get-ChildItem -LiteralPath $out -Filter '*.json' -File)
+          if($reports.Count -ne 1){throw 'LAN proof did not emit one report'}
+          $r=Get-Content -LiteralPath $reports[0].FullName -Raw | ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.read_only -or -not $r.synthetic -or $r.mutation_performed){
+            throw 'LAN proof synthetic contract failed'
+          }
+
       - name: Golden report discovery and manual-path regression
         shell: powershell
         run: |
