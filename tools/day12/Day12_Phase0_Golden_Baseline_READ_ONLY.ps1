@@ -47,6 +47,22 @@ function Read-BackupField([object]$Backup,[string]$Field,[object]$Default=$null)
     if($null -eq $prop -or $null -eq $prop.Value){ return $Default }
     return $prop.Value
 }
+# Treat omitted API fields as unknown/default; never crash under StrictMode.
+function Optional([object]$Value,[string]$Field,[object]$Default=$null){
+    foreach($part in $Field.Split('.')){
+        if($null -eq $Value){return $Default}
+        if($Value -is [System.Collections.IDictionary]){
+            if(-not $Value.Contains($part)){return $Default}
+            $Value=$Value[$part]
+        }else{
+            $prop=$Value.PSObject.Properties[$part]
+            if($null -eq $prop){return $Default}
+            $Value=$prop.Value
+        }
+    }
+    if($null -eq $Value){return $Default}
+    return $Value
+}
 function Json-File([string]$Path){
     if(-not(Test-Path -LiteralPath $Path -PathType Leaf)){ return $null }
     try { return (Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json) } catch { return $null }
@@ -165,22 +181,22 @@ $cfg = Json-File $configPath
 $serverRows = @()
 if($null -ne $cfg -and $null -ne $cfg.servers){
     foreach($s in @($cfg.servers)){
-        $dir = [string]$s.path
+        $dir = [string](Optional $s "path" "")
         $props = if($dir){Join-Path $dir "server.properties"}else{""}
         $serverRows += [ordered]@{
             id=[string]$s.id
-            name=[string]$s.name
-            role=[string]$s.role
+            name=[string](Optional $s "name" "")
+            role=[string](Optional $s "role" "")
             directory_present=((-not [string]::IsNullOrWhiteSpace($dir)) -and (Test-Path -LiteralPath $dir -PathType Container))
             server_properties_present=((-not [string]::IsNullOrWhiteSpace($props)) -and (Test-Path -LiteralPath $props -PathType Leaf))
             server_properties_sha256=Hash-File $props
-            java_port=[int]$s.java_port
-            rcon_port=[int]$s.rcon_port
-            bedrock_profile_port=[int]$s.bedrock_port
-            gds_api_port=[int]$s.gds_api_port
-            auto_start=[bool]$s.auto_start
-            restart_on_crash=[bool]$s.restart_on_crash
-            update_policy=[string]$s.update_policy
+            java_port=[int](Optional $s "java_port" 0)
+            rcon_port=[int](Optional $s "rcon_port" 0)
+            bedrock_profile_port=[int](Optional $s "bedrock_port" 0)
+            gds_api_port=[int](Optional $s "gds_api_port" 0)
+            auto_start=[bool](Optional $s "auto_start" $false)
+            restart_on_crash=[bool](Optional $s "restart_on_crash" $false)
+            update_policy=[string](Optional $s "update_policy" "")
             plugins=$(if($dir){Get-Jars (Join-Path $dir "plugins")}else{@()})
         }
     }
@@ -270,10 +286,10 @@ if(Test-Path -LiteralPath $updatesRoot -PathType Container){
 }
 
 $checks=New-Object 'System.Collections.Generic.List[object]'
-Add-Check $checks "gsc_host_4_3_8" ($null -ne $status -and [string]$status.app_version -eq $Expected.gsc) $(if($null -ne $status){"host="+[string]$status.app_version}else{"status unavailable"})
-Add-Check $checks "control_api_v1" ($null -ne $info -and [bool]$info.ok -and [int]$info.api_version -ge 1 -and [string]$info.gsc_version -eq $Expected.gsc) $(if($null -ne $info){"api="+[string]$info.api_version+" gsc="+[string]$info.gsc_version}else{"info unavailable"})
+Add-Check $checks "gsc_host_4_3_8" ($null -ne $status -and [string](Optional $status "app_version" "") -eq $Expected.gsc) $(if($null -ne $status){"host="+[string](Optional $status "app_version" "")}else{"status unavailable"})
+Add-Check $checks "control_api_v1" ($null -ne $info -and [bool](Optional $info "ok" $false) -and [int](Optional $info "api_version" 0) -ge 1 -and [string](Optional $info "gsc_version" "") -eq $Expected.gsc) $(if($null -ne $info){"api="+[string]$info.api_version+" gsc="+[string](Optional $info "gsc_version" "")}else{"info unavailable"})
 Add-Check $checks "four_server_snapshot" ($null -ne $snapshot -and @($snapshot.servers).Count -ge 4) $(if($null -ne $snapshot){"servers="+@($snapshot.servers).Count}else{"snapshot unavailable"})
-Add-Check $checks "expected_server_ids" ((@("wild","playground","other","lobby") | Where-Object {$serverIds -notcontains $_}).Count -eq 0) ("fleet="+($serverIds -join ","))
+Add-Check $checks "expected_server_ids" (@(@("wild","playground","other","lobby") | Where-Object {$serverIds -notcontains $_}).Count -eq 0) ("fleet="+($serverIds -join ","))
 Add-Check $checks "server_directories_present" (@($serverRows | Where-Object {-not [bool]$_.directory_present}).Count -eq 0 -and $serverRows.Count -ge 4) ("profiles="+$serverRows.Count)
 Add-Check $checks "backend_ports_match" (@($Expected.network.backend | Where-Object {
     $x=$_
@@ -283,7 +299,7 @@ Add-Check $checks "backend_ports_match" (@($Expected.network.backend | Where-Obj
 Add-Check $checks "proxy_roots_ready" (@($proxyRows | Where-Object {-not [bool]$_.root_present -or -not [bool]$_.velocity_toml_present -or -not [bool]$_.forwarding_secret_present -or -not [bool]$_.floodgate_key_present}).Count -eq 0) "3 proxy roots/config/identity present"
 Add-Check $checks "public_ports_bound" (@($proxyRows | Where-Object {-not [bool]$_.java_listening -or -not [bool]$_.bedrock_bound}).Count -eq 0) "TCP 25565-25567 + UDP 19132-19134"
 $networkRows=if($null -ne $network){@($network.endpoints)}else{@()}
-Add-Check $checks "public_entry_api_healthy" ($networkRows.Count -eq 3 -and @($networkRows | Where-Object {-not [bool]$_.java_responding -or -not [bool]$_.bedrock_raknet_pong}).Count -eq 0) ("entries="+$networkRows.Count)
+Add-Check $checks "public_entry_api_healthy" ($networkRows.Count -eq 3 -and @($networkRows | Where-Object {-not [bool](Optional $_ "java_responding" $false) -or -not [bool](Optional $_ "bedrock_raknet_pong" $false)}).Count -eq 0) ("entries="+$networkRows.Count)
 Add-Check $checks "gsc_service_running" ($serviceState -eq "Running") ("service="+$serviceState)
 Add-Check $checks "host_binary_fingerprint" (-not [string]::IsNullOrWhiteSpace((Hash-File $hostExe))) "Host binary SHA-256 captured"
 Add-Check $checks "server_config_fingerprint" (-not [string]::IsNullOrWhiteSpace((Hash-File $configPath))) "server.json SHA-256 captured"
@@ -291,16 +307,16 @@ Add-Check $checks "backup_inventory_readable" ($serverIds.Count -ge 4 -and $back
 $unsafe=@()
 if($null -ne $fleet){
     $unsafe=@($fleet.servers | Where-Object {
-        [bool]$_.status.block_start -or [string]$_.status.phase -in @("blocked","rollback_failed","rolling_back","pending_health","downloading")
+        [bool](Optional $_ "status.block_start" $false) -or [string](Optional $_ "status.phase" "") -in @("blocked","rollback_failed","rolling_back","pending_health","downloading")
     })
 }
 Add-Check $checks "no_unsafe_update_transaction" ($null -ne $fleet -and $unsafe.Count -eq 0) ("unsafe="+$unsafe.Count)
-$activeJobs=if($null -ne $snapshot){[int]$snapshot.active_jobs}else{-1}
+$activeJobs=if($null -ne $snapshot){[int](Optional $snapshot "active_jobs" -1)}else{-1}
 Add-Check $checks "no_active_control_jobs" ($activeJobs -eq 0) ("active_jobs="+$activeJobs)
 $healthRows=if($null -ne $health){@($health.servers)}else{@()}
-Add-Check $checks "health_no_fail" ($healthRows.Count -ge 4 -and @($healthRows | Where-Object {[string]$_.overall -eq "fail"}).Count -eq 0) ("health_rows="+$healthRows.Count)
+Add-Check $checks "health_no_fail" ($healthRows.Count -ge 4 -and @($healthRows | Where-Object {[string](Optional $_ "overall" "") -eq "fail"}).Count -eq 0) ("health_rows="+$healthRows.Count)
 Add-Check $checks "disk_headroom" ($freeBytes -ge 50GB) ("free_gib="+([math]::Round($freeBytes/1GB,2))) $true
-Add-Check $checks "local_client_4_3_8_or_not_running" ($null -eq $client -or [string]$client.version -eq $Expected.gsc) $(if($null -eq $client){"local Client endpoint not running; Host capture still valid"}else{"client="+[string]$client.version}) $false
+Add-Check $checks "local_client_4_3_8_or_not_running" ($null -eq $client -or [string](Optional $client "version" "") -eq $Expected.gsc) $(if($null -eq $client){"local Client endpoint not running; Host capture still valid"}else{"client="+[string](Optional $client "version" "")}) $false
 
 $failedMandatory=@($checks | Where-Object {$_.mandatory -and $_.status -ne "PASS"})
 $ready=($failedMandatory.Count -eq 0)
@@ -316,11 +332,11 @@ $report=[ordered]@{
     expected=$Expected
     api_base_used=$apiBase
     versions=[ordered]@{
-        host=$(if($null -ne $status){[string]$status.app_version}else{""})
-        local_client=$(if($null -ne $client){[string]$client.version}else{""})
-        control_api=$(if($null -ne $info){[int]$info.api_version}else{0})
-        verified_release=$(if($null -ne $selfUpdate){[string]$selfUpdate.release}else{""})
-        verified_latest=$(if($null -ne $selfUpdate){[string]$selfUpdate.latest}else{""})
+        host=$(if($null -ne $status){[string](Optional $status "app_version" "")}else{""})
+        local_client=$(if($null -ne $client){[string](Optional $client "version" "")}else{""})
+        control_api=$(if($null -ne $info){[int](Optional $info "api_version" 0)}else{0})
+        verified_release=$(if($null -ne $selfUpdate){[string](Optional $selfUpdate "release" "")}else{""})
+        verified_latest=$(if($null -ne $selfUpdate){[string](Optional $selfUpdate "latest" "")}else{""})
         gscm_day11_verified=$Expected.gscm
     }
     fingerprints=[ordered]@{
@@ -334,27 +350,27 @@ $report=[ordered]@{
     public_entry=@($networkRows | ForEach-Object {
         [ordered]@{
             id=[string]$_.id
-            java_tcp=[int]$_.java_tcp
-            java_responding=[bool]$_.java_responding
-            bedrock_udp=[int]$_.bedrock_udp
-            bedrock_raknet_pong=[bool]$_.bedrock_raknet_pong
+            java_tcp=[int](Optional $_ "java_tcp" 0)
+            java_responding=[bool](Optional $_ "java_responding" $false)
+            bedrock_udp=[int](Optional $_ "bedrock_udp" 0)
+            bedrock_raknet_pong=[bool](Optional $_ "bedrock_raknet_pong" $false)
         }
     })
     fleet=$(if($null -eq $fleet){$null}else{
         [ordered]@{
-            global_enabled=[bool]$fleet.global.enabled
-            global_channel=[string]$fleet.global.channel
+            global_enabled=[bool](Optional $fleet "global.enabled" $false)
+            global_channel=[string](Optional $fleet "global.channel" "")
             servers=@($fleet.servers | ForEach-Object {
                 [ordered]@{
                     server_id=[string]$_.server_id
-                    role=[string]$_.role
-                    online=[bool]$_.online
-                    policy=[string]$_.policy
-                    channel=[string]$_.channel
-                    effective_channel=[string]$_.effective_channel
-                    pin=[string]$_.pin
-                    update_phase=[string]$_.status.phase
-                    block_start=[bool]$_.status.block_start
+                    role=[string](Optional $_ "role" "")
+                    online=[bool](Optional $_ "online" $false)
+                    policy=[string](Optional $_ "policy" "")
+                    channel=[string](Optional $_ "channel" "")
+                    effective_channel=[string](Optional $_ "effective_channel" "")
+                    pin=[string](Optional $_ "pin" "")
+                    update_phase=[string](Optional $_ "status.phase" "")
+                    block_start=[bool](Optional $_ "status.block_start" $false)
                 }
             })
         }
