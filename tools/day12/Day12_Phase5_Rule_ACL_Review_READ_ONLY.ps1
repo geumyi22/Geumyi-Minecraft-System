@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$OutputDir="",[switch]$Synthetic)
+param([string]$OutputDir="",[switch]$Synthetic,[switch]$AclOnly)
 Set-StrictMode -Version Latest
 $ErrorActionPreference="Stop"
 
@@ -143,6 +143,48 @@ if($Synthetic){
     result="SYNTHETIC_PASS";mutation_performed=$false
   }|ConvertTo-Json -Depth 6|Set-Content -LiteralPath $out -Encoding UTF8
   Write-Host "Synthetic firewall rule and ACL classifier: PASS"
+  exit 0
+}
+# This scope intentionally avoids re-enumerating firewall rules that already
+# passed in the operator's 06:21 and 06:35 captures. ACL metadata only.
+if($AclOnly){
+  $pd=if($env:PROGRAMDATA){$env:PROGRAMDATA}else{"C:\ProgramData"}
+  $gscRoot=Join-Path $pd "GeumyiServerCenter"
+  $aclTargets=@(
+    (ACLRecord $gscRoot "GSC_PROGRAMDATA_DIR" $false),
+    (ACLRecord (Join-Path $gscRoot "server.json") "GSC_SERVER_JSON" $true),
+    (ACLRecord (Join-Path $gscRoot "Runtime") "GSC_RUNTIME_DIR" $false),
+    (ACLRecord (Join-Path $gscRoot "Runtime\Agent") "STATUSAGENT_RUNTIME_DIR" $false),
+    (ACLRecord (Join-Path $gscRoot "Runtime\Agent\GeumyiStatusAgent-0.5.4.jar") "STATUSAGENT_054_JAR" $true)
+  )
+  $expected=@("GSC_PROGRAMDATA_DIR","GSC_SERVER_JSON","GSC_RUNTIME_DIR","STATUSAGENT_RUNTIME_DIR","STATUSAGENT_054_JAR")
+  $labels=@($aclTargets|ForEach-Object{$_.target_role})
+  $labelOk=($labels.Count -eq 5)
+  for($i=0;$i -lt [Math]::Min($labels.Count,5);$i++){
+    if($labels[$i] -ne $expected[$i]){$labelOk=$false}
+  }
+  $aclErrors=@($aclTargets|Where-Object{$_.status -ne "CAPTURED"})
+  $state=if($labelOk -and $aclErrors.Count -eq 0){"CAPTURED_FOR_REVIEW"}else{"CHECK_REQUIRED"}
+  [ordered]@{
+    schema=1;phase="12.5-acl-only";read_only=$true;synthetic=$false
+    generated_at=(Get-Date).ToString("o");result=$state
+    firewall_enumeration="NOT_EXECUTED_ACL_ONLY"
+    acl_target_label_consistency=$labelOk
+    protected_file_acl_summaries=$aclTargets
+    problem_count=$aclErrors.Count
+    notes=@(
+      "This snapshot checks only five GSC ACLs, never the prior 266 Windows firewall rules.",
+      "Parent-directory DeleteChild permission is captured separately as delete_children.",
+      "No contents of server.json or Java JARs, rule names, paths, usernames, or secrets are exported.",
+      "ACE summaries do not compute effective access of any real user or process token.",
+      "CAPTURED_FOR_REVIEW is NOT security gate or release PASS."
+    )
+    mutation_performed=$false;secrets_exported=$false
+  }|ConvertTo-Json -Depth 18|Set-Content -LiteralPath $out -Encoding UTF8
+  Write-Host ("Day12 ACL-only report: "+$state)
+  Write-Host ("ACL target labels correct: "+$labelOk)
+  Write-Host ("Report: "+$out)
+  if($state -ne "CAPTURED_FOR_REVIEW"){exit 2}
   exit 0
 }
 $errors=@();$profiles=@()
