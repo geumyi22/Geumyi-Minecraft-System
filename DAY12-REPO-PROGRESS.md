@@ -154,6 +154,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - This report is **not evidence that the 38 broad Any/Any firewall rules are harmless**. GSC ProgramData's BUILTIN_USERS inherited write allow remains unresolved, as do server backend listener addresses. **12.5 final security gate stays OPEN; 12.10 canonical backend_ports_private FAIL; 12.11/12.12 live E2E/soak pending; 12.13 Stable BLOCKED**.
 - No action taken on live firewall, ACLs, GSC binaries/config, tokens, devices, backups, or running servers. Do not repeat successful 8787 endpoint check unless environment changes.
 
+## 2026-10-09 — phase 12.5 read-only rule purpose + precise ACL follow-up prepared
+
+- Previous **06:21 ActiveStore full scan** and **06:25 operator-reported unauthenticated GSC 8787 GET HTTP 401** remain the current server evidence; do not repeat those tests. Main unresolved 12.5 findings: **38 active-profile-overlapping broad inbound Allow candidates** of unknown specific purpose, and inherited BUILTIN_USERS writable ACE at GSC ProgramData.
+- Added `tools/day12/Day12_Phase5_Rule_ACL_Review_READ_ONLY.ps1/.cmd` for a single targeted read-only capture **on the actual server PC**. The rule scanner only selects active inbound Allow rules with port Any, program Any and TCP/UDP/Any protocol, then assigns **heuristic category hints** (Windows feature, VPN/overlay, virtualization, remote management, Minecraft/Java, gaming, discovery, other); it does **not** assert signed publisher, rule origin, necessity, exploitability or effective packet permit. Raw rule names, remote IPs, user identities and executable paths are **never emitted**.
+- ACL inspection is limited to GSC ProgramData dir, its `server.json` **file ACL without reading secret contents**, Runtime dir, Runtime/Agent dir and 0.5.4 JAR ACL. Writes detailed coarse SID categories and per-ACE bit flags (write-data, append, delete, change-permissions, ownership, write-attributes), inheritance and ACL inheritance protection. It does **not** compute an actual access token's effective rights and does not touch disk permissions.
+- The current 12.5 security gate remains OPEN. No firewall / ACL / process / binary / token / backup / Golden / cache / version or FINAL-RELEASE-GATES modifications are authorized by this preparation. Tool validation is CI/synthetic only until operator supplies real-host output.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
