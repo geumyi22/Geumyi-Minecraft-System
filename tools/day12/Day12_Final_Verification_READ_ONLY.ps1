@@ -24,10 +24,80 @@ function G([string]$p,[int]$t=15){
   }
   try{Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method GET -TimeoutSec $t}catch{$null}}
 function Get-Sha256([string]$p){if(-not(Test-Path $p -PathType Leaf)){return ""};(Get-FileHash $p -Algorithm SHA256).Hash.ToLowerInvariant()}
+# Merge independent Windows listener inventories. A missing provider must never
+# be interpreted as proof that backend/RCON ports are private.
+function Parse-Day12NetstatTcp([string[]]$Lines,[int[]]$WantedPorts){
+  $found=New-Object System.Collections.ArrayList
+  $pattern='^\s*TCP\s+(\S+)\s+(\S+)\s+LISTENING\s+(\d+)\s*$'
+  foreach($line in $Lines){
+    if($line -match $pattern){
+      $localText=[string]$Matches[1]
+      $pidNumber=[int]$Matches[3]
+      if($localText -match '^(.+):(\d+)$'){
+        $port=[int]$Matches[2]
+        if($WantedPorts -contains $port){
+          [void]$found.Add([ordered]@{
+            port=$port;address=([string]$Matches[1]).Trim('[',']')
+            pid=$pidNumber;source="netstat"
+          })
+        }
+      }
+    }
+  }
+  return $found.ToArray()
+}
+function Get-Day12TcpInventory([int[]]$WantedPorts){
+  $rows=New-Object System.Collections.ArrayList
+  foreach($p in $WantedPorts){
+    try {
+      $raw=@(Get-NetTCPConnection -State Listen -LocalPort $p -ErrorAction Stop)
+      foreach($item in $raw){
+        if($null -eq $item){continue}
+        [void]$rows.Add([ordered]@{port=[int]$p;address=[string]$item.LocalAddress;pid=[int]$item.OwningProcess;source="Get-NetTCPConnection"})
+      }
+    }catch{}
+  }
+  # The .NET API uses the native TCP table and does not need an admin shell.
+  try {
+    $ips=[System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties()
+    foreach($item in @($ips.GetActiveTcpListeners())){
+      $port=[int]$item.Port
+      if($WantedPorts -contains $port){
+        [void]$rows.Add([ordered]@{port=$port;address=[string]$item.Address.ToString();pid=0;source="IPGlobalProperties"})
+      }
+    }
+  }catch{}
+  try {
+    $netstat=Join-Path $env:WINDIR "System32\netstat.exe"
+    if(Test-Path -LiteralPath $netstat -PathType Leaf){
+      foreach($entry in @(Parse-Day12NetstatTcp @(& $netstat -ano -p TCP 2>$null) $WantedPorts)){
+        [void]$rows.Add($entry)
+      }
+    }
+  }catch{}
+  $dedup=New-Object System.Collections.ArrayList
+  $seen=@{}
+  foreach($row in @($rows.ToArray())){
+    $k=[string]$row.port+"|"+([string]$row.address).ToLowerInvariant()
+    if(-not $seen.ContainsKey($k)){
+      $seen[$k]=$true
+      [void]$dedup.Add($row)
+    }
+  }
+  return $dedup.ToArray()
+}
 if([string]::IsNullOrWhiteSpace($OutputDir)){$OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Final-Verification"}
 New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
 $stamp=Get-Date -Format "yyyyMMdd-HHmmss";$out=Join-Path $OutputDir ("Geumyi-Final-Verification-"+$stamp+".json");$canonical=Join-Path $OutputDir "FINAL-HEALTH-REPORT.json"
 if($Synthetic){
+  $probe=@(Parse-Day12NetstatTcp @(
+    '  TCP    127.0.0.1:25570    0.0.0.0:0    LISTENING    1234',
+    '  TCP    0.0.0.0:25571    0.0.0.0:0    LISTENING    1235',
+    '  TCP    [::1]:25573    [::]:0    LISTENING    1236'
+  ) @(25570,25571,25573))
+  if($probe.Count -ne 3 -or $probe[0].address -ne "127.0.0.1" -or $probe[1].address -ne "0.0.0.0" -or $probe[2].address -ne "::1"){
+    throw "Windows netstat TCP listener parser synthetic regression"
+  }
   $fixture=[pscustomobject]@{server_id="wild";status=[pscustomobject]@{phase="idle"}}
   if([bool](Optional $fixture "status.block_start" $false)){throw "optional fleet metadata regression"}
   $r=[ordered]@{schema=2;tool="Geumyi Final Verification";read_only=$true;synthetic=$true;result="SYNTHETIC_PASS";summary=[ordered]@{pass=1;warn=0;fail=0};checks=@(Check "synthetic" "PASS" "CI contract")}
@@ -67,33 +137,12 @@ $cache=Join-Path $root "ArtifactCache\known-good\day12\known-good-manifest.json"
 $residue=@();$ur=Join-Path $root "Updates";if(Test-Path $ur){$residue=@(Get-ChildItem $ur -File -Recurse -ErrorAction SilentlyContinue|Where-Object{$_.Name -match '(?i)\.tmp$|\.part$|pending|journal|transaction'})}
 [void]$checks.Add((Check "update_residue" $(if($residue.Count -eq 0){"PASS"}else{"WARN"}) ("items="+$residue.Count) $false))
 $free=0;try{$free=[int64](Get-Item $root).PSDrive.Free}catch{};[void]$checks.Add((Check "disk_free_50g" $(if($free -ge 50GB){"PASS"}else{"FAIL"}) ("free_gib="+[math]::Round($free/1GB,2))))
-# Do not call an empty TCP listener inventory "private and safe".
-# Prefer the Windows TCP table and fall back to netstat when it is unavailable.
+# Collect listener bindings using PowerShell, native .NET, and netstat;
+# do not assume that 0 rows means ports are safe.
 $interestingPorts=@(25565,25566,25567,25570,25571,25572,25573,25575,25576,25577,25579,8787,8790)
-$portRows=@()
-foreach($p in $interestingPorts){
-  try{
-    $portRows+=@(Get-NetTCPConnection -State Listen -LocalPort $p -ErrorAction SilentlyContinue|
-      ForEach-Object{[ordered]@{port=$p;address=[string]$_.LocalAddress;pid=[int]$_.OwningProcess}})
-  }catch{}
-}
-$tcpInventorySource="Get-NetTCPConnection"
-if($portRows.Count -eq 0){
-  $tcpInventorySource="netstat"
-  try{
-    foreach($line in @(& netstat.exe -ano -p tcp 2>$null)){
-      if($line -match '^\\s*TCP\\s+(\\S+)\\s+\\S+\\s+LISTENING\\s+(\\d+)\\s*$'){
-        $local=[string]$Matches[1];$pidNumber=[int]$Matches[2]
-        if($local -match '^(.*):(\\d+)$'){
-          $p=[int]$Matches[2]
-          if($interestingPorts -contains $p){
-            $portRows += [ordered]@{port=$p;address=$Matches[1].Trim('[',']');pid=$pidNumber}
-          }
-        }
-      }
-    }
-  }catch{}
-}
+$portRows=@(Get-Day12TcpInventory $interestingPorts)
+$tcpInventorySources=@($portRows | ForEach-Object {[string]$_.source} | Select-Object -Unique)
+$tcpInventorySource=if($tcpInventorySources.Count){$tcpInventorySources -join ","}else{"unavailable"}
 $privatePorts=@(25570,25571,25572,25573,25575,25576,25577,25579)
 $privateListeners=@($portRows | Where-Object {$privatePorts -contains [int]$_.port})
 $backendPublic=@($privateListeners | Where-Object {[string]$_.address -notin @("127.0.0.1","::1","::ffff:127.0.0.1")})
@@ -116,6 +165,6 @@ $privacyOK=($backendPublic.Count -eq 0 -and $missingJava.Count -eq 0 -and $priva
   "; tcp_inventory="+$tcpInventorySource
 )))
 $pass=@($checks|Where-Object{$_.status -eq "PASS"}).Count;$warn=@($checks|Where-Object{$_.status -eq "WARN"}).Count;$fail=@($checks|Where-Object{$_.status -eq "FAIL" -and $_.mandatory}).Count
-$r=[ordered]@{schema=2;tool="Geumyi Final Verification";read_only=$true;synthetic=$false;fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o");result=$(if($fail -eq 0){"PASS"}else{"FAIL"});summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail};checks=@($checks);golden_backups=$golden;network_entry=$erows;health=$hrows;listener_inventory=$portRows;notes=@("Real Java/Bedrock login/routing and GSCM device E2E are separate Phase 12.11 gates.","No secret values or configuration contents are exported.");mutation_performed=$false}
+$r=[ordered]@{schema=2;tool="Geumyi Final Verification";read_only=$true;synthetic=$false;fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o");result=$(if($fail -eq 0){"PASS"}else{"FAIL"});summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail};checks=@($checks);golden_backups=$golden;network_entry=$erows;health=$hrows;listener_inventory=$portRows;listener_inventory_sources=$tcpInventorySources;notes=@("Real Java/Bedrock login/routing and GSCM device E2E are separate Phase 12.11 gates.","No secret values or configuration contents are exported.");mutation_performed=$false}
 $r|ConvertTo-Json -Depth 14|Set-Content $out -Encoding UTF8;$r|ConvertTo-Json -Depth 14|Set-Content $canonical -Encoding UTF8
 Write-Host ("FINAL VERIFICATION: PASS $pass / WARN $warn / FAIL $fail");Write-Host ("Result: "+$r.result);Write-Host ("Report: "+$out);if($fail){exit 2}
