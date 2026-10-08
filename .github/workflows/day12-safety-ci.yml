@@ -262,8 +262,14 @@ jobs:
         shell: powershell
         run: |
           $out=Join-Path $env:RUNNER_TEMP 'acl-only-negative'
-          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase5_Rule_ACL_Review_READ_ONLY.ps1 -AclOnly -OutputDir $out
-          $ec=$LASTEXITCODE
+          # The negative fixture returns exit 2 by design; capture its
+          # process exit code without the CI shell aborting before report checks.
+          $process=Start-Process -FilePath powershell.exe -ArgumentList @(
+            '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass',
+            '-File','tools/day12/Day12_Phase5_Rule_ACL_Review_READ_ONLY.ps1',
+            '-AclOnly','-OutputDir',$out
+          ) -Wait -PassThru -NoNewWindow
+          $ec=$process.ExitCode
           $reports=@(Get-ChildItem -LiteralPath $out -Filter 'Day12-Rule-ACL-Review-*.json' -File)
           if($reports.Count -ne 1){throw "ACL-only expected single report"}
           $r=Get-Content -LiteralPath $reports[0].FullName -Raw -Encoding UTF8 | ConvertFrom-Json
