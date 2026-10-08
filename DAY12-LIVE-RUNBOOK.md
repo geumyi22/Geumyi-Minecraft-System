@@ -16,6 +16,15 @@
 - 진단이 불명확하거나 외부 바인딩이 발견되면 `12.10` PASS로 처리하지 않습니다. 방화벽/서버 바인딩을 이 수집 도구가 자동으로 변경하지 않습니다.
 - 아래 1~3단계는 전체 절차의 참고용이며, 이미 PASS인 지점을 **다시 실행하라는 지시가 아닙니다**. 아직 대기인 단계부터 진행합니다. 모든 `FINAL-RELEASE-GATES.json` live gate는 실제 근거 검토 후에만 닫습니다.
 
+## 최신 READ-ONLY 일괄 수집 결과 (2026-10-09 04:23 KST)
+
+- 전체 수집 ZIP: `Geumyi-Day12-READONLY-20261009-042239.zip` (운영자 보관, 공개 GitHub 업로드 금지). Collector 결과 `CHECK_REQUIRED`, 7단계 CAPTURED / 12.10 CHECK.
+- 12.3 Live Health: **15 PASS / 0 WARN / 0 FAIL**. 12.4 Dry-run은 backup/log 정리 후보 **0건**, 따라서 현 상태에서 Lifecycle Apply를 실행할 이유가 없습니다.
+- 12.2 인벤토리는 수집됐지만 GST/GDS/StatusAgent/Technology/Chemistry의 정확한 실설치 JAR fingerprint는 미확인입니다. 12.1 managed manifest에는 활성 항목이 없어 pack apply/E2E를 완료 처리할 수 없습니다.
+- 12.5는 TCP listener inventory가 불명확하고 firewall Allow 규칙 범위를 충분히 확인하지 못해 보안 승인 보류입니다.
+- 12.10 Final Verification은 **18 PASS / 0 WARN / 1 FAIL**, `backend_ports_private` 실패입니다. 먼저 서버의 리스너/실제 바인딩 정보를 읽기 전용으로 확인합니다. 로컬 접속 성공만으로 보안 PASS 처리하지 않습니다.
+- 이미 PASS인 Golden 4개 백업과 캐시를 재생성하지 않습니다. 다른 단계가 CAPTURED라는 이유로 서버 재시작·팩 적용·Trash 이동을 진행하지 않습니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
