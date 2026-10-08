@@ -67,10 +67,54 @@ $cache=Join-Path $root "ArtifactCache\known-good\day12\known-good-manifest.json"
 $residue=@();$ur=Join-Path $root "Updates";if(Test-Path $ur){$residue=@(Get-ChildItem $ur -File -Recurse -ErrorAction SilentlyContinue|Where-Object{$_.Name -match '(?i)\.tmp$|\.part$|pending|journal|transaction'})}
 [void]$checks.Add((Check "update_residue" $(if($residue.Count -eq 0){"PASS"}else{"WARN"}) ("items="+$residue.Count) $false))
 $free=0;try{$free=[int64](Get-Item $root).PSDrive.Free}catch{};[void]$checks.Add((Check "disk_free_50g" $(if($free -ge 50GB){"PASS"}else{"FAIL"}) ("free_gib="+[math]::Round($free/1GB,2))))
-# Public entrypoints must be public; Paper backend/admin ports should remain local-only by topology.
-$portRows=@();foreach($p in @(25565,25566,25567,25570,25571,25572,25573,25575,25576,25577,25579,8787,8790)){try{$portRows+=@(Get-NetTCPConnection -State Listen -LocalPort $p -ErrorAction SilentlyContinue|ForEach-Object{[ordered]@{port=$p;address=$_.LocalAddress;pid=$_.OwningProcess}})}catch{}}
-$backendPublic=@($portRows|Where-Object{$_.port -in @(25570,25571,25572,25573,25575,25576,25577,25579) -and $_.address -notin @("127.0.0.1","::1")})
-[void]$checks.Add((Check "backend_ports_private" $(if($backendPublic.Count -eq 0){"PASS"}else{"FAIL"}) ("public_backend_listeners="+$backendPublic.Count)))
+# Do not call an empty TCP listener inventory "private and safe".
+# Prefer the Windows TCP table and fall back to netstat when it is unavailable.
+$interestingPorts=@(25565,25566,25567,25570,25571,25572,25573,25575,25576,25577,25579,8787,8790)
+$portRows=@()
+foreach($p in $interestingPorts){
+  try{
+    $portRows+=@(Get-NetTCPConnection -State Listen -LocalPort $p -ErrorAction SilentlyContinue|
+      ForEach-Object{[ordered]@{port=$p;address=[string]$_.LocalAddress;pid=[int]$_.OwningProcess}})
+  }catch{}
+}
+$tcpInventorySource="Get-NetTCPConnection"
+if($portRows.Count -eq 0){
+  $tcpInventorySource="netstat"
+  try{
+    foreach($line in @(& netstat.exe -ano -p tcp 2>$null)){
+      if($line -match '^\\s*TCP\\s+(\\S+)\\s+\\S+\\s+LISTENING\\s+(\\d+)\\s*$'){
+        $local=[string]$Matches[1];$pidNumber=[int]$Matches[2]
+        if($local -match '^(.*):(\\d+)$'){
+          $p=[int]$Matches[2]
+          if($interestingPorts -contains $p){
+            $portRows += [ordered]@{port=$p;address=$Matches[1].Trim('[',']');pid=$pidNumber}
+          }
+        }
+      }
+    }
+  }catch{}
+}
+$privatePorts=@(25570,25571,25572,25573,25575,25576,25577,25579)
+$privateListeners=@($portRows | Where-Object {$privatePorts -contains [int]$_.port})
+$backendPublic=@($privateListeners | Where-Object {[string]$_.address -notin @("127.0.0.1","::1","::ffff:127.0.0.1")})
+$javaById=@{wild=25570;playground=25571;other=25572;lobby=25573}
+$requiredJava=@()
+if($fleet){
+  foreach($s in @($fleet.servers)){
+    $id=[string](Optional $s "server_id" "")
+    if([bool](Optional $s "online" $false) -and $javaById.ContainsKey($id)){
+      $requiredJava += [int]$javaById[$id]
+    }
+  }
+}
+$missingJava=@($requiredJava | Where-Object { $needed=$_; @($privateListeners|Where-Object{[int]$_.port -eq $needed}).Count -eq 0 })
+$privacyOK=($backendPublic.Count -eq 0 -and $missingJava.Count -eq 0 -and $privateListeners.Count -gt 0)
+[void]$checks.Add((Check "backend_ports_private" $(if($privacyOK){"PASS"}else{"FAIL"}) (
+  "public_backend_listeners="+$backendPublic.Count+
+  "; private_listener_rows="+$privateListeners.Count+
+  "; online_java_missing="+($missingJava -join ",")+
+  "; tcp_inventory="+$tcpInventorySource
+)))
 $pass=@($checks|Where-Object{$_.status -eq "PASS"}).Count;$warn=@($checks|Where-Object{$_.status -eq "WARN"}).Count;$fail=@($checks|Where-Object{$_.status -eq "FAIL" -and $_.mandatory}).Count
 $r=[ordered]@{schema=2;tool="Geumyi Final Verification";read_only=$true;synthetic=$false;fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o");result=$(if($fail -eq 0){"PASS"}else{"FAIL"});summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail};checks=@($checks);golden_backups=$golden;network_entry=$erows;health=$hrows;listener_inventory=$portRows;notes=@("Real Java/Bedrock login/routing and GSCM device E2E are separate Phase 12.11 gates.","No secret values or configuration contents are exported.");mutation_performed=$false}
 $r|ConvertTo-Json -Depth 14|Set-Content $out -Encoding UTF8;$r|ConvertTo-Json -Depth 14|Set-Content $canonical -Encoding UTF8
