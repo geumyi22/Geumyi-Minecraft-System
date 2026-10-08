@@ -183,6 +183,33 @@ jobs:
           }
           $global:LASTEXITCODE=0
 
+      - name: Golden report discovery and manual-path regression
+        shell: powershell
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP 'golden-discovery'
+          $nested=Join-Path $root 'Downloads\Geumyi-Reports'
+          New-Item -ItemType Directory -Force -Path $nested | Out-Null
+          $steps=@()
+          foreach($id in @('wild','playground','other','lobby')){
+            $steps+=@{server_id=$id;step='create_verify_protect';pass=$true;retention_exempt=$true;file=($id+'-full-backup-20261009-025156.zip');sha256=('a'*64)}
+          }
+          $pass=Join-Path $nested 'Geumyi-Day12-Phase0B-GoldenCheckpoint-20261009-025156.json'
+          @{phase='12.0B';result='PASS';steps=$steps}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath $pass -Encoding UTF8
+          $invalid=Join-Path $nested 'Geumyi-Day12-Phase0B-GoldenCheckpoint-20261009-031200.json'
+          @{phase='12.0B';result='PARTIAL_REVIEW_REQUIRED';steps=$steps}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath $invalid -Encoding UTF8
+          $launcher='tools/day12/Day12_Phase7_KnownGood_Build.ps1'
+          $autoOut=& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $launcher -SearchRoots $root -ResolveOnly
+          if($LASTEXITCODE -ne 0 -or @($autoOut|Where-Object{$_ -eq ('RESOLVED_REPORT='+$pass)}).Count -ne 1){
+            throw ('Golden report auto-discovery regression: '+($autoOut -join '; '))
+          }
+          $manualOut=& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $launcher -ReportPath $pass -ResolveOnly
+          if($LASTEXITCODE -ne 0 -or @($manualOut|Where-Object{$_ -eq ('RESOLVED_REPORT='+$pass)}).Count -ne 1){
+            throw ('Golden report explicit selection regression: '+($manualOut -join '; '))
+          }
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $launcher -ReportPath $invalid -ResolveOnly 2>&1 | Out-Null
+          if($LASTEXITCODE -eq 0){throw 'An invalid Golden report was accepted'}
+          $global:LASTEXITCODE=0
+
       - name: Synthetic final verifier
         shell: powershell
         run: |
