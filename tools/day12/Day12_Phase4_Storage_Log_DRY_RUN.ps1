@@ -13,7 +13,7 @@ $f=G "/api/v4/update/fleet";$servers=@($f.servers|ForEach-Object{[string]$_.serv
 $backup=@()
 foreach($id in $servers){
   $active=G ("/api/v4/backups?id="+[uri]::EscapeDataString($id));$dry=P "/api/v4/backup/retention/dry-run" @{id=$id;keep_latest=[int]$p.backup.recent}
-  $backup += [ordered]@{server_id=$id;active_count=@($active.backups).Count;protected=@($active.backups|Where-Object{[bool]$_.protected}).Count;existing_api_candidates=@($dry.candidates);reclaim_bytes=[int64]$dry.reclaim_bytes;blocked_reason=[string]$dry.blocked_reason}
+  $backup += [ordered]@{server_id=$id;active_count=@($active.backups).Count;protected=@($active.backups|Where-Object{$null -ne $_ -and $null -ne $_.PSObject.Properties["protected"] -and [bool]$_.PSObject.Properties["protected"].Value}).Count;existing_api_candidates=@($dry.candidates);reclaim_bytes=[int64]$dry.reclaim_bytes;blocked_reason=[string]$dry.blocked_reason}
 }
 $pd=if($env:PROGRAMDATA){$env:PROGRAMDATA}else{"C:\ProgramData"};$root=Join-Path $pd "GeumyiServerCenter"
 $logRoots=@((Join-Path $root "logs"));$cfgPath=Join-Path $root "server.json"
