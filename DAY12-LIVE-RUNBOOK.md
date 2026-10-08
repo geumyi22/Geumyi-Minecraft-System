@@ -57,6 +57,14 @@
 - **12.10 최종 검증기 FAIL 유지:** Wild/Lobby 및 RCON 실제 listener bind 증거가 불충분합니다. 다시 같은 LAN 포트 테스트를 반복할 필요는 없습니다. `FINAL-RELEASE-GATES.json`은 수정하지 않습니다.
 - 다음 우선순위: **12.2 미확인 자체 플러그인 JAR SHA-256 지문 대조 → 12.5 ACL/방화벽 규칙 범위 검토 → 12.10 자체 Windows 리스너 계측 보완**. 이는 모든 미완료 단계를 PASS로 변경한다는 뜻이 아닙니다.
 
+## 다음 단일 수집 — 12.2 설치 JAR SHA-256 및 12.5 ACL/방화벽
+
+- 서버 PC에서 최신 Operator Kit의 `tools\\day12\\Day12_Phase2_5_Integrity_Security_READ_ONLY.cmd` 파일을 **관리자 권한으로 실행**. 서버·방화벽·백업·플러그인 설치 상태는 수정하지 않습니다.
+- `바탕화면\\Geumyi-Day12-Integrity-Security\\Day12-Integrity-Security-*.json` 하나만 이 대화에 제출. ZIP 전체 수집 또는 Golden 백업을 재실행할 필요는 없습니다.
+- JAR SHA-256은 **현재 설치 파일 지문**이지 공식 릴리즈와 일치한다는 뜻이 아닙니다. `PENDING` / 중복 설치 / 파일명 차이는 변경 전에 검토합니다. StatusAgent는 한정된 경로 검색이므로 `NOT_FOUND_IN_LIMITED_SEARCH_SCOPE`가 나오면 설치 오류로 단정하지 않습니다.
+- 방화벽 결과는 필터별 허용 범위 *검토 자료*입니다. 특정 허용 규칙이 있다고 실제 노출을 단정하거나 LAN 미연결만으로 모든 인터페이스의 바인딩 보안을 입증하지 않습니다.
+- Day 12.10 `backend_ports_private`와 최종 Stable 게이트는 그대로 **FAIL/PENDING**입니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
