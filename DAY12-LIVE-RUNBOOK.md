@@ -125,6 +125,14 @@
 - JSON에는 Windows 방화벽 규칙 *원문 이름이 아닌 추정 범주*와 ACL 권한 비트·상속 정보만 들어갑니다. 이름 분류가 `UNCLASSIFIED`여도 안전/악성이라고 단정하지 않습니다. 실제 유효 NTFS 권한 또는 WFP 패킷 결정까지 계산하지 않으며 `CAPTURED_FOR_REVIEW`는 최종 보안 통과가 아닙니다.
 - 검사 결과에 문제가 있어도 **방화벽 끄기, ACL 수정, Agent 파일 삭제, GSC 재설치/재시작, 백업 이동, Stable 릴리즈는 실행하지 않습니다.** 필요하면 원인과 롤백 방안을 검토한 뒤 별도 단계로 결정합니다.
 
+## 06:35 결과 — 방화벽 38개 분류와 ACL 대상 이름 출력 오류
+
+- `Day12-Rule-ACL-Review-20261009-063544.json`: **정상 수집**. 활성 허용 규칙 266건 중 넓은 범위 후보 38건: 미분류 33, 게임 이름 힌트 3, VPN/오버레이 힌트 2. 활성 프로필 Any/Public를 포함하여 우선 검토로 분류된 항목은 15건입니다. 미분류는 **악성 판단이 아닌 이름 패턴 판별 불가**를 뜻합니다. 어떤 규칙도 이 정보만으로 중지/삭제 금지.
+- ACL 결과의 `target_role` 필드가 다섯 항목 모두 `BUILTIN_USERS`로 출력된 것은 **검사 스크립트의 버그**입니다. 원본 수집 순서에 따라 [GSC ProgramData 폴더, server.json 파일, Runtime 폴더, Runtime/Agent 폴더, 0.5.4 Agent JAR]로 각각 대응합니다. ACL 권한 비트 자체가 모두 같은 값이라는 뜻이 아닙니다. GitHub에서 `$role`과 `$Role` 충돌을 수정했고 synthetic 검사를 추가했습니다.
+- `server.json`과 Agent JAR 파일 직접 ACL은 BUILTIN_USERS의 데이터 쓰기/삭제를 허용하지 않는 것으로 관찰됐습니다. 그러나 [GSC ProgramData, Runtime, Runtime/Agent] 디렉터리는 BUILTIN_USERS에 **ContainerInherit** 파일·하위 폴더 생성 권한이 상속돼 있습니다. 이 ACE만으로 기존 파일을 바꿀 권한이 보장되는 것은 아니지만, 안전하다고 확정할 수 없습니다. 원 검사기는 디렉터리 `DeleteChild` 비트를 누락했으므로 수정 버전에서 기록합니다.
+- **실제 권한 변경은 수행하지 않습니다.** 디렉터리 ACL 상속 해제나 광범위 방화벽 규칙 비활성화는 GSC 시작/업데이트/백업에 영향을 줄 수 있습니다. 새 도구를 실행한다면 수정 버전에서 **ACL 대상명과 `delete_children`만 추가로 확인**하면 됩니다. 앞서 통과한 방화벽/Agent SHA/LAN/골든 검사 전부 재실행 금지.
+- 12.5 최종 검증 보류, 12.10 FAIL, Stable 차단 유지.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
