@@ -65,6 +65,15 @@
 - 방화벽 결과는 필터별 허용 범위 *검토 자료*입니다. 특정 허용 규칙이 있다고 실제 노출을 단정하거나 LAN 미연결만으로 모든 인터페이스의 바인딩 보안을 입증하지 않습니다.
 - Day 12.10 `backend_ports_private`와 최종 Stable 게이트는 그대로 **FAIL/PENDING**입니다.
 
+## 06:02 검토: 12.2·12.5 검사 도구 수정 및 한 번만 재수집
+
+- 로비의 GST/GDS 짧은 이름은 `tools/day10/finish_day10.ps1`에서 의도한 배포 이름으로 확인됐습니다. 현재 JAR 해시가 다른 서버와 달라 **바이너리 동일성은 미검증**이지만, 이름만으로 대체·삭제하지 않습니다.
+- 최초 Agent 검사에서 0.4.5가 발견됐으나, 실제 GSC 서버 역할 Agent 경로인 `ProgramData/GeumyiServerCenter/Runtime/Agent`는 검색하지 않았습니다. **기존 버전을 실행 중이라고 단정하지 않습니다.** 도구를 수정해 0.5.4 실설치 후보와 설정된 `agent.jar_name`을 읽기 전용으로 확인하도록 했습니다.
+- GSC 데이터 폴더 ACL에 BUILTIN_USERS inherited write/modify Allow 1건이 표시됐습니다. 악용 가능성이나 유효 권한은 추가 검증 전까지 확정하지 않으며, **ACL 상속/소유권/보호 복구 경로를 임의로 변경하지 않습니다**.
+- 이전 방화벽 149 matching rows는 142건이 `LocalPort=Any`여서 어떤 대상 포트를 명시적으로 연 것은 아닙니다. 새 도구에서는 `Any` 포트를 특정 포트 OPEN으로 세지 않고, 서비스·프로그램·프로필 범위를 추가 기록합니다. 적용 중인 효과를 완전히 확정하는 보고서는 아닙니다.
+- 다음 한 번만: 최신 Operator Kit → 서버 PC 관리자 권한으로 `tools\\day12\\Day12_Phase2_5_Integrity_Security_READ_ONLY.cmd` 실행 → 새 `Day12-Integrity-Security-*.json` 한 개 제출. 이전 LAN/Golden 백업/전체 진단은 반복하지 않습니다.
+- 이 결과를 검토하기 전까지 플러그인 재배포, StatusAgent 제거, 방화벽과 폴더 ACL 변경, 12.10 PASS 및 Stable 전환은 보류합니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
