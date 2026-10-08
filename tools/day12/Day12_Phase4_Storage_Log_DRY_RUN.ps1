@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$BaseUrl="http://127.0.0.1:8790",[string]$PolicyPath="",[string]$OutputDir="",[switch]$Synthetic)
+param([string]$BaseUrl="http://127.0.0.1:8790",[string]$PolicyPath="",[string]$OutputDir="",[switch]$Synthetic,[string]$FixtureRoot="")
 Set-StrictMode -Version Latest;$ErrorActionPreference="Stop"
 if([string]::IsNullOrWhiteSpace($OutputDir)){$OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Day12-Phase4"}
 New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
@@ -20,8 +20,28 @@ function Optional([object]$Value,[string]$Field,[object]$Default=$null){
   if($null -eq $Value){return $Default}
   return $Value
 }
-function G([string]$path){Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$path) -Method GET -TimeoutSec 20}
-function P([string]$path,[object]$body){Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$path) -Method POST -ContentType "application/json" -Body ($body|ConvertTo-Json -Compress) -TimeoutSec 60}
+function G([string]$path){
+  if($FixtureRoot){
+    if($env:GITHUB_ACTIONS -ne "true"){throw "FixtureRoot is restricted to CI"}
+    $route=(($path -replace '[^A-Za-z0-9]+','_').Trim('_'))+".json"
+    $fixtureFile=Join-Path $FixtureRoot $route
+    if(Test-Path -LiteralPath $fixtureFile -PathType Leaf){
+      return (Get-Content -LiteralPath $fixtureFile -Raw -Encoding UTF8 | ConvertFrom-Json)
+    }
+    return $null
+  }
+  Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$path) -Method GET -TimeoutSec 20}
+function P([string]$path,[object]$body){
+  if($FixtureRoot){
+    if($env:GITHUB_ACTIONS -ne "true"){throw "FixtureRoot is restricted to CI"}
+    $route=(($path -replace '[^A-Za-z0-9]+','_').Trim('_'))+"_"+[string]$body.id+".json"
+    $fixtureFile=Join-Path $FixtureRoot $route
+    if(Test-Path -LiteralPath $fixtureFile -PathType Leaf){
+      return (Get-Content -LiteralPath $fixtureFile -Raw -Encoding UTF8 | ConvertFrom-Json)
+    }
+    throw ("Fixture POST response missing: "+$route)
+  }
+  Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$path) -Method POST -ContentType "application/json" -Body ($body|ConvertTo-Json -Compress) -TimeoutSec 60}
 $f=G "/api/v4/update/fleet";$servers=@($f.servers|ForEach-Object{[string]$_.server_id})
 $backup=@()
 foreach($id in $servers){
@@ -41,6 +61,6 @@ foreach($lr in $logRoots|Select-Object -Unique){
   }
 }
 $free=0;try{$free=[int64](Get-Item $root).PSDrive.Free}catch{}
-$r=[ordered]@{schema=1;phase="12.4";mode="DRY_RUN";generated_at=(Get-Date).ToString("o");policy=$p;backup=$backup;log_delete_candidates=$logRows;log_reclaim_bytes=[int64](($logRows|Measure-Object size -Sum).Sum);disk_free_gib=[math]::Round($free/1GB,2);disk_status=$(if($free/1GB -lt [int]$p.disk.minimum_free_gib){"FAIL"}elseif($free/1GB -lt [int]$p.disk.warning_free_gib){"WARN"}else{"PASS"});mutation_performed=$false;note="No file was moved or deleted. Advanced daily/weekly selection is policy-defined but not applied until live review."}
+$r=[ordered]@{schema=1;phase="12.4";mode="DRY_RUN";fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o");policy=$p;backup=$backup;log_delete_candidates=$logRows;log_reclaim_bytes=[int64](($logRows|Measure-Object size -Sum).Sum);disk_free_gib=[math]::Round($free/1GB,2);disk_status=$(if($free/1GB -lt [int]$p.disk.minimum_free_gib){"FAIL"}elseif($free/1GB -lt [int]$p.disk.warning_free_gib){"WARN"}else{"PASS"});mutation_performed=$false;note="No file was moved or deleted. Advanced daily/weekly selection is policy-defined but not applied until live review."}
 $r|ConvertTo-Json -Depth 14|Set-Content $out -Encoding UTF8
 Write-Host "DAY 12 PHASE 4 DRY-RUN COMPLETE";Write-Host ("Report: "+$out)
