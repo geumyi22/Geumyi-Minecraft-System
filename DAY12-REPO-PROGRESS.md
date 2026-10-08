@@ -52,6 +52,15 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - The new report is `CAPTURED_REVIEW_REQUIRED`, **not security PASS**. The existing `backend_ports_private` gate and `FINAL-RELEASE-GATES.json` remain fail-closed. A separate real-server output is required to determine whether the issue is an actual bind configuration risk or a Windows listener-inventory gap.
 - The `day12-operator-kit` includes the new collector. Full CI outcome must be checked independently of the synthetic step result.
 
+## 2026-10-09 05:27 KST — binding evidence (operator supplied)
+
+- File: `Day12-Bind-Evidence-20261009-052746.json` (**reviewed locally; not committed**), read-only result `CAPTURED_REVIEW_REQUIRED`, no reported mutation or exported secrets.
+- **All four** Wild/Playground/Other/Lobby server directories and `server.properties` are present. All four explicitly specify `server-ip=127.0.0.1`; Java ports 25570–25573 and RCON ports 25575/25576/25577/25579 match the expected mapping; RCON enabled in the reported configurations. The collector recorded SHA-256 hashes, not full config contents.
+- Two listener rounds: `Get-NetTCPConnection` and `IPGlobalProperties` each enumerated **9 total** listeners and **0 matching target-port rows**. `netstat` exited successfully with **901 lines** both times and **0 matching target-port LISTENING rows**.
+- Zero **observed** non-loopback private listeners is **not** proof of private runtime binds because **no relevant listener was observed at all**. The collector did **not** record whether the backend servers were online at the time. Previous 04:23 GSC online status cannot be assumed unchanged at 05:27.
+- **12.10 stays blocked**. Treat server config scope as PASS / active runtime socket exposure as UNVERIFIED. Do not mark `backend_ports_private` PASS, change firewall or backend properties, start Other automatically, delete backups, or promote Stable.
+- Next step: correlate **same-time** GSC online state, loopback TCP connect result and listener inventories in a refreshed read-only collector; if listeners remain invisible for a demonstrably online backend, investigate host process/network context without weakening the final gate.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
