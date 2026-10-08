@@ -105,6 +105,13 @@
 - 다음은 검토용으로 38개 규칙의 근거(Windows 구성요소·개발 도구·Tailscale·기타 프로그램 등)를 **기록만** 하거나 별도 PC에서 8787 접근을 **TCP connect only**로 테스트하는 것이 유의미합니다. 테스트와 설정 변경을 혼동하지 않도록 주의하며, 서비스·방화벽·ACL·백업은 바꾸지 않습니다.
 - 12.5 보안 승인 보류 / 12.10 backend bind FAIL / 12.11 E2E와 12.12 soak 미실시 / 12.13 Stable 릴리즈 BLOCKED.
 
+## 06:24 확인 — 원격 GSC 관리 포트 8787 응답과 접근통제 분리 검증
+
+- 사용자가 서버 PC의 LAN IP를 향한 **서브 PC 8787/TCP 검사에서 `TcpTestSucceeded=True`**라고 보고했습니다. 직전 자기 자신 검사(`SourceAddress=RemoteAddress`)와 혼동하지 않으며 이번에는 SourceAddress 전체 결과가 제출되지 않아 원격 접속 여부는 사용자 실행 위치 진술 기준입니다.
+- 현재 GSC Host **소스**는 실제 listener를 `0.0.0.0:8787`에 열고, 비루프백 LAN/Tailscale 접근에 대해 mobileNetworkGuard 및 protected routes token/device 인증을 적용합니다. 이는 GSCM 원격 관리 설계이므로 **8787 LAN TCP 성공을 곧바로 취약점이라고 판정하지 않습니다**. 반면 원래 숨겨야 하는 backend Java/RCON 포트의 외부 접속이 허용되는 것은 별개입니다.
+- 다음 *단일* 단계는 서브 PC에서 **토큰 없이 읽기 전용** `GET /api/v1/info` HTTP 상태 코드만 확인: 정상적으로 401 (또는 네트워크 가드가 차단하는 조건이면 403). 200이면 설정/프록시/인증 경로를 조사하고 그 전에는 변경하지 않습니다. 비밀번호·Bearer 토큰·HTTP 응답 내용은 공개 채팅이나 GitHub에 올리지 않습니다.
+- 이 확인이 완료돼도 12.5 ACL/WFP 실효성 및 12.10 backend socket bind gate가 자동 PASS되는 것은 아니며 Stable 릴리즈는 차단 유지. 방화벽·서비스 설정 변경/재시작 불필요.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
