@@ -45,6 +45,13 @@ Operator-supplied archive `Geumyi-Day12-READONLY-20261009-042239.zip` was **revi
 
 Only sanitized derived findings are committed. Existing Golden backups, artifact cache and release gate JSON remain unchanged.
 
+## 2026-10-09 — 12.10 targeted bind evidence tool (repository-side only)
+
+- Prepared `tools/day12/Day12_Phase10_Bind_Evidence_READ_ONLY.ps1` and its one-click `.cmd` launcher. The collector reads only bind/port metadata from the configured Paper `server.properties`, checks two rounds of Windows TCP listeners and redacts non-loopback addresses. It does **not** modify configuration, firewall, server processes, backup state or update policy.
+- Synthetic tests require the netstat parser to distinguish loopback, wildcard and IPv6 loopback and to ignore `TIME_WAIT`; configuration tests require empty `server-ip` to remain a risk rather than passing as private.
+- The new report is `CAPTURED_REVIEW_REQUIRED`, **not security PASS**. The existing `backend_ports_private` gate and `FINAL-RELEASE-GATES.json` remain fail-closed. A separate real-server output is required to determine whether the issue is an actual bind configuration risk or a Windows listener-inventory gap.
+- The `day12-operator-kit` includes the new collector. Full CI outcome must be checked independently of the synthetic step result.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
