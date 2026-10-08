@@ -25,10 +25,11 @@
     "maintenance_mode_allowed": false
   },
   "repository_evidence": {
-    "day12_read_only_safety_ci_run": 37670902211,
-    "day12_security_sbom_reproducibility_run": 37670892834,
+    "day12_read_only_safety_ci_run": 37672459192,
+    "day12_security_sbom_reproducibility_run": 37672459736,
     "synthetic_dr_recovery_kit_run": 37670892599,
     "system_ci_after_installer_cleanup_run": 37669908817,
-    "host_test_after_installer_cleanup_run": 37669908646
+    "host_test_after_installer_cleanup_run": 37669908646,
+    "latest_operator_kit_run": 37672459977
   }
 }
