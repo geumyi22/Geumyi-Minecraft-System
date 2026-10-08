@@ -65,11 +65,35 @@ public static class Day12TcpTableInspector {
   }
 }
 '@
-# Do not infer private binds from successful localhost connections alone.
+# Use netstat as independent evidence, never infer privacy from connectability.
 function Parse-Day12NetstatTcp([string[]]$Lines,[int[]]$WantedPorts){
   $found=New-Object System.Collections.ArrayList
   foreach($line in $Lines){
-    if([string]$line -match '^\s*TCP\s+(\S+)\s+(\S+)\s+LISTENING\s+(\d+)\s*
+    if([string]$line -match '^\s*TCP\s+(\S+)\s+(\S+)\s+LISTENING\s+(\d+)\s*$'){
+      $addressPort=[string]$Matches[1]
+      $owningProcessId=[int]$Matches[3] # Do not assign to PowerShell's automatic $PID.
+      if($addressPort -match '^(.+):(\d+)$'){
+        $portNumber=[int]$Matches[2]
+        if($WantedPorts -contains $portNumber){
+          [void]$found.Add([ordered]@{port=$portNumber;address=([string]$Matches[1]).Trim('[',']');pid=$owningProcessId})
+        }
+      }
+    }
+  }
+  return $found.ToArray()
+}
+if($Synthetic){
+  $parsed=@(Parse-Day12NetstatTcp @(
+    '  TCP    127.0.0.1:25570    0.0.0.0:0    LISTENING    1234',
+    '  TCP    0.0.0.0:25571    0.0.0.0:0    LISTENING    1235',
+    '  TCP    [::1]:25573    [::]:0    LISTENING    1236'
+  ) @(25570,25571,25573))
+  if($parsed.Count -ne 3 -or $parsed[0].pid -ne 1234 -or
+    $parsed[1].address -ne '0.0.0.0' -or $parsed[2].address -ne '::1'){
+    throw 'Day12 netstat TCP parser synthetic regression'
+  }
+}
+$results=[ordered]@{
 try{
   Add-Type -TypeDefinition $nativeSource -ErrorAction Stop
   $results.native=[ordered]@{status="OK";rows=@([Day12TcpTableInspector]::Read() | Where-Object {$ports -contains $_.port})}
@@ -105,207 +129,6 @@ if(-not $Synthetic){
     $all=@(& $netstat -ano -p TCP 2>&1)
     $code=$LASTEXITCODE
     $rows=@(Parse-Day12NetstatTcp $all $ports)
-    $results.netstat=[ordered]@{
-      status=$(if($code -eq 0){"OK"}else{"ERROR"});exit_code=$code
-      line_count=$all.Count;rows=@($rows)
-      sample_nonsecret_lines=@($all | Where-Object {[string]$_ -match '^\s*TCP\s+' -and [string]$_ -match ':(2556[567]|2557[0-9]|8790)\s+'} | Select-Object -First 24)
-    }
-  }catch{
-    $results.netstat=[ordered]@{status="ERROR";error=[string]$_.Exception.Message;rows=@()}
-  }
-  $connect=@()
-  foreach($p in @(25570,25571,25573)){
-    $client=New-Object System.Net.Sockets.TcpClient
-    try{
-      $pending=$client.BeginConnect("127.0.0.1",$p,$null,$null)
-      $ok=$pending.AsyncWaitHandle.WaitOne(400)
-      if($ok){try{$client.EndConnect($pending)}catch{$ok=$false}}
-      $connect+=([ordered]@{port=$p;loopback_connect=$ok})
-    }catch{
-      $connect+=([ordered]@{port=$p;loopback_connect=$false})
-    }finally{$client.Close()}
-  }
-  $results.loopback=$connect
-}
-$nativeRows=@($results.native.rows)
-$report=[ordered]@{
-  schema=1;phase="12.10-TCP-Diagnostic";read_only=$true
-  synthetic=[bool]$Synthetic;generated_at=(Get-Date).ToString("o")
-  result=$(if($Synthetic){"SYNTHETIC_CAPTURED"}else{"CAPTURED"})
-  expected_ports=$ports;providers=$results
-  security_note="Loopback response alone cannot prove bind address. Public backend binds remain a FAIL until verified."
-  mutation_performed=$false
-}
-$report|ConvertTo-Json -Depth 10|Set-Content -LiteralPath $out -Encoding UTF8
-Write-Host ("TCP DIAGNOSTIC: "+$report.result)
-Write-Host ("Native rows: "+$nativeRows.Count)
-Write-Host ("Report: "+$out)
-if(-not $Synthetic -and $nativeRows.Count -eq 0){
-  Write-Host "[CHECK] Native TCP inspection found no matching listener. Inspect the JSON; do not mark private bind safe."
-}
-exit 0
-){
-      $localAddressPort=[string]$Matches[1]
-      # PowerShell's built-in $PID variable is read-only.
-      $owningProcessId=[int]$Matches[3]
-      if($localAddressPort -match '^(.+):(\d+)
-try{
-  Add-Type -TypeDefinition $nativeSource -ErrorAction Stop
-  $results.native=[ordered]@{status="OK";rows=@([Day12TcpTableInspector]::Read() | Where-Object {$ports -contains $_.port})}
-}catch{
-  $results.native=[ordered]@{status="ERROR";error=[string]$_.Exception.Message;rows=@()}
-}
-if(-not $Synthetic){
-  try{
-    $data=@(Get-NetTCPConnection -State Listen -ErrorAction Stop)
-    $results.powershell=[ordered]@{
-      status="OK";total_listeners=$data.Count
-      rows=@($data | Where-Object {$ports -contains [int]$_.LocalPort} | ForEach-Object {
-        [ordered]@{port=[int]$_.LocalPort;address=[string]$_.LocalAddress;pid=[int]$_.OwningProcess}
-      })
-    }
-  }catch{
-    $results.powershell=[ordered]@{status="ERROR";error=[string]$_.Exception.Message;rows=@()}
-  }
-  try{
-    $data=@([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners())
-    $results.dotnet=[ordered]@{
-      status="OK";total_listeners=$data.Count
-      rows=@($data | Where-Object {$ports -contains [int]$_.Port} | ForEach-Object {
-        [ordered]@{port=[int]$_.Port;address=$_.Address.ToString()}
-      })
-    }
-  }catch{
-    $results.dotnet=[ordered]@{status="ERROR";error=[string]$_.Exception.Message;rows=@()}
-  }
-  try{
-    $netstat=Join-Path $env:WINDIR "System32\netstat.exe"
-    if(-not(Test-Path -LiteralPath $netstat -PathType Leaf)){throw "netstat.exe missing: $netstat"}
-    $all=@(& $netstat -ano -p TCP 2>&1)
-    $code=$LASTEXITCODE
-    $rows=@()
-    foreach($line in $all){
-      if([string]$line -match '^\s*TCP\s+(\S+)\s+(\S+)\s+LISTENING\s+(\d+)\s*$'){
-        $addressPort=[string]$Matches[1];$pid=[int]$Matches[3]
-        if($addressPort -match '^(.+):(\d+)$'){
-          $port=[int]$Matches[2]
-          if($ports -contains $port){
-            $rows+=([ordered]@{port=$port;address=([string]$Matches[1]).Trim('[',']');pid=$pid})
-          }
-        }
-      }
-    }
-    $results.netstat=[ordered]@{
-      status=$(if($code -eq 0){"OK"}else{"ERROR"});exit_code=$code
-      line_count=$all.Count;rows=@($rows)
-      sample_nonsecret_lines=@($all | Where-Object {[string]$_ -match '^\s*TCP\s+' -and [string]$_ -match ':(2556[567]|2557[0-9]|8790)\s+'} | Select-Object -First 24)
-    }
-  }catch{
-    $results.netstat=[ordered]@{status="ERROR";error=[string]$_.Exception.Message;rows=@()}
-  }
-  $connect=@()
-  foreach($p in @(25570,25571,25573)){
-    $client=New-Object System.Net.Sockets.TcpClient
-    try{
-      $pending=$client.BeginConnect("127.0.0.1",$p,$null,$null)
-      $ok=$pending.AsyncWaitHandle.WaitOne(400)
-      if($ok){try{$client.EndConnect($pending)}catch{$ok=$false}}
-      $connect+=([ordered]@{port=$p;loopback_connect=$ok})
-    }catch{
-      $connect+=([ordered]@{port=$p;loopback_connect=$false})
-    }finally{$client.Close()}
-  }
-  $results.loopback=$connect
-}
-$nativeRows=@($results.native.rows)
-$report=[ordered]@{
-  schema=1;phase="12.10-TCP-Diagnostic";read_only=$true
-  synthetic=[bool]$Synthetic;generated_at=(Get-Date).ToString("o")
-  result=$(if($Synthetic){"SYNTHETIC_CAPTURED"}else{"CAPTURED"})
-  expected_ports=$ports;providers=$results
-  security_note="Loopback response alone cannot prove bind address. Public backend binds remain a FAIL until verified."
-  mutation_performed=$false
-}
-$report|ConvertTo-Json -Depth 10|Set-Content -LiteralPath $out -Encoding UTF8
-Write-Host ("TCP DIAGNOSTIC: "+$report.result)
-Write-Host ("Native rows: "+$nativeRows.Count)
-Write-Host ("Report: "+$out)
-if(-not $Synthetic -and $nativeRows.Count -eq 0){
-  Write-Host "[CHECK] Native TCP inspection found no matching listener. Inspect the JSON; do not mark private bind safe."
-}
-exit 0
-){
-        $localPort=[int]$Matches[2]
-        if($WantedPorts -contains $localPort){
-          [void]$found.Add([ordered]@{
-            port=$localPort;address=([string]$Matches[1]).Trim('[',']')
-            pid=$owningProcessId
-          })
-        }
-      }
-    }
-  }
-  return $found.ToArray()
-}
-if($Synthetic){
-  $testRows=@(Parse-Day12NetstatTcp @(
-    '  TCP    127.0.0.1:25570    0.0.0.0:0    LISTENING    1234',
-    '  TCP    0.0.0.0:25571    0.0.0.0:0    LISTENING    1235',
-    '  TCP    [::1]:25573    [::]:0    LISTENING    1236'
-  ) @(25570,25571,25573))
-  if($testRows.Count -ne 3 -or $testRows[0].address -ne '127.0.0.1' -or
-    $testRows[1].address -ne '0.0.0.0' -or $testRows[2].address -ne '::1' -or
-    $testRows[0].pid -ne 1234 -or $testRows[2].pid -ne 1236){
-    throw 'Day 12 TCP diagnostic netstat parser regression'
-  }
-}
-$results=[ordered]@{}
-try{
-  Add-Type -TypeDefinition $nativeSource -ErrorAction Stop
-  $results.native=[ordered]@{status="OK";rows=@([Day12TcpTableInspector]::Read() | Where-Object {$ports -contains $_.port})}
-}catch{
-  $results.native=[ordered]@{status="ERROR";error=[string]$_.Exception.Message;rows=@()}
-}
-if(-not $Synthetic){
-  try{
-    $data=@(Get-NetTCPConnection -State Listen -ErrorAction Stop)
-    $results.powershell=[ordered]@{
-      status="OK";total_listeners=$data.Count
-      rows=@($data | Where-Object {$ports -contains [int]$_.LocalPort} | ForEach-Object {
-        [ordered]@{port=[int]$_.LocalPort;address=[string]$_.LocalAddress;pid=[int]$_.OwningProcess}
-      })
-    }
-  }catch{
-    $results.powershell=[ordered]@{status="ERROR";error=[string]$_.Exception.Message;rows=@()}
-  }
-  try{
-    $data=@([System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners())
-    $results.dotnet=[ordered]@{
-      status="OK";total_listeners=$data.Count
-      rows=@($data | Where-Object {$ports -contains [int]$_.Port} | ForEach-Object {
-        [ordered]@{port=[int]$_.Port;address=$_.Address.ToString()}
-      })
-    }
-  }catch{
-    $results.dotnet=[ordered]@{status="ERROR";error=[string]$_.Exception.Message;rows=@()}
-  }
-  try{
-    $netstat=Join-Path $env:WINDIR "System32\netstat.exe"
-    if(-not(Test-Path -LiteralPath $netstat -PathType Leaf)){throw "netstat.exe missing: $netstat"}
-    $all=@(& $netstat -ano -p TCP 2>&1)
-    $code=$LASTEXITCODE
-    $rows=@()
-    foreach($line in $all){
-      if([string]$line -match '^\s*TCP\s+(\S+)\s+(\S+)\s+LISTENING\s+(\d+)\s*$'){
-        $addressPort=[string]$Matches[1];$pid=[int]$Matches[3]
-        if($addressPort -match '^(.+):(\d+)$'){
-          $port=[int]$Matches[2]
-          if($ports -contains $port){
-            $rows+=([ordered]@{port=$port;address=([string]$Matches[1]).Trim('[',']');pid=$pid})
-          }
-        }
-      }
-    }
     $results.netstat=[ordered]@{
       status=$(if($code -eq 0){"OK"}else{"ERROR"});exit_code=$code
       line_count=$all.Count;rows=@($rows)
