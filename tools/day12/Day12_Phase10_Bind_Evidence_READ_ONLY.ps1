@@ -130,6 +130,42 @@ foreach($e in $expected){
     properties_sha256=$hash;binding=$props
   }
 }
+function Get-FleetState {
+  try{
+    $response=Invoke-RestMethod -Uri "http://127.0.0.1:8790/api/v4/update/fleet" -Method GET -TimeoutSec 5 -ErrorAction Stop
+    if($null -eq $response -or $null -eq $response.servers){
+      return [ordered]@{status="NO_SERVER_ROWS";servers=@()}
+    }
+    $safe=@()
+    foreach($entry in @($response.servers)){
+      if($null -eq $entry){continue}
+      $id=[string]$entry.server_id
+      if($id -notin @("wild","playground","other","lobby")){continue}
+      $onlineProp=$entry.PSObject.Properties["online"]
+      $isOnline=($null -ne $onlineProp -and [bool]$onlineProp.Value)
+      $safe+= [ordered]@{id=$id;online=$isOnline}
+    }
+    return [ordered]@{status="OK";servers=@($safe)}
+  }catch{
+    # Do not serialize API error messages: they may include local paths or tokens.
+    return [ordered]@{status="UNAVAILABLE";servers=@()}
+  }
+}
+function Probe-LoopbackTcp([int]$Port){
+  $client=New-Object System.Net.Sockets.TcpClient
+  $handle=$null
+  try{
+    $result=$client.BeginConnect("127.0.0.1",$Port,$null,$null)
+    $handle=$result.AsyncWaitHandle
+    if(-not $handle.WaitOne(450,$false)){return $false}
+    $client.EndConnect($result)
+    return [bool]$client.Connected
+  }catch{return $false}finally{
+    if($null -ne $handle){$handle.Close()}
+    $client.Dispose()
+  }
+}
+$fleetBefore=Get-FleetState
 $providers=New-Object System.Collections.ArrayList
 for($round=1;$round -le 2;$round++){
   try{
@@ -166,6 +202,10 @@ for($round=1;$round -le 2;$round++){
     [void]$providers.Add([ordered]@{round=$round;source="netstat";status="ERROR";rows=@()})
   }
 }
+$fleetAfter=Get-FleetState
+$tcpLoopback=@($expected|ForEach-Object{
+  [ordered]@{id=$_.id;port=[int]$_.java;connects=(Probe-LoopbackTcp ([int]$_.java))}
+})
 $observed=@($providers|ForEach-Object{$_.rows}|Where-Object{$null -ne $_})
 $potentialExposure=@($observed|Where-Object{$private -contains [int]$_.port -and $_.address_scope -ne "loopback"})
 $configRisks=@($rows|Where-Object{$_.binding.ip_scope -ne "loopback"})
@@ -175,9 +215,10 @@ $report=[ordered]@{
   machine_role_hint=$(try{[string](Get-Service "Geumyi Server Center Host" -ErrorAction Stop).Status}catch{"UNKNOWN"})
   gsc_config_available=($null -ne $cfg);gsc_config_error=$configError
   servers=$rows;providers=@($providers.ToArray())
+  fleet_before=$fleetBefore;fleet_after=$fleetAfter;java_loopback_connect=$tcpLoopback
   nonloopback_private_listener_evidence_count=$potentialExposure.Count
   nonloopback_or_missing_server_ip_config_count=$configRisks.Count
-  interpretation="Config-only and loopback TCP connect are not enough to mark a backend private. Missing active listeners remain unresolved. No production settings are modified."
+  interpretation="Configuration scope, GSC online state, loopback TCP connects and actual listener addresses are independent evidence. Missing active listeners remain unresolved. No production settings are modified."
   secrets_exported=$false;mutation_performed=$false
 }
 $report|ConvertTo-Json -Depth 12|Set-Content -LiteralPath $out -Encoding UTF8
