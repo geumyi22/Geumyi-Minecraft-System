@@ -146,6 +146,13 @@
 - 38개 광범위 방화벽 Allow 규칙(용도 미분류 33개), 실제 NTFS 유효 권한 및 GSC Host/Updater 실행 계정은 **미검증**입니다. 해당 ACL과 규칙은 즉시 삭제·상속 해제하면 오히려 시스템이 손상될 수 있으므로 현재 **어떤 설정도 변경하지 않습니다**.
 - 전체 근거·문제 범위·변경 승인 전 체크리스트: `DAY12-PHASE5-SECURITY-REVIEW.md`. `12.5` 자료 수집은 완료, 보안 게이트는 **OPEN**. 이후 중요한 차단 항목은 `12.10` Java backend/RCON 실리스너 바인딩, `12.11` E2E, `12.12` soak입니다. Golden/기존 네트워크 검사/기존 ACL 전부 재검사 금지. `12.13` Stable 계속 차단.
 
+## 다음 단일 작업 — 12.10 새 Native TCP 테이블 종류 교차검증
+
+- GitHub의 최종 12.10 검증기에 Windows Native `GetExtendedTcpTable` 지원을 추가했습니다. 기존 05:40 증거는 **Playground 25571 loopback만** 확인했고 Wild/Lobby/RCON의 실제 바인딩은 여전히 누락돼 있습니다. 이 패치는 PASS 판정을 느슨하게 만들지 않습니다. 오히려 GSC 온라인 Java와 RCON의 listener를 각각 확인하고, 증거 없으면 FAIL 유지합니다.
+- **서버 PC 관리자 권한**으로 최신 Day 12 Operator Kit의 `tools\\day12\\Day12_Phase10_Native_Listener_Crosscheck_READ_ONLY.cmd` **단일 실행** → 바탕화면 `Geumyi-Day12-Native-TCP\\Day12-Native-TCP-*.json` 최신 하나를 대화에 제출하세요. 두 Windows Native TCP 테이블 클래스의 리스너 범위를 비교하는 새로운 정보입니다. 기존 PowerShell/netstat 검사나 독립 LAN 3/3·0/8 포트 검사를 반복하지 않습니다.
+- 검사기 파일 내용과 서버 프로세스, GSC 네트워크 정책, 서버 월드, 백업, 방화벽, ACL은 변경하지 않습니다. 도구 결과 `CAPTURED_REVIEW_REQUIRED`는 자료 수집 성공이지 실제 보안 완료 판정이 아닙니다. Native에서 실서버 리스너를 여전히 찾지 못하면 **12.10 FAIL 유지**; 추후 별도 방식의 포트/프로세스 관계를 조사합니다.
+- 새 보고서 검토 후 **필요할 때만** 정식 `tools\\day12\\Geumyi_Final_Verification.cmd`를 단 한 번 재실행합니다. 성공한 Golden/12.5/캐시를 재수집하거나, 12.11 E2E·12.12 soak·Stable 릴리즈를 앞당기지 않습니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
