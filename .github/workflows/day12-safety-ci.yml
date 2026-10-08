@@ -129,6 +129,58 @@ jobs:
           & tools/day12/Day12_Phase8_DR_SYNTHETIC.ps1 -OutputDir (Join-Path $env:RUNNER_TEMP 'p8')
           if($LASTEXITCODE -ne 0){throw "Phase8 synthetic failed"}
 
+      - name: Known-good cache real Build/verify in temporary Windows fixture
+        shell: powershell
+        run: |
+          $base=Join-Path $env:RUNNER_TEMP 'day12-cache-integration'
+          $previousPD=$env:PROGRAMDATA
+          $previousPF=$env:ProgramFiles
+          try {
+            $env:PROGRAMDATA=Join-Path $base 'ProgramData'
+            $env:ProgramFiles=Join-Path $base 'ProgramFiles'
+            $root=Join-Path $env:PROGRAMDATA 'GeumyiServerCenter'
+            $install=Join-Path $env:ProgramFiles 'Geumyi Server Center'
+            New-Item -ItemType Directory -Force -Path $root,$install | Out-Null
+            Set-Content (Join-Path $install 'GeumyiServerHost.exe') 'fixture-host'
+            Set-Content (Join-Path $install 'GeumyiServerCenter.exe') 'fixture-client'
+            $servers=@()
+            $confirmed=@()
+            foreach($id in @('wild','playground','other','lobby')){
+              $dir=Join-Path $base ('server-'+$id)
+              $pl=Join-Path $dir 'plugins'
+              New-Item -ItemType Directory -Force -Path $pl | Out-Null
+              Set-Content (Join-Path $pl 'fixture-plugin.jar') ("fixture-"+$id)
+              $servers+=@{id=$id;path=$dir}
+              $confirmed+=@{server_id=$id;step='create_verify_protect';pass=$true;retention_exempt=$true;file=($id+'-full-backup-test.zip');sha256=('a'*64)}
+            }
+            @{servers=$servers} | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $root 'server.json') -Encoding UTF8
+            foreach($id in @('wild','playground','other')){
+              $pl=Join-Path $root ('Network\FourServer\'+$id+'\plugins')
+              New-Item -ItemType Directory -Force -Path $pl | Out-Null
+              Set-Content (Join-Path $pl 'fixture-proxy.jar') ("proxy-"+$id)
+            }
+            $report=Join-Path $base 'Phase0B-PASS-fixture.json'
+            @{phase='12.0B';result='PASS';steps=$confirmed}|ConvertTo-Json -Depth 8|Set-Content $report -Encoding UTF8
+            $output=Join-Path $base 'output'
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase7_KnownGood_Cache.ps1 -Mode Build -Confirm BUILD_DAY12_KNOWN_GOOD_CACHE -Phase0BReport $report -OutputDir $output
+            if($LASTEXITCODE -ne 0){throw "Known-good cache Build failed"}
+            $cacheRoot=Join-Path $root 'ArtifactCache\known-good\day12'
+            $manifest=Join-Path $cacheRoot 'known-good-manifest.json'
+            $m=Get-Content $manifest -Raw|ConvertFrom-Json
+            if($m.result -ne 'PASS' -or @($m.files).Count -ne 9){throw "Cache Build manifest contract failed"}
+            if(@($m.files|Where-Object{-not $_.cache_name -or -not $_.sha256}).Count -ne 0){throw "Cache manifest missing cache_name or hash"}
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/recovery-kit/Verify-KnownGood.ps1 -ManifestPath $manifest -Root $cacheRoot
+            if($LASTEXITCODE -ne 0){throw "Recovery Kit could not verify built cache"}
+            $target=Join-Path $cacheRoot ([string]$m.files[0].cache_name)
+            Set-Content -LiteralPath $target -Value 'tampered'
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/recovery-kit/Verify-KnownGood.ps1 -ManifestPath $manifest -Root $cacheRoot
+            if($LASTEXITCODE -eq 0){throw "Corrupt cache passed integrity verification"}
+          }finally{
+            $env:PROGRAMDATA=$previousPD
+            $env:ProgramFiles=$previousPF
+          }
+          $global:LASTEXITCODE=0
+
       - name: Synthetic final verifier
         shell: powershell
         run: |
