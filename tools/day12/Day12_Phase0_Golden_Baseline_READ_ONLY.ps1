@@ -85,7 +85,7 @@ function Resolve-HostExe {
             if(-not [string]::IsNullOrWhiteSpace($candidate) -and (Test-Path -LiteralPath $candidate -PathType Leaf)){ return $candidate }
         }
     } catch {}
-    $fallback = Join-Path (if($env:ProgramFiles){$env:ProgramFiles}else{"C:\Program Files"}) "Geumyi Server Center\GeumyiServerHost.exe"
+    $fallback = Join-Path $(if($env:ProgramFiles){$env:ProgramFiles}else{"C:\Program Files"}) "Geumyi Server Center\GeumyiServerHost.exe"
     if(Test-Path -LiteralPath $fallback -PathType Leaf){ return $fallback }
     return ""
 }
