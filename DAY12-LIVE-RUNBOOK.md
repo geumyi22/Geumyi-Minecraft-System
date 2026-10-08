@@ -74,6 +74,14 @@
 - 다음 한 번만: 최신 Operator Kit → 서버 PC 관리자 권한으로 `tools\\day12\\Day12_Phase2_5_Integrity_Security_READ_ONLY.cmd` 실행 → 새 `Day12-Integrity-Security-*.json` 한 개 제출. 이전 LAN/Golden 백업/전체 진단은 반복하지 않습니다.
 - 이 결과를 검토하기 전까지 플러그인 재배포, StatusAgent 제거, 방화벽과 폴더 ACL 변경, 12.10 PASS 및 Stable 전환은 보류합니다.
 
+## 06:07 후속 결과 — Agent 경로 확인 / 방화벽 수집 오류
+
+- `Day12-Integrity-Security-20261009-060757.json`: `Runtime/Agent/GeumyiStatusAgent-0.5.4.jar` 파일과 GSC 설정값이 일치함을 확인했습니다. 같은 실제 런타임 디렉터리의 0.5.3 파일과 레거시 위치 0.4.5 파일은 **자동 삭제 금지**입니다. 파일 존재로 현재 실행 중인 Agent 버전을 증명할 수는 없습니다.
+- 방화벽은 268개 활성 인바운드 규칙을 열거했지만 `ERROR_OR_UNAVAILABLE`이며 실제 조건별 필터 목록이 비어 있습니다. **이 결과로 보안 PASS 또는 방화벽 문제 없음 판정 금지.** 먼저 진단기가 여러 규칙을 처리하도록 수정했습니다.
+- 수정된 도구는 wildcard 포트 처리 시 PowerShell StrictMode에서 null이 될 수 있는 배열을 직접 초기화하고, 필터/규칙별 예외를 신상정보 없이 단계·예외 종류만 기록합니다. 방화벽 검사 부분이 실패하면 전체 결과는 `CHECK_REQUIRED`로 반환하게 했습니다.
+- 최신 Operator Kit Safety CI를 확인한 후 **서버 PC에서만** `tools\\day12\\Day12_Phase2_5_Integrity_Security_READ_ONLY.cmd` 관리자 권한 실행 → 새 JSON **하나** 제출. 이전 LAN 검사/Golden 백업/기존 보고서를 재실행하지 않습니다.
+- 진행 중인 서버나 Windows 방화벽/폴더 ACL/플러그인/Agent 프로세스를 진단을 위해 변경하지 않습니다. 12.10 최종 보안 검증 및 Stable 게이트는 계속 미통과입니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
