@@ -50,6 +50,9 @@ function Rights([object]$ACE){
   $writeData=($mask -band [int64]$t::WriteData) -ne 0
   $appendData=($mask -band [int64]$t::AppendData) -ne 0
   $delete=($mask -band [int64]$t::Delete) -ne 0
+  # Directory-specific DeleteChild may allow removal of child files even if
+  # the child file's own ACL does not grant DELETE.
+  $deleteChild=($mask -band [int64]$t::DeleteSubdirectoriesAndFiles) -ne 0
   $changePermissions=($mask -band [int64]$t::ChangePermissions) -ne 0
   $ownership=($mask -band [int64]$t::TakeOwnership) -ne 0
   $writeAttrs=($mask -band [int64]$t::WriteAttributes) -ne 0
@@ -57,10 +60,11 @@ function Rights([object]$ACE){
     write_data_or_create_files=$writeData
     append_data_or_create_dirs=$appendData
     delete=$delete
+    delete_children=$deleteChild
     change_permissions=$changePermissions
     take_ownership=$ownership
     write_attributes=$writeAttrs
-    potentially_mutating=($writeData -or $appendData -or $delete -or $changePermissions -or $ownership)
+    potentially_mutating=($writeData -or $appendData -or $delete -or $deleteChild -or $changePermissions -or $ownership)
   }
 }
 function ACLRecord([string]$Path,[string]$Role,[bool]$IsFile){
@@ -119,6 +123,9 @@ if($Synthetic){
   $z=AddrScope "192.168.0.1"
   $aceTest=[pscustomobject]@{FileSystemRights=[System.Security.AccessControl.FileSystemRights]::WriteData}
   $rightsTest=Rights $aceTest
+  $delChildTest=Rights ([pscustomobject]@{
+    FileSystemRights=[System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles
+  })
   # Use the already-created temporary output directory, never production.
   # This catches ACL target-role/ACE principal variable collisions on Windows.
   $aclSynthetic=ACLRecord $OutputDir "SYNTHETIC_OUTPUT_DIR" $false
@@ -127,6 +134,7 @@ if($Synthetic){
     $z -ne "RESTRICTED_REDACTED" -or
     (-not $rightsTest.write_data_or_create_files) -or
     (-not $rightsTest.potentially_mutating) -or $rightsTest.delete -or
+    (-not $delChildTest.delete_children) -or (-not $delChildTest.potentially_mutating) -or
     $aclSynthetic.status -ne "CAPTURED" -or
     $aclSynthetic.target_role -ne "SYNTHETIC_OUTPUT_DIR"){
     throw "Rule classification parser regression"
