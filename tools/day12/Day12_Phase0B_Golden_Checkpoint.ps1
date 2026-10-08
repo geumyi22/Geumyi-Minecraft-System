@@ -13,6 +13,16 @@ New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 $stamp=Get-Date -Format "yyyyMMdd-HHmmss"
 $out=Join-Path $OutputDir ("Geumyi-Day12-Phase0B-GoldenCheckpoint-"+$stamp+".json")
 
+function Optional([object]$Value,[string]$Field,[object]$Default=$null){
+  foreach($part in $Field.Split('.')){
+    if($null -eq $Value){return $Default}
+    $property=$Value.PSObject.Properties[$part]
+    if($null -eq $property){return $Default}
+    $Value=$property.Value
+  }
+  if($null -eq $Value){return $Default}
+  return $Value
+}
 function GetJ([string]$p){Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method GET -TimeoutSec 30}
 function PostJ([string]$p,[object]$b,[int]$timeout=900){
   Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method POST -ContentType "application/json" -Body ($b|ConvertTo-Json -Depth 10 -Compress) -TimeoutSec $timeout
@@ -28,6 +38,9 @@ function WriteReport([string]$result,[object[]]$steps,[bool]$mutation,[string[]]
   Write-Host ("RESULT : "+$result);Write-Host ("REPORT : "+$out)
 }
 if($Synthetic){
+  # Test Go omitempty compatibility without making any backup API calls.
+  $fixture=[pscustomobject]@{server_id="wild";status=[pscustomobject]@{phase="current"}}
+  if([bool](Optional $fixture "status.block_start" $false)){throw "optional block_start regression"}
   $steps=@(
     [ordered]@{step="preflight";pass=$true;all_servers_offline=$true},
     [ordered]@{step="create_verify_protect";pass=$true;server_id="synthetic";file="synthetic-full-backup.zip"},
@@ -43,15 +56,24 @@ if($Confirm -ne "CREATE_PROTECTED_DAY12_GOLDEN"){
   exit 23
 }
 $status=GetJ "/api/status"
-if([string]$status.app_version -ne "4.3.8"){throw "GSC 4.3.8 required"}
+if([string](Optional $status "app_version" "") -ne "4.3.8"){throw "GSC 4.3.8 required"}
 $snapshot=GetJ "/api/v1/snapshot"
-if([int]$snapshot.active_jobs -ne 0){throw "Active control jobs exist; Golden checkpoint blocked"}
+if([int](Optional $snapshot "active_jobs" -1) -ne 0){throw "Active control jobs exist; Golden checkpoint blocked"}
 $fleet=GetJ "/api/v4/update/fleet"
-$known=@($fleet.servers|ForEach-Object{[string]$_.server_id})
+$known=@($fleet.servers|ForEach-Object{[string](Optional $_ "server_id" "")})
 foreach($id in $ServerIds){if($known -notcontains $id){throw "Unknown server id: $id"}}
-$online=@($status.servers|Where-Object{$ServerIds -contains [string]$_.id -and [bool]$_.online})
+$statusRows=@(Optional $status "servers" @())
+$fleetRows=@(Optional $fleet "servers" @())
+if($statusRows.Count -lt $ServerIds.Count -or $fleetRows.Count -lt $ServerIds.Count){
+  throw "Incomplete Host/fleet inventory; cannot prove every backend is offline"
+}
+$online=@($statusRows|Where-Object{$ServerIds -contains [string](Optional $_ "id" "") -and [bool](Optional $_ "online" $true)})
+$fleetOnline=@($fleetRows|Where-Object{$ServerIds -contains [string](Optional $_ "server_id" "") -and [bool](Optional $_ "online" $true)})
+if($fleetOnline.Count -gt 0){
+  throw ("Fleet still reports ONLINE servers: "+(($fleetOnline|ForEach-Object{Optional $_ "server_id" ""}) -join ","))
+}
 if($online.Count -gt 0){throw ("All target servers must be OFFLINE. Online: "+(($online|ForEach-Object{$_.id}) -join ","))}
-$unsafe=@($fleet.servers|Where-Object{$ServerIds -contains [string]$_.server_id -and ([bool]$_.status.block_start -or [string]$_.status.phase -in @("blocked","rollback_failed","rolling_back","pending_health","downloading"))})
+$unsafe=@($fleet.servers|Where-Object{$ServerIds -contains [string](Optional $_ "server_id" "") -and ([bool](Optional $_ "status.block_start" $false) -or [string](Optional $_ "status.phase" "") -in @("blocked","rollback_failed","rolling_back","pending_health","downloading"))})
 if($unsafe.Count -gt 0){throw "Unsafe update transaction state exists; Golden checkpoint blocked"}
 
 $steps=New-Object System.Collections.ArrayList
@@ -80,6 +102,6 @@ foreach($id in $ServerIds){
   }
 }
 $result=if($failed.Count -eq 0){"PASS"}else{"PARTIAL_REVIEW_REQUIRED"}
-WriteReport $result @($steps) ($steps.Count -gt 0) @($failed)
+WriteReport $result @($steps.ToArray()) ($steps.Count -gt 0) @($failed.ToArray())
 if($failed.Count -gt 0){exit 2}
 exit 0
