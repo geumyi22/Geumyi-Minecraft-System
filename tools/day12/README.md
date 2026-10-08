@@ -31,3 +31,11 @@ Day 12 is the final production-hardening milestone. Tools are intentionally spli
 `FINAL-RELEASE-GATES.json` is fail-closed. The final closure workflow only packages evidence after every repository and live gate has been explicitly changed to PASS. Final Stable publication is separately handled by `.github/workflows/day12-final-release.yml`, which re-runs safety/security/system/mobile build gates before publishing a signed immutable Stable release.
 
 Historical Day 8–11 recovery evidence is intentionally retained.
+
+
+### Phase 12.10: second-PC private-port exposure check
+
+- `Day12_Phase10_LAN_Proof_READ_ONLY.cmd`: execute only from a **different Windows PC**, not the Minecraft host. Enter the server PC private IPv4 at the prompt. It reads/changes no firewall, server settings, service state, files or passwords.
+- Checks public Java TCP 25565–25567 as positive controls and backend Java 25570–25573 plus RCON 25575/25576/25577/25579 for possible LAN access. All reports redact the server LAN IPv4, include no credentials, and are always `CAPTURED_REVIEW_REQUIRED`, never `PASS` for the final release.
+- Private TCP CONNECTED = possible exposure, investigate before changes. NO_CONNECTION = inconclusive about binding; could be firewall or routing. Public ports all unreachable = remote control path unverified. Continue to require the canonical 12.10 verifier and live E2E evidence.
+
