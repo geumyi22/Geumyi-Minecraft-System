@@ -39,22 +39,14 @@ After Day 11 closes:
 
 The Golden Baseline is immutable to automatic retention.
 
-### 12.0 current progress
+### 12.0 current progress — updated 2026-10-09 KST
 
-**12.0A — READ-ONLY capture**
-- source/evidence baseline files seeded;
-- network topology expected state seeded;
-- `tools/day12/Day12_Phase0_Golden_Baseline_READ_ONLY.cmd` added;
-- public repository output omits full local paths and all secret values;
-- real server-PC report is still required;
-- no server/config/firewall/backup mutation has been performed.
+- **12.0A — READ-ONLY capture:** server-PC operator READY recorded at **02:45 KST**. This is operator-reported live evidence; do not equate it with a new assistant-side re-run.
+- **12.0B — Golden Recovery Checkpoint:** operator PASS recorded at **03:23 KST**; **4/4 FULL Golden backups** verified and protected from automatic retention.
+- **12.7 cache linkage:** known-good cache Build PASS recorded at **03:45 KST**, with 84 SHA-256-listed artifacts. Actual offline-start E2E is still required.
+- **12.10 unresolved blocker:** Final Verification on the real server PC at **03:47 KST** returned **18 PASS / 0 WARN / 1 FAIL** (`backend_ports_private`, no TCP listener inventory). Treat backend privacy as unverified until actual address-to-port binding evidence is collected and verifier returns mandatory FAIL=0. `Day12_TCP_Bind_Diagnostic_READ_ONLY.cmd` and synthetic Windows CI are prepared; CI PASS is not live PASS.
 
-**12.0B — Golden Recovery Checkpoint**
-- starts only after the 12.0A report has no unresolved mandatory CHECK;
-- will create a dedicated recovery checkpoint and immediately protect it from normal retention;
-- is **not started yet**.
-
-12.0 is complete only after both 12.0A capture review and 12.0B protected checkpoint verification pass.
+These are the latest records from `DAY12-REPO-PROGRESS.md`. `FINAL-RELEASE-GATES.json` deliberately remains fail-closed pending review of actual evidence and every required live gate. Do not create redundant Golden checkpoints or rebuild the cache merely because an older runbook section still lists their setup steps.
 
 ## 12.1 — ResourcePack / DataPack managed deployment
 
