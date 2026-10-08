@@ -71,10 +71,12 @@ function ACLRecord([string]$Path,[string]$Role,[bool]$IsFile){
     $acl=Get-Acl -LiteralPath $Path -ErrorAction Stop
     $rows=@()
     foreach($ace in @($acl.Access)){
-      $role=SidGroup $ace.IdentityReference
+      # PowerShell variables are case-insensitive: $role overwrote $Role
+      # parameter, corrupting target_role in successful ACL captures.
+      $principalGroup=SidGroup $ace.IdentityReference
       $rights=Rights $ace
       $rows+= [ordered]@{
-        principal_group=$role;access_type=[string]$ace.AccessControlType
+        principal_group=$principalGroup;access_type=[string]$ace.AccessControlType
         inherited=[bool]$ace.IsInherited
         inheritance_flags=[string]$ace.InheritanceFlags
         propagation_flags=[string]$ace.PropagationFlags
@@ -117,11 +119,16 @@ if($Synthetic){
   $z=AddrScope "192.168.0.1"
   $aceTest=[pscustomobject]@{FileSystemRights=[System.Security.AccessControl.FileSystemRights]::WriteData}
   $rightsTest=Rights $aceTest
+  # Use the already-created temporary output directory, never production.
+  # This catches ACL target-role/ACE principal variable collisions on Windows.
+  $aclSynthetic=ACLRecord $OutputDir "SYNTHETIC_OUTPUT_DIR" $false
   if($a -ne "VPN_OR_OVERLAY_HINT" -or $b -ne "REMOTE_MANAGEMENT_HINT" -or
     $c -ne "UNCLASSIFIED" -or (-not $d) -or $e -or (-not $x) -or $y -or
     $z -ne "RESTRICTED_REDACTED" -or
     (-not $rightsTest.write_data_or_create_files) -or
-    (-not $rightsTest.potentially_mutating) -or $rightsTest.delete){
+    (-not $rightsTest.potentially_mutating) -or $rightsTest.delete -or
+    $aclSynthetic.status -ne "CAPTURED" -or
+    $aclSynthetic.target_role -ne "SYNTHETIC_OUTPUT_DIR"){
     throw "Rule classification parser regression"
   }
   [ordered]@{schema=1;phase="12.5-rule-acl";read_only=$true;synthetic=$true
