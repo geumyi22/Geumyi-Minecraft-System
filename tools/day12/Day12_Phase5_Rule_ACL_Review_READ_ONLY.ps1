@@ -115,9 +115,13 @@ if($Synthetic){
   $x=BroadRule ([pscustomobject]@{LocalPort="Any";Protocol="TCP"}) ([pscustomobject]@{Program="Any"})
   $y=BroadRule ([pscustomobject]@{LocalPort="8787";Protocol="TCP"}) ([pscustomobject]@{Program="Any"})
   $z=AddrScope "192.168.0.1"
+  $aceTest=[pscustomobject]@{FileSystemRights=[System.Security.AccessControl.FileSystemRights]::WriteData}
+  $rightsTest=Rights $aceTest
   if($a -ne "VPN_OR_OVERLAY_HINT" -or $b -ne "REMOTE_MANAGEMENT_HINT" -or
     $c -ne "UNCLASSIFIED" -or (-not $d) -or $e -or (-not $x) -or $y -or
-    $z -ne "RESTRICTED_REDACTED"){
+    $z -ne "RESTRICTED_REDACTED" -or
+    (-not $rightsTest.write_data_or_create_files) -or
+    (-not $rightsTest.potentially_mutating) -or $rightsTest.delete){
     throw "Rule classification parser regression"
   }
   [ordered]@{schema=1;phase="12.5-rule-acl";read_only=$true;synthetic=$true
