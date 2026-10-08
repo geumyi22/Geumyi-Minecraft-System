@@ -139,6 +139,13 @@
 - 이 명령은 `-AclOnly`를 사용하므로 기존 **방화벽 266개 규칙 재검사, GSC API 호출, Java/Bedrock 서버 설정 검사, 백업 검사 전부 건너뜁니다**. 파일 ACL 메타데이터 5건만 읽고 정확한 대상 라벨과 부모 `delete_children`을 기록합니다. `server.json` 내용과 계정/비밀정보는 파일로 내보내지 않습니다.
 - 새 ACL 결과가 깨끗하더라도 12.5 전체 보안 검증 PASS/12.10 PASS/Stable 자동 승격은 금지. 사용자별 effective access, 방화벽 미분류 33개 정당성, 실제 backend listener 주소는 별도 확인 사항입니다. 이미 성공한 전체 검사·LAN 검사·골든 백업은 반복 금지.
 
+## 06:43 ACL 전용 검사 접수 — 재검사 중단 / 12.5 잔여 검토
+
+- `Day12-Rule-ACL-Review-20261009-064327.json` 확인: 5개 ACL 대상 **전부 올바른 라벨**, `CAPTURED_FOR_REVIEW`, 오류 0건, 새 `delete_children` 비트 정상 출력, 방화벽 규칙 재검사 없음. **12.5 ACL 재수집을 반복하지 않습니다**.
+- 일반 사용자 그룹 `BUILTIN_USERS`의 기존 GSC `server.json` 파일/0.5.4 Agent JAR에 직접 쓰기/삭제 허용이 없습니다. GSC ProgramData, Runtime, Runtime/Agent **디렉터리**에서는 파일/폴더 생성 허용이 관찰되지만 `Delete`, `DeleteChild`, `ChangePermissions`, `TakeOwnership`은 거짓입니다. 다섯 대상 모두 상속을 사용합니다.
+- 38개 광범위 방화벽 Allow 규칙(용도 미분류 33개), 실제 NTFS 유효 권한 및 GSC Host/Updater 실행 계정은 **미검증**입니다. 해당 ACL과 규칙은 즉시 삭제·상속 해제하면 오히려 시스템이 손상될 수 있으므로 현재 **어떤 설정도 변경하지 않습니다**.
+- 전체 근거·문제 범위·변경 승인 전 체크리스트: `DAY12-PHASE5-SECURITY-REVIEW.md`. `12.5` 자료 수집은 완료, 보안 게이트는 **OPEN**. 이후 중요한 차단 항목은 `12.10` Java backend/RCON 실리스너 바인딩, `12.11` E2E, `12.12` soak입니다. Golden/기존 네트워크 검사/기존 ACL 전부 재검사 금지. `12.13` Stable 계속 차단.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
