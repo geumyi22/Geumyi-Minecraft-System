@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$BaseUrl="http://127.0.0.1:8790",[string]$OutputDir="",[switch]$Synthetic)
+param([string]$BaseUrl="http://127.0.0.1:8790",[string]$OutputDir="",[switch]$Synthetic,[string]$FixtureRoot="")
 Set-StrictMode -Version Latest;$ErrorActionPreference="Stop"
 function Check([string]$k,[string]$status,[string]$message,[bool]$mandatory=$true){[pscustomobject]@{key=$k;status=$status;message=$message;mandatory=$mandatory}}
 function Optional([object]$Value,[string]$Field,[object]$Default=$null){
@@ -12,7 +12,17 @@ function Optional([object]$Value,[string]$Field,[object]$Default=$null){
   if($null -eq $Value){return $Default}
   return $Value
 }
-function G([string]$p,[int]$t=15){try{Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method GET -TimeoutSec $t}catch{$null}}
+function G([string]$p,[int]$t=15){
+  if($FixtureRoot){
+    if($env:GITHUB_ACTIONS -ne "true"){throw "FixtureRoot is restricted to CI"}
+    $route=(($p -replace '[^A-Za-z0-9]+','_').Trim('_'))+".json"
+    $fixtureFile=Join-Path $FixtureRoot $route
+    if(Test-Path -LiteralPath $fixtureFile -PathType Leaf){
+      return (Get-Content -LiteralPath $fixtureFile -Raw -Encoding UTF8 | ConvertFrom-Json)
+    }
+    return $null
+  }
+  try{Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method GET -TimeoutSec $t}catch{$null}}
 function Get-Sha256([string]$p){if(-not(Test-Path $p -PathType Leaf)){return ""};(Get-FileHash $p -Algorithm SHA256).Hash.ToLowerInvariant()}
 if([string]::IsNullOrWhiteSpace($OutputDir)){$OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Final-Verification"}
 New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
@@ -61,6 +71,6 @@ $portRows=@();foreach($p in @(25565,25566,25567,25570,25571,25572,25573,25575,25
 $backendPublic=@($portRows|Where-Object{$_.port -in @(25570,25571,25572,25573,25575,25576,25577,25579) -and $_.address -notin @("127.0.0.1","::1")})
 [void]$checks.Add((Check "backend_ports_private" $(if($backendPublic.Count -eq 0){"PASS"}else{"FAIL"}) ("public_backend_listeners="+$backendPublic.Count)))
 $pass=@($checks|Where-Object{$_.status -eq "PASS"}).Count;$warn=@($checks|Where-Object{$_.status -eq "WARN"}).Count;$fail=@($checks|Where-Object{$_.status -eq "FAIL" -and $_.mandatory}).Count
-$r=[ordered]@{schema=2;tool="Geumyi Final Verification";read_only=$true;synthetic=$false;generated_at=(Get-Date).ToString("o");result=$(if($fail -eq 0){"PASS"}else{"FAIL"});summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail};checks=@($checks);golden_backups=$golden;network_entry=$erows;health=$hrows;listener_inventory=$portRows;notes=@("Real Java/Bedrock login/routing and GSCM device E2E are separate Phase 12.11 gates.","No secret values or configuration contents are exported.");mutation_performed=$false}
+$r=[ordered]@{schema=2;tool="Geumyi Final Verification";read_only=$true;synthetic=$false;fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o");result=$(if($fail -eq 0){"PASS"}else{"FAIL"});summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail};checks=@($checks);golden_backups=$golden;network_entry=$erows;health=$hrows;listener_inventory=$portRows;notes=@("Real Java/Bedrock login/routing and GSCM device E2E are separate Phase 12.11 gates.","No secret values or configuration contents are exported.");mutation_performed=$false}
 $r|ConvertTo-Json -Depth 14|Set-Content $out -Encoding UTF8;$r|ConvertTo-Json -Depth 14|Set-Content $canonical -Encoding UTF8
 Write-Host ("FINAL VERIFICATION: PASS $pass / WARN $warn / FAIL $fail");Write-Host ("Result: "+$r.result);Write-Host ("Report: "+$out);if($fail){exit 2}
