@@ -29,7 +29,17 @@ function G([string]$p){
 function T([int]$p){
   try{if(@(Get-NetTCPConnection -State Listen -LocalPort $p -ErrorAction SilentlyContinue).Count -gt 0){return $true}}catch{}
   try{
-    $rx='^\\s*TCP\\s+\\S+:'+$p+'\\s+\\S+\\s+LISTENING(?:\\s+\\d+)?\\s*
+    $rx='^\\s*TCP\\s+\\S+:'+$p+'\\s+\\S+\\s+LISTENING(?:\\s+\\d+)?\\s*$'
+    if(@(& netstat.exe -ano -p tcp 2>$null | Where-Object{$_ -match $rx}).Count -gt 0){return $true}
+  }catch{}
+  $c=New-Object System.Net.Sockets.TcpClient
+  try{
+    $h=$c.BeginConnect("127.0.0.1",$p,$null,$null)
+    if(-not $h.AsyncWaitHandle.WaitOne(500,$false)){return $false}
+    $c.EndConnect($h)
+    return $c.Connected
+  }catch{return $false}finally{$c.Dispose()}
+}
 function U([int]$p){try{[bool](Get-NetUDPEndpoint -LocalPort $p -ErrorAction SilentlyContinue|Select-Object -First 1)}catch{$false}}
 if($Synthetic){
   $fixture=[pscustomobject]@{server_id="wild";status=[pscustomobject]@{phase="idle"}}
