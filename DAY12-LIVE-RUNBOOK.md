@@ -28,6 +28,8 @@
 ## 다음 증거 수집 — 12.10 TCP 바인딩 검사 (2026-10-09)
 
 - 사용자 제출 04:22–04:23 전체 READ-ONLY ZIP 기준 12.3은 15 PASS, 12.10은 `backend_ports_private` 단독 FAIL. Golden 백업은 재실행하지 않습니다.
+- 2026-10-09 05:27 수집에서는 4개 서버 모두 `server-ip=127.0.0.1` 설정을 확인했지만, TCP 제공자 3종이 2회 모두 관련 LISTENING 행을 확보하지 못했습니다. **수집 당시 GSC 서버 online 여부는 해당 보고서에 없어 확정할 수 없습니다.**
+- 갱신된 도구는 GSC 서버별 online 상태를 수집 전후로 기록하고 TCP loopback 연결 결과도 같은 실행에서 확인합니다. 소켓 주소 증거가 없는 상태에서는 여전히 FAIL입니다.
 - 새 `tools\\day12\\Day12_Phase10_Bind_Evidence_READ_ONLY.cmd`는 실제 서버 PC에서 4개 Paper의 `server.properties` 중 **네트워크 관련 필드만** 읽고, Windows TCP 리스너 목록을 두 번 수집합니다. 읽기 전용이며 다른 properties, 비밀번호, 전체 경로는 보고서에 넣지 않습니다.
 - 결과는 `바탕화면\\Geumyi-Day12-Bind-Evidence\\Day12-Bind-Evidence-*.json`으로 저장됩니다. 보고서 `CAPTURED_REVIEW_REQUIRED`는 정상 수집 결과이지 보안 PASS가 아닙니다.
 - `server-ip`가 비어 있거나 wildcard/non-loopback이라면 운영 중 직접 설정을 바꾸지 않고 **백업·서버별 점검·승인된 재시작 계획**을 세웁니다. 다른 진단 제공자가 리스너를 찾지 못하면 최종 검사기는 계속 FAIL로 둡니다.
