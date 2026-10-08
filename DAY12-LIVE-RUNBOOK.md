@@ -40,6 +40,7 @@ PASS 기준:
 
 먼저 Day12_Phase1_Content_Preflight_READ_ONLY.cmd 실행.
 deploy/day12-managed-content.json은 기본적으로 모두 disabled입니다. 실제 검증된 ZIP/HTTPS URL/hash를 채운 항목만 활성화합니다.
+Java apply는 transaction journal + 자동 rollback이 있고, 필요 시 Day12_Phase1_Managed_Content_Rollback.ps1로 명시적 수동 rollback도 가능합니다.
 Bedrock/Geyser pack 위치는 실제 환경에서 확인되기 전까지 자동 apply하지 않습니다.
 
 ## 5. Runtime health/security/lifecycle
@@ -49,7 +50,7 @@ Bedrock/Geyser pack 위치는 실제 환경에서 확인되기 전까지 자동 
 - 12.4 Storage/Log DRY-RUN
 - 12.5 Security Audit
 
-보존 정책은 dry-run 결과를 검토하기 전 자동 삭제에 사용하지 않습니다.
+보존 정책은 dry-run 결과를 검토하기 전 적용하지 않습니다. 적용 시에도 Day12_Phase4_Lifecycle_Apply.cmd는 영구삭제가 아니라 GSC Trash/LogTrash로 이동하고 로그 ZIP archive를 먼저 만듭니다. LogTrash 복구 전에는 Day12_Phase4_LogTrash_Recovery_Preflight.ps1로 archive/Trash 가용성을 확인합니다.
 
 ## 6. Offline known-good gate
 
@@ -76,7 +77,7 @@ Day12_Phase12_Soak_READ_ONLY.cmd에서 Start → 실제 사용/idle → End. 가
 - FINAL-RELEASE-GATES.json의 모든 repository/live gate를 PASS로 변경
 - stable/maintenance booleans를 true로 변경
 - Day 12 Final Closure Gate workflow PASS
-- 기존 signed Secure Release chain으로 최종 Stable 배포
+- fail-closed `.github/workflows/day12-final-release.yml`을 통해 기존 signed Secure Release chain으로 최종 Stable 배포
 - Day 12 COMPLETE
 - Maintenance Mode 전환
 
