@@ -94,7 +94,12 @@ if($Synthetic){
   $r1=@(RelevantPorts "25570-25573,25579" @(25565,25570,25571,25572,25573,25579))
   $r2=@(RelevantPorts "Any" @(25565,25570))
   $r3=@(RelevantPorts "RPC-EPMap" @(25565,25570))
+  # StrictMode regression: empty/Any-port values must produce a real array,
+  # not a null pipeline result whose .Count can abort the live enumeration.
+  $blankPorts=@()
+  $nonBlankPorts=@(RelevantPorts "25570-25573" @(25570,25571,25572,25573))
   if($r1.Count -ne 5 -or $r2.Count -ne 2 -or $r3.Count -ne 0 -or
+    $blankPorts.Count -ne 0 -or $nonBlankPorts.Count -ne 4 -or
     (ScopeRemote "Any") -ne "ANY" -or (ScopeRemote "LocalSubnet") -ne "LOCAL_SUBNET_OR_COMPOSITE" -or
     -not(KnownLobbyAlias "lobby" "gst" "GeumyiServerTools-1.1.1.jar") -or
     -not(KnownLobbyAlias "lobby" "gds" "GeumyiDiscordStatus-1.1.1.jar") -or
@@ -247,10 +252,16 @@ foreach($id in $ids){
 # individual user SIDs, remote addresses and rule descriptions are redacted.
 $fwStatus="UNAVAILABLE";$fwScanned=0;$fwRows=@();$fwCount=0;$fwInconclusive=0
 $anyPortProgramWideCandidates=0
+$fwProcessed=0;$fwFailedRules=0
+$fwFailureStage="NONE";$fwFailureType="NONE"
+$fwStage="RULE_QUERY"
 try{
   $rules=@(Get-NetFirewallRule -Direction Inbound -Enabled True -ErrorAction Stop)
   $fwStatus="CAPTURED";$fwScanned=$rules.Count
   foreach($rule in $rules){
+    $fwProcessed++
+    $fwStage="RULE_FILTERS"
+    try {
     $pf=$null;$af=$null;$ap=$null
     try{$pf=Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop}catch{$fwInconclusive++;continue}
     try{$af=Get-NetFirewallAddressFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop}catch{}
@@ -258,8 +269,12 @@ try{
     $portVal=[string](Prop $pf "LocalPort" "UNKNOWN")
     $protocol=[string](Prop $pf "Protocol" "UNKNOWN")
     $isAnyPort=$portVal -in @("Any","*")
-    $matchPorts=if($isAnyPort -or $protocol -notin @("TCP","UDP","Any")){@()}
-                else{@(RelevantPorts $portVal $portScope)}
+    # Force a concrete empty array: the previous if-expression emitted zero
+    # pipeline objects for LocalPort=Any, yielding $null under StrictMode.
+    $matchPorts=@()
+    if(-not $isAnyPort -and $protocol -in @("TCP","UDP","Any")){
+      $matchPorts=@(RelevantPorts $portVal $portScope)
+    }
     $projectNamed=([string]$rule.DisplayName -match '(?i)Geumyi|Minecraft|Velocity|GSC')
     $rawRemote=[string](Prop $af "RemoteAddress" "UNKNOWN")
     $prog=[string](Prop $ap "Program" "UNKNOWN")
@@ -283,13 +298,29 @@ try{
       complete_filters=($null -ne $af -and $null -ne $ap -and $null -ne $sf)
     }
     $fwCount++
+    }catch{
+      # Continue enumerating remaining rules and report partial evidence.
+      # Never export raw exception messages or rule names/paths.
+      $fwFailedRules++
+      if($fwFailureStage -eq "NONE"){
+        $fwFailureStage=$fwStage
+        $fwFailureType=$_.Exception.GetType().Name
+      }
+    }
+  }
+  if($fwFailedRules -gt 0 -or $fwInconclusive -gt 0){
+    $fwStatus="PARTIAL_CHECK_REQUIRED"
   }
 }catch{
   $fwStatus="ERROR_OR_UNAVAILABLE"
+  $fwFailureStage=$fwStage
+  $fwFailureType=$_.Exception.GetType().Name
 }
 $problems=@($rows|Where-Object{$_.expected_target -and $_.state -in @("EXPECTED_JAR_NOT_FOUND","PLUGIN_DIR_NOT_FOUND","DUPLICATE_JAR_CANDIDATES")})
 $broadACL=@($acl|Where-Object{(Prop $_ "broad_write_allow_count" 0) -gt 0})
-$result=if($configStatus -eq "LOADED" -and $manifestStatus -eq "LOADED"){"CAPTURED_FOR_REVIEW"}else{"CHECK_REQUIRED"}
+# Do not report a successful combined audit if the security half failed.
+$result=if($configStatus -eq "LOADED" -and $manifestStatus -eq "LOADED" -and
+   $fwStatus -eq "CAPTURED"){"CAPTURED_FOR_REVIEW"}else{"CHECK_REQUIRED"}
 $report=[ordered]@{
   schema=1;phase="12.2+12.5";read_only=$true;synthetic=$false
   generated_at=(Get-Date).ToString("o");result=$result
@@ -304,11 +335,14 @@ $report=[ordered]@{
       status=$fwStatus;inbound_enabled_rules_inspected=$fwScanned
       matching_rules=@($fwRows);port_filter_inspection_failures=$fwInconclusive
       any_port_any_program_candidates=$anyPortProgramWideCandidates
+      rules_processed=$fwProcessed;rule_processing_errors=$fwFailedRules
+      failure_stage=$fwFailureStage;failure_exception_type=$fwFailureType
     }
   }
   notes=@(
     "Filename/version matching and computed SHA-256 are not proof of authenticated upstream provenance.",
     "Missing statusagent in limited host search scope does not establish absence from system.",
+    "The firewall collector is fail-closed: partial or failed rule inventory makes the combined result CHECK_REQUIRED.",
     "Firewall Any local-port rules are not proof of a rule specifically opening any listed Minecraft port.",
     "Broad candidate rules may still be restricted by service, interface, profile and other policies; this is not Windows Filtering Platform effective enforcement.",
     "The lobby JAR filename aliases originate from the Day10 installation flow; content provenance remains unverified.",
