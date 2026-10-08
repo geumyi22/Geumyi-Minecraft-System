@@ -231,7 +231,7 @@ try{
 }catch{}
 $isElevated=$false
 try{
-  $principal=New-Object System.Security.Principal.WindowsPrincipal([System.Security.Principal.WindowsIdentity]::GetCurrent())
+  $principal=[System.Security.Principal.WindowsPrincipal]::new([System.Security.Principal.WindowsIdentity]::GetCurrent())
   $isElevated=$principal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
 }catch{}
 $javaProcesses=@()
