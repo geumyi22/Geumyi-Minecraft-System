@@ -60,3 +60,8 @@ Historical Day 8–11 recovery evidence is intentionally retained.
 
 - `Day12_Phase5_ACL_Only_READ_ONLY.cmd` runs `Day12_Phase5_Rule_ACL_Review_READ_ONLY.ps1 -AclOnly`. Read-only, **server PC only**, five configured GSC file and directory ACLs. No 266-rule ActiveStore enumeration, API request, TCP test, Java/JAR modification, or backup scan.
 - Verifies all five output target labels remain uncorrupted, captures NTFS `DeleteSubdirectoriesAndFiles` as `delete_children` separately from child-file `Delete`, emits `firewall_enumeration=NOT_EXECUTED_ACL_ONLY`, and reports `CHECK_REQUIRED` on any missing/failed ACL. This mode cannot prove a user's effective access or grant permission to modify ACLs.
+
+### Phase 12.5: corrected real-host ACL-only capture (2026-10-09 06:43)
+
+- The `-AclOnly` command produced an actual server-host report with `acl_target_label_consistency=true`, five CAPTURED target-role labels, `delete_children` bit present, zero target errors and `firewall_enumeration=NOT_EXECUTED_ACL_ONLY`. Thus the 06:35 role-label variable collision is verified fixed in live evidence, not just CI.
+- No reason to rerun the same ACL or full firewall collectors. Three parent directories still have inherited BUILTIN_USERS file/dir creation Allow; direct `server.json` and Agent 0.5.4 JAR file ACEs do not grant ordinary-user content modification. Full effective access and the need for broad firewall rules remain under review. Review `DAY12-PHASE5-SECURITY-REVIEW.md` at repo root before suggesting any future production security change.
