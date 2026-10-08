@@ -2,7 +2,8 @@
 param(
     [string]$BaseUrl = "http://127.0.0.1:8790",
     [string]$OutputDir = "",
-    [switch]$Synthetic
+    [switch]$Synthetic,
+    [string]$FixtureRoot=""
 )
 
 Set-StrictMode -Version Latest
@@ -89,6 +90,16 @@ function Resolve-HostExe {
     return ""
 }
 function Get-Json([string]$Base,[string]$Path,[int]$Timeout=8){
+  if($FixtureRoot){
+    if($env:GITHUB_ACTIONS -ne "true"){throw "FixtureRoot is restricted to CI"}
+    $route=(($Path -replace '[^A-Za-z0-9]+','_').Trim('_'))+".json"
+    $fixtureFile=Join-Path $FixtureRoot $route
+    if(Test-Path -LiteralPath $fixtureFile -PathType Leaf){
+      return (Get-Content -LiteralPath $fixtureFile -Raw -Encoding UTF8 | ConvertFrom-Json)
+    }
+    return $null
+  }
+  
     try { return Invoke-RestMethod -Uri ($Base.TrimEnd('/')+$Path) -Method GET -TimeoutSec $Timeout -ErrorAction Stop } catch { return $null }
 }
 function Get-Jars([string]$Path){
@@ -319,7 +330,7 @@ Add-Check $checks "disk_headroom" ($freeBytes -ge 50GB) ("free_gib="+([math]::Ro
 Add-Check $checks "local_client_4_3_8_or_not_running" ($null -eq $client -or [string](Optional $client "version" "") -eq $Expected.gsc) $(if($null -eq $client){"local Client endpoint not running; Host capture still valid"}else{"client="+[string](Optional $client "version" "")}) $false
 
 $failedMandatory=@($checks | Where-Object {$_.mandatory -and $_.status -ne "PASS"})
-$ready=($failedMandatory.Count -eq 0)
+$ready=($failedMandatory.Count -eq 0 -and -not $FixtureRoot)
 
 $report=[ordered]@{
     schema=1
@@ -327,6 +338,7 @@ $report=[ordered]@{
     tool="Day12 Golden Baseline READ-ONLY"
     mode="READ_ONLY"
     synthetic=$false
+    fixture_mode=([bool]$FixtureRoot)
     generated_at=(Get-Date).ToString("o")
     result=$(if($ready){"READY_FOR_GOLDEN_CHECKPOINT"}else{"CHECK_REQUIRED"})
     expected=$Expected
