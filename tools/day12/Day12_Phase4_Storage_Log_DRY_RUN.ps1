@@ -4,12 +4,6 @@ Set-StrictMode -Version Latest;$ErrorActionPreference="Stop"
 if([string]::IsNullOrWhiteSpace($OutputDir)){$OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Day12-Phase4"}
 New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
 $out=Join-Path $OutputDir ("Geumyi-Day12-Phase4-LifecycleDryRun-"+(Get-Date -Format "yyyyMMdd-HHmmss")+".json")
-if($Synthetic){
-  $fixture=[pscustomobject]@{candidates=@();reclaim_bytes=0}
-  if([string](Optional $fixture "blocked_reason" "") -ne ""){throw "retention optional-field regression"}
-  [ordered]@{schema=1;phase="12.4";synthetic=$true;result="SYNTHETIC_PASS";mutation_performed=$false}|ConvertTo-Json|Set-Content $out -Encoding UTF8;exit 0}
-if([string]::IsNullOrWhiteSpace($PolicyPath)){throw "PolicyPath required"}
-$p=Get-Content -LiteralPath $PolicyPath -Raw -Encoding UTF8|ConvertFrom-Json
 function Optional([object]$Value,[string]$Field,[object]$Default=$null){
   foreach($part in $Field.Split('.')){
     if($null -eq $Value){return $Default}
@@ -20,6 +14,12 @@ function Optional([object]$Value,[string]$Field,[object]$Default=$null){
   if($null -eq $Value){return $Default}
   return $Value
 }
+if($Synthetic){
+  $fixture=[pscustomobject]@{candidates=@();reclaim_bytes=0}
+  if([string](Optional $fixture "blocked_reason" "") -ne ""){throw "retention optional-field regression"}
+  [ordered]@{schema=1;phase="12.4";synthetic=$true;result="SYNTHETIC_PASS";mutation_performed=$false}|ConvertTo-Json|Set-Content $out -Encoding UTF8;exit 0}
+if([string]::IsNullOrWhiteSpace($PolicyPath)){throw "PolicyPath required"}
+$p=Get-Content -LiteralPath $PolicyPath -Raw -Encoding UTF8|ConvertFrom-Json
 function G([string]$path){
   if($FixtureRoot){
     if($env:GITHUB_ACTIONS -ne "true"){throw "FixtureRoot is restricted to CI"}
