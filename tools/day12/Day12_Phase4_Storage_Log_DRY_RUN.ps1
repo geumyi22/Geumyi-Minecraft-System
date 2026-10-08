@@ -4,16 +4,29 @@ Set-StrictMode -Version Latest;$ErrorActionPreference="Stop"
 if([string]::IsNullOrWhiteSpace($OutputDir)){$OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Day12-Phase4"}
 New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
 $out=Join-Path $OutputDir ("Geumyi-Day12-Phase4-LifecycleDryRun-"+(Get-Date -Format "yyyyMMdd-HHmmss")+".json")
-if($Synthetic){[ordered]@{schema=1;phase="12.4";synthetic=$true;result="SYNTHETIC_PASS";mutation_performed=$false}|ConvertTo-Json|Set-Content $out -Encoding UTF8;exit 0}
+if($Synthetic){
+  $fixture=[pscustomobject]@{candidates=@();reclaim_bytes=0}
+  if([string](Optional $fixture "blocked_reason" "") -ne ""){throw "retention optional-field regression"}
+  [ordered]@{schema=1;phase="12.4";synthetic=$true;result="SYNTHETIC_PASS";mutation_performed=$false}|ConvertTo-Json|Set-Content $out -Encoding UTF8;exit 0}
 if([string]::IsNullOrWhiteSpace($PolicyPath)){throw "PolicyPath required"}
 $p=Get-Content -LiteralPath $PolicyPath -Raw -Encoding UTF8|ConvertFrom-Json
+function Optional([object]$Value,[string]$Field,[object]$Default=$null){
+  foreach($part in $Field.Split('.')){
+    if($null -eq $Value){return $Default}
+    $property=$Value.PSObject.Properties[$part]
+    if($null -eq $property){return $Default}
+    $Value=$property.Value
+  }
+  if($null -eq $Value){return $Default}
+  return $Value
+}
 function G([string]$path){Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$path) -Method GET -TimeoutSec 20}
 function P([string]$path,[object]$body){Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$path) -Method POST -ContentType "application/json" -Body ($body|ConvertTo-Json -Compress) -TimeoutSec 60}
 $f=G "/api/v4/update/fleet";$servers=@($f.servers|ForEach-Object{[string]$_.server_id})
 $backup=@()
 foreach($id in $servers){
   $active=G ("/api/v4/backups?id="+[uri]::EscapeDataString($id));$dry=P "/api/v4/backup/retention/dry-run" @{id=$id;keep_latest=[int]$p.backup.recent}
-  $backup += [ordered]@{server_id=$id;active_count=@($active.backups).Count;protected=@($active.backups|Where-Object{$null -ne $_ -and $null -ne $_.PSObject.Properties["protected"] -and [bool]$_.PSObject.Properties["protected"].Value}).Count;existing_api_candidates=@($dry.candidates);reclaim_bytes=[int64]$dry.reclaim_bytes;blocked_reason=[string]$dry.blocked_reason}
+  $backup += [ordered]@{server_id=$id;active_count=@(Optional $active "backups" @()).Count;protected=@((Optional $active "backups" @())|Where-Object{$null -ne $_ -and $null -ne $_.PSObject.Properties["protected"] -and [bool]$_.PSObject.Properties["protected"].Value}).Count;existing_api_candidates=@(Optional $dry "candidates" @());reclaim_bytes=[int64](Optional $dry "reclaim_bytes" 0);blocked_reason=[string](Optional $dry "blocked_reason" "")}
 }
 $pd=if($env:PROGRAMDATA){$env:PROGRAMDATA}else{"C:\ProgramData"};$root=Join-Path $pd "GeumyiServerCenter"
 $logRoots=@((Join-Path $root "logs"));$cfgPath=Join-Path $root "server.json"
