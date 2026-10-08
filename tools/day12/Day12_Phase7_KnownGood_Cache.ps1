@@ -27,7 +27,13 @@ if($Mode -eq "Build"){
   $confirmed=@($p0.steps | Where-Object {
     [string]$_.step -eq "create_verify_protect" -and
     [bool]$_.pass -and [bool]$_.retention_exempt -and
-    [string]$_.file -match '-full-backup-.*\\.zip
+    [string]$_.file -match '-full-backup-.*\.zip$' -and
+    [string]$_.sha256 -match '^[a-fA-F0-9]{64}$'
+  })
+  $ids=@($confirmed | ForEach-Object {[string]$_.server_id})
+  if($confirmed.Count -ne 4 -or @($ids | Select-Object -Unique).Count -ne 4 -or @($required | Where-Object {$ids -notcontains $_}).Count -gt 0){
+    throw "Phase 12.0B report does not confirm four verified, protected, retention-exempt FULL backups"
+  }
   New-Item -ItemType Directory -Force -Path $cacheRoot|Out-Null
 }
 $files=New-Object System.Collections.ArrayList
@@ -60,60 +66,6 @@ if($Mode -eq "Build"){
   }
 }
 $r=[ordered]@{schema=1;phase="12.7";mode=$Mode;generated_at=(Get-Date).ToString("o");result=$(if($files.Count -eq 0){"CHECK_REQUIRED"}elseif($Mode -eq "Build"){"PASS"}else{"CAPTURED"});cache_root_created=($Mode -eq "Build");files=@($files);live_files_modified=$false;network_required=$false}
-if($Mode -eq "Build"){$r|ConvertTo-Json -Depth 10|Set-Content (Join-Path $cacheRoot "known-good-manifest.json") -Encoding UTF8}
-$r|ConvertTo-Json -Depth 10|Set-Content $out -Encoding UTF8
-Write-Host ("KNOWN-GOOD CACHE "+$Mode+": "+$r.result);Write-Host ("Report: "+$out);if(-not$files.Count){exit 2}
- -and
-    [string]$_.sha256 -match '^[a-fA-F0-9]{64}
-  New-Item -ItemType Directory -Force -Path $cacheRoot|Out-Null
-}
-$files=New-Object System.Collections.ArrayList
-function AddFile([string]$src,[string]$logical){
-  if(-not(Test-Path -LiteralPath $src -PathType Leaf)){return}
-  $sha=Get-Sha256 $src;$size=[int64](Get-Item $src).Length
-  if($Mode -eq "Build"){
-    $safe=($logical -replace '[^A-Za-z0-9_.-]','_');$dst=Join-Path $cacheRoot $safe
-    Copy-Item -LiteralPath $src -Destination $dst -Force
-    if((Get-Sha256 $dst)-ne$sha){throw "cache hash mismatch: $logical"}
-  }
-  [void]$files.Add([ordered]@{logical=$logical;name=[IO.Path]::GetFileName($src);size=$size;sha256=$sha})
-}
-$pf=if($env:ProgramFiles){$env:ProgramFiles}else{"C:\Program Files"};$inst=Join-Path $pf "Geumyi Server Center"
-AddFile (Join-Path $inst "GeumyiServerHost.exe") "gsc-host"
-AddFile (Join-Path $inst "GeumyiServerCenter.exe") "gsc-client"
-$cfgPath=Join-Path $root "server.json"
-if(Test-Path $cfgPath){$cfg=Get-Content $cfgPath -Raw -Encoding UTF8|ConvertFrom-Json;foreach($s in @($cfg.servers)){foreach($j in Get-ChildItem (Join-Path ([string]$s.path) "plugins") -Filter *.jar -File -ErrorAction SilentlyContinue){AddFile $j.FullName ("server-"+[string]$s.id+"-"+$j.Name)}}}
-$proxy=Join-Path $root "Network\FourServer";foreach($id in @("wild","playground","other")){foreach($j in Get-ChildItem (Join-Path $proxy ($id+"\plugins")) -Filter *.jar -File -ErrorAction SilentlyContinue){AddFile $j.FullName ("proxy-"+$id+"-"+$j.Name)}}
-$r=[ordered]@{schema=1;phase="12.7";mode=$Mode;generated_at=(Get-Date).ToString("o");result=$(if($files.Count){"CAPTURED"}else{"CHECK_REQUIRED"});cache_root_created=($Mode -eq "Build");files=@($files);live_files_modified=$false;network_required=$false}
-if($Mode -eq "Build"){$r|ConvertTo-Json -Depth 10|Set-Content (Join-Path $cacheRoot "known-good-manifest.json") -Encoding UTF8}
-$r|ConvertTo-Json -Depth 10|Set-Content $out -Encoding UTF8
-Write-Host ("KNOWN-GOOD CACHE "+$Mode+": "+$r.result);Write-Host ("Report: "+$out);if(-not$files.Count){exit 2}
-
-  })
-  $ids=@($confirmed | ForEach-Object {[string]$_.server_id})
-  if($confirmed.Count -ne 4 -or @($ids | Select-Object -Unique).Count -ne 4 -or @($required | Where-Object {$ids -notcontains $_}).Count -gt 0){
-    throw "Phase 12.0B report does not confirm four verified, protected, retention-exempt FULL backups"
-  }
-  New-Item -ItemType Directory -Force -Path $cacheRoot|Out-Null
-}
-$files=New-Object System.Collections.ArrayList
-function AddFile([string]$src,[string]$logical){
-  if(-not(Test-Path -LiteralPath $src -PathType Leaf)){return}
-  $sha=Get-Sha256 $src;$size=[int64](Get-Item $src).Length
-  if($Mode -eq "Build"){
-    $safe=($logical -replace '[^A-Za-z0-9_.-]','_');$dst=Join-Path $cacheRoot $safe
-    Copy-Item -LiteralPath $src -Destination $dst -Force
-    if((Get-Sha256 $dst)-ne$sha){throw "cache hash mismatch: $logical"}
-  }
-  [void]$files.Add([ordered]@{logical=$logical;name=[IO.Path]::GetFileName($src);size=$size;sha256=$sha})
-}
-$pf=if($env:ProgramFiles){$env:ProgramFiles}else{"C:\Program Files"};$inst=Join-Path $pf "Geumyi Server Center"
-AddFile (Join-Path $inst "GeumyiServerHost.exe") "gsc-host"
-AddFile (Join-Path $inst "GeumyiServerCenter.exe") "gsc-client"
-$cfgPath=Join-Path $root "server.json"
-if(Test-Path $cfgPath){$cfg=Get-Content $cfgPath -Raw -Encoding UTF8|ConvertFrom-Json;foreach($s in @($cfg.servers)){foreach($j in Get-ChildItem (Join-Path ([string]$s.path) "plugins") -Filter *.jar -File -ErrorAction SilentlyContinue){AddFile $j.FullName ("server-"+[string]$s.id+"-"+$j.Name)}}}
-$proxy=Join-Path $root "Network\FourServer";foreach($id in @("wild","playground","other")){foreach($j in Get-ChildItem (Join-Path $proxy ($id+"\plugins")) -Filter *.jar -File -ErrorAction SilentlyContinue){AddFile $j.FullName ("proxy-"+$id+"-"+$j.Name)}}
-$r=[ordered]@{schema=1;phase="12.7";mode=$Mode;generated_at=(Get-Date).ToString("o");result=$(if($files.Count){"CAPTURED"}else{"CHECK_REQUIRED"});cache_root_created=($Mode -eq "Build");files=@($files);live_files_modified=$false;network_required=$false}
 if($Mode -eq "Build"){$r|ConvertTo-Json -Depth 10|Set-Content (Join-Path $cacheRoot "known-good-manifest.json") -Encoding UTF8}
 $r|ConvertTo-Json -Depth 10|Set-Content $out -Encoding UTF8
 Write-Host ("KNOWN-GOOD CACHE "+$Mode+": "+$r.result);Write-Host ("Report: "+$out);if(-not$files.Count){exit 2}
