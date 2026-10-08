@@ -61,6 +61,8 @@ foreach($lr in $logRoots|Select-Object -Unique){
   }
 }
 $free=0;try{$free=[int64](Get-Item $root).PSDrive.Free}catch{}
-$r=[ordered]@{schema=1;phase="12.4";mode="DRY_RUN";fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o");policy=$p;backup=$backup;log_delete_candidates=$logRows;log_reclaim_bytes=[int64](($logRows|Measure-Object size -Sum).Sum);disk_free_gib=[math]::Round($free/1GB,2);disk_status=$(if($free/1GB -lt [int]$p.disk.minimum_free_gib){"FAIL"}elseif($free/1GB -lt [int]$p.disk.warning_free_gib){"WARN"}else{"PASS"});mutation_performed=$false;note="No file was moved or deleted. Advanced daily/weekly selection is policy-defined but not applied until live review."}
+$logReclaim=[int64]0
+foreach($logCandidate in $logRows){$logReclaim+=[int64]$logCandidate.size}
+$r=[ordered]@{schema=1;phase="12.4";mode="DRY_RUN";fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o");policy=$p;backup=$backup;log_delete_candidates=$logRows;log_reclaim_bytes=$logReclaim;disk_free_gib=[math]::Round($free/1GB,2);disk_status=$(if($free/1GB -lt [int]$p.disk.minimum_free_gib){"FAIL"}elseif($free/1GB -lt [int]$p.disk.warning_free_gib){"WARN"}else{"PASS"});mutation_performed=$false;note="No file was moved or deleted. Advanced daily/weekly selection is policy-defined but not applied until live review."}
 $r|ConvertTo-Json -Depth 14|Set-Content $out -Encoding UTF8
 Write-Host "DAY 12 PHASE 4 DRY-RUN COMPLETE";Write-Host ("Report: "+$out)
