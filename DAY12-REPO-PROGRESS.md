@@ -169,6 +169,12 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **Important gap**: the original ACL bit-mask scanner omitted `DeleteSubdirectoriesAndFiles` / directory `DeleteChild` permission, so it cannot completely assess file replacement risk from parent rights. Added `delete_children` bit and regression to GitHub script. No direct file permission modification, no deletion, no reinstallation. Before changing any ACL or asserting secure effective rights, confirm owner/service requirements and correctly labeled directory bitmasks with targeted next evidence only; don't rerun prior full firewall/LAN/Golden work.
 - Existing GSC remote 8787/TCP unauthenticated `GET /api/v1/info` => operator-reported 401 is unchanged and remains a scoped PASS. `12.5` overall **OPEN**, `12.10 backend_ports_private` **FAIL**, `12.13 Stable` **BLOCKED**. No live server/firewall/ACL/backup/release changes.
 
+## 2026-10-09 — one-shot ACL-only corrective capture prepared
+
+- Added `Day12_Phase5_ACL_Only_READ_ONLY.cmd` invoking the corrected `Day12_Phase5_Rule_ACL_Review_READ_ONLY.ps1 -AclOnly`. This is intentionally **not another 266-rule firewall scan**: it reads ACL metadata of only 5 fixed GSC targets, captures directory `DeleteSubdirectoriesAndFiles` as `delete_children`, preserves each `target_role` label, and flags `firewall_enumeration=NOT_EXECUTED_ACL_ONLY`.
+- The latest 06:35 firewall report's broad candidate counts and GSC API unauthenticated HTTP 401 evidence remain valid; they need **no repeats**. New targeted report is not yet live-run and can only close the ACL reporting gap, not establish every account's effective rights or clear the 12.5 security gate.
+- Added CI contract that ACL-only mode does not claim a pass for nonexistent GSC install on the temporary GitHub runner. It must return CHECK_REQUIRED rather than inventing permissions. No actual ACL changes.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
