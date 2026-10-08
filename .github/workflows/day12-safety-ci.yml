@@ -183,6 +183,18 @@ jobs:
           }
           $global:LASTEXITCODE=0
 
+      - name: Synthetic native TCP table diagnostics (no production changes)
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'tcp-native-diagnostic'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_TCP_Bind_Diagnostic_READ_ONLY.ps1 -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'TCP native diagnostic synthetic run failed'}
+          $reports=@(Get-ChildItem -LiteralPath $out -Filter '*.json' -File)
+          if($reports.Count -ne 1){throw 'TCP diagnostic did not write exactly one report'}
+          $r=Get-Content -LiteralPath $reports[0].FullName -Raw | ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_CAPTURED' -or -not $r.read_only -or $r.mutation_performed -or -not $r.providers.native){throw 'TCP native diagnostic contract failed'}
+          if([string]$r.providers.native.status -ne 'OK'){throw ('Native Windows TCP table call failed: '+[string]$r.providers.native.error)}
+
       - name: Golden report discovery and manual-path regression
         shell: powershell
         run: |
