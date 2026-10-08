@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$BaseUrl="http://127.0.0.1:8790",[string]$OutputDir="",[switch]$Synthetic)
+param([string]$BaseUrl="http://127.0.0.1:8790",[string]$OutputDir="",[switch]$Synthetic,[string]$FixtureRoot="")
 Set-StrictMode -Version Latest;$ErrorActionPreference="Stop"
 if([string]::IsNullOrWhiteSpace($OutputDir)){$OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Day12-Phase3"}
 New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
@@ -15,7 +15,17 @@ function Optional([object]$Value,[string]$Field,[object]$Default=$null){
   if($null -eq $Value){return $Default}
   return $Value
 }
-function G([string]$p){try{Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method GET -TimeoutSec 15}catch{$null}}
+function G([string]$p){
+  if($FixtureRoot){
+    if($env:GITHUB_ACTIONS -ne "true"){throw "FixtureRoot is restricted to CI"}
+    $route=(($p -replace '[^A-Za-z0-9]+','_').Trim('_'))+".json"
+    $fixtureFile=Join-Path $FixtureRoot $route
+    if(Test-Path -LiteralPath $fixtureFile -PathType Leaf){
+      return (Get-Content -LiteralPath $fixtureFile -Raw -Encoding UTF8 | ConvertFrom-Json)
+    }
+    return $null
+  }
+  try{Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method GET -TimeoutSec 15}catch{$null}}
 function T([int]$p){try{[bool](Get-NetTCPConnection -State Listen -LocalPort $p -ErrorAction SilentlyContinue|Select-Object -First 1)}catch{$false}}
 function U([int]$p){try{[bool](Get-NetUDPEndpoint -LocalPort $p -ErrorAction SilentlyContinue|Select-Object -First 1)}catch{$false}}
 if($Synthetic){
@@ -43,6 +53,6 @@ $residue=@();$ur=Join-Path $root "Updates";if(Test-Path $ur){$residue=@(Get-Chil
 if($fleet){$unsafe=@($fleet.servers|Where-Object{[bool](Optional $_ "status.block_start" $false) -or [string](Optional $_ "status.phase" "") -in @("blocked","rollback_failed","rolling_back","pending_health","downloading")});[void]$checks.Add((C "fleet_safe" $(if($unsafe.Count -eq 0){"PASS"}else{"FAIL"}) ("unsafe="+$unsafe.Count)))}
 if($ext){[void]$checks.Add((C "paper_manual_policy" $(if([string](Optional $ext "paper_policy" "") -eq "notify/manual-approve"){"PASS"}else{"WARN"}) ([string]$ext.paper_policy)))}
 $pass=@($checks|Where-Object{$_.status -eq "PASS"}).Count;$warn=@($checks|Where-Object{$_.status -eq "WARN"}).Count;$fail=@($checks|Where-Object{$_.status -eq "FAIL"}).Count
-$r=[ordered]@{schema=1;phase="12.3";read_only=$true;generated_at=(Get-Date).ToString("o");result=$(if($fail -eq 0){"CAPTURED_NO_MANDATORY_FAIL"}else{"FAIL"});summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail};checks=@($checks);health=$hrows;entrypoints=$erows;mutation_performed=$false}
+$r=[ordered]@{schema=1;phase="12.3";read_only=$true;fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o");result=$(if($fail -eq 0){"CAPTURED_NO_MANDATORY_FAIL"}else{"FAIL"});summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail};checks=@($checks);health=$hrows;entrypoints=$erows;mutation_performed=$false}
 $r|ConvertTo-Json -Depth 14|Set-Content $out -Encoding UTF8
 Write-Host ("HEALTH: PASS $pass / WARN $warn / FAIL $fail");Write-Host ("Report: "+$out);if($fail){exit 2}
