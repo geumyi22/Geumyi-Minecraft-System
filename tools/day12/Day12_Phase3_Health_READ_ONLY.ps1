@@ -37,7 +37,7 @@ $status=G "/api/status";$v4=G "/api/v4/health";$entry=G "/api/v4/network/entry-s
 $checks=New-Object System.Collections.ArrayList
 [void]$checks.Add((C "host_api" $(if($status){"PASS"}else{"FAIL"}) $(if($status){"v"+[string](Optional $status "app_version" "")}else{"unavailable"})))
 [void]$checks.Add((C "four_servers" $(if($snap -and @($snap.servers).Count -ge 4){"PASS"}else{"FAIL"}) $(if($snap){"count="+@($snap.servers).Count}else{"snapshot unavailable"})))
-[void]$checks.Add((C "no_active_jobs" $(if($snap -and [int](Optional $snap "active_jobs" -1) -eq 0){"PASS"}else{"WARN"}) $(if($snap){"active="+[int]$snap.active_jobs}else{"unknown"})))
+[void]$checks.Add((C "no_active_jobs" $(if($snap -and [int](Optional $snap "active_jobs" -1) -eq 0){"PASS"}else{"WARN"}) $(if($snap){"active="+[int](Optional $snap "active_jobs" -1)}else{"unknown"})))
 $hrows=if($v4){@($v4.servers)}else{@()};[void]$checks.Add((C "v4_health" $(if($hrows.Count -ge 4 -and @($hrows|Where-Object{[string](Optional $_ "overall" "") -eq "fail"}).Count -eq 0){"PASS"}else{"FAIL"}) ("servers="+$hrows.Count)))
 $erows=if($entry){@($entry.endpoints)}else{@()};[void]$checks.Add((C "public_entry_api" $(if($erows.Count -eq 3 -and @($erows|Where-Object{-not[bool](Optional $_ "java_responding" $false) -or -not[bool](Optional $_ "bedrock_raknet_pong" $false)}).Count -eq 0){"PASS"}else{"FAIL"}) ("entries="+$erows.Count)))
 foreach($p in @(25565,25566,25567)){[void]$checks.Add((C ("tcp_"+$p) $(if(T $p){"PASS"}else{"WARN"}) $(if(T $p){"LISTEN"}else{"not listening"})))}
@@ -51,7 +51,7 @@ foreach($p in $ports){
 $residue=@();$ur=Join-Path $root "Updates";if(Test-Path $ur){$residue=@(Get-ChildItem $ur -File -Recurse -ErrorAction SilentlyContinue|Where-Object{$_.Name -match '(?i)\.tmp$|\.part$|pending|journal|transaction'})}
 [void]$checks.Add((C "update_residue" $(if($residue.Count -eq 0){"PASS"}else{"WARN"}) ("items="+$residue.Count)))
 if($fleet){$unsafe=@($fleet.servers|Where-Object{[bool](Optional $_ "status.block_start" $false) -or [string](Optional $_ "status.phase" "") -in @("blocked","rollback_failed","rolling_back","pending_health","downloading")});[void]$checks.Add((C "fleet_safe" $(if($unsafe.Count -eq 0){"PASS"}else{"FAIL"}) ("unsafe="+$unsafe.Count)))}
-if($ext){[void]$checks.Add((C "paper_manual_policy" $(if([string](Optional $ext "paper_policy" "") -eq "notify/manual-approve"){"PASS"}else{"WARN"}) ([string]$ext.paper_policy)))}
+if($ext){[void]$checks.Add((C "paper_manual_policy" $(if([string](Optional $ext "paper_policy" "") -eq "notify/manual-approve"){"PASS"}else{"WARN"}) ([string](Optional $ext "paper_policy" ""))))}
 $pass=@($checks|Where-Object{$_.status -eq "PASS"}).Count;$warn=@($checks|Where-Object{$_.status -eq "WARN"}).Count;$fail=@($checks|Where-Object{$_.status -eq "FAIL"}).Count
 $r=[ordered]@{schema=1;phase="12.3";read_only=$true;fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o");result=$(if($fail -eq 0){"CAPTURED_NO_MANDATORY_FAIL"}else{"FAIL"});summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail};checks=@($checks);health=$hrows;entrypoints=$erows;mutation_performed=$false}
 $r|ConvertTo-Json -Depth 14|Set-Content $out -Encoding UTF8
