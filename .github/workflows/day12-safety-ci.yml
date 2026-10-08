@@ -138,6 +138,7 @@ jobs:
           try {
             $env:PROGRAMDATA=Join-Path $base 'ProgramData'
             $env:ProgramFiles=Join-Path $base 'ProgramFiles'
+            $env:DAY12_TEST_PROGRAMFILES=$env:ProgramFiles
             $root=Join-Path $env:PROGRAMDATA 'GeumyiServerCenter'
             $install=Join-Path $env:ProgramFiles 'Geumyi Server Center'
             New-Item -ItemType Directory -Force -Path $root,$install | Out-Null
@@ -178,6 +179,7 @@ jobs:
           }finally{
             $env:PROGRAMDATA=$previousPD
             $env:ProgramFiles=$previousPF
+            Remove-Item Env:DAY12_TEST_PROGRAMFILES -ErrorAction SilentlyContinue
           }
           $global:LASTEXITCODE=0
 
