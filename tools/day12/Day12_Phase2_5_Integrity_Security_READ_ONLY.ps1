@@ -32,6 +32,14 @@ function RelevantPorts([string]$Spec,[int[]]$Wanted){
   }
   return $seen.ToArray()
 }
+function KnownLobbyAlias([string]$ServerId,[string]$ComponentId,[string]$Name){
+  if($ServerId -ne "lobby"){return $false}
+  return (($ComponentId -eq "gst" -and $Name -eq "GeumyiServerTools-1.1.1.jar") -or
+          ($ComponentId -eq "gds" -and $Name -eq "GeumyiDiscordStatus-1.1.1.jar"))
+}
+function IsBroadFirewallCandidate([string]$Protocol,[string]$PortSpec,[string]$ProgramSpec){
+  return ($Protocol -in @("TCP","UDP","Any") -and $PortSpec -in @("Any","*") -and $ProgramSpec -eq "Any")
+}
 function ScopeRemote([string]$Value){
   $s=$Value.Trim()
   if($s -in @("Any","*")){return "ANY"}
@@ -87,7 +95,13 @@ if($Synthetic){
   $r2=@(RelevantPorts "Any" @(25565,25570))
   $r3=@(RelevantPorts "RPC-EPMap" @(25565,25570))
   if($r1.Count -ne 5 -or $r2.Count -ne 2 -or $r3.Count -ne 0 -or
-    (ScopeRemote "Any") -ne "ANY" -or (ScopeRemote "LocalSubnet") -ne "LOCAL_SUBNET_OR_COMPOSITE"){
+    (ScopeRemote "Any") -ne "ANY" -or (ScopeRemote "LocalSubnet") -ne "LOCAL_SUBNET_OR_COMPOSITE" -or
+    -not(KnownLobbyAlias "lobby" "gst" "GeumyiServerTools-1.1.1.jar") -or
+    -not(KnownLobbyAlias "lobby" "gds" "GeumyiDiscordStatus-1.1.1.jar") -or
+    (KnownLobbyAlias "wild" "gst" "GeumyiServerTools-1.1.1.jar") -or
+    -not(IsBroadFirewallCandidate "TCP" "Any" "Any") -or
+    (IsBroadFirewallCandidate "41" "Any" "Any") -or
+    (IsBroadFirewallCandidate "TCP" "25570" "Any")){
     throw "Day12 phase2+5 synthetic parser regression"
   }
   [ordered]@{schema=1;phase="12.2+12.5";read_only=$true;synthetic=$true;result="SYNTHETIC_PASS";mutation_performed=$false}|
@@ -150,6 +164,7 @@ foreach($id in $ids){
         $found+= [ordered]@{
           filename=$jar.Name;sha256=$sha;size_bytes=[int64]$jar.Length
           name_matches_manifest=($jar.Name -eq $expectedFile)
+          known_lobby_deployment_alias=(KnownLobbyAlias $id $component $jar.Name)
         }
       }catch{$found+=[ordered]@{filename=$jar.Name;sha256="UNREADABLE";size_bytes=[int64]$jar.Length;name_matches_manifest=$false}}
     }
@@ -158,6 +173,7 @@ foreach($id in $ids){
       elseif($found.Count -eq 0){"NOT_INSTALLED"}
       elseif($found.Count -gt 1){"DUPLICATE_JAR_CANDIDATES"}
       elseif($found.Count -eq 1 -and $found[0].name_matches_manifest){"FINGERPRINT_CAPTURED_FILENAME_MATCH"}
+      elseif($found.Count -eq 1 -and $found[0].known_lobby_deployment_alias){"FINGERPRINT_CAPTURED_KNOWN_LOBBY_ALIAS"}
       else{"FINGERPRINT_CAPTURED_FILENAME_DIFFERS"}
     $rows+= [ordered]@{
       server_id=$id;component_id=$component;expected_target=$expectedForServer
@@ -167,30 +183,60 @@ foreach($id in $ids){
     }
   }
 }
-# The StatusAgent is host-targeted. Search only conservative known directories;
-# "not found" means not found IN THIS SEARCH SCOPE, never "not installed".
+# Read canonical runtime agent path; an old JAR in GSC root is not the active agent.
+$agentCfg=Prop $gsc "agent"
+$runtimeDir=Join-Path $gscRoot "Runtime\Agent"
+$configuredAgentDir=[string](Prop $agentCfg "working_dir" "")
+$configuredJarName=[string](Prop $agentCfg "jar_name" "")
+if([string]::IsNullOrWhiteSpace($configuredJarName)){$configuredJarName="UNKNOWN"}
 $agentFolders=@(
-  $gscRoot,(Join-Path $gscRoot "StatusAgent"),(Join-Path $gscRoot "Agent"),
-  (Join-Path $gscRoot "Agents"),(Join-Path $gscRoot "Tools")
+  [ordered]@{role="RUNTIME_AGENT";path=$runtimeDir},
+  [ordered]@{role="LEGACY_GSC_ROOT";path=$gscRoot},
+  [ordered]@{role="LEGACY_STATUSAGENT";path=(Join-Path $gscRoot "StatusAgent")},
+  [ordered]@{role="LEGACY_AGENT";path=(Join-Path $gscRoot "Agent")},
+  [ordered]@{role="LEGACY_AGENTS";path=(Join-Path $gscRoot "Agents")},
+  [ordered]@{role="LEGACY_TOOLS";path=(Join-Path $gscRoot "Tools")}
 )
+if(-not [string]::IsNullOrWhiteSpace($configuredAgentDir)){
+  $normBase=[System.IO.Path]::GetFullPath($gscRoot).TrimEnd('\')+'\'
+  try{
+    $normConfigured=[System.IO.Path]::GetFullPath($configuredAgentDir)
+    if($normConfigured.StartsWith($normBase,[System.StringComparison]::OrdinalIgnoreCase)){
+      $agentFolders+= [ordered]@{role="CONFIGURED_UNDER_GSC";path=$normConfigured}
+    }
+  }catch{}
+}
 $agentMatches=@()
-foreach($dir in $agentFolders){
+$scanned=@{}
+foreach($candidate in $agentFolders){
+  $dir=[string]$candidate.path
+  if($scanned.ContainsKey($dir)){continue}
+  $scanned[$dir]=$true
   if(-not(Test-Path -LiteralPath $dir -PathType Container)){continue}
   try{
     foreach($jar in @(Get-ChildItem -LiteralPath $dir -Filter "GeumyiStatusAgent*.jar" -File -ErrorAction Stop)){
       $sha=(Get-FileHash -LiteralPath $jar.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
-      $agentMatches+= [ordered]@{folder_role="HOST_CANDIDATE";filename=$jar.Name;sha256=$sha;size_bytes=[int64]$jar.Length}
+      $agentMatches+= [ordered]@{
+        folder_role=[string]$candidate.role;filename=$jar.Name;sha256=$sha
+        size_bytes=[int64]$jar.Length
+        filename_matches_manifest=($jar.Name -eq [string](Prop (Prop (Prop $manifest "components") "statusagent") "artifact_glob" ""))
+        matches_configured_jar_name=($jar.Name -eq $configuredJarName)
+        runtime_location=([string]$candidate.role -in @("RUNTIME_AGENT","CONFIGURED_UNDER_GSC"))
+      }
     }
   }catch{}
 }
+$runtimeAgentMatches=@($agentMatches|Where-Object{$_.runtime_location -and $_.filename_matches_manifest})
 $rows+= [ordered]@{
   server_id="host";component_id="statusagent";expected_target=$true
   manifest_version=[string](Prop (Prop (Prop $manifest "components") "statusagent") "version" "")
-  state=$(if($agentMatches.Count){"FINGERPRINT_CAPTURED_SEARCH_SCOPE"}else{"NOT_FOUND_IN_LIMITED_SEARCH_SCOPE"})
-  matches=$agentMatches;searched_candidate_directories=$agentFolders.Count
+  state=$(if($runtimeAgentMatches.Count -gt 0){"EXPECTED_RUNTIME_JAR_FINGERPRINT_CAPTURED"}
+          elseif($agentMatches.Count -gt 0){"ONLY_OTHER_VERSION_OR_LEGACY_LOCATION_FOUND"}
+          else{"NOT_FOUND_IN_LIMITED_SEARCH_SCOPE"})
+  matches=$agentMatches;searched_candidate_directories=$scanned.Count
+  configured_jar_name_matches_manifest=($configuredJarName -eq "GeumyiStatusAgent-0.5.4.jar")
   hash_authenticated_against_trusted_release=$false
 }
-
 $acl=@(ACLSummary $gscRoot "GSC_PROGRAMDATA")
 foreach($id in $ids){
   if($location.ContainsKey($id)){
@@ -200,6 +246,7 @@ foreach($id in $ids){
 # Only selected firewall properties are exported. Rule names, program paths,
 # individual user SIDs, remote addresses and rule descriptions are redacted.
 $fwStatus="UNAVAILABLE";$fwScanned=0;$fwRows=@();$fwCount=0;$fwInconclusive=0
+$anyPortProgramWideCandidates=0
 try{
   $rules=@(Get-NetFirewallRule -Direction Inbound -Enabled True -ErrorAction Stop)
   $fwStatus="CAPTURED";$fwScanned=$rules.Count
@@ -210,20 +257,30 @@ try{
     try{$ap=Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop}catch{}
     $portVal=[string](Prop $pf "LocalPort" "UNKNOWN")
     $protocol=[string](Prop $pf "Protocol" "UNKNOWN")
-    $matchPorts=@(RelevantPorts $portVal $portScope)
+    $isAnyPort=$portVal -in @("Any","*")
+    $matchPorts=if($isAnyPort -or $protocol -notin @("TCP","UDP","Any")){@()}
+                else{@(RelevantPorts $portVal $portScope)}
     $projectNamed=([string]$rule.DisplayName -match '(?i)Geumyi|Minecraft|Velocity|GSC')
-    if(-not $projectNamed -and $matchPorts.Count -eq 0){continue}
     $rawRemote=[string](Prop $af "RemoteAddress" "UNKNOWN")
-    $prog=[string](Prop $ap "Program" "Any")
+    $prog=[string](Prop $ap "Program" "UNKNOWN")
+    $broadCandidate=IsBroadFirewallCandidate $protocol $portVal $prog
+    if($broadCandidate){$anyPortProgramWideCandidates++}
+    if(-not $projectNamed -and $matchPorts.Count -eq 0 -and -not $broadCandidate){continue}
+    $sf=$null
+    try{$sf=Get-NetFirewallServiceFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop}catch{}
+    $service=[string](Prop $sf "Service" "UNKNOWN")
     $fwRows+= [ordered]@{
       rule_index=$fwCount
       action=[string]$rule.Action;profile=[string]$rule.Profile
-      protocol=$protocol;target_port_matches=@($matchPorts)
-      port_scope=$(if($portVal -in @("Any","*")){"ANY"}elseif($matchPorts.Count){"MATCHED"}else{"UNKNOWN_OR_OTHER"})
+      protocol=$protocol;explicit_target_port_matches=@($matchPorts)
+      local_port_scope=$(if($isAnyPort){"ANY_PORT_NOT_TARGET_SPECIFIC"}
+                         elseif($matchPorts.Count){"EXPLICIT_MATCH"}else{"UNKNOWN_OR_NON_TARGET"})
       remote_address_scope=(ScopeRemote $rawRemote)
       program_scope=$(if($prog -eq "Any"){"ANY"}else{"SPECIFIC_OR_UNKNOWN"})
+      service_scope=$(if($service -eq "Any"){"ANY"}elseif($service -eq "UNKNOWN"){"UNKNOWN"}else{"SPECIFIC"})
+      potential_broad_candidate=$broadCandidate
       project_naming_match=$projectNamed
-      complete_filters=($null -ne $af -and $null -ne $ap)
+      complete_filters=($null -ne $af -and $null -ne $ap -and $null -ne $sf)
     }
     $fwCount++
   }
@@ -246,12 +303,16 @@ $report=[ordered]@{
     firewall=[ordered]@{
       status=$fwStatus;inbound_enabled_rules_inspected=$fwScanned
       matching_rules=@($fwRows);port_filter_inspection_failures=$fwInconclusive
+      any_port_any_program_candidates=$anyPortProgramWideCandidates
     }
   }
   notes=@(
     "Filename/version matching and computed SHA-256 are not proof of authenticated upstream provenance.",
     "Missing statusagent in limited host search scope does not establish absence from system.",
-    "Firewall report is a review inventory, not Windows Filtering Platform effective enforcement.",
+    "Firewall Any local-port rules are not proof of a rule specifically opening any listed Minecraft port.",
+    "Broad candidate rules may still be restricted by service, interface, profile and other policies; this is not Windows Filtering Platform effective enforcement.",
+    "The lobby JAR filename aliases originate from the Day10 installation flow; content provenance remains unverified.",
+    "The Agent runtime is ProgramData/GeumyiServerCenter/Runtime/Agent; older copies in legacy locations do not prove the active version.",
     "All absolute server paths, usernames, tokens, passwords, firewall rule names, program paths and remote addresses are omitted.",
     "ACL and firewall changes, deploy, backups, server start/restart, and final gate changes are NOT performed."
   )
