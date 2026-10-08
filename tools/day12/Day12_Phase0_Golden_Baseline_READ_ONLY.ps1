@@ -392,7 +392,7 @@ $report=[ordered]@{
     scheduled_tasks=$tasks
     disk=[ordered]@{free_bytes=$freeBytes;free_gib=[math]::Round($freeBytes/1GB,2)}
     update_residue=$residue
-    checks=@($checks)
+    checks=$checks.ToArray()
     failed_mandatory=@($failedMandatory | ForEach-Object {[string]$_.key})
     ready_for_phase_12_0B=$ready
     redaction=[ordered]@{
@@ -423,7 +423,7 @@ Write-Host ("PUBLIC ENTRY  : "+$networkRows.Count)
 Write-Host ("BACKUP API    : unreadable="+$backupErrors.Count)
 Write-Host ("DISK FREE     : "+$report.disk.free_gib+" GiB")
 Write-Host ""
-foreach($c in @($checks)){
+foreach($c in $checks.ToArray()){
     Write-Host ("{0,-42} {1}" -f $c.key,$c.status)
 }
 Write-Host ""
