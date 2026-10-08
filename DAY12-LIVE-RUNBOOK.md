@@ -35,6 +35,13 @@
 - `server-ip`가 비어 있거나 wildcard/non-loopback이라면 운영 중 직접 설정을 바꾸지 않고 **백업·서버별 점검·승인된 재시작 계획**을 세웁니다. 다른 진단 제공자가 리스너를 찾지 못하면 최종 검사기는 계속 FAIL로 둡니다.
 - 실서버 바인딩 확인 전에는 `FINAL-RELEASE-GATES.json`과 Stable/Maintenance를 변경하지 않습니다.
 
+## 05:34 데이터와 다음 단일 검사
+
+- `Day12-Bind-Evidence-20261009-053405.json`: GSC는 Wild/Playground/Lobby ONLINE, Other OFFLINE을 수집 전후로 동일하게 보고하며, Java loopback 연결 결과도 해당 상태와 일치합니다. 4개 서버의 `server-ip=127.0.0.1` 설정은 확인됐습니다.
+- 그런데 PowerShell/.NET/netstat 리스너 열거는 2회 모두 대상 0행입니다. **서버 접속 OK와 공개 포트 비노출은 별개**이므로 12.10은 FAIL을 유지합니다. RCON의 실제 LISTEN 바인딩도 별도 증거가 필요합니다.
+- 최신 Operator Kit의 `Day12_Phase10_Bind_Evidence_READ_ONLY.cmd`는 이제 Windows Native `GetExtendedTcpTable`, Java 프로세스 PID, 관리자 권한 여부와 포트 프록시 *포트 번호 언급 여부만* 추가로 출력합니다. 관리자가 실행해도 운영 설정·서비스·방화벽은 변경하지 않습니다.
+- 필요할 때 서버 PC에서 **마우스 우클릭 → 관리자 권한으로 실행**하여 한 번만 재수집하고 `Geumyi-Day12-Bind-Evidence\\Day12-Bind-Evidence-*.json`을 검토합니다. 전체 ZIP·백업·복구 포인트를 다시 만들 필요는 없습니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
