@@ -118,6 +118,13 @@
 - **이 하위 검사만 PASS**입니다. GSCM 원격 관리를 위해 GSC Host가 0.0.0.0에 리슨하면서 사설 LAN/Tailscale 네트워크 제한 및 토큰/등록기기 인증을 거치는 현재 소스 설계와 일치합니다. 이 결과만으로 전체 API 보호, 공인 인터넷 노출 여부, 38개 광범위 허용 방화벽 규칙의 용도/실효성, GSC 데이터 폴더 ACL을 검증했다고 처리하지 않습니다.
 - 불필요한 8787 재검사는 중단하고, 다음 우선순위는 **12.5 광범위 방화벽 규칙의 식별·필요성 및 ACL 유효 권한 검토**와 **12.10 backend Java/RCON 실리스너 바인딩 증명**입니다. 모든 변경은 명시적 승인·롤백 계획 전까지 하지 않습니다. `FINAL-RELEASE-GATES.json` 및 Stable 차단은 유지합니다.
 
+## 다음 단일 검사 — 12.5 방화벽 규칙 용도 힌트와 GSC 파일 ACL
+
+- 지금까지 12.2 플러그인 SHA-256, 12.5 방화벽 정책 수집, 8787 인증 `HTTP 401`, 서브 PC LAN 검사 및 Golden 백업은 **중복 실행하지 않습니다**.
+- 최신 Day 12 Operator Kit에서 **서버 PC**의 `tools\\day12\\Day12_Phase5_Rule_ACL_Review_READ_ONLY.cmd`를 관리자 권한으로 실행합니다. 바탕화면 `Geumyi-Day12-Rule-ACL-Review\\Day12-Rule-ACL-Review-*.json` **최신 파일 하나**만 대화에 제출합니다.
+- JSON에는 Windows 방화벽 규칙 *원문 이름이 아닌 추정 범주*와 ACL 권한 비트·상속 정보만 들어갑니다. 이름 분류가 `UNCLASSIFIED`여도 안전/악성이라고 단정하지 않습니다. 실제 유효 NTFS 권한 또는 WFP 패킷 결정까지 계산하지 않으며 `CAPTURED_FOR_REVIEW`는 최종 보안 통과가 아닙니다.
+- 검사 결과에 문제가 있어도 **방화벽 끄기, ACL 수정, Agent 파일 삭제, GSC 재설치/재시작, 백업 이동, Stable 릴리즈는 실행하지 않습니다.** 필요하면 원인과 롤백 방안을 검토한 뒤 별도 단계로 결정합니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
