@@ -13,6 +13,16 @@ $out=Join-Path $OutputDir ("Geumyi-Day12-Phase1-ContentPreflight-"+(Get-Date -Fo
 function H256([string]$p){if(-not(Test-Path -LiteralPath $p -PathType Leaf)){return ""};(Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant()}
 function H1([string]$p){if(-not(Test-Path -LiteralPath $p -PathType Leaf)){return ""};(Get-FileHash -LiteralPath $p -Algorithm SHA1).Hash.ToLowerInvariant()}
 function J([string]$p){try{Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method GET -TimeoutSec 15}catch{$null}}
+function Optional([object]$Value,[string]$Field,[object]$Default=$null){
+  foreach($part in $Field.Split('.')){
+    if($null -eq $Value){return $Default}
+    $property=$Value.PSObject.Properties[$part]
+    if($null -eq $property){return $Default}
+    $Value=$property.Value
+  }
+  if($null -eq $Value){return $Default}
+  return $Value
+}
 function ReadProps([string]$p){
   $o=[ordered]@{}
   if(-not(Test-Path -LiteralPath $p -PathType Leaf)){return $o}
@@ -27,6 +37,9 @@ function ReadProps([string]$p){
   return $o
 }
 if($Synthetic){
+  # Regression: older/partial inventory payloads may omit server/datapacks.
+  $inventoryFixture=[pscustomobject]@{ok=$true}
+  if($null -ne (Optional $inventoryFixture "server.online" $null)){throw "inventory optional-field regression"}
   [ordered]@{schema=1;phase="12.1";mode="READ_ONLY";synthetic=$true;result="SYNTHETIC_PASS";servers=@();manifest=[ordered]@{configured=$false}}|ConvertTo-Json -Depth 10|Set-Content $out -Encoding UTF8
   Write-Host "SYNTHETIC PASS";exit 0
 }
@@ -43,8 +56,8 @@ foreach($s in @($cfg.servers)){
   $localDp=@()
   if(Test-Path -LiteralPath $dd){$localDp=@(Get-ChildItem -LiteralPath $dd -File -ErrorAction SilentlyContinue|ForEach-Object{[ordered]@{name=$_.Name;size=[int64]$_.Length;sha256=H256 $_.FullName}})}
   $servers += [ordered]@{
-    id=[string]$s.id;online=$(if($inv){[bool]$inv.server.online}else{$null})
-    resource_pack=$safe;datapacks_api=$(if($inv){@($inv.datapacks)}else{@()});datapacks_local=$localDp
+    id=[string]$s.id;online=$(if($null -ne (Optional $inv "server.online" $null)){[bool](Optional $inv "server.online" $false)}else{$null})
+    resource_pack=$safe;datapacks_api=@(Optional $inv "datapacks" @());datapacks_local=$localDp
   }
 }
 $proxyRoot=Join-Path $root "Network\FourServer"
