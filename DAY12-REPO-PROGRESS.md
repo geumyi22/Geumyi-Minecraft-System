@@ -16,7 +16,7 @@ This file separates **work that can be completed from GitHub/CI** from **work th
 | 12.7 Offline/cache | ✅ known-good cache audit/build and recovery kit tooling prepared | ✅ Build PASS (03:45 KST) and 04:23 READ-ONLY Audit CAPTURED (84 cache artifacts); ⏳ actual offline startup/recovery E2E still pending |
 | 12.8 DR | ✅ synthetic DR + Recovery Kit **PASS** — run `37670892599` | production files untouched; synthetic/non-production scope satisfied |
 | 12.9 UX cleanup | ✅ obsolete installer 4.3.0 README payload retired; installer baseline = 4.3.8/+117; System CI `37669908817` PASS | ⏳ only runtime UI observations if any |
-| 12.10 Final verifier | ✅ canonical read-only verifier + fixed TCP diagnostic (`f41b107b` Safety CI PASS) | ❌ 04:23 live verifier: 18 PASS / 0 WARN / 1 FAIL (`backend_ports_private`, `tcp_inventory=unavailable`, online 25570/25571/25573 lack listener proof); no gate bypass |
+| 12.10 Final verifier | ✅ canonical read-only verifier, bind evidence and independent second-PC LAN proof tooling | 🟡 **LAN reachability subcheck PASS (05:52 KST): 3/3 public TCP reachable, 0/8 private Java+RCON reachable from separate PC**. ❌ Canonical final verifier remains 18 PASS / 0 WARN / 1 FAIL (`backend_ports_private`); Wild/Lobby/RCON runtime listen-address proof absent. No gate bypass |
 | 12.11 Final E2E | ✅ exact report/checklist prepared | ⏳ reboot + Java + Bedrock + GSCM + operations |
 | 12.12 Soak | ✅ start/end collector prepared | ⏳ 8–12 h where practical + review |
 | 12.13 Final release | ✅ maintenance handoff + fail-closed closure workflow prepared | ⏳ signed Stable release after gates |
@@ -77,6 +77,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **Confirmed runtime loopback listener proof only for Playground 25571**. Wild/Lobby listener binds, all RCON bind addresses, and remote reachability remain UNVERIFIED. The absence of a listed non-loopback listener is not proof of an inaccessible port. Do not mark 12.10 PASS, loosen the mandatory gate or alter the production configuration.
 - Prepared `tools/day12/Day12_Phase10_LAN_Proof_READ_ONLY.cmd` for execution on a **different Windows PC** on the same LAN. It prompts for the server's private IPv4 (not exported), checks public TCP 25565/25566/25567 as positive controls and private Java+RCON TCP ports as negative/alert candidates, exports only boolean reachability by port. No networking policy, credentials, or runtime files are changed. Even all-negative results do not prove loopback bind; any reachable private port requires investigation.
 - CI synthetic test and Operator Kit packaging added; still require user-performed remote test. This is a new evidence path, not an E2E success assertion.
+
+## 2026-10-09 05:52 KST — independent LAN access proof received
+
+- Operator-submitted `Day12-LAN-Proof-20261009-055112.json` reviewed locally; source JSON, entered LAN IP and machine details **not uploaded to GitHub**. Tool reports `read_only=true`, `synthetic=false`, `mutation_performed=false`, `CAPTURED_REVIEW_REQUIRED`.
+- Remote Windows PC positive controls **3/3 CONNECTED** for public Java TCP **25565, 25566, 25567**. Test-side GSC Host service check was false, supporting a separate tester machine; exact network topology was not independently authenticated.
+- Internal Paper TCP **25570–25573: 0/4 CONNECTED**. Internal RCON TCP **25575/25576/25577/25579: 0/4 CONNECTED**. Overall **0/8 private TCP ports remotely reachable** from the tested private-LAN path, with positive controls established.
+- **12.10 LAN-access negative test: PASS for tested LAN vantage point only.** This does **not** prove actual loopback socket bind, rule out all other network paths (e.g. Tailscale/external exposure), or replace missing process-socket evidence. Firewall/routing could independently block the connection. The previously observed native loopback bind for Playground 25571 is additional direct runtime evidence.
+- **Canonical `backend_ports_private` gate remains FAIL** until all online backend bind addresses and security boundary are conclusively established; protected Golden 4/4, known-good cache, release gate, firewall and server state remain unchanged. Next work should prioritize 12.2 component JAR fingerprints and 12.5 ACL/firewall rule scope while preserving the unresolved 12.10 gate; avoid repeating the same LAN check without meaningful environmental change.
 
 ## Safety boundary
 
