@@ -166,8 +166,116 @@ function Probe-LoopbackTcp([int]$Port){
   }
 }
 $fleetBefore=Get-FleetState
+# Direct Windows IP Helper enumeration, redacted prior to report serialization.
+$nativeSource=@'
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Runtime.InteropServices;
+public static class Day12BindNativeInspector {
+  [DllImport("iphlpapi.dll", SetLastError=true)]
+  private static extern uint GetExtendedTcpTable(
+    IntPtr data, ref int size, bool order, uint family, uint klass, uint reserved);
+  public sealed class Row {
+    public int port {get;set;}
+    public string address {get;set;}
+    public int pid {get;set;}
+    public string family {get;set;}
+  }
+  public static Row[] Read() {
+    var found=new List<Row>();
+    foreach(uint family in new uint[]{2,23}){
+      int size=0;
+      uint probe=GetExtendedTcpTable(IntPtr.Zero, ref size, true, family, 3, 0);
+      if(probe!=122 && probe!=0) throw new Exception("GetExtendedTcpTable size probe error "+probe+" family "+family);
+      if(size<4) continue;
+      IntPtr buffer=Marshal.AllocHGlobal(size);
+      try {
+        uint err=GetExtendedTcpTable(buffer, ref size, true, family, 3, 0);
+        if(err!=0) throw new Exception("GetExtendedTcpTable read error "+err+" family "+family);
+        int count=Marshal.ReadInt32(buffer,0);
+        int stride=family==2?24:56;
+        if(count<0 || (long)count*stride+4>size) throw new Exception("Unexpected TCP table size");
+        for(int i=0;i<count;i++){
+          IntPtr row=IntPtr.Add(buffer,4+i*stride);
+          int state=Marshal.ReadInt32(row,family==2?0:48);
+          if(state!=2) continue;
+          int portOffset=family==2?8:20;
+          var portBytes=new byte[2];
+          Marshal.Copy(IntPtr.Add(row,portOffset),portBytes,0,2);
+          int port=(portBytes[0]<<8)|portBytes[1];
+          int pid=Marshal.ReadInt32(row,family==2?20:52);
+          string addr;
+          if(family==2){
+            var bytes=new byte[4]; Marshal.Copy(IntPtr.Add(row,4),bytes,0,4);
+            addr=new IPAddress(bytes).ToString();
+          } else {
+            var bytes=new byte[16]; Marshal.Copy(row,bytes,0,16);
+            long scope=(long)(uint)Marshal.ReadInt32(row,16);
+            addr=new IPAddress(bytes,scope).ToString();
+          }
+          found.Add(new Row{port=port,address=addr,pid=pid,family=family==2?"IPv4":"IPv6"});
+        }
+      } finally {Marshal.FreeHGlobal(buffer);}
+    }
+    return found.ToArray();
+  }
+}
+'@
+$nativeReady=$false
+try{
+  if(-not ('Day12BindNativeInspector' -as [type])){
+    Add-Type -TypeDefinition $nativeSource -ErrorAction Stop
+  }
+  $nativeReady=$true
+}catch{}
+$isElevated=$false
+try{
+  $principal=New-Object System.Security.Principal.WindowsPrincipal([System.Security.Principal.WindowsIdentity]::GetCurrent())
+  $isElevated=$principal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
+}catch{}
+$javaProcesses=@()
+try{
+  $javaProcesses=@(Get-Process -ErrorAction SilentlyContinue|
+    Where-Object {$_.ProcessName -in @("java","javaw")}|
+    ForEach-Object {[ordered]@{name=[string]$_.ProcessName;process_id=[int]$_.Id}})
+}catch{}
+# Only list port numbers mentioned in the Windows portproxy configuration.
+# No raw addresses, hostnames or process commands are exported.
+$portProxy=[ordered]@{status="UNAVAILABLE";mentioned_target_ports=@()}
+try{
+  $netsh=Join-Path $env:WINDIR "System32\netsh.exe"
+  if(Test-Path -LiteralPath $netsh -PathType Leaf){
+    $lines=@(& $netsh interface portproxy show all 2>$null)
+    $exitCode=$LASTEXITCODE
+    $portMentions=@()
+    if($exitCode -eq 0){
+      foreach($portNumber in $wanted){
+        $needle='(?<!\d)'+[string]$portNumber+'(?!\d)'
+        if(@($lines|Where-Object{[string]$_ -match $needle}).Count -gt 0){$portMentions+=$portNumber}
+      }
+    }
+    $portProxy=[ordered]@{status=$(if($exitCode -eq 0){"OK"}else{"ERROR"});mentioned_target_ports=@($portMentions)}
+  }
+}catch{}
 $providers=New-Object System.Collections.ArrayList
 for($round=1;$round -le 2;$round++){
+  if($nativeReady){
+    try{
+      $nativeRows=@([Day12BindNativeInspector]::Read())
+      $matches=@()
+      foreach($item in $nativeRows){
+        if($null -ne $item -and $wanted -contains [int]$item.port){
+          $matches+=Safe-Listener ([int]$item.port) ([string]$item.address) "GetExtendedTcpTable" ([int]$item.pid)
+        }
+      }
+      [void]$providers.Add([ordered]@{round=$round;source="GetExtendedTcpTable";status="OK";total=$nativeRows.Count;rows=@($matches)})
+    }catch{
+      [void]$providers.Add([ordered]@{round=$round;source="GetExtendedTcpTable";status="ERROR";rows=@()})
+    }
+  }else{
+    [void]$providers.Add([ordered]@{round=$round;source="GetExtendedTcpTable";status="ERROR";rows=@()})
+  }
   try{
     $all=@(Get-NetTCPConnection -State Listen -ErrorAction Stop)
     $match=@()
@@ -216,9 +324,11 @@ $report=[ordered]@{
   gsc_config_available=($null -ne $cfg);gsc_config_error=$configError
   servers=$rows;providers=@($providers.ToArray())
   fleet_before=$fleetBefore;fleet_after=$fleetAfter;java_loopback_connect=$tcpLoopback
+  process_context=[ordered]@{elevated=$isElevated;java_processes=$javaProcesses}
+  portproxy_summary=$portProxy
   nonloopback_private_listener_evidence_count=$potentialExposure.Count
   nonloopback_or_missing_server_ip_config_count=$configRisks.Count
-  interpretation="Configuration scope, GSC online state, loopback TCP connects and actual listener addresses are independent evidence. Missing active listeners remain unresolved. No production settings are modified."
+  interpretation="Configured server-ip, actual TCP socket bind, GSC online state, loopback connect, and RCON bind are independent evidence. Missing listeners are never treated as PASS. No production settings are modified."
   secrets_exported=$false;mutation_performed=$false
 }
 $report|ConvertTo-Json -Depth 12|Set-Content -LiteralPath $out -Encoding UTF8
