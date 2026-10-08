@@ -55,7 +55,8 @@ foreach($id in @("wild","playground","other")){
 $goldenOK=$true;$golden=@()
 foreach($id in @("wild","playground","other","lobby")){
   $b=G ("/api/v4/backups?id="+[uri]::EscapeDataString($id))
-  $matches=if($b){@($b.backups|Where-Object{$null -ne $_ -and $null -ne $_.PSObject.Properties["protected"] -and [bool]$_.PSObject.Properties["protected"].Value -and $null -ne $_.PSObject.Properties["source_reason"] -and [string]$_.PSObject.Properties["source_reason"].Value -match "(?i)day12-golden|golden-baseline"})}else{@()}
+  $matches=@()
+  if($b){$matches=@($b.backups|Where-Object{$null -ne $_ -and $null -ne $_.PSObject.Properties["protected"] -and [bool]$_.PSObject.Properties["protected"].Value -and $null -ne $_.PSObject.Properties["source_reason"] -and [string]$_.PSObject.Properties["source_reason"].Value -match "(?i)day12-golden|golden-baseline"})}
   $golden += [ordered]@{server_id=$id;count=$matches.Count;files=@($matches|ForEach-Object{[string]$_.file})}
   if($matches.Count -lt 1){$goldenOK=$false}
 }
