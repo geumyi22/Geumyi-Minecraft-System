@@ -2,26 +2,38 @@
 param([string]$BaseUrl="http://127.0.0.1:8790",[string]$OutputDir="",[switch]$Synthetic)
 Set-StrictMode -Version Latest;$ErrorActionPreference="Stop"
 function Check([string]$k,[string]$status,[string]$message,[bool]$mandatory=$true){[pscustomobject]@{key=$k;status=$status;message=$message;mandatory=$mandatory}}
+function Optional([object]$Value,[string]$Field,[object]$Default=$null){
+  foreach($part in $Field.Split('.')){
+    if($null -eq $Value){return $Default}
+    $property=$Value.PSObject.Properties[$part]
+    if($null -eq $property){return $Default}
+    $Value=$property.Value
+  }
+  if($null -eq $Value){return $Default}
+  return $Value
+}
 function G([string]$p,[int]$t=15){try{Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method GET -TimeoutSec $t}catch{$null}}
 function Get-Sha256([string]$p){if(-not(Test-Path $p -PathType Leaf)){return ""};(Get-FileHash $p -Algorithm SHA256).Hash.ToLowerInvariant()}
 if([string]::IsNullOrWhiteSpace($OutputDir)){$OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Final-Verification"}
 New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
 $stamp=Get-Date -Format "yyyyMMdd-HHmmss";$out=Join-Path $OutputDir ("Geumyi-Final-Verification-"+$stamp+".json");$canonical=Join-Path $OutputDir "FINAL-HEALTH-REPORT.json"
 if($Synthetic){
+  $fixture=[pscustomobject]@{server_id="wild";status=[pscustomobject]@{phase="idle"}}
+  if([bool](Optional $fixture "status.block_start" $false)){throw "optional fleet metadata regression"}
   $r=[ordered]@{schema=2;tool="Geumyi Final Verification";read_only=$true;synthetic=$true;result="SYNTHETIC_PASS";summary=[ordered]@{pass=1;warn=0;fail=0};checks=@(Check "synthetic" "PASS" "CI contract")}
   $r|ConvertTo-Json -Depth 8|Set-Content $out -Encoding UTF8;$r|ConvertTo-Json -Depth 8|Set-Content $canonical -Encoding UTF8;exit 0
 }
 $status=G "/api/status";$info=G "/api/v1/info";$snap=G "/api/v1/snapshot";$fleet=G "/api/v4/update/fleet";$health=G "/api/v4/health";$entry=G "/api/v4/network/entry-status";$mobile=G "/api/v1/mobile";$ext=G "/api/v4/update/external/status"
 $checks=New-Object System.Collections.ArrayList
-[void]$checks.Add((Check "gsc_4_3_8" $(if($status -and [string]$status.app_version -eq "4.3.8"){"PASS"}else{"FAIL"}) $(if($status){"v"+[string]$status.app_version}else{"status unavailable"})))
-[void]$checks.Add((Check "control_api" $(if($info -and [bool]$info.ok -and [int]$info.api_version -ge 1){"PASS"}else{"FAIL"}) $(if($info){"api="+[string]$info.api_version}else{"unavailable"})))
+[void]$checks.Add((Check "gsc_4_3_8" $(if($status -and [string](Optional $status "app_version" "") -eq "4.3.8"){"PASS"}else{"FAIL"}) $(if($status){"v"+[string](Optional $status "app_version" "")}else{"status unavailable"})))
+[void]$checks.Add((Check "control_api" $(if($info -and [bool](Optional $info "ok" $false) -and [int](Optional $info "api_version" 0) -ge 1){"PASS"}else{"FAIL"}) $(if($info){"api="+[string]$info.api_version}else{"unavailable"})))
 [void]$checks.Add((Check "four_servers" $(if($snap -and @($snap.servers).Count -ge 4){"PASS"}else{"FAIL"}) $(if($snap){"count="+@($snap.servers).Count}else{"unavailable"})))
-[void]$checks.Add((Check "no_active_jobs" $(if($snap -and [int]$snap.active_jobs -eq 0){"PASS"}else{"FAIL"}) $(if($snap){"active="+[int]$snap.active_jobs}else{"unavailable"})))
-$hrows=if($health){@($health.servers)}else{@()};[void]$checks.Add((Check "health_no_fail" $(if($hrows.Count -ge 4 -and @($hrows|Where-Object{[string]$_.overall -eq "fail"}).Count -eq 0){"PASS"}else{"FAIL"}) ("rows="+$hrows.Count)))
-$erows=if($entry){@($entry.endpoints)}else{@()};[void]$checks.Add((Check "java_bedrock_probe" $(if($erows.Count -eq 3 -and @($erows|Where-Object{-not[bool]$_.java_responding -or -not[bool]$_.bedrock_raknet_pong}).Count -eq 0){"PASS"}else{"FAIL"}) ("entries="+$erows.Count)))
-if($fleet){$unsafe=@($fleet.servers|Where-Object{[bool]$_.status.block_start -or [string]$_.status.phase -in @("blocked","rollback_failed","rolling_back","pending_health","downloading")});[void]$checks.Add((Check "fleet_no_unsafe_transaction" $(if($unsafe.Count -eq 0){"PASS"}else{"FAIL"}) ("unsafe="+$unsafe.Count))) } else {[void]$checks.Add((Check "fleet_no_unsafe_transaction" "FAIL" "fleet unavailable"))}
-if($mobile){[void]$checks.Add((Check "mobile_security" $(if([bool]$mobile.security.auth_required -and -not[bool]$mobile.security.rcon_exposed -and -not[bool]$mobile.security.gds_exposed){"PASS"}else{"FAIL"}) "auth/rcon/gds boundary"))}else{[void]$checks.Add((Check "mobile_security" "WARN" "mobile endpoint unavailable" $false))}
-if($ext){[void]$checks.Add((Check "external_update_policy" $(if([string]$ext.mode -eq "read-only" -and [string]$ext.paper_policy -eq "notify/manual-approve"){"PASS"}else{"FAIL"}) ("mode="+[string]$ext.mode+" paper="+[string]$ext.paper_policy)))}else{[void]$checks.Add((Check "external_update_policy" "WARN" "external status unavailable" $false))}
+[void]$checks.Add((Check "no_active_jobs" $(if($snap -and [int](Optional $snap "active_jobs" -1) -eq 0){"PASS"}else{"FAIL"}) $(if($snap){"active="+[int](Optional $snap "active_jobs" -1)}else{"unavailable"})))
+$hrows=if($health){@($health.servers)}else{@()};[void]$checks.Add((Check "health_no_fail" $(if($hrows.Count -ge 4 -and @($hrows|Where-Object{[string](Optional $_ "overall" "") -eq "fail"}).Count -eq 0){"PASS"}else{"FAIL"}) ("rows="+$hrows.Count)))
+$erows=if($entry){@($entry.endpoints)}else{@()};[void]$checks.Add((Check "java_bedrock_probe" $(if($erows.Count -eq 3 -and @($erows|Where-Object{-not[bool](Optional $_ "java_responding" $false) -or -not[bool](Optional $_ "bedrock_raknet_pong" $false)}).Count -eq 0){"PASS"}else{"FAIL"}) ("entries="+$erows.Count)))
+if($fleet){$unsafe=@($fleet.servers|Where-Object{[bool](Optional $_ "status.block_start" $false) -or [string](Optional $_ "status.phase" "") -in @("blocked","rollback_failed","rolling_back","pending_health","downloading")});[void]$checks.Add((Check "fleet_no_unsafe_transaction" $(if($unsafe.Count -eq 0){"PASS"}else{"FAIL"}) ("unsafe="+$unsafe.Count))) } else {[void]$checks.Add((Check "fleet_no_unsafe_transaction" "FAIL" "fleet unavailable"))}
+if($mobile){[void]$checks.Add((Check "mobile_security" $(if([bool](Optional $mobile "security.auth_required" $false) -and -not[bool](Optional $mobile "security.rcon_exposed" $true) -and -not[bool](Optional $mobile "security.gds_exposed" $true)){"PASS"}else{"FAIL"}) "auth/rcon/gds boundary"))}else{[void]$checks.Add((Check "mobile_security" "WARN" "mobile endpoint unavailable" $false))}
+if($ext){[void]$checks.Add((Check "external_update_policy" $(if([string](Optional $ext "mode" "") -eq "read-only" -and [string](Optional $ext "paper_policy" "") -eq "notify/manual-approve"){"PASS"}else{"FAIL"}) ("mode="+[string](Optional $ext "mode" "")+" paper="+[string](Optional $ext "paper_policy" ""))))}else{[void]$checks.Add((Check "external_update_policy" "WARN" "external status unavailable" $false))}
 
 $pd=if($env:PROGRAMDATA){$env:PROGRAMDATA}else{"C:\ProgramData"};$root=Join-Path $pd "GeumyiServerCenter";$cfgPath=Join-Path $root "server.json"
 [void]$checks.Add((Check "server_json" $(if((Get-Sha256 $cfgPath)){"PASS"}else{"FAIL"}) "config fingerprint readable"))
