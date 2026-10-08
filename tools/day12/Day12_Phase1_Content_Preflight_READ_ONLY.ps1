@@ -3,7 +3,8 @@ param(
   [string]$BaseUrl="http://127.0.0.1:8790",
   [string]$ManifestPath="",
   [string]$OutputDir="",
-  [switch]$Synthetic
+  [switch]$Synthetic,
+  [string]$FixtureRoot=""
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference="Stop"
@@ -12,7 +13,17 @@ New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
 $out=Join-Path $OutputDir ("Geumyi-Day12-Phase1-ContentPreflight-"+(Get-Date -Format "yyyyMMdd-HHmmss")+".json")
 function H256([string]$p){if(-not(Test-Path -LiteralPath $p -PathType Leaf)){return ""};(Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant()}
 function H1([string]$p){if(-not(Test-Path -LiteralPath $p -PathType Leaf)){return ""};(Get-FileHash -LiteralPath $p -Algorithm SHA1).Hash.ToLowerInvariant()}
-function J([string]$p){try{Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method GET -TimeoutSec 15}catch{$null}}
+function J([string]$p){
+  if($FixtureRoot){
+    if($env:GITHUB_ACTIONS -ne "true"){throw "FixtureRoot is restricted to CI"}
+    $route=(($p -replace '[^A-Za-z0-9]+','_').Trim('_'))+".json"
+    $fixtureFile=Join-Path $FixtureRoot $route
+    if(Test-Path -LiteralPath $fixtureFile -PathType Leaf){
+      return (Get-Content -LiteralPath $fixtureFile -Raw -Encoding UTF8 | ConvertFrom-Json)
+    }
+    return $null
+  }
+  try{Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method GET -TimeoutSec 15}catch{$null}}
 function Optional([object]$Value,[string]$Field,[object]$Default=$null){
   foreach($part in $Field.Split('.')){
     if($null -eq $Value){return $Default}
@@ -86,6 +97,6 @@ if($ManifestPath -and (Test-Path -LiteralPath $ManifestPath)){
     $mrows += [ordered]@{id=[string]$x.id;kind=[string]$x.kind;server_id=[string]$x.server_id;source_exists=$exists;sha256=$sha256;sha1=$sha1;expected_sha256=[string]$x.expected_sha256;hash_match=($exists -and ([string]::IsNullOrWhiteSpace([string]$x.expected_sha256) -or $sha256 -eq ([string]$x.expected_sha256).ToLowerInvariant()))}
   }
 }
-$r=[ordered]@{schema=1;phase="12.1";mode="READ_ONLY";synthetic=$false;generated_at=(Get-Date).ToString("o");result="CAPTURED";servers=$servers;bedrock_geyser=$bedrock;manifest=[ordered]@{configured=($null-ne$m);entries=$mrows};mutation_performed=$false}
+$r=[ordered]@{schema=1;phase="12.1";mode="READ_ONLY";synthetic=$false;fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o");result="CAPTURED";servers=$servers;bedrock_geyser=$bedrock;manifest=[ordered]@{configured=($null-ne$m);entries=$mrows};mutation_performed=$false}
 $r|ConvertTo-Json -Depth 14|Set-Content -LiteralPath $out -Encoding UTF8
 Write-Host "DAY 12 PHASE 1 CONTENT PREFLIGHT CAPTURED";Write-Host ("Report: "+$out)
