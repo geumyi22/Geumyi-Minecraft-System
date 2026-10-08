@@ -258,6 +258,24 @@ jobs:
           $r=Get-Content -LiteralPath $reports[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
           if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.read_only -or -not $r.synthetic -or $r.mutation_performed){throw 'Rule ACL synthetic contract fail'}
 
+      - name: ACL-only mode skips firewall and fails closed without GSC files
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'acl-only-negative'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase5_Rule_ACL_Review_READ_ONLY.ps1 -AclOnly -OutputDir $out
+          $ec=$LASTEXITCODE
+          $reports=@(Get-ChildItem -LiteralPath $out -Filter 'Day12-Rule-ACL-Review-*.json' -File)
+          if($reports.Count -ne 1){throw "ACL-only expected single report"}
+          $r=Get-Content -LiteralPath $reports[0].FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+          if($r.phase -ne '12.5-acl-only' -or $r.firewall_enumeration -ne 'NOT_EXECUTED_ACL_ONLY' -or
+             -not $r.read_only -or $r.synthetic -or $r.mutation_performed -or
+             -not $r.acl_target_label_consistency -or $r.protected_file_acl_summaries.Count -ne 5){
+            throw "ACL-only output contract failed"
+          }
+          if($r.result -eq 'CAPTURED_FOR_REVIEW' -and $ec -ne 0){throw 'ACL-only exit/report disagree'}
+          if($r.result -eq 'CHECK_REQUIRED' -and $ec -ne 2){throw 'ACL-only fail-closed exit/report disagree'}
+          if($r.result -notin @('CAPTURED_FOR_REVIEW','CHECK_REQUIRED')){throw 'Unexpected ACL-only state'}
+
       - name: Golden report discovery and manual-path regression
         shell: powershell
         run: |
