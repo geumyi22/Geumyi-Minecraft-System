@@ -3,7 +3,7 @@ param([string]$BaseUrl="http://127.0.0.1:8790",[string]$OutputDir="",[switch]$Sy
 Set-StrictMode -Version Latest;$ErrorActionPreference="Stop"
 function Check([string]$k,[string]$status,[string]$message,[bool]$mandatory=$true){[pscustomobject]@{key=$k;status=$status;message=$message;mandatory=$mandatory}}
 function G([string]$p,[int]$t=15){try{Invoke-RestMethod -Uri ($BaseUrl.TrimEnd('/')+$p) -Method GET -TimeoutSec $t}catch{$null}}
-function H([string]$p){if(-not(Test-Path $p -PathType Leaf)){return ""};(Get-FileHash $p -Algorithm SHA256).Hash.ToLowerInvariant()}
+function Get-Sha256([string]$p){if(-not(Test-Path $p -PathType Leaf)){return ""};(Get-FileHash $p -Algorithm SHA256).Hash.ToLowerInvariant()}
 if([string]::IsNullOrWhiteSpace($OutputDir)){$OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Final-Verification"}
 New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
 $stamp=Get-Date -Format "yyyyMMdd-HHmmss";$out=Join-Path $OutputDir ("Geumyi-Final-Verification-"+$stamp+".json");$canonical=Join-Path $OutputDir "FINAL-HEALTH-REPORT.json"
@@ -24,7 +24,7 @@ if($mobile){[void]$checks.Add((Check "mobile_security" $(if([bool]$mobile.securi
 if($ext){[void]$checks.Add((Check "external_update_policy" $(if([string]$ext.mode -eq "read-only" -and [string]$ext.paper_policy -eq "notify/manual-approve"){"PASS"}else{"FAIL"}) ("mode="+[string]$ext.mode+" paper="+[string]$ext.paper_policy)))}else{[void]$checks.Add((Check "external_update_policy" "WARN" "external status unavailable" $false))}
 
 $pd=if($env:PROGRAMDATA){$env:PROGRAMDATA}else{"C:\ProgramData"};$root=Join-Path $pd "GeumyiServerCenter";$cfgPath=Join-Path $root "server.json"
-[void]$checks.Add((Check "server_json" $(if((H $cfgPath)){"PASS"}else{"FAIL"}) "config fingerprint readable"))
+[void]$checks.Add((Check "server_json" $(if((Get-Sha256 $cfgPath)){"PASS"}else{"FAIL"}) "config fingerprint readable"))
 try{$svc=Get-Service "Geumyi Server Center Host" -ErrorAction Stop;[void]$checks.Add((Check "host_service" $(if($svc.Status -eq "Running"){"PASS"}else{"FAIL"}) ([string]$svc.Status)))}catch{[void]$checks.Add((Check "host_service" "FAIL" "service missing"))}
 foreach($id in @("wild","playground","other")){
   try{$task=Get-ScheduledTask -TaskName ("Geumyi Day10 Velocity "+$id) -ErrorAction Stop;[void]$checks.Add((Check ("velocity_task_"+$id) $(if($task.State -ne "Disabled"){"PASS"}else{"FAIL"}) ([string]$task.State)))}catch{[void]$checks.Add((Check ("velocity_task_"+$id) "FAIL" "task missing"))}
@@ -33,7 +33,7 @@ foreach($id in @("wild","playground","other")){
 $goldenOK=$true;$golden=@()
 foreach($id in @("wild","playground","other","lobby")){
   $b=G ("/api/v4/backups?id="+[uri]::EscapeDataString($id))
-  $matches=if($b){@($b.backups|Where-Object{[bool]$_.protected -and [string]$_.source_reason -match "(?i)day12-golden|golden-baseline"})}else{@()}
+  $matches=if($b){@($b.backups|Where-Object{$null -ne $_ -and $null -ne $_.PSObject.Properties["protected"] -and [bool]$_.PSObject.Properties["protected"].Value -and $null -ne $_.PSObject.Properties["source_reason"] -and [string]$_.PSObject.Properties["source_reason"].Value -match "(?i)day12-golden|golden-baseline"})}else{@()}
   $golden += [ordered]@{server_id=$id;count=$matches.Count;files=@($matches|ForEach-Object{[string]$_.file})}
   if($matches.Count -lt 1){$goldenOK=$false}
 }
