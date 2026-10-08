@@ -110,8 +110,26 @@ function Get-Jars([string]$Path){
         })
 }
 function Tcp-Listening([int]$Port){
-    try { return [bool](Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue | Select-Object -First 1) } catch {}
-    try { return [bool](& netstat.exe -ano -p tcp 2>$null | Select-String -SimpleMatch (":"+$Port+" ")) } catch { return $false }
+    # Get-NetTCPConnection may return an empty result without throwing.
+    # That must not skip netstat and active loopback TCP checks.
+    try {
+        if(@(Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue).Count -gt 0){return $true}
+    } catch {}
+    try {
+        $lines=@(& netstat.exe -ano -p tcp 2>$null)
+        $regex='^\\s*TCP\\s+\\S+:'+$Port+'\\s+\\S+\\s+LISTENING(?:\\s+\\d+)?\\s*$'
+        if(@($lines | Where-Object {$_ -match $regex}).Count -gt 0){return $true}
+    } catch {}
+    # Loopback handshake is valid evidence of a listening TCP endpoint,
+    # but does not establish ownership, public reachability or player E2E.
+    $client=New-Object System.Net.Sockets.TcpClient
+    try {
+        $pending=$client.BeginConnect("127.0.0.1",$Port,$null,$null)
+        if(-not $pending.AsyncWaitHandle.WaitOne(500,$false)){return $false}
+        $client.EndConnect($pending)
+        return $client.Connected
+    } catch {return $false}
+    finally {$client.Dispose()}
 }
 function Udp-Bound([int]$Port){
     try { return [bool](Get-NetUDPEndpoint -LocalPort $Port -ErrorAction SilentlyContinue | Select-Object -First 1) } catch {}
@@ -308,7 +326,7 @@ Add-Check $checks "backend_ports_match" (@($Expected.network.backend | Where-Obj
     $null -eq $row -or [int]$row.java_port -ne [int]$x.java -or [int]$row.rcon_port -ne [int]$x.rcon
 }).Count -eq 0) "Expected private Paper/RCON ports"
 Add-Check $checks "proxy_roots_ready" (@($proxyRows | Where-Object {-not [bool]$_.root_present -or -not [bool]$_.velocity_toml_present -or -not [bool]$_.forwarding_secret_present -or -not [bool]$_.floodgate_key_present}).Count -eq 0) "3 proxy roots/config/identity present"
-Add-Check $checks "public_ports_bound" (@($proxyRows | Where-Object {-not [bool]$_.java_listening -or -not [bool]$_.bedrock_bound}).Count -eq 0) "TCP 25565-25567 + UDP 19132-19134"
+Add-Check $checks "public_ports_bound" (@($proxyRows | Where-Object {-not [bool]$_.java_listening -or -not [bool]$_.bedrock_bound}).Count -eq 0) "TCP loopback/listener responsiveness 25565-25567 + UDP bound 19132-19134; port owner/public reachability requires live E2E"
 $networkRows=if($null -ne $network){@($network.endpoints)}else{@()}
 Add-Check $checks "public_entry_api_healthy" ($networkRows.Count -eq 3 -and @($networkRows | Where-Object {-not [bool](Optional $_ "java_responding" $false) -or -not [bool](Optional $_ "bedrock_raknet_pong" $false)}).Count -eq 0) ("entries="+$networkRows.Count)
 Add-Check $checks "gsc_service_running" ($serviceState -eq "Running") ("service="+$serviceState)
