@@ -1,6 +1,9 @@
 [CmdletBinding()]
 param([string]$BaseUrl="http://127.0.0.1:8790",[string]$OutputDir="",[switch]$Synthetic,[string]$FixtureRoot="")
 Set-StrictMode -Version Latest;$ErrorActionPreference="Stop"
+# Native OS listener helper is read-only; its absence must not turn missing bind evidence into PASS.
+$nativeHelper=Join-Path $PSScriptRoot "Day12_Native_TCP_Provider_READ_ONLY.ps1"
+if(Test-Path -LiteralPath $nativeHelper -PathType Leaf){. $nativeHelper}
 function Check([string]$k,[string]$status,[string]$message,[bool]$mandatory=$true){[pscustomobject]@{key=$k;status=$status;message=$message;mandatory=$mandatory}}
 function Optional([object]$Value,[string]$Field,[object]$Default=$null){
   foreach($part in $Field.Split('.')){
@@ -141,6 +144,21 @@ $free=0;try{$free=[int64](Get-Item $root).PSDrive.Free}catch{};[void]$checks.Add
 # do not assume that 0 rows means ports are safe.
 $interestingPorts=@(25565,25566,25567,25570,25571,25572,25573,25575,25576,25577,25579,8787,8790)
 $portRows=@(Get-Day12TcpInventory $interestingPorts)
+$nativeResult=[pscustomobject]@{status="UNAVAILABLE";rows=@();providers=@();error_categories=@("NATIVE_HELPER_MISSING")}
+if(Test-Path -LiteralPath $nativeHelper -PathType Leaf){
+  try{$nativeResult=Get-Day12NativeTcpInventory -WantedPorts $interestingPorts}
+  catch{
+    $nativeResult=[pscustomobject]@{status="ERROR";rows=@();providers=@();error_categories=@("NATIVE_PROVIDER_CALL_FAILED")}
+  }
+}
+# Native read is an independent OS API path. Duplicate rows from distinct
+# providers are retained for source traceability, never counted as new ports.
+foreach($n in @($nativeResult.rows)){
+  if($null -eq $n){continue}
+  $portRows+= [ordered]@{
+    port=[int]$n.port;address=[string]$n.address;pid=[int]$n.pid;source=[string]$n.source
+  }
+}
 $tcpInventorySources=@($portRows | ForEach-Object {[string]$_.source} | Select-Object -Unique)
 $tcpInventorySource=if($tcpInventorySources.Count){$tcpInventorySources -join ","}else{"unavailable"}
 $privatePorts=@(25570,25571,25572,25573,25575,25576,25577,25579)
@@ -157,14 +175,67 @@ if($fleet){
   }
 }
 $missingJava=@($requiredJava | Where-Object { $needed=$_; @($privateListeners|Where-Object{[int]$_.port -eq $needed}).Count -eq 0 })
-$privacyOK=($backendPublic.Count -eq 0 -and $missingJava.Count -eq 0 -and $privateListeners.Count -gt 0)
+# GSC fleet currently reports four profiles; only the online servers require
+# listener evidence. RCON is configured enabled for the managed backend fleet.
+$rconById=@{wild=25575;playground=25576;other=25577;lobby=25579}
+$requiredRcon=@()
+if($fleet){
+  foreach($fs in @($fleet.servers)){
+    $sid=[string](Optional $fs "server_id" "")
+    if([bool](Optional $fs "online" $false) -and $rconById.ContainsKey($sid)){
+      $requiredRcon+=[int]$rconById[$sid]
+    }
+  }
+}
+$missingRcon=@($requiredRcon|Where-Object{$target=$_;@($privateListeners|Where-Object{[int]$_.port -eq $target}).Count -eq 0})
+# Do not turn a no-listeners / no-fleet / missing-native situation into PASS.
+$privacyOK=(
+  $nativeResult.status -eq "CAPTURED" -and
+  $requiredJava.Count -gt 0 -and
+  $backendPublic.Count -eq 0 -and
+  $missingJava.Count -eq 0 -and $missingRcon.Count -eq 0 -and
+  $privateListeners.Count -gt 0
+)
 [void]$checks.Add((Check "backend_ports_private" $(if($privacyOK){"PASS"}else{"FAIL"}) (
-  "public_backend_listeners="+$backendPublic.Count+
-  "; private_listener_rows="+$privateListeners.Count+
+  "public_backend_listener_observations="+$backendPublic.Count+
+  "; private_listener_observations="+$privateListeners.Count+
   "; online_java_missing="+($missingJava -join ",")+
+  "; online_rcon_missing="+($missingRcon -join ",")+
+  "; native_provider="+[string]$nativeResult.status+
   "; tcp_inventory="+$tcpInventorySource
 )))
 $pass=@($checks|Where-Object{$_.status -eq "PASS"}).Count;$warn=@($checks|Where-Object{$_.status -eq "WARN"}).Count;$fail=@($checks|Where-Object{$_.status -eq "FAIL" -and $_.mandatory}).Count
-$r=[ordered]@{schema=2;tool="Geumyi Final Verification";read_only=$true;synthetic=$false;fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o");result=$(if($fail -eq 0){"PASS"}else{"FAIL"});summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail};checks=@($checks);golden_backups=$golden;network_entry=$erows;health=$hrows;listener_inventory=$portRows;listener_inventory_sources=$tcpInventorySources;notes=@("Real Java/Bedrock login/routing and GSCM device E2E are separate Phase 12.11 gates.","No secret values or configuration contents are exported.");mutation_performed=$false}
+# Listener addresses are inspected in memory; reports redact nonloopback IPs.
+$safeListeners=@()
+foreach($pr in @($portRows)){
+  $addr=[string]$pr.address
+  $scope=if($addr -in @("127.0.0.1","::1","::ffff:127.0.0.1")){"LOOPBACK"}
+    elseif($addr -in @("0.0.0.0","::")){"WILDCARD"}
+    else{"NON_LOOPBACK_REDACTED"}
+  $safeListeners+= [ordered]@{
+    port=[int]$pr.port;address_scope=$scope
+    address=$(if($scope -ne "NON_LOOPBACK_REDACTED"){$addr}else{"REDACTED"})
+    source=[string]$pr.source
+  }
+}
+$r=[ordered]@{
+  schema=3;tool="Geumyi Final Verification";read_only=$true;synthetic=$false
+  fixture_mode=([bool]$FixtureRoot);generated_at=(Get-Date).ToString("o")
+  result=$(if($fail -eq 0){"PASS"}else{"FAIL"})
+  summary=[ordered]@{pass=$pass;warn=$warn;fail=$fail}
+  checks=@($checks);golden_backups=$golden;network_entry=$erows;health=$hrows
+  listener_inventory=$safeListeners;listener_inventory_sources=$tcpInventorySources
+  native_provider_status=[string]$nativeResult.status
+  native_providers=@($nativeResult.providers)
+  native_error_categories=@($nativeResult.error_categories)
+  notes=@(
+    "Native OWNER_PID IPv4+IPv6 and BASIC IPv4 listener classes augment Get-NetTCPConnection/.NET/netstat.",
+    "Native provider failure or missing online Java/RCON listener evidence fails the backend privacy gate closed.",
+    "No observed listener is not evidence of private bind; public/wildcard listener evidence is a failure.",
+    "Real Java/Bedrock login/routing and GSCM device E2E are separate Phase 12.11 gates.",
+    "Nonloopback listener IPs, authentication credentials and config contents are not exported."
+  )
+  mutation_performed=$false
+}
 $r|ConvertTo-Json -Depth 14|Set-Content $out -Encoding UTF8;$r|ConvertTo-Json -Depth 14|Set-Content $canonical -Encoding UTF8
 Write-Host ("FINAL VERIFICATION: PASS $pass / WARN $warn / FAIL $fail");Write-Host ("Result: "+$r.result);Write-Host ("Report: "+$out);if($fail){exit 2}
