@@ -133,6 +133,12 @@
 - **실제 권한 변경은 수행하지 않습니다.** 디렉터리 ACL 상속 해제나 광범위 방화벽 규칙 비활성화는 GSC 시작/업데이트/백업에 영향을 줄 수 있습니다. 새 도구를 실행한다면 수정 버전에서 **ACL 대상명과 `delete_children`만 추가로 확인**하면 됩니다. 앞서 통과한 방화벽/Agent SHA/LAN/골든 검사 전부 재실행 금지.
 - 12.5 최종 검증 보류, 12.10 FAIL, Stable 차단 유지.
 
+## 다음 한 번만 — 12.5 ACL 라벨·하위 파일 삭제권 보정 수집
+
+- **서버 PC** 최신 Operator Kit에서 `tools\\day12\\Day12_Phase5_ACL_Only_READ_ONLY.cmd`를 **관리자 권한으로 실행**. 바탕화면 `Geumyi-Day12-Rule-ACL-Review\\Day12-Rule-ACL-Review-*.json` 중 새 파일 하나만 제출하세요.
+- 이 명령은 `-AclOnly`를 사용하므로 기존 **방화벽 266개 규칙 재검사, GSC API 호출, Java/Bedrock 서버 설정 검사, 백업 검사 전부 건너뜁니다**. 파일 ACL 메타데이터 5건만 읽고 정확한 대상 라벨과 부모 `delete_children`을 기록합니다. `server.json` 내용과 계정/비밀정보는 파일로 내보내지 않습니다.
+- 새 ACL 결과가 깨끗하더라도 12.5 전체 보안 검증 PASS/12.10 PASS/Stable 자동 승격은 금지. 사용자별 effective access, 방화벽 미분류 33개 정당성, 실제 backend listener 주소는 별도 확인 사항입니다. 이미 성공한 전체 검사·LAN 검사·골든 백업은 반복 금지.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
