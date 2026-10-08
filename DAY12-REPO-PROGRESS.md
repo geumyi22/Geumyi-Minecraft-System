@@ -61,6 +61,15 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **12.10 stays blocked**. Treat server config scope as PASS / active runtime socket exposure as UNVERIFIED. Do not mark `backend_ports_private` PASS, change firewall or backend properties, start Other automatically, delete backups, or promote Stable.
 - Next step: correlate **same-time** GSC online state, loopback TCP connect result and listener inventories in a refreshed read-only collector; if listeners remain invisible for a demonstrably online backend, investigate host process/network context without weakening the final gate.
 
+## 2026-10-09 05:34 KST — simultaneous live reachability vs listener enumeration
+
+- Operator-supplied `Day12-Bind-Evidence-20261009-053405.json` (not uploaded to GitHub): read-only `CAPTURED_REVIEW_REQUIRED`, GSC Host `Running`, no reported mutations.
+- Before **and** after TCP inventory: GSC fleet Wild/Playground/Lobby **ONLINE**, Other **OFFLINE**. Same capture: localhost Java TCP **connects** to 25570/25571/25573, while 25572 does not (consistent with Other OFFLINE).
+- 4/4 `server.properties` explicitly have `server-ip=127.0.0.1`, expected Java (25570–25573) and RCON (25575/25576/25577/25579) numbers, and `enable-rcon=true`. These are **configuration-level** findings; RCON actual socket bind address remains unverified.
+- Both rounds of 3 providers (Get-NetTCPConnection, IPGlobalProperties, netstat) found **0 target listener rows** although 3 online backends accept localhost connects. `netstat` read 895 then 913 lines; Windows listener enumeration is currently inconclusive. No observed non-loopback bind does **not** prove absence of exposure when the inventory is empty.
+- Updated the read-only bind collector to also capture an independent **GetExtendedTcpTable** IP Helper provider, non-sensitive Java PID listing, elevation status, and **redacted netsh portproxy target-port mentions**. Native provider and portproxy metadata still cannot turn missing socket evidence into PASS.
+- **12.10 remains FAIL/PENDING; final signed Stable/Maintenance gate remains blocked.** Do not edit configurations, RCON settings or firewall rules from these observations alone.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
