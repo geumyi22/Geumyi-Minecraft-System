@@ -261,6 +261,14 @@
 - **같은 CMD 다시 실행하지 마세요.** 즉시 서버 재시작/강제 종료/복구/설정 수정 추가 금지. 기존 Golden 보존, Day12.10 `backend_ports_private` FAIL, Stable 차단.
 - 어시스턴트 다음 작업: Windows 네이티브 리스너 수집기·GSC 자체 PID 조회의 공통 구현 및 실제 검증 게이트를 Microsoft API 문서 기준으로 정적 검토하고, 독립적/비파괴적인 실시간 검증 대안과 12.11·12.12 준비만 진행합니다. 원인 확정 또는 새로운 증거 계획 없이는 추가 유사 CMD를 요청하지 않습니다.
 
+## 2026-10-10 — new 12.10 WFP historical audit evidence: one read-only capture
+
+- Windows Safety CI `37977424905` **PASS**, WFP synthetic tests included; Day12 Operator Kit `37977424871` **PASS** (same source `6b436cf6c`). Neither result is a production security PASS.
+- Use the **updated Operator Kit**, on the Minecraft server PC. Run `tools\day12\Day12_Phase10_WFP_Audit_Attestation_READ_ONLY.cmd` **once**. This reads existing Windows Security audit events **5154/5158**, not the previous network TCP table; may require administrator rights to *read Security events only*. No changes to auditing, firewall, TCP ports, services, worlds or Golden backups.
+- Submit the newest `Desktop\Geumyi-Day12-WFP\Day12-WFP-Bind-*.json` file. Report contains **only service/port/scope categories and event counts**, not raw event XML, addresses, executable paths, PIDs or credentials.
+- `UNAVAILABLE`/no matching events means missing historical evidence—not broken Minecraft, and not PASS. Do **not** enable `auditpol`, repeat stale TCP scans, blindly restart servers or switch to an unreviewed fallback. An event showing wildcard/nonloopback bind requires focused security investigation. Strict `backend_ports_private` stays **FAIL**.
+- Reference: [WFP read-only plan](DAY12-PHASE10-WFP-READONLY-PLAN.md).
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
