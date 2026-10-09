@@ -1,0 +1,105 @@
+name: Day12 GSC Canary SubPC Read-Only Handoff Kit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/day12-gsc-subpc-readonly-kit.yml'
+      - 'tools/day12/Day12_GSC_Canary_SubPC_Preflight_READ_ONLY.ps1'
+      - 'tools/day12/Day12_GSC_Canary_SubPC_Preflight_READ_ONLY.cmd'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check published 4.3.8 client integrity reference
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $r=gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/system-2026.10.07-day11-gsc438-beta" | ConvertFrom-Json
+          if($r.draft -or !$r.prerelease){throw 'Pinned 4.3.8 baseline release is unavailable'}
+          $asset=@($r.assets|Where-Object{$_.name -eq 'GeumyiServerCenter.exe'})
+          if($asset.Count -ne 1 -or $asset[0].digest -ne 'sha256:05402a24c499b9457a4d587817d1ef1393acb74992b63712970a6c94b7f65c61'){
+            throw 'Published 4.3.8 client digest drift; preflight reference cannot be trusted'
+          }
+          $setup=@($r.assets|Where-Object{$_.name -eq 'GeumyiServerCenter-v4.3.8-Setup.exe'})
+          if($setup.Count -ne 1 -or $setup[0].digest -ne 'sha256:288aeb4f0cf75691a997411911bf2fddac1b61644e915845bb6161468080a039'){
+            throw 'Published 4.3.8 rollback Setup digest drift'
+          }
+      - name: Parse and Windows 5.1 synthetic-test readonly SubPC script
+        shell: powershell
+        run: |
+          $p='tools/day12/Day12_GSC_Canary_SubPC_Preflight_READ_ONLY.ps1'
+          $t=$null;$e=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$t,[ref]$e)
+          if(@($e).Count){throw 'SubPC PowerShell parse failed'}
+          $out=Join-Path $env:RUNNER_TEMP 'gsc-subpc-fixture'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $p -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'SubPC fixture failed'}
+          $files=@(Get-ChildItem -LiteralPath $out -Filter '*.json' -File)
+          if($files.Count -ne 1){throw 'Fixture count mismatch'}
+          $r=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or !$r.synthetic -or !$r.read_only -or
+             $r.mutation_performed -or $r.client_only_ready -or
+             $r.backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Fixture contract violated'
+          }
+      - name: Package *only* read-only preflight, no installer or executable
+        shell: pwsh
+        run: |
+          $root='candidate-kit'
+          New-Item -ItemType Directory -Path $root -Force|Out-Null
+          foreach($fn in @('Day12_GSC_Canary_SubPC_Preflight_READ_ONLY.ps1','Day12_GSC_Canary_SubPC_Preflight_READ_ONLY.cmd')){
+            Copy-Item -LiteralPath "tools/day12/$fn" -Destination "$root/$fn" -ErrorAction Stop
+          }
+          $readme=@'
+          DAY12 GSC 4.3.9-rc.1 CANARY — SUB PC READ-ONLY PRECHECK ONLY
+          ============================================================
+          1. Run on SUB PC only, NOT on actual Minecraft server PC.
+          2. Unzip this kit. Run Day12_GSC_Canary_SubPC_Preflight_READ_ONLY.cmd.
+          3. Send the latest Desktop\Geumyi-Day12-SubPC-GSC\Day12-SubPC-GSC-Preflight-*.json.
+          4. CHECK_REQUIRED or missing baseline hash: stop and send JSON, do not reinstall.
+          5. No Admin elevation needed; tool is read-only.
+          
+          This kit has NO installer, NO updater, NO executables, NO passwords.
+          It never changes config, update channel, host services, registry,
+          process state, Windows firewall, GSCM, Paper or Minecraft worlds.
+          Tests client-only device role and the exact official GSC 4.3.8
+          Client SHA-256, not an installation or signed update readiness PASS.
+          
+          Expected published 4.3.8 Client SHA-256:
+          05402a24c499b9457a4d587817d1ef1393acb74992b63712970a6c94b7f65c61
+          Expected published 4.3.8 rollback Setup SHA-256 (NOT INCLUDED):
+          288aeb4f0cf75691a997411911bf2fddac1b61644e915845bb6161468080a039
+
+          Day12.10 backend_ports_private remains FAIL. Canary Draft remains
+          unpublished; do NOT run any 4.3.9-rc.1 Setup until authorized.
+          '@
+          [IO.File]::WriteAllText((Join-Path (Resolve-Path $root) 'README-FIRST.txt'),$readme,[Text.UTF8Encoding]::new($false))
+          $members=@(Get-ChildItem -LiteralPath $root -File|Sort-Object Name)
+          $sums=@($members|ForEach-Object{"$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)"})
+          [IO.File]::WriteAllLines((Join-Path (Resolve-Path $root) 'SHA256SUMS.txt'),$sums,[Text.Encoding]::ASCII)
+          Compress-Archive -Path "$root/*" -DestinationPath 'Day12-GSC-Canary-SubPC-READ_ONLY.zip' -CompressionLevel Optimal
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $z=[IO.Compression.ZipFile]::OpenRead((Resolve-Path 'Day12-GSC-Canary-SubPC-READ_ONLY.zip'))
+          try{
+            if($z.Entries.Count -ne 4){throw 'Unexpected ZIP member count'}
+            foreach($e in $z.Entries){
+              if(!$e.Name -or $e.Name -match '\.(exe|jar|dll|psm1)$'){throw 'Unsafe ZIP member'}
+            }
+          }finally{$z.Dispose()}
+          Write-Host "Packaged one read-only sub-PC preflight handoff ZIP"
+      - name: Upload validated readonly handoff ZIP (no EXE)
+        uses: actions/upload-artifact@v7
+        with:
+          name: Day12-GSC-Canary-SubPC-READ_ONLY
+          path: Day12-GSC-Canary-SubPC-READ_ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
