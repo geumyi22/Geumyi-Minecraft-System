@@ -27,6 +27,17 @@ function ProtocolScope([string]$Raw){
     "256" {return "ANY"}
     "UDP" {return "OTHER"}
     "17" {return "OTHER"}
+    # These known Windows protocols are NOT TCP. The first real target-port
+    # report counted them as ambiguous TCP matches; don't inflate risk counts.
+    "ICMPV4" {return "OTHER"}
+    "ICMPV6" {return "OTHER"}
+    "ICMP" {return "OTHER"}
+    "1" {return "OTHER"}
+    "58" {return "OTHER"}
+    "IGMP" {return "OTHER"}
+    "2" {return "OTHER"}
+    "IPV6" {return "OTHER"}
+    "41" {return "OTHER"}
     default {return "UNKNOWN"}
   }
 }
@@ -154,6 +165,9 @@ if($Synthetic){
   $b=@($eval|Where-Object{$_.port -eq 25575})[0]
   $c=@($eval|Where-Object{$_.port -eq 25576})[0]
   if((ProtocolScope "6") -ne "TCP" -or (ProtocolScope "17") -ne "OTHER" -or
+     (ProtocolScope "ICMPv6") -ne "OTHER" -or (ProtocolScope "ICMPv4") -ne "OTHER" -or
+     (ProtocolScope "41") -ne "OTHER" -or (ProtocolScope "2") -ne "OTHER" -or
+     (ProtocolScope "unexpected-future-protocol") -ne "UNKNOWN" -or
      (PortOverlap "25570-25573" 25571) -ne "MATCH" -or
      (PortOverlap "25575,25577" 25576) -ne "NO_MATCH" -or
      (PortOverlap "RPC" 25575) -ne "UNKNOWN" -or
