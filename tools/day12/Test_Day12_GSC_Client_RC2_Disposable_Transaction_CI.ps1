@@ -67,9 +67,17 @@ try {
     throw "FAILURE_INJECTION_CHANGED_BASELINE_CLIENT"
   }
   $report.failed_update_preserved_client=$true
+  $report.first_failure_caused_by_directory=([string]$r.error -match "directory")
+  $report.first_target_is_temporary=([string]$r.install_dir -eq [string]$installed)
   Remove-Item -LiteralPath $blockedTarget -Force -ErrorAction Stop
   $second=Start-Process -FilePath $candidateSetup -ArgumentList "--client-self-update" -Wait -PassThru -NoNewWindow
   $r=Get-Content -LiteralPath $updateReport -Raw -Encoding UTF8|ConvertFrom-Json
+  $report.second_helper_status=if(@("success","failed","rolled_back") -contains [string]$r.status){[string]$r.status}else{"UNKNOWN"}
+  $report.second_target_version_exact=([string]$r.target_version -eq "4.3.9-rc.2")
+  $report.second_install_dir_is_temporary=([string]$r.install_dir -eq [string]$installed)
+  $report.second_rolled_back=[bool]$r.rolled_back
+  $failure=[string]$r.error
+  $report.second_error_category=if(!$failure){"NONE"}elseif($failure -match "Host"){"HOST_UNEXPECTED"}elseif($failure -match "Client replacement"){"CLIENT_REPLACEMENT"}elseif($failure -match "Setup replacement"){"SETUP_REPLACEMENT"}elseif($failure -match "backup"){"BACKUP"}elseif($failure -match "embedded"){"EMBEDDED_EXTRACTION"}elseif($failure -match "not found"){"MISSING_CLIENT"}else{"OTHER"}
   if($r.status -ne "success" -or $r.target_version -ne "4.3.9-rc.2" -or $r.rolled_back){
     throw "CI_CLIENT_ONLY_UPDATE_NOT_SUCCESS"
   }
