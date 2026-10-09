@@ -1,6 +1,6 @@
 # Day 12.10 — GSC Guard rollout handoff: first operator action is READ ONLY
 
-**Status:** CI validated source/preflight, live compatibility **not yet collected**. Canonical `backend_ports_private`: **FAIL**, unchanged. **Do not install/restart/update production GSC yet.**
+**Status 2026-10-10 05:18 KST:** Real-host read-only guard compatibility **4/4 PASS, 0 errors**, source CI PASS; unsigned preview candidate CI in progress. Canonical `backend_ports_private`: **FAIL**, unchanged. **Do not install/restart/update production GSC yet.**
 
 ## What is already done autonomously
 
@@ -10,7 +10,27 @@
 4. Added a distinct **one-shot read-only operator precheck** `tools/day12/Day12_Phase10_GSC_Guard_Rollout_Precheck_READ_ONLY.ps1/.cmd`. It examines the existing `%PROGRAMDATA%\GeumyiServerCenter\server.json` and four server folders' `server.properties` in memory, returns **only** per-ID port and key anomaly categories, not paths, passwords, tokens or host IPs. It never connects a socket, starts/stops a process, edits firewall/audit policy or installs GSC.
 5. **Precheck Windows Safety CI #37985723489: SUCCESS**, plus the precheck synthetic test for valid profiles, duplicate-IP shadows, changed RCON port, nonloopback server IP and Java escaped-key ambiguity. Day12 Operator Kit #37985700059 (same read-only files): SUCCESS; a focused two-script ZIP + README + SHA256SUMS was extracted from that CI artifact and CRC/SHA checked.
 
-## Exactly one operator action (when told by assistant)
+## Operator evidence received — 2026-10-10 05:18 KST
+
+The user completed the requested one-shot read-only compatibility CMD and supplied `Day12-GSC-Guard-Precheck-20261010-051837.json`, generated at `2026-10-10T05:18:37.8921445+09:00`.
+
+- `synthetic=false`, `read_only=true`, `result=CONFIG_COMPATIBLE_REVIEW_ONLY`, `issue_count=0`, `error_category=NONE`.
+- 4/4 profiles compatible: `wild` Java/RCON **25570/25575**, `playground` **25571/25576**, `other` **25572/25577**, `lobby` **25573/25579**; all `compatible_for_guard=true`, each `issue_codes=[]`.
+- `configuration_modified=false`, `windows_policy_modified=false`, `service_modified=false`, `server_restarted=false`, `secrets_exported=false`.
+- `backend_ports_private=UNCHANGED_FAIL`. This is a *configuration compatibility* result only, not current socket ownership/binding evidence, not Java/RCON uptime proof and not a green Stable authorization.
+- **Do not ask to rerun the same precheck without a relevant profile/config change.** The user's first requested operator action is complete.
+
+## Next GitHub-only stage — distinctly versioned preview
+
+- A new **`4.3.9-rc.1` UNSIGNED review-only preview** is built from a temporary copy of baseline source via `tools/day12/Build_Day12_GSC_Guard_RC_CI.ps1` and `.github/workflows/day12-gsc-guard-rc-preview.yml`.
+- The disposable CI job first requires System CI and verified GST/GDS/StatusAgent payloads; it checks Go tests, builds uniquely stamped Host/Client/Setup preview EXEs, runs non-destructive Host self-test, hashes all files, ensures main's tracked `4.3.8` source is untouched, and archives an artifact explicitly marked **DO NOT INSTALL**. No signed manifest/Stable release and no production host mutations.
+- After CI conclusion is verified, prepare signed release and installation/rollback options, with exact offline backup/Golden+player+update preflight. Any live GSC update still requires separate operator authorization and an appropriate deployment maintenance window.
+- Source `4.3.8` stays the deployed/baseline identity. **Never distribute a modified binary that claims to be the shipped 4.3.8**.
+- The *previous* Windows TCP provider mismatch remains unresolved; the preventive startup guard does not establish current `backend_ports_private` and cannot lift the strict gate.
+
+## Historical operator instructions (already completed; DO NOT REPEAT)
+
+
 
 On the **Minecraft SERVER PC**, extract the focused kit to a new folder and run `Day12_Phase10_GSC_Guard_Rollout_Precheck_READ_ONLY.cmd` once. Upload the newest **`Desktop\Geumyi-Day12-GSC-Guard\Day12-GSC-Guard-Precheck-*.json`**. If exit code 2, `CHECK_REQUIRED`, or a missing server profile appears, **do not edit server files manually**: provide the JSON as-is. A result `CONFIG_COMPATIBLE_REVIEW_ONLY` means the on-disk config appears compatible with the new guard, not a real bind or security PASS.
 
