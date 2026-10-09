@@ -297,6 +297,20 @@ func restoreSelfUpdateFiles(files []selfUpdateFile) error {
 	return nil
 }
 
+// Every path the self-update helper may replace or create belongs in the
+// backup/rollback ledger, including a previously absent Setup.exe. The
+// absent path gets selfUpdateFile.existed=false so rollback deletes it.
+func selfUpdateTargetPaths(hostExists, clientExists bool, hostTarget, clientTarget, setupTarget string) []string {
+	targets := make([]string, 0, 3)
+	if hostExists {
+		targets = append(targets, hostTarget)
+	}
+	if clientExists {
+		targets = append(targets, clientTarget)
+	}
+	return append(targets, setupTarget)
+}
+
 func relaunchSelfUpdateClient(report *selfUpdateReport, clientTarget string) {
 	launch, err := launchClientInInteractiveSession(clientTarget)
 	if err != nil {
@@ -378,16 +392,10 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 		return
 	}
 
-	targets := []string{}
-	if hostExists {
-		targets = append(targets, hostTarget)
-	}
-	if clientExists {
-		targets = append(targets, clientTarget)
-	}
-	if _, err := os.Stat(setupTarget); err == nil {
-		targets = append(targets, setupTarget)
-	}
+	// Include Setup even when it does not exist yet. The helper may create
+	// GeumyiServerCenter-Setup.exe during replacement; a failed update must
+	// remove that newly introduced binary, not leave an untracked RC behind.
+	targets := selfUpdateTargetPaths(hostExists, clientExists, hostTarget, clientTarget, setupTarget)
 	files := make([]selfUpdateFile, 0, len(targets))
 	for _, p := range targets {
 		f, err := backupSelfUpdateFile(p, backupDir)
