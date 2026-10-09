@@ -166,6 +166,10 @@ try{
       }
     }catch{$report.observer.native_status="QUERY_ERROR"}
   }
+  if($online -and ($report.observer.java -eq "NON_LOOPBACK_OR_UNKNOWN_REVIEW" -or
+      $report.observer.rcon -eq "NON_LOOPBACK_OR_UNKNOWN_REVIEW")){
+    SaveReport "LIVE_BACKEND_BIND_EXPOSURE_REVIEW";exit 3
+  }
   if($online){SaveReport "GSC_RESTART_COMPLETED_ONLINE_BIND_REVIEW";exit 0}
   SaveReport "RESTART_JOB_COMPLETED_BUT_SERVER_OFFLINE_REVIEW"
   exit 3
