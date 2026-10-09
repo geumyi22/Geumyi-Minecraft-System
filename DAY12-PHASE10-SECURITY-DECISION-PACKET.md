@@ -40,6 +40,7 @@
 - Correlating WFP event address/PID/time against the still-running Java generation can strengthen the application-log proof without more TCP scans, but **still cannot independently prove no additional active listening sockets or IPv6 exposure**. Absence of WFP records may be caused by disabled auditing, log retention or permissions.
 - Do not change `auditpol` or security policy simply to make this check succeed. If WFP evidence is missing/incomplete, the strict gate remains OPEN. If it reveals wildcard/nonloopback binds, review immediately before further operations. Keep the original decision alternatives A/B/C unchanged and **never promote Stable automatically**.
 - [WFP read-only scope and evidence interpretation](DAY12-PHASE10-WFP-READONLY-PLAN.md).
+- [Approval-gated compensating network controls review](DAY12-PHASE10-COMPENSATING-CONTROLS-REVIEW.md).
 
 ## Real WFP read-only host result — 2026-10-10 04:06 KST
 
