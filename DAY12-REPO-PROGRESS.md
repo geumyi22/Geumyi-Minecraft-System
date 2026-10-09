@@ -276,6 +276,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - `DAY12-PHASE10-APPROVED-SCOPED-RESTART.md` provides operator execution, impact, stop conditions and fallback. Synthetic CI tests normal preflight and no-player/no-Golden/active-job guards without API calls. **Actual user host restart PENDING until the operator runs the CMD**; no live runtime binding proof claimed.
 - Original app-reported Java/RCON 8/8 loopback startup messages, backed by log ages, remain valid as historical evidence. **12.10 fails closed** and Stable is blocked. A successful one-server restart does not by itself prove all online backends privately bound.
 
+## 2026-10-10 02:41:55 KST — blocked graceful restart / updater omitempty false-positive
+
+- Operator reported Day12-Scoped-Restart-20261010-024155.json (real server PC). Playground ONLINE, players=0, protected/verified full Golden backup present, active GSC jobs=0, but result BLOCKED_UPDATE_BLOCK_START. Mutation=false, restart_accepted=false, job_status=NOT_SUBMITTED, native observer NOT_RUN. **No server was restarted.**
+- GSC updater.go declares UpdateStatus.BlockStart as a bool JSON omitempty field, which is absent when false. The preflight script incorrectly supplied default true for a missing block_start field, explaining the false-positive gate. It did **not** prove a real update block.
+- Corrected the absent-field default to false **only when the update status object exists** and a known safe phase is present. Explicit true, missing status, downloading/blocked/unknown phases, active jobs, player count above zero, and missing Golden still block. Expanded Windows synthetic fixtures for omitted, true, unsafe phase, missing status and available phase. Added sanitized updater status metadata to future reports.
+- Next: test revised CI, package new Operator Kit, and run **exactly one** guarded Playground graceful restart from it on the server PC. Do not rerun old bundle, and do not treat a successful restart as Day12.10 private listener security PASS. Live canonical still 18 PASS / 0 WARN / 1 FAIL, Stable blocked.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
