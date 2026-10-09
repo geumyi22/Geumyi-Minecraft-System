@@ -19,6 +19,14 @@ This report is intentionally not marked PASS until the real server PC, Java clie
 - Safe low-impact client checks (Java→Lobby→Wild/Playground, Bedrock→Lobby→Wild/Playground, return to Lobby and verify previous location, GSCM realtime status/reconnect without modifying server) can be prepared separately, but must not be marked PASS until performed by user on real clients. Tests affecting services, saves, restore, credentials or backups remain gated.
 - No further Playground restarts or repeating Windows native TCP inventory until a new substantive root-cause/attestation method is available.
 
+## Operator-reported Java pre-E2E — 2026-10-10 KST (partial, non-release-grade)
+
+- After being asked to test the real Java client via the public entry, the operator replied **"됨"** to the four-step checklist: public entry to Lobby; Lobby -> Wild -> Lobby; Lobby -> Playground -> Lobby; and previous-location preservation when re-entering Wild and Playground.
+- Record as **OPERATOR_REPORTED_PASS** for these exact Java client steps only. No independently attached client log, timestamped screenshot, or machine-generated E2E report was provided with this acknowledgment.
+- Other backend was explicitly excluded because it was OFFLINE in the latest available prior fleet snapshot. **Lobby -> Other remains untested**, as do Bedrock and GSCM, Windows reboot, operations and soak.
+- This is a safe pre-E2E functional observation, **not** the release-grade 12.11 Java E2E PASS: the 12.10 mandatory `backend_ports_private` gate is still FAIL, and the complete four-backend real-client path is pending.
+- **Next operator action:** Bedrock client public entry -> Lobby -> Wild / Playground -> Lobby -> verify return and previous-location behavior. Do not expose backend ports, change firewall, or restart servers merely for this check.
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
