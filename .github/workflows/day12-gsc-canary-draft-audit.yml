@@ -1,0 +1,59 @@
+name: Day12 GSC Canary Draft Read-Only Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/day12-gsc-canary-draft-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: system-2026.10.10-day12-gsc439-rc1-canary
+    steps:
+      - name: Read release-list API including DRAFTS (never modify)
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" > "$RUNNER_TEMP/releases.json"
+          python3 - <<'PY'
+          import json,os,pathlib
+          p=pathlib.Path(os.environ["RUNNER_TEMP"])/"releases.json"
+          raw=p.read_text()
+          try:
+              arr=json.loads(raw)
+          except json.JSONDecodeError:
+              print("Release list unexpectedly paginated; manual recheck required")
+              raise
+          tag=os.environ["TAG"]
+          xs=[r for r in arr if r.get("tag_name")==tag]
+          assert len(xs)==1, "Expected exactly one unlisted draft with pinned tag"
+          r=xs[0]
+          names=sorted(a["name"] for a in r["assets"])
+          print("draft:",r["draft"],"prerelease:",r["prerelease"],
+                "asset-count:",len(names))
+          print("asset-names:",", ".join(names))
+          assert r["draft"] is True
+          assert r["prerelease"] is True
+          assert r["published_at"] is None
+          for name in [
+              "GeumyiServerCenter-v4.3.9-rc.1-Setup.exe",
+              "deployment-canary.json",
+              "deployment-canary.json.sig",
+              "deployment-public.pem",
+              "SHA256SUMS.txt",
+              "README-NOT-FOR-INSTALL.txt",
+          ]:
+              assert name in names, "Missing draft attachment: "+name
+          assert "deployment-stable.json" not in names
+          assert r.get("target_commitish")=="2e5bec5f4fa0275f6bef6266f7772de67e7a14b3"
+          pathlib.Path(os.environ["RUNNER_TEMP"],"draft_id.txt").write_text(str(r["id"]))
+          print("CANARY_DRAFT_ONLY_AUDIT_PASS")
+          PY
