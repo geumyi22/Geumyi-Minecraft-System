@@ -161,6 +161,9 @@ func gscVersionPrerelease(v string) (string, error) {
 		if part == "" {
 			return "", errors.New("empty GSC prerelease segment")
 		}
+		if len(part) > 1 && part[0] == '0' && gscNumericIdentifier(part) {
+			return "", errors.New("numeric GSC prerelease segment has leading zeros")
+		}
 		for _, ch := range part {
 			if !(ch >= '0' && ch <= '9' || ch >= 'a' && ch <= 'z' ||
 				ch >= 'A' && ch <= 'Z' || ch == '-') {
