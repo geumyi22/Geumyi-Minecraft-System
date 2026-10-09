@@ -159,10 +159,10 @@ if($Synthetic){
      (PortOverlap "RPC" 25575) -ne "UNKNOWN" -or
      (ActiveOverlap "Public" @("Private")) -ne "NO_MATCH" -or
      (ActiveOverlap "INVALID-PROFILE" @("Private")) -ne "UNKNOWN" -or
-     $a.block_rule_candidates -ne 1 -or $a.allowed_rule_candidates -ne 3 -or
+     $a.block_rule_candidates -ne 1 -or $a.allowed_rule_candidates -ne 4 -or
      $a.ambiguous_rule_candidates -ne 2 -or
-     $b.allowed_rule_candidates -ne 1 -or $b.ambiguous_rule_candidates -ne 1 -or
-     $c.allowed_rule_candidates -ne 1 -or $c.block_rule_candidates -ne 0) {
+     $b.allowed_rule_candidates -ne 2 -or $b.ambiguous_rule_candidates -ne 1 -or
+     $c.allowed_rule_candidates -ne 2 -or $c.block_rule_candidates -ne 0) {
     throw "FIREWALL_PORT_RULE_SYNTHETIC_CLASSIFICATION_FAILED"
   }
   [ordered]@{
@@ -179,6 +179,7 @@ $activeProfiles=@()
 $profileStates=@()
 $rawRules=@()
 $skipped=0
+$num=0
 try {
   $networks=@(Get-NetConnectionProfile -ErrorAction Stop)
   foreach($n in $networks){
