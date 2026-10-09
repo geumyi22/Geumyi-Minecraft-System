@@ -20,6 +20,13 @@ The same helper's `restoreSelfUpdateFiles` discarded copy/remove errors but set 
 
 Source changes: `GSC/ServerCenter/cmd/setup/selfupdate_windows.go` and `GSC/ServerCenter/cmd/setup/selfupdate_health_windows_test.go`. Newest Source CI run `37994995744` and Host Test `37994995746` were initiated; **conclusion pending review**. Never label new update/rollback code tested on a real Host until an isolated **HOST-service** Windows transaction and recovery test is carried out and operator approves a maintenance window.
 
+## Verified separate Host RC3 preview — 2026-10-10
+
+- Isolated Host **4.3.9-rc.3** (distinct from the real SubPC Client `4.3.9-rc.2`) [GitHub Actions `37995231947`](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/37995231947) **SUCCESS**, source commit `f45f1ba58171cd8018b6c74d2a0ca8bafe1b47e0`. Reused complete baseline System CI, rebuilt version-stamped Host/Client/Setup in **disposable Windows CI**, ran Go tests and Host non-destructive Day10 selftest; original main's `4.3.8` version stamps untouched.
+- Downloaded actual artifact `gsc-4.3.9-rc.3-UNSIGNED-DO-NOT-INSTALL` (ID `11647186030`) and verified **ZIP CRC PASS**, six members, SHA256SUMS **5/5 MATCH**, metadata `candidate_version=4.3.9-rc.3`, `source_commit=f45f1ba58171cd8018b6c74d2a0ca8bafe1b47e0`, `unsigned=true`, `review_only=true`, `operator_install_approved=false`, `production_host_modified=false`, `stable_published=false`, `backend_ports_private=UNCHANGED_FAIL`. Outer ZIP SHA-256 **`5df82eb32411cfb27bc2f707d1d8286210c3a68d8bcb4247907c364bdcd82250`**.
+- **Do not install** this unsigned preview. The updated Host replacement/rollback has source tests and build validation, **NOT** a completed real Windows Host-service stop/replace/start/rollback transaction; that separate disposable-service E2E is still required before any production maintenance recommendation. Client-only SubPC rc2 remains untouched and has already completed real authenticated read E2E PASS.
+- Production Host 4.3.8, Paper/Velocity/RCON/worlds/firewall, protected Golden 4/4 remain unchanged. This preview **does not** close the OS native eight-port IPv4+IPv6 address/owner bind security gate. Stable blocked.
+
 ## Conditions before asking operator for real Server-PC Host upgrade
 
 1. Completed Windows test suite and separate reproducible Host **versioned** prerelease build; do not stamp changed Host source as `4.3.9-rc.2` or overwrite previously verified/signed rc2 artifacts.
