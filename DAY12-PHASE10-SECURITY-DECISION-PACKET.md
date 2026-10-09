@@ -53,6 +53,14 @@
 - **Windows Safety CI `37978595664` PASS**, including actual Windows Event Log XPath acceptance and synthetic no-match/access-denied/invalid-query branches. **Operator Kit `37978317238` PASS**; corrected v2 script was packaged as the normalized ZIP `Geumyi-Day12-WFP-Diagnostic-v2.zip` for user download.
 - The only justified next host action is a **single** read-only v2 Security history query (administrator if log privileges require it) and JSON upload, so the exact reason for the previous `UNAVAILABLE` can be classified. This still does not prove current exclusive loopback binding; do not change the security gate or enable verbose WFP auditing.
 
+## Real WFP v2 resolution — 2026-10-10 04:13 KST (audit path closed)
+
+- Actual Windows server-PC `Day12-WFP-Bind-20261010-041357.json`: **NO_EVIDENCE / NO_RETAINED_MATCHING_WFP_EVENTS**; `process_inventory_status=CAPTURED`, `event_query_status=NO_MATCHING_EVENTS`, 11 Java/javaw processes enumerated, **0** matching retained events among all **8** Java/RCON target ports. Read-only; no audit policy changes or production mutation.
+- This specifically resolves the **generic error classification** from the 04:06 v1 report: the revised event query returned the **no-matches** category, not access denied. It does **not** explain the historical Windows TCP-table invisibility, prove actual exclusive loopback listeners, or demonstrate exposed sockets.
+- WFP 5154/5158 historical auditing cannot address the strict requirement for an exhaustive **contemporaneous** socket inventory even if enabled. Do **not** run the same audit again, enable high-volume successful-connection auditing, or restart a server to manufacture evidence.
+- Remaining security options: **A** a truly independent active OS/kernel owner+address attestation for each currently online backend IPv4+IPv6; **B** an explicit operator-approved compensating firewall/address-scope case after privately reconciling broad ActiveStore rules, effective denies, IPv6/overlay exposure and repeatable remote vantage checks; **C** stay blocked. Existing consent covers autonomous docs/source/CI preparations, **not** firewall/ACL/port/audit-policy edits or bypassing a mandatory gate.
+- Recommended near-term approach: preserve gate **C**, prepare option **B** as a review-only plan, and seek policy approval only if its residual risks and preflight/rollback have been demonstrated. No direct host action is needed now.
+
 ## Production-safety rule and operator handoff
 
 - User explicitly allows autonomous **source inspection, GitHub changes, documentation and synthetic CI** without repeated check-ins.
