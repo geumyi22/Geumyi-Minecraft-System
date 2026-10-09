@@ -1,11 +1,8 @@
 name: Day12 GSC 4.3.9 RC1 Canary DRAFT (signed manifest, NO live deploy)
 
+# This workflow creates a draft release once. It must never republish on push.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/day12-gsc-canary-draft.yml'
 
 permissions:
   contents: read
@@ -38,12 +35,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            echo "::error::Existing release/tag; refusing any overwrite"
+          # Drafts can use GitHub's internal 'untagged-*' placeholder, so
+          # /releases/tags/<name> often responds HTTP 404 even after creation.
+          # The authenticated LIST endpoint (write-scoped token) includes drafts.
+          existing="$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            | jq -r --arg title 'GSC 4.3.9-rc.1 Canary — DRAFT / NOT LIVE' \
+              --arg tag "$RELEASE_TAG" \
+              '.[] | select(.tag_name==$tag or .name==$title) | .id')"
+          if [[ -n "$existing" ]]; then
+            echo "::error::Existing GSC Canary draft/release (ID known); refuse duplicate creation"
             exit 1
           fi
           if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" >/dev/null 2>&1; then
-            echo "::error::Canary tag already exists; aborting"
+            echo "::error::Canary git tag already exists; aborting"
             exit 1
           fi
 
@@ -162,13 +166,20 @@ jobs:
             --notes "GSC-only candidate. Ed25519 deployment manifest verified with the prior Day11 signing key. UNSIGNED Windows PE. Not for installation; 4.3.8 remains live. Draft is excluded from GSC release discovery, backend_ports_private gate remains FAIL." \
             --draft --prerelease
           # Fail closed if the release is inadvertently published.
-          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" --jq '{draft,prerelease,tag_name,assets:[.assets[].name]}' > "$RUNNER_TEMP/created-draft.json"
+          # GitHub's GET-by-tag endpoint does not resolve an unpublished draft.
+          # Find it by title/source from authenticated list; never publish it.
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            | jq --arg title "GSC 4.3.9-rc.1 Canary — DRAFT / NOT LIVE" \
+              --arg source "$SOURCE_SHA" \
+              '[.[] | select(.draft==true and .name==$title and .target_commitish==$source) | {draft,prerelease,tag_name,assets:[.assets[].name]}] | if length==1 then .[0] else error("DRAFT_NOT_UNIQUE") end' \
+            > "$RUNNER_TEMP/created-draft.json"
           python3 - <<'PY'
           import json,os,pathlib
           p=pathlib.Path(os.environ["RUNNER_TEMP"])/"created-draft.json"
           r=json.loads(p.read_text())
           assert r["draft"] is True and r["prerelease"] is True
-          assert r["tag_name"] == "system-2026.10.10-day12-gsc439-rc1-canary"
+          # 'untagged-*' is normal while the release remains a draft.
+          assert r["tag_name"] == "system-2026.10.10-day12-gsc439-rc1-canary" or r["tag_name"].startswith("untagged-")
           assert "deployment-canary.json" in r["assets"]
           assert "deployment-canary.json.sig" in r["assets"]
           assert "GeumyiServerCenter-v4.3.9-rc.1-Setup.exe" in r["assets"]
