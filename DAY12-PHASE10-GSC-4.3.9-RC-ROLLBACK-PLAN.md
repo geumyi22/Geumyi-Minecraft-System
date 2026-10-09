@@ -15,6 +15,13 @@ Operator-supplied `Day12-GSC-Guard-Precheck-20261010-051837.json` at **05:18:37 
 
 `result=CONFIG_COMPATIBLE_REVIEW_ONLY`, `issue_count=0`, `error_category=NONE`, all four `issue_codes=[]`, `read_only=true`, `synthetic=false`, no config/service/policy mutations. This **does not authenticate live RCON listener bind/ownership** and is not a 12.10 gate PASS. Original JSON remains outside the repository.
 
+## RC pipeline failure discovered and corrected in source (not deployed)
+
+- First isolated RC preview pipeline [run 37986580332](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/37986580332) **FAILED** at `go test ./...` because `compareGSCVersions` stripped prerelease suffixes. Therefore the temporary `appVersion=4.3.9-rc.1` was mistakenly considered equal to final `4.3.9`, and existing `TestDay11GSCVersionComparisonBlocksDowngrade` correctly refused it. No unsigned binaries were published as ready.
+- Corrected `GSC/ServerCenter/cmd/host/self_update.go` to order prerelease below final release with distinct numeric prerelease identifiers; preserve build-metadata equality and unchanged stable/core number comparisons. Added regression tests for `4.3.9-rc.1 < 4.3.9`, `rc.2 < rc.10`, release > rc, malformed prerelease segments and leading-zero rejection.
+- Re-triggered the preview job in `.github/workflows/day12-gsc-guard-rc-preview.yml` to use the corrected source; the next result is **PENDING** and must be confirmed before any artifact is called CI-pass. The source change is not a deployed GSC update.
+- This is a real release-engineering bug revealed by the separate versioned preview attempt, **not evidence the live GSC 4.3.8 server is compromised or unsafe**. Existing strict `backend_ports_private` remains **FAIL**.
+
 ## Candidate packaging and safety model
 
 - **Current deployed + source baseline:** GSC Host/Client/Setup **4.3.8**. Do not overwrite its version identity with a modified same-version binary; GitHub main stays 4.3.8.
