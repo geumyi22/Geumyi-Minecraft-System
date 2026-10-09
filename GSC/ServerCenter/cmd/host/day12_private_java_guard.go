@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"net"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -201,17 +200,18 @@ func day12ManagedJavaBindGuard(s ServerConfig, serverDir string) (status, messag
 	fail := func(reason string) (string, string, bool) {
 		return "fail", reason + " · 서버는 시작하지 않습니다.", true
 	}
-	if s.JavaPort != javaPort {
-		return fail("Day12 내부 Java 프로필 포트가 예약된 값과 다릅니다")
+	if s.JavaPort != javaPort || s.RCONPort != rconPort {
+		return fail("Day12 내부 Java/RCON 프로필 포트가 예약된 값과 다릅니다")
 	}
 	props, err := day12ReadSecureProperties(serverDir)
 	if err != nil {
 		return fail("내부 서버 설정값이 누락되었거나 중복/인코딩이 모호합니다")
 	}
-	ip := props["server-ip"]
-	address := net.ParseIP(strings.Trim(ip, "[]"))
-	if ip == "" || address == nil || !address.IsLoopback() {
-		return fail("내부 Java server-ip가 유효한 루프백 주소가 아닙니다")
+	// GSC's Java/RCON control and health clients dial 127.0.0.1.
+	// An alternative loopback (127.0.0.2 or ::1) passes net.IP.IsLoopback()
+	// but would break those management paths. Require the exact deployed bind.
+	if props["server-ip"] != "127.0.0.1" {
+		return fail("내부 Java server-ip는 정확히 127.0.0.1이어야 합니다")
 	}
 	if p, err := strconv.Atoi(props["server-port"]); err != nil || p != javaPort {
 		return fail("내부 Java server-port가 예약된 값과 다릅니다")
