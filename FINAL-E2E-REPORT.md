@@ -99,6 +99,13 @@ This report is intentionally not marked PASS until the real server PC, Java clie
 - Original WFP reader's catch block conflates no matching Security events, authorization failure, process inventory error and invalid query. It cannot establish a specific root cause from this report. An updated classifier is under Windows synthetic CI; user should **not rerun the original script**.
 - Canonical `backend_ports_private` remains **FAIL**; final 12.11 release-grade E2E, 12.12 soak and 12.13 Stable remain **PENDING/BLOCKED**. No Windows audit-policy changes, firewall changes or production restarts were authorized.
 
+## Real WFP v2 historical audit result — 2026-10-10 04:13:58 KST (negative evidence collection)
+
+- Operator-provided read-only `Day12-WFP-Bind-20261010-041357.json`: `result=NO_EVIDENCE`, `error_category=NO_RETAINED_MATCHING_WFP_EVENTS`, `process_inventory_status=CAPTURED`, `event_query_status=NO_MATCHING_EVENTS`, `process_generations_seen=11`, `event_count=0`, `query_truncated=false`.
+- Wild / Playground / Other / Lobby Java and RCON: eight `NO_CURRENT_PROCESS_EVENT` classifications, **zero** retained 5154/5158 records. Thus **no WFP bind evidence** either safe or unsafe. Unlike v1's generic `UNAVAILABLE`, this identifies a completed query with no matches, not a confirmed permissions issue.
+- **WFP historical audit route terminated** unless the environment genuinely changes; do not repeat, enable auditing or restart services merely for events. Mandatory `backend_ports_private` **FAIL** as before; no 12.11 release-grade PASS, live soak or Stable promotion.
+- Further work is source/risk review for a distinct current binding/ownership method or separately approved compensating network-control case.
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
