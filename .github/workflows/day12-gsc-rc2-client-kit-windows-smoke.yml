@@ -1,0 +1,66 @@
+name: Day12 GSC RC2 Client Kit Windows Read-Only Smoke
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/day12-gsc-rc2-client-kit-windows-smoke.yml'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  windows-smoke:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          run-id: 37992659009
+          github-token: ${{ github.token }}
+          name: day12-gsc-rc2-subpc-clientonly-signed-operator-kit
+          path: artifact
+      - name: Confirm nested ZIP members and SHA on disposable Windows only
+        shell: powershell
+        run: |
+          $outer=Join-Path (Get-Location) 'artifact'
+          $files=@(Get-ChildItem -LiteralPath $outer -Filter '*.zip' -File)
+          if($files.Count -ne 1){throw 'Expected exactly one signed operator ZIP'}
+          $target=Join-Path $env:RUNNER_TEMP 'GSC-RC2-Client-Offline'
+          Expand-Archive -LiteralPath $files[0].FullName -DestinationPath $target -Force
+          $lines=@(Get-Content -LiteralPath (Join-Path $target 'SHA256SUMS.txt') -Encoding ascii)
+          if($lines.Count -ne 11){throw 'Expected exactly 11 signed-operator-kit content hashes'}
+          foreach($line in $lines){
+            if($line -notmatch '^([0-9a-f]{64})  (.+)$'){throw 'Invalid SHA line'}
+            $expected=$Matches[1];$name=$Matches[2]
+            $p=Join-Path $target $name
+            if(-not (Test-Path -LiteralPath $p -PathType Leaf)){throw 'Missing packaged file'}
+            if((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected){throw 'Bundle member SHA changed'}
+          }
+          $src=Join-Path $target 'Geumyi-GSC-Client-Canary-Verify.exe'
+          & $src $target
+          if($LASTEXITCODE -ne 0){throw 'Actual Windows Ed25519 bundle verifier failed'}
+          Write-Host 'READ_ONLY_WINDOWS_VERIFIER_PASS'
+      - name: Refuse modified signature on disposable copy
+        shell: powershell
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP 'GSC-RC2-Client-Offline'
+          $bad=Join-Path $env:RUNNER_TEMP 'GSC-RC2-Invalid-Signature'
+          Copy-Item -LiteralPath $root -Destination $bad -Recurse
+          $sig=Join-Path $bad 'deployment-client-canary.json.sig'
+          $b=[IO.File]::ReadAllBytes($sig)
+          $b[0]=$b[0] -bxor 1
+          [IO.File]::WriteAllBytes($sig,$b)
+          & (Join-Path $root 'Geumyi-GSC-Client-Canary-Verify.exe') $bad
+          if($LASTEXITCODE -eq 0){throw 'Forged Ed25519 signature accepted by Windows verifier'}
+          Write-Host 'WINDOWS_SIGNATURE_TAMPER_REJECTED'
+      - name: Parse Apply and Restore scripts with Windows PowerShell 5.1, no execution
+        shell: powershell
+        run: |
+          $root=Join-Path $env:RUNNER_TEMP 'GSC-RC2-Client-Offline'
+          foreach($p in @('Day12_GSC_RC2_SubPC_Apply_APPROVAL_REQUIRED.ps1','Day12_GSC_RC2_SubPC_Restore_438_APPROVAL_REQUIRED.ps1')){
+            $tokens=$null;$errors=$null
+            [void][Management.Automation.Language.Parser]::ParseFile((Join-Path $root $p),[ref]$tokens,[ref]$errors)
+            if(@($errors).Count -ne 0){throw 'PowerShell 5.1 parsing failed'}
+          }
+          Write-Host 'READ_ONLY_WINDOWS_OPERATOR_SCRIPT_PARSE_PASS; no actual install or rollback performed'
