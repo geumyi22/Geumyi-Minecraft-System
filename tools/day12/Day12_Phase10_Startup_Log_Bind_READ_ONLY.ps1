@@ -91,9 +91,10 @@ try{
   }
 }catch{$configStatus="CONFIG_UNREADABLE"}
 $results=@()
+$profiles=if($null -ne $config){@($config.servers)}else{@()}
 foreach($target in $targets){
   $dir=""
-  foreach($svc in @($config.servers)){
+  foreach($svc in $profiles){
     if($null -ne $svc -and ([string]$svc.id).ToLowerInvariant() -eq $target.id){
       $dir=[string]$svc.path;break
     }
