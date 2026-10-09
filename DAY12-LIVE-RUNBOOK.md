@@ -173,6 +173,13 @@
 - **서버 PC** 최신 Operator Kit의 `tools\\day12\\Day12_Phase10_Loopback_Compare_READ_ONLY.cmd`를 일반 권한으로 실행 → 바탕화면 `Geumyi-Day12-Loopback\\Day12-Loopback-Compare-*.json` 최신 파일 하나만 제출하세요. 파일 내용은 서비스별 포트 및 연결 성공 여부만 기록; 전체 Windows 재스캔·기존 LAN 진단·Golden·12.5 검사는 중복 실행하지 않습니다.
 - 로컬 연결 성공은 **바인딩이 loopback 전용임을 입증하지 않습니다**. 실패는 서비스 오프라인/일시 장애/필터링 등 구분이 필요합니다. 12.10 최종 PASS 불가, 12.11/12.12/12.13 대기 유지. Windows 설정·서버 실행 상태는 변경하지 않습니다.
 
+## 2026-10-10 01:19:56 — 12.10 로컬 TCP 검사 6/6 성공, 바인딩 증거 추가 조사
+
+- `Day12-Loopback-Compare-20261010-011956.json`: 실서버 읽기전용 검사 **CAPTURED**. Wild Java/RCON 25570/25575, Playground 25571/25576, Lobby 25573/25579 전부 **127.0.0.1 TCP 연결 성공**; Other는 OFFLINE이라 제외. 전후 GSC fleet 그대로, 실패 0. 이 결과로 Java/RCON 소켓 로컬 연결 검사는 통과한 것으로 분리 기록합니다.
+- 그러나 `01:12` Native LISTEN 캡처에서는 25570/25579만 루프백으로 관찰되고 온라인 25571/25573/25575/25576 LISTEN 행이 보이지 않았습니다. **리스너 목록 누락·프로세스 소켓 경로를 구분하기 전 12.10 정식 PASS 금지**.
+- 다음 한 번만 최신 Operator Kit의 **서버 PC** `tools\\day12\\Day12_Phase10_Active_Connection_Trace_READ_ONLY.cmd` 실행. TCP 연결이 짧게 유지되는 동안 **미검출 포트 네 개**의 서버 측 `ESTABLISHED` endpoint를 관찰해 JSON에 기록합니다. 바탕화면 `Geumyi-Day12-Active-Connections\\Day12-Active-Connections-*.json` 최신 하나만 제출합니다. 관리자 권한 불필요, 명령·인증정보 없음, 소켓 handshake가 로그에 남을 수 있음. 먼저 CI 합성 시험 성공을 확인합니다.
+- 유효 권한·방화벽/ACL 변경, TCP listener 보안 완전 인증, Java/Bedrock 실사용 E2E는 아직 아님. 기존 12.5/Golden/LAN/Native/Loopback 진단을 반복하지 않습니다. 결과가 또 모호하면 프로세스·네트워크 컴파트먼트 등을 별도 검토합니다. 12.10 FAIL·Stable BLOCKED 유지.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
