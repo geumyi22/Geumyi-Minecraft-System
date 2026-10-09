@@ -331,6 +331,21 @@ jobs:
             throw "Phase 2+5 synthetic report contract failed"
           }
 
+      - name: Day12 12.10 CI-only temporary firewall guardrails synthetic
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'day12-ci-firewall-guardrail-fixture'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_Disposable_Firewall_Loopback_CI.ps1 -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Disposable firewall guardrail synthetic failed'}
+          $files=@(Get-ChildItem -LiteralPath $out -Filter '*.json' -File)
+          if($files.Count -ne 1){throw 'Disposable guardrail fixture output missing'}
+          $r=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or !$r.synthetic -or
+             $r.firewall_mutation_performed -or $r.private_ports_modified -or
+             $r.canonical_backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'CI-only firewall guardrail fixture contract mismatch'
+          }
+
       - name: Day12 12.10 running Java executable / firewall application matching (synthetic)
         shell: powershell
         run: |
