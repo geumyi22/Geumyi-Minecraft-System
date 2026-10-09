@@ -430,6 +430,26 @@ jobs:
             throw 'WFP source path/address was leaked into report'
           }
 
+      - name: Validate WFP Event Log XPath shape against real Windows Event Log engine
+        shell: powershell
+        run: |
+          # Parse the same restricted WFP XPath against Application instead of
+          # the protected Security log, so event absence is permitted while
+          # invalid event-query syntax is an unconditional CI failure.
+          $ports=@(25570,25571,25572,25573,25575,25576,25577,25579)
+          $filters=@(foreach($port in $ports){"Data[@Name='SourcePort']='$port'"})
+          $windowMs=7*24*3600*1000
+          $query="*[System[(EventID=5154 or EventID=5158) and TimeCreated[timediff(@SystemTime) <= $windowMs]] and EventData[$($filters -join ' or ')]]"
+          try {
+            [void]@(Get-WinEvent -LogName Application -FilterXPath $query -MaxEvents 1 -ErrorAction Stop)
+            Write-Host "WFP XPath parsed; matching Application event seen (unusual)"
+          } catch {
+            if([string]$_.FullyQualifiedErrorId -notmatch "NoMatchingEventsFound"){
+              throw ("WFP XPath rejected by Windows query engine: "+[string]$_.FullyQualifiedErrorId)
+            }
+            Write-Host "WFP XPath accepted; no Application event matched as expected"
+          }
+
       - name: Synthetic native GetTcpTable2 IPv4 listener fixture
         shell: powershell
         run: |
