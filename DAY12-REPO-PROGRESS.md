@@ -374,6 +374,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **No actual server-PC ActiveStore evidence yet.** Follow-up is one operator-run read-only `Day12_Phase10_Firewall_Target_Rules_READ_ONLY.cmd`; return a `Desktop\\Geumyi-Day12-Firewall-Target\\Day12-Firewall-Target-*.json`. Do not repeat old WFP/Win32 TCP scans, turn on WFP success auditing or apply firewall changes.
 - Snapshot is candidate-policy metadata, **not effective enforcement** and not direct socket binding proof. Protected Golden backups preserved, `backend_ports_private` canonical **FAIL**, 12.11 full E2E / 12.12 live soak / 12.13 Stable **BLOCKED**.
 
+## 2026-10-10 04:25 KST — Real ActiveStore firewall target report captured, over-count analyzed
+
+- Operator provided `Day12-Firewall-Target-20261010-042526.json` at **04:25:46 KST** from Minecraft server PC: `synthetic=false`, `read_only=true`, `result=CAPTURED_FOR_REVIEW`, 268 enabled inbound rules checked, 118 prefiltered rules, 0 filter failures/errors, active profiles Private/Public; Domain/Private/Public profiles enabled with default inbound Block.
+- For each of the eight internal Java/RCON ports the **original** tool output reports 113 Allow candidates, one specific-program Public Block candidate and 21 ambiguous; 40 Allow candidates have `program_scope=ANY` and `remote_address_scope=ANY`. These are policy *candidates*, not effective remote openings; Block is **not** proven to target a Paper Java process.
+- **Source issue discovered and corrected without rerunning operator's PC:** 15 known non-TCP protocols were overclassified as unknown TCP candidates: 12 ICMPv6, 1 ICMPv4, 1 IGMP/protocol 2, 1 IPv6 encapsulation/protocol 41. Offline analysis of **this same unchanged JSON**: per private TCP port **98 Allow + 1 Block + 6 ambiguous**; 40 broad Any-program Allow candidates remain. Public Velocity 25565/66: 99 Allow / 1 Block / 6 ambiguous, 25567: 98 / 1 / 6.
+- Updated `tools/day12/Day12_Phase10_Firewall_Target_Rules_READ_ONLY.ps1` synthetic regression for known non-TCP versus genuine unknown protocols; Windows Safety CI run `37980375757` started. Full analysis: `DAY12-PHASE10-FIREWALL-TARGET-RESULT-20261010.md`. No live firewall, auditing, Java, world or Golden backup changes.
+- Security release decision unchanged: strict `backend_ports_private` **FAIL**; these counts lack application identity correlation and current bind ownership. Avoid requesting duplicate host scans; next engineering review of actual Java service identities and 40 broad rules must be fail-closed and preflighted before any changes.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
