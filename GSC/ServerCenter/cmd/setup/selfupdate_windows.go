@@ -220,14 +220,33 @@ func startHostServiceStrict() error {
 	return nil
 }
 
-func waitGSCHealth(timeout time.Duration) bool {
+// A bare HTTP 2xx is not an update health check: an old/unrelated
+// listener on 8787 could respond while the candidate Host never started.
+// Require the actual GSC Host health JSON to match the requested version.
+func gscHealthIsTarget(r io.Reader, expectedVersion string) bool {
+	if expectedVersion == "" {
+		return false
+	}
+	var h struct {
+		OK         bool   `json:"ok"`
+		Version    string `json:"version"`
+		Generation int    `json:"generation"`
+	}
+	if err := json.NewDecoder(io.LimitReader(r, 32*1024)).Decode(&h); err != nil {
+		return false
+	}
+	return h.OK && h.Version == expectedVersion && h.Generation == 4
+}
+
+func waitGSCHealth(timeout time.Duration, expectedVersion string) bool {
 	client := &http.Client{Timeout: 1500 * time.Millisecond}
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
 		resp, err := client.Get("http://127.0.0.1:8787/api/health")
 		if err == nil {
+			verified := resp.StatusCode == http.StatusOK && gscHealthIsTarget(resp.Body, expectedVersion)
 			_ = resp.Body.Close()
-			if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+			if verified {
 				return true
 			}
 		}
@@ -418,7 +437,7 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 		report.Error = reason.Error()
 		if hostExists {
 			if err := startHostServiceStrict(); err == nil {
-				report.HostHealth = waitGSCHealth(30 * time.Second)
+				report.HostHealth = waitGSCHealth(30 * time.Second, "4.3.8")
 			}
 		}
 		if clientWasRunning {
@@ -450,7 +469,7 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 			rollback(err)
 			return
 		}
-		if !waitGSCHealth(35 * time.Second) {
+		if !waitGSCHealth(35 * time.Second, version) {
 			rollback(errors.New("GSC "+version+" health gate timed out"))
 			return
 		}
