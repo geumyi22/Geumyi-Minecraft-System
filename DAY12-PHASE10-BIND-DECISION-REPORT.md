@@ -77,6 +77,13 @@ This requires a **separate operator approval and maintenance window** for anythi
 - `DAY12-PHASE10-SECURITY-DECISION-PACKET.md` documents **strict positive runtime owner/bind proof**, a separately approved **compensating-control security assessment**, and **keeping the gate OPEN** when neither is established. The new application Java/RCON startup evidence 8/8 is already recorded and is not the same as live OS socket proof.
 - The current decision is **C: keep 12.10 OPEN and Stable BLOCKED**, without further repeated TCP/log diagnostics or unsafe production restarts. Any proposal to change the original security acceptance criteria requires explicit operator approval, independent effective firewall/IPv6/overlay evidence, and fail-closed implementation/review.
 
+## 2026-10-10 02:47:34 KST — one actual controlled Playground restart, still no OS LISTEN rows
+
+- User-ran `Day12-Scoped-Restart-20261010-024734.json`, **Playground only**. Preflight verified player count zero, protected full Golden backup, no active jobs, updater `phase=current`, `block_start=false`. GSC graceful restart **accepted and completed**, server was **ONLINE before and after**; `mutation_performed=true`. This is verified via GSC job and server state, **not** a separately witnessed Minecraft client reconnect or post-restart RCON command E2E.
+- The one permitted post-restart native inventory **CAPTURED** but returned `NOT_OBSERVED` for Java `25571` and RCON `25576`. Therefore a controlled restart did **not** produce new authoritative private listener proof. There is still no observed wildcard/non-loopback listener in these snapshots; absence is inconclusive.
+- **No further routine restarts or repeat TCP table polls merely to clear this gate.** Existing application's successful lifecycle and startup-loopback reports are preserved, while the canonical `backend_ports_private` check stays **FAIL**. Moving forward requires a different reliable OS or independent security-control attestation, or deliberate operator approval of an adequately tested compensating-control policy. Do not bypass the existing source gate or issue Stable.
+- Go GSC `proc_windows.go` and the separate .NET helper both currently use Windows IP Helper `GetExtendedTcpTable` OWNER_PID LISTENER row structures, so they are **not genuinely independent OS instrumentation**, despite separate implementations.
+
 ## Source documents
 
 - [Day 12 Live Runbook](DAY12-LIVE-RUNBOOK.md)
