@@ -415,6 +415,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Full design and artifact facts: `DAY12-PHASE10-DISPOSABLE-FIREWALL-STAGING.md` and `DAY12-PHASE10-DISPOSABLE-FIREWALL-RESULT-20261010.md`. Next work requires a truly separate remote-vantage disposable test and effective-policy/address-family review. No user host action needed for this CI proof; no production rule change is authorized.
 - **Canonical `backend_ports_private` FAIL**, Day12.11 release-grade E2E, 12.12 live soak and 12.13 Stable/cleanup **BLOCKED**; Golden 4/4 unchanged.
 
+## 2026-10-10 — Two-host / IPv4+IPv6 disposable stage requirements and offline evaluator prepared
+
+- No new production firewall/Windows/server mutation. The prior **single-runner** CI firewall experiment successfully preserved loopback and removed its one owned ephemeral rule, but by design **never confirmed remote denial or IPv6**. Two independent Windows systems with routable isolated IPv4+IPv6 paths are required; the existing GitHub Windows runner **cannot substitute for an unrelated remote client**.
+- Created `DAY12-PHASE10-TWO-HOST-STAGING-PLAN.md`: disposable stage-server and independent stage-client, known alive TCP listener, positive TCP+UDP controls, local IPv4+IPv6 loopback controls, **remote accepted BEFORE → remote denied AFTER → remote accepted on ROLLBACK**, plus owned-rule cleanup. Explicit stop conditions: any loopback/public control regression, unexpected service shutdown, missing address-family test or rollback failure.
+- Implemented **strictly offline**, non-network, non-mutating `tools/day12/Day12_Phase10_TwoHost_Stage_Evidence_REVIEW_ONLY.ps1` to evaluate *only* user-supplied staged matrix metadata; `EVIDENCE_MATRIX_CONSISTENT_REVIEW_ONLY` denotes self-reported consistency **not authenticated network proof**, a live backend bind-owner PASS or Stable authorization. CI fixture also checks fail-closed for IPv6 still reachable, same-host test, rollback failure and failed public positive controls.
+- GitHub Windows Safety CI run `37983316267` synthetic matrix step **PASS**; overall workflow outcome must be checked separately. No two-host stage is claimed to have run and no automatic rule application script was distributed to the Minecraft server.
+- 36 broad Any-program Allow candidates remain unchanged; strict `backend_ports_private` **FAIL**, 12.11/12.12/12.13 production release stages still **BLOCKED/PENDING**. Next genuine runtime step cannot proceed without separate **disposable network-test infrastructure** and (eventually) explicit scoped operator approval for any production policy change.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
