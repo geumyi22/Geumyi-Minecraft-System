@@ -472,6 +472,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **User action now required:** on verified SubPC, start GSC normally if closed, run `Day12_GSC_RC2_SubPC_Postcheck_READ_ONLY.cmd` once and send its latest JSON. Do **not** reinstall 4.3.9-rc.2 or restore 4.3.8 unless subsequent evidence warrants it.
 - Server PC GSC remains **4.3.8**; Golden 4/4/worlds/Windows policy not altered. Strict `backend_ports_private` **FAIL**, 12.11/12.12/12.13 production/Stable gates **BLOCKED**. Details: `DAY12-PHASE10-GSC-RC2-SUBPC-REAL-APPLY-20261010.md`.
 
+## 2026-10-10 06:31 KST — GSC RC2 real secondary-PC local runtime PASS; Host API check next
+
+- Operator supplied `Day12-SubPC-GSC-RC2-Postcheck-20261010-063138.json` (not committed): **`SUBPC_RC2_LOCAL_RUNTIME_PASS`**, zero issues, `synthetic=false` and read-only. GSC 4.3.9-rc.2 installed binary pinned SHA MATCH; single correct running Client process; localhost Client HTTP icon response PASS; local 8790 TCP listener PID correlation PASS; secondary PC Host role absent; original 4.3.8 backup hash PASS; updater completion report PASS. `client_relaunch_reported=false` remains a conditional helper flag, but **current Client is verified active**, so no automatic recovery is indicated.
+- Nothing new was installed/started/modified by this postcheck. No remote Host authentication success is established by local-only probes.
+- Analyzed Client's existing reverse proxy (`GSC/ServerCenter/cmd/client/main.go`) and Host authenticated read-only `/api/status` (`GSC/ServerCenter/cmd/host/main.go`). Created `tools/day12/Day12_GSC_RC2_SubPC_Host_Proxy_READ_ONLY.ps1/.cmd` to check local client-to-Host GET `/api/health` and GET `/api/status` without reading/exporting credentials, addresses or status body; CI pending. This avoids repeating local file scans or any server process restart.
+- Production server GSC remains 4.3.8; strict `backend_ports_private` **FAIL** and Day12.11/12.12/12.13 Stable still blocked.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
