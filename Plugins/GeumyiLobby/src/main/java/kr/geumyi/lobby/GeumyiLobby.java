@@ -53,6 +53,7 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
     private static final String MENU_TITLE = "§0서버 선택";
     private static final int BUILD_VERSION = 2;
 
+    private GeumyiLobbyMenu hubMenu;
     private final Map<UUID, Long> portalCooldown = new ConcurrentHashMap<>();
     private World lobbyWorld;
     private Location lobbySpawn;
@@ -91,6 +92,9 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         getServer().getPluginManager().registerEvents(this, this);
+        hubMenu = new GeumyiLobbyMenu(this, this::requestServer, () -> lobbySpawn,
+                wildServer, playgroundServer, otherServer);
+        getServer().getPluginManager().registerEvents(hubMenu, this);
 
         if (getCommand("lobbyadmin") != null) {
             getCommand("lobbyadmin").setExecutor(this::onLobbyAdmin);
@@ -141,7 +145,8 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         lobbyWorld.setGameRule(GameRule.DO_MOB_SPAWNING, false);
         lobbyWorld.setGameRule(GameRule.KEEP_INVENTORY, true);
 
-        if (getConfig().getBoolean("build-on-start", true) && !buildMarker().isFile()) {
+        File prebuilt = new File(lobbyWorld.getWorldFolder(), "geumyi-lobby-prebuilt.marker");
+        if (getConfig().getBoolean("build-on-start", true) && !buildMarker().isFile() && !prebuilt.isFile()) {
             buildLobby();
             writeBuildMarker();
         }
@@ -174,6 +179,11 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         int baseZ = lobbySpawn.getBlockZ();
         Block block = lobbyWorld.getBlockAt(baseX + x, floorY + y, baseZ + z);
         block.setType(material, false);
+        if (material == Material.OAK_LEAVES
+                && block.getBlockData() instanceof org.bukkit.block.data.type.Leaves leaves) {
+            leaves.setPersistent(true);
+            block.setBlockData(leaves, false);
+        }
     }
 
     private void buildLobby() {
@@ -342,10 +352,11 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
         ItemStack item = new ItemStack(Material.COMPASS);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName("§b§l서버 선택");
+            meta.setDisplayName("§b§l금이 서버 가이드 §8[우클릭]");
             meta.setLore(List.of(
-                    "§7우클릭하여 이동할 서버를 선택합니다.",
-                    "§8Lobby는 항상 중앙에서 시작합니다."
+                    "§7우클릭하여 서버 선택 · 소개 · 안내 확인",
+                    "§a야생 §8/ §b놀이터 §8/ §d기타",
+                    "§7Java · Bedrock 네트워크 연결"
             ));
             item.setItemMeta(meta);
         }
@@ -364,23 +375,7 @@ public final class GeumyiLobby extends JavaPlugin implements Listener {
     }
 
     private void openServerMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 9, MENU_TITLE);
-        inv.setItem(2, menuItem(
-                Material.GRASS_BLOCK,
-                "§a§l야생 서버",
-                List.of("§7마지막으로 있던 위치로 이동", "§e클릭하여 이동")
-        ));
-        inv.setItem(4, menuItem(
-                Material.DIAMOND,
-                "§b§l놀이터",
-                List.of("§7마지막으로 있던 위치로 이동", "§e클릭하여 이동")
-        ));
-        inv.setItem(6, menuItem(
-                Material.AMETHYST_SHARD,
-                "§d§l기타 서버",
-                List.of("§7마지막으로 있던 위치로 이동", "§e클릭하여 이동")
-        ));
-        player.openInventory(inv);
+        hubMenu.open(player);
     }
 
     private void requestServer(Player player, String server) {
