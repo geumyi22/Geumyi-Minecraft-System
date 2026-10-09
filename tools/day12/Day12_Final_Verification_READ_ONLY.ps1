@@ -78,10 +78,13 @@ function Get-Day12TcpInventory([int[]]$WantedPorts){
       }
     }
   }catch{}
+  # Preserve provider/PID distinctions. Deduplicating by address alone
+  # hides contradictory owner claims from other OS inventory sources.
   $dedup=New-Object System.Collections.ArrayList
   $seen=@{}
   foreach($row in @($rows.ToArray())){
-    $k=[string]$row.port+"|"+([string]$row.address).ToLowerInvariant()
+    $k=[string]$row.port+"|"+([string]$row.address).ToLowerInvariant()+"|"+
+       [string]$row.source+"|"+[string]$row.pid
     if(-not $seen.ContainsKey($k)){
       $seen[$k]=$true
       [void]$dedup.Add($row)
@@ -89,20 +92,80 @@ function Get-Day12TcpInventory([int[]]$WantedPorts){
   }
   return $dedup.ToArray()
 }
-# Require positive native observation for every ONLINE Java+RCON port.
-# An offline fleet, missing native provider or unobserved listener must FAIL.
+# Resolve only process *image family* for native listener PIDs; no command lines,
+# paths, tokens or PID values are exported in the final report.
+function Get-Day12VerifiedJavaPids([object[]]$Rows){
+  $verified=New-Object System.Collections.ArrayList
+  $seen=@{}
+  foreach($row in @($Rows)){
+    if($null -eq $row){continue}
+    if([string]$row.source -notin @("GetExtendedTcpTable_OWNER_PID_IPv4","GetExtendedTcpTable_OWNER_PID_IPv6")){continue}
+    $owner=[int]$row.pid
+    if($owner -le 0 -or $seen.ContainsKey($owner)){continue}
+    $seen[$owner]=$true
+    try {
+      $p=Get-Process -Id $owner -ErrorAction Stop
+      if(([string]$p.ProcessName).ToLowerInvariant() -in @("java","javaw")){
+        [void]$verified.Add($owner)
+      }
+    }catch{
+      # Missing, denied or recycled process identity cannot be trusted as Java.
+    }
+  }
+  return @($verified.ToArray())
+}
+# Require current native IPv4+IPv6 OWNER_PID provider coverage, a positively
+# identified Java/javaw process for every ONLINE port, and the SAME owner
+# for Java + RCON within each managed Paper instance.
+# A successful netstat/.NET/TCP handshake alone is never ownership evidence.
 function Test-Day12PrivateListenerEvidence {
-  param([object[]]$Rows,[int[]]$ExpectedJava,[int[]]$ExpectedRcon,[string]$NativeStatus)
+  param(
+    [object[]]$Rows,
+    [int[]]$ExpectedJava,
+    [int[]]$ExpectedRcon,
+    [string]$NativeStatus,
+    [int[]]$VerifiedJavaPids
+  )
   $expectedAll=@($ExpectedJava)+@($ExpectedRcon)
-  if($NativeStatus -ne "CAPTURED" -or $ExpectedJava.Count -eq 0 -or $ExpectedRcon.Count -eq 0){return $false}
+  if($NativeStatus -ne "CAPTURED" -or
+     $ExpectedJava.Count -eq 0 -or $ExpectedJava.Count -ne $ExpectedRcon.Count -or
+     $VerifiedJavaPids.Count -eq 0){return $false}
   $privatePorts=@(25570,25571,25572,25573,25575,25576,25577,25579)
-  $relevant=@($Rows|Where-Object{$privatePorts -contains [int]$_.port})
+  $javaRconPairs=@{25570=25575;25571=25576;25572=25577;25573=25579}
+  $relevant=@($Rows|Where-Object{$null -ne $_ -and $privatePorts -contains [int]$_.port})
   if($relevant.Count -eq 0){return $false}
   foreach($row in $relevant){
     if([string]$row.address -notin @("127.0.0.1","::1","::ffff:127.0.0.1")){return $false}
   }
-  foreach($target in $expectedAll){
-    if(@($relevant|Where-Object{[int]$_.port -eq [int]$target}).Count -eq 0){return $false}
+  foreach($javaPort in $ExpectedJava){
+    if(-not $javaRconPairs.ContainsKey([int]$javaPort)){return $false}
+    $rconPort=[int]$javaRconPairs[[int]$javaPort]
+    if($ExpectedRcon -notcontains $rconPort){return $false}
+    $owners=@()
+    foreach($port in @([int]$javaPort,$rconPort)){
+      $found=@($relevant|Where-Object{
+        [int]$_.port -eq $port -and
+        [string]$_.source -in @("GetExtendedTcpTable_OWNER_PID_IPv4","GetExtendedTcpTable_OWNER_PID_IPv6") -and
+        [int]$_.pid -gt 0
+      })
+      if($found.Count -lt 1){return $false}
+      $ids=@($found|ForEach-Object{[int]$_.pid}|Select-Object -Unique)
+      if($ids.Count -ne 1 -or $VerifiedJavaPids -notcontains [int]$ids[0]){return $false}
+      $owners+= [int]$ids[0]
+      # A different OS provider reporting a different nonzero owner must
+      # block success, not be silently discarded by address-only dedup.
+      $conflict=@($relevant|Where-Object{
+        [int]$_.port -eq $port -and
+        [string]$_.source -ne "IPGlobalProperties" -and
+        [int]$_.pid -gt 0 -and
+        [int]$_.pid -ne [int]$ids[0]
+      })
+      if($conflict.Count -gt 0){return $false}
+    }
+    if($owners[0] -ne $owners[1]){return $false}
+  }
+  foreach($rconPort in $ExpectedRcon){
+    if($rconPort -notin @($javaRconPairs.Values)){return $false}
   }
   return $true
 }
