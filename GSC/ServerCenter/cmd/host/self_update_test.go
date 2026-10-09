@@ -97,7 +97,7 @@ func TestDay11SelfUpdateLaunchLockRejectsConcurrentAndRecoversStale(t *testing.T
 
 
 func TestGSCPrereleaseMalformedVersionFailClosed(t *testing.T) {
-	for _, v := range []string{"4.3.9-", "4.3.9-rc..1", "4.3.9-rc/1"} {
+	for _, v := range []string{"4.3.9-", "4.3.9-rc..1", "4.3.9-rc/1", "4.3.9-rc.01"} {
 		if _, err := compareGSCVersions("4.3.8", v); err == nil {
 			t.Fatalf("invalid prerelease accepted: %q", v)
 		}
