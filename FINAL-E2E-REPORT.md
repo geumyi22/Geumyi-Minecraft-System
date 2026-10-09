@@ -51,6 +51,14 @@ This report is intentionally not marked PASS until the real server PC, Java clie
 - Day12.10 `backend_ports_private` still FAIL; 12.11 final E2E and Stable remain blocked.
 - Next scoped pre-E2E: Other backend preflight in GSC (ONLINE/OFFLINE, no active update or job and safe-start readiness); if safe, bring it online through normal GSC action without force-start, then test Lobby <-> Other using Java and Bedrock clients. No server security, firewall or restore mutation is authorized by this acknowledgment.
 
+## Operator-reported Other backend client check — 2026-10-10 KST (partial, non-release-grade)
+
+- The operator replied **"됨"** after being asked to verify that the Other backend can be started when safe and that **both Java and Bedrock** clients can move **Lobby -> Other -> Lobby** and return to their **previous Other position** on re-entry.
+- Mark **OPERATOR_REPORTED_PASS** for the specified Other client routing and last-location behavior. Whether Other needed starting or was already ONLINE was not separately stated; do **not** infer that the start-job/lifecycle path was tested from this acknowledgment alone.
+- Combined operator acknowledgments now cover Java and Bedrock Lobby <-> Wild, Playground, Other and previous-position return, basic GSCM connectivity/status/console view, and GSC console `list` for Wild/Playground. These are positive **operator reports**, without independent device-side trace artifacts.
+- Remaining test scope: runtime `backend_ports_private` security attestation (last canonical final verifier 18 PASS / 0 WARN / 1 FAIL), full operations/backup-restore/update and startup/reboot/offline E2E, real-device GSCM mutating actions, soak and release closure. These items are **not** implicitly PASS.
+- Safe next user step: inspect GSC **Backup/Recovery** protected backup inventory and last verification status **read-only**; do not create, overwrite, delete or restore backups to collect this simple GUI observation. Protected Golden 4/4 was already separately verified earlier.
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
