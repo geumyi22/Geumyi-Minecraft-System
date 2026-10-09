@@ -1,0 +1,151 @@
+name: Day12 GSC RC2 Private Signed Offline Bundle (not a Release)
+
+# This workflow creates a draft release once. It must never republish on push.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/day12-gsc-rc2-signed-offline-bundle.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: day12-gsc-canary-rc2-signed-offline
+  cancel-in-progress: false
+
+jobs:
+  canary-draft:
+    name: Verify pinned RC2 and sign GSC-only offline Canary bundle (NO RELEASE)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_SHA: 8a02ef221ada5936e5ef6d5c0826fa8d1880d123
+      RELEASE_TAG: system-2026.10.10-day12-gsc439-rc2-canary
+      RC_RUN_ID: '37990368782'
+      RC_ARTIFACT: gsc-4.3.9-rc.2-UNSIGNED-DO-NOT-INSTALL
+      DEPLOYMENT_PRIVATE_KEY_B64: ${{ secrets.DEPLOYMENT_ED25519_PRIVATE_KEY_B64 }}
+      LAST_TRUSTED_RELEASE: system-2026.10.07-day11-gsc438-beta
+    steps:
+      - name: Checkout manifest builder
+        uses: actions/checkout@v7
+
+      - name: Download exactly pinned, already CI-verified GSC preview ZIP
+        uses: actions/download-artifact@v8
+        with:
+          name: gsc-4.3.9-rc.2-UNSIGNED-DO-NOT-INSTALL
+          run-id: 37990368782
+          github-token: ${{ github.token }}
+          path: candidate
+
+      - name: Pin source identity, version, safe metadata and SHA256 before signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, pathlib
+          root = pathlib.Path('candidate')
+          m = json.loads((root/'RC-METADATA.json').read_text(encoding='utf-8-sig'))
+          assert m['source_commit'] == '8a02ef221ada5936e5ef6d5c0826fa8d1880d123'
+          assert m['candidate_version'] == '4.3.9-rc.2'
+          assert m['deployed_baseline_version'] == '4.3.8'
+          assert m['review_only'] is True and m['unsigned'] is True
+          assert m['go_test_pass'] is True and m['day10_host_selftest_pass'] is True
+          assert m['operator_install_approved'] is False
+          assert m['production_host_modified'] is False
+          assert m['stable_published'] is False
+          assert m['backend_ports_private'] == 'UNCHANGED_FAIL'
+          lines = (root/'SHA256SUMS.txt').read_text(encoding='ascii').splitlines()
+          assert len(lines) == 5
+          for line in lines:
+              expected, name = line.split('  ', 1)
+              actual = hashlib.sha256((root/name).read_bytes()).hexdigest()
+              assert expected == actual, name
+          setup = root/'GeumyiServerCenter-v4.3.9-rc.2-Setup.exe'
+          assert hashlib.sha256(setup.read_bytes()).hexdigest() == '2a623e25193d6b92dc4ec69b9ce76f098b246541c2861087f7c4911ae297602f'
+          print('Pinned GSC-only RC payload and checksums: PASS')
+          PY
+
+      - name: Generate Canary GSC-only deployment manifest (no mobile or plugins)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p draft
+          cp candidate/GeumyiServerCenter-v4.3.9-rc.2-Setup.exe draft/
+          python3 tools/day12/build_gsc_guard_canary_rc2_manifest.py \
+            --setup "draft/GeumyiServerCenter-v4.3.9-rc.2-Setup.exe" \
+            --tag "$RELEASE_TAG" \
+            --base-url "https://github.com/$GITHUB_REPOSITORY/releases/download/$RELEASE_TAG" \
+            --output draft/deployment-canary.json
+          python3 - <<'PY'
+          import json
+          m = json.load(open('draft/deployment-canary.json',encoding='utf-8'))
+          assert set(m['components']) == {'gsc'}
+          assert m['schema'] == 1 and m['channel'] == 'canary'
+          assert m['components']['gsc']['version'] == '4.3.9-rc.2'
+          assert m['components']['gsc']['targets'] == ['host']
+          print('Single-component Canary manifest validated: PASS')
+          PY
+
+      - name: Sign with EXISTING Ed25519 deployment secret, verify against prior trusted release key
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$DEPLOYMENT_PRIVATE_KEY_B64" ]]; then
+            echo "::error::Existing deployment signing secret is unavailable; refusing unsigned Canary."
+            exit 1
+          fi
+          signing_key="$RUNNER_TEMP/deployment-canary-private.pem"
+          trap 'rm -f "$RUNNER_TEMP/deployment-canary-private.pem"' EXIT
+          (umask 077; printf '%s' "$DEPLOYMENT_PRIVATE_KEY_B64" | base64 --decode > "$signing_key")
+          openssl pkey -in "$signing_key" -check -noout >/dev/null
+          openssl pkey -in "$signing_key" -pubout -out draft/deployment-public.pem
+          # Compare current signing identity to the already published 4.3.8
+          # release. Do not rotate or bootstrap a new key here.
+          prior_url="https://github.com/$GITHUB_REPOSITORY/releases/download/$LAST_TRUSTED_RELEASE/deployment-public.pem"
+          curl --fail --location --silent --show-error --retry 3 \
+            "$prior_url" --output "$RUNNER_TEMP/known-4.3.8-release-public.pem"
+          cmp -s draft/deployment-public.pem "$RUNNER_TEMP/known-4.3.8-release-public.pem" || {
+            echo "::error::Signing public key does not match previously published 4.3.8 release; no Canary draft"
+            exit 1
+          }
+          openssl pkeyutl -sign -rawin -inkey "$signing_key" \
+            -in draft/deployment-canary.json -out draft/deployment-canary.json.sig
+          openssl pkeyutl -verify -rawin -pubin -inkey "$RUNNER_TEMP/known-4.3.8-release-public.pem" \
+            -in draft/deployment-canary.json -sigfile draft/deployment-canary.json.sig
+          sha256sum draft/GeumyiServerCenter-v4.3.9-rc.2-Setup.exe draft/deployment-canary.json \
+            draft/deployment-canary.json.sig draft/deployment-public.pem |
+            sed 's#draft/##' > draft/SHA256SUMS.txt
+          echo 'Ed25519 manifest signature matches existing Day11 release signing identity: PASS'
+
+      - name: Add OFFLINE-ONLY warnings (unsigned Windows EXE, manifest signed only)
+        shell: bash
+        run: |
+          cat > draft/README-NOT-FOR-INSTALL.txt <<'TXT'
+          GSC 4.3.9-rc.2 CANARY OFFLINE BUNDLE — NOT PUBLISHED / NOT INSTALLED
+          This preview carries an Ed25519 signed DEPLOYMENT manifest using
+          the pre-existing Day11 release signing identity.
+          Windows installer executable is NOT Authenticode-signed.
+          This bundle is private GitHub Actions artifact ONLY: NO public release exists.
+          No production service, world, backup, Windows firewall, or Stable release
+          has been changed or approved for this candidate.
+          Do not run the Setup.exe without a separately verified local-only
+          operator kit and explicit operator agreement to client-only update/rollback.
+          Real server install needs explicit operator approval and preflight.
+          Day12 canonical backend_ports_private remains FAIL.
+          TXT
+
+      - name: Upload signed Canary bundle as short-lived audit artifact
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc439-rc2-SIGNED-MANIFEST-OFFLINE-UNPUBLISHED
+          path: draft/*
+          if-no-files-found: error
+          retention-days: 14
