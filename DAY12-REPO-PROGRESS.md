@@ -319,6 +319,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Prepare a safe restore preflight/health path without any production restore or backup modification; source-check exact available operator action before instructions.
 - 12.10 live `backend_ports_private` = **FAIL**, 12.11 release-grade E2E and Stable **BLOCKED**, no security gate relaxation.
 
+## 2026-10-10 — GSC updater status read-only operator acceptance
+
+- Operator acknowledged **"됨"** to PC-side GSC Update Management visibility of the current version, normal update status and no visible in-progress/failed operations. This is **OPERATOR_REPORTED_PASS** for the status view only; exact displayed version string was not provided here and no update execution/rollback occurred.
+- Existing user-reported Java/Bedrock/GSCM, console, backup protection and now updater UI checks are recorded. Do not repeat them solely for progress.
+- Only non-disruptive recovery preflight/CI preparations may proceed without a separate production maintenance plan. Protected Golden and known-good assets are unchanged.
+- **12.10 private backend bind gate stays FAIL** and 12.11 full E2E / 12.12 live soak / 12.13 Stable remain blocked.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
