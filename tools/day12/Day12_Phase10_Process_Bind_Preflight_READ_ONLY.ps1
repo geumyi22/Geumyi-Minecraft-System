@@ -61,6 +61,18 @@ if($Synthetic){
      (Scope "0.0.0.0") -ne "WILDCARD_CONFIG" -or (Kind '-jar paper-1.21.jar' 'java.exe') -ne "PAPER_LIKELY"){
     throw "Day12 process/config allowlist regression"
   }
+  # PowerShell Group-Object by member name must consume a PSObject property,
+  # not an OrderedDictionary's indexer (which grouped all real Java processes
+  # under an empty category in the Oct-10 operator report).
+  $fixture=@(
+    [pscustomobject]@{kind=(Kind '-jar paper-1.21.jar' 'java.exe')},
+    [pscustomobject]@{kind=(Kind '-jar velocity-3.4.jar' 'java.exe')}
+  )
+  $groups=@($fixture|Group-Object kind)
+  if($groups.Count -ne 2 -or @($groups|Where-Object{$_.Name -eq 'PAPER_LIKELY'}).Count -ne 1 -or
+    @($groups|Where-Object{$_.Name -eq 'VELOCITY_LIKELY'}).Count -ne 1){
+    throw 'JAVA_KIND_GROUPING_REGRESSION'
+  }
   $json=($p|ConvertTo-Json -Depth 6)
   if($json.Contains("SHOULD_NOT_BE_EMITTED")){throw "SECRET_LEAK"}
   [ordered]@{schema=1;synthetic=$true;phase="12.10-process-bind-preflight"
@@ -114,7 +126,7 @@ try{
     $name=([string](Get-Prop $proc "Name" "")).ToLowerInvariant()
     $cmd=[string](Get-Prop $proc "CommandLine" "")
     if($name -in @("java.exe","javaw.exe")){
-      $java+= [ordered]@{kind=(Kind $cmd $name);command_line_readable=(-not [string]::IsNullOrWhiteSpace($cmd))}
+      $java+= [pscustomobject]@{kind=(Kind $cmd $name);command_line_readable=(-not [string]::IsNullOrWhiteSpace($cmd))}
       if($cmd){$readableCommands++}
       foreach($row in $serverRows){
         $cfgEntry=if($byId.ContainsKey($row.id)){$byId[$row.id]}else{$null}
