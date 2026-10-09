@@ -205,6 +205,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **Four required ONLINE port bind observations missing:** Playground Java `25571`, Lobby Java `25573`, Wild RCON `25575`, Playground RCON `25576`. Offline Other `25572` and `25577` missing is expected when offline and should not itself fail the online-only requirement. Previous 05:40 report observed `25571`; current capture did not. This is **time-dependent/inconsistent evidence**, not proof of tampering, malicious activity, exposure, or unconditional server failure.
 - **12.10 canonical backend_ports_private is still FAIL**. The earlier canonical live report was 18 PASS / 0 WARN / 1 FAIL; it has not yet been rerun following the new native integration. The present targeted report is **not** canonical PASS. Next single step: a narrow **server-local loopback connection check on exactly online Java+RCON ports** to determine whether absent listener rows mean an inventory gap or a genuinely unreachable service; no repeated full network/LAN/firewall/ACL/Golden scans and no configuration mutation.
 
+## 2026-10-10 — targeted on-host local TCP connectivity tool prepared
+
+- The 01:12 report's **online-port native listener gaps** are Playground Java 25571, Lobby Java 25573, Wild RCON 25575, Playground RCON 25576 (while 25570 and 25579 positively bind loopback). To distinguish `online` state from an actual locally accepting TCP endpoint, added `tools/day12/Day12_Phase10_Loopback_Compare_READ_ONLY.ps1/.cmd`.
+- This non-destructive scoped tool reads GSC fleet before/after and makes at most one `127.0.0.1` TCP connection to each Java/RCON port of GSC-online servers; **sends no Minecraft/RCON protocol messages or passwords**, and does not re-enumerate firewall/native TCP tables, LAN exposure, Golden backups, cache, or ACLs. TCP handshakes may appear in server logs. Report: `Desktop/Geumyi-Day12-Loopback/Day12-Loopback-Compare-*.json`.
+- A failed connection suggests unavailable/blocked/transient local service and calls for focused GSC/status and application logs; a successful connection despite missing native listener suggests a capture mismatch, **not** that the socket is privately bound. Either case leaves 12.10 fail-closed until actual listener binding proof and a new canonical verifier run with FAIL=0.
+- Added CI synthetic controlled loopback socket test for open/closed behavior, pending independent workflow outcome. No live test of this new tool yet; no production changes or final release gate updates.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
