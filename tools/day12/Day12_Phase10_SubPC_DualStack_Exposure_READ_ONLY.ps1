@@ -127,7 +127,7 @@ try{
 }
 if(-not $TargetIPv4){$TargetIPv4=(Read-Host "Minecraft server PC LAN IPv4 (RFC1918)").Trim()}
 $v4=$null;$v6=$null
-if(-not[Net.IPAddress]::TryParse($TargetIPv4,[ref]$v4) -or -not(Test-IPv4PrivateAddress $v4)){
+if(-not [Net.IPAddress]::TryParse($TargetIPv4,[ref]$v4) -or -not(Test-IPv4PrivateAddress $v4)){
   throw "INVALID_PRIVATE_SERVER_IPV4"
 }
 if(-not $TargetIPv6){
@@ -142,10 +142,10 @@ if($TargetIPv6){
 if((Test-LocalTarget $v4) -ne "REMOTE_CANDIDATE"){throw "IPV4_IS_LOCAL_OR_INTERFACE_INVENTORY_FAILED"}
 if($null -ne $v6 -and (Test-LocalTarget $v6) -ne "REMOTE_CANDIDATE"){throw "IPV6_IS_LOCAL_OR_INTERFACE_INVENTORY_FAILED"}
 $rows=@();$targets=@()
-$targets+= [pscustomobject]@{family="IPv4";ip=$v4;class=Get-AddressClass $v4}
-if($null -ne $v6){$targets+= [pscustomobject]@{family="IPv6";ip=$v6;class=Get-AddressClass $v6}}
+$targets+= [pscustomobject]@{family="IPv4";ip=$v4;class=(Get-AddressClass $v4)}
+if($null -ne $v6){$targets+= [pscustomobject]@{family="IPv6";ip=$v6;class=(Get-AddressClass $v6)}}
 foreach($target in $targets){
-  foreach($port in @($publicControls)+@($privatePorts)){
+  foreach($port in (@($publicControls)+@($privatePorts))){
     $role=if($publicControls -contains $port){"public-control"}else{"private"}
     $outcome=Probe-Tcp $target.ip $port
     $rows+= [ordered]@{family=$target.family;port=$port;role=$role;outcome=$outcome}
