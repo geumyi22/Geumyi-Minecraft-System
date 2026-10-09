@@ -210,6 +210,12 @@ func runV4Preflight(s ServerConfig) V4Health {
 			add("properties", "server.properties", "fail", "server.properties 없음")
 		} else {
 			add("properties", "server.properties", "ok", "확인됨")
+			// Day12 fixed private Paper profiles must not launch after a
+			// configuration drift to wildcard/public Java bind addresses.
+			// This is preventative only: runtime listener/RCON gates remain separate.
+			if bindStatus, bindMessage, check := day12ManagedJavaBindGuard(s, configuredDir); check {
+				add("private_java_bind_config", "내부 Java 루프백 설정", bindStatus, bindMessage)
+			}
 			if v, e := readServerProperty(configuredDir, "server-port"); e == nil && strings.TrimSpace(v) != "" {
 				if actual, e := strconv.Atoi(strings.TrimSpace(v)); e == nil && s.JavaPort > 0 && actual != s.JavaPort {
 					add("server_port", "Java 포트 일치", "warn", fmt.Sprintf("server.properties=%d · GSC 프로필=%d — 모니터링 포트를 맞춰주세요", actual, s.JavaPort))
