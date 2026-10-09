@@ -305,6 +305,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - 12.10 mandatory `backend_ports_private` remains **FAIL** (last canonical 18/0/1); full Day12.11 / Day12.12 / Stable remain blocked. Do not repeat Golden backup, TCP provider scans or existing client checks unnecessarily.
 - Next safe operational step: inspect protected backup and verify metadata through the GSC GUI without creating/deleting/restoring a backup. All future mutation tests require independent safety gates.
 
+## 2026-10-10 — GSCM Other console operator acceptance
+
+- The operator confirmed the GSCM mobile app's Other server console `list` command returned a result. **OPERATOR_REPORTED_PASS** for this one remote read-only command only, without device-side transcript.
+- Previous Java/Bedrock movement checks, GSCM basic connectivity and GSC PC console checks are already recorded. No duplicate testing or rebuild of protected Golden backups is requested.
+- Next safe coverage is to **view** the mobile GSCM backup/protection inventory (no restore or deletion). All production-changing tests still need their preflight and scoped approval.
+- Phase 12.10 binding attestation remains **FAIL** and 12.11 full E2E / 12.12 live soak / Final Stable remain **PENDING**.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
