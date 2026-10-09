@@ -447,6 +447,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **No GSC update, release, restart, firewall edit, Golden backup mutation, policy change or Stable promotion was performed.** The baseline GSC is still deployed 4.3.8; source changes remain undeployed. Do not ship a modified same-version 4.3.8 installer; plan uniquely versioned prerelease only after the real-host compatibility result and explicit deployment approval.
 - See `DAY12-PHASE10-GSC-GUARD-ROLLOUT-HANDOFF.md` for one-action handoff. Canonical `backend_ports_private` **FAIL**, Day12.11/12.12/12.13 remain blocked.
 
+## 2026-10-10 05:18 KST real GSC guard precheck PASS and isolated RC artifact verified
+
+- Operator-provided **real host** `Day12-GSC-Guard-Precheck-20261010-051837.json`: all **4/4** `wild/playground/other/lobby` guard configuration profiles `compatible_for_guard=true`, Java/RCON **25570/25575, 25571/25576, 25572/25577, 25573/25579**, all issue lists empty, `issue_count=0`, `error_category=NONE`. Read only; no config/firewall/service/server/Golden modifications. This does **not** prove current listen address, owner or RCON isolation.
+- Distinctly versioned **GSC 4.3.9-rc.1 review-only/unsigned** Host/Client/Setup created in disposable GitHub CI. **RC workflow `37987306874` completed SUCCESS**, including baseline System CI, staged Go unit/Host Day10 E2E, setup build and embedded payload dependencies. Artifact `11643911781`: locally inspected 6 ZIP files, CRC valid and **5/5 SHA-256** checksums valid. Outer ZIP digest `c9f6fc50837720efab826280b104a36d2b6f6fe48ffbf431baf2680ee133ded9`.
+- The first two RC attempts **FAILED**, revealing GSC self-update's prerelease ordering flaw (`rc.1` treated equal to final). Version comparator source/tests fixed, including stable > rc and malformed tag rejection; the successful preview reflects source commit `2e5bec5f4fa0275f6bef6266f7772de67e7a14b3`. Original tracked main remains baseline version **4.3.8**; only CI disposable copy was re-stamped.
+- **NO live install signed**, no deployment signing key called, no canary/beta/Stable publication, no operator installation authority. Unsigned preview must not be installed. GSC deploy requires user permission, valid signed prerelease and verified host-only transaction/rollback plus player/Golden checks. The canonical `backend_ports_private` remains **FAIL** and Day12.11 full E2E/12.12 soak/12.13 Stable **BLOCKED**.
+- See `DAY12-PHASE10-GSC-GUARD-ROLLOUT-HANDOFF.md` and `DAY12-PHASE10-GSC-4.3.9-RC-ROLLBACK-PLAN.md`. No more repeated file/port scans solely to duplicate the confirmed compatible 05:18 snapshot.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
