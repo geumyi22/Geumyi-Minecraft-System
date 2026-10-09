@@ -78,6 +78,13 @@
 - The 1 Block rule is scoped to an unspecified executable and Public profile; not confirmed Paper-specific. No new private-port exposure was established, nor did this produce exclusive bind evidence. Existing 0/8 LAN private-port negative test is still only a historical single-vantage result.
 - [Full sanitized 04:25 firewall analysis](DAY12-PHASE10-FIREWALL-TARGET-RESULT-20261010.md). No further host action is requested simply to repeat the same capture. Gate 12.10 remains **FAIL**; neither fallback firewall policy nor Stable promotion is approved.
 
+## Java executable ↔ ActiveStore application-rule correlation engineering status (2026-10-10)
+
+- The earlier report's 40 unrestricted Any-program Allow candidates per private TCP port cannot be safely removed by name or ordinal alone. A distinct, read-only, current Java **executable-path** matcher has been built and Windows synthetic-tested. It filters relevant inbound ActiveStore rules and compares their application-filter program paths to currently observed Java/javaw executable paths **without exporting raw paths, PID, usernames, commands or secrets**.
+- **Windows CI 37981147007 PASS** and **Operator Kit 37981322016 PASS**. Focused ZIP created and CRC checked in the model's workspace, with launcher `Day12_Phase10_Java_Program_Rule_Match_READ_ONLY.cmd` and Korean instructions.
+- Its `MATCHES_RUNNING_JAVA_EXE` result refers to **any running Java executable image**, *not* a proven Minecraft Paper backend or socket owner. `NO_RUNNING_JAVA_EXE_MATCH` does not mean a rule can be deleted, particularly if Java paths change, some servers are stopped or access is incomplete.
+- After one sanitized host JSON is supplied, use it to scope a potential narrow fix; prepare and test the **exact** candidate firewall policy in disposable staging first, then request explicit operator approval with rollback if a host policy mutation is warranted. No firewall rule modification, backup mutation, server restart, auditpol change or release PASS is authorized/claimed now.
+
 ## Production-safety rule and operator handoff
 
 - User explicitly allows autonomous **source inspection, GitHub changes, documentation and synthetic CI** without repeated check-ins.
