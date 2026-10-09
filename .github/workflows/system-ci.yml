@@ -276,7 +276,7 @@ jobs:
           retention-days: 14
 
   lobby:
-    name: GeumyiLobby 0.1.0 / Gradle build
+    name: GeumyiLobby 0.1.1 / Gradle build
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -298,12 +298,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          SRC="Plugins/GeumyiLobby/build/libs/GeumyiLobby-0.1.0.jar"
-          OUT="GeumyiLobby-0.1.0-Paper26.3.jar"
+          SRC="Plugins/GeumyiLobby/build/libs/GeumyiLobby-0.1.1.jar"
+          OUT="GeumyiLobby-0.1.1-Paper26.3.jar"
           test -s "$SRC"
           unzip -t "$SRC" >/dev/null
           unzip -p "$SRC" plugin.yml | grep -Eq '^name:[[:space:]]*GeumyiLobby'
-          unzip -p "$SRC" plugin.yml | grep -Eq '^version:[[:space:]]*0[.]1[.]0'
+          unzip -p "$SRC" plugin.yml | grep -Eq '^version:[[:space:]]*0[.]1[.]1'
           unzip -p "$SRC" plugin.yml | grep -Eq "^api-version:[[:space:]]*'26[.]3'"
           javap -verbose -classpath "$SRC" kr.geumyi.lobby.GeumyiLobby | grep -q 'major version: 69'
           mkdir -p dist/lobby
@@ -323,7 +323,7 @@ jobs:
       - name: Upload GeumyiLobby artifact
         uses: actions/upload-artifact@v7
         with:
-          name: lobby-0.1.0
+          name: lobby-0.1.1
           path: dist/lobby/*
           if-no-files-found: error
           retention-days: 14
