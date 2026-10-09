@@ -75,6 +75,14 @@ This report is intentionally not marked PASS until the real server PC, Java clie
 - Mandatory Day 12.10 `backend_ports_private` remains **FAIL** (last canonical 18 PASS / 0 WARN / 1 FAIL); Day 12.11 full E2E, 12.12 soak, Final Stable and irreversible cleanup remain **BLOCKED/PENDING**.
 - Follow-up should verify the restore **preflight only**, on a safe path confirmed in source/UI before instructing the operator. **Do not trigger real restore, remove protection, delete backups, or interrupt live servers.**
 
+## Operator-reported GSC updater status UI — 2026-10-10 KST (read-only, partial)
+
+- Operator replied **"됨"** after viewing the **GSC PC Update Management** screen and checking: current version is displayed, update status displays normally, and no in-progress or failed update jobs appear.
+- Mark **OPERATOR_REPORTED_PASS** for **UI visibility and the absence of visible pending/failed work at the observation time** only. No exact version string or machine-generated updater API status was supplied in this turn: do not claim a newly verified exact build number, nor successful update apply/rollback.
+- No update, install, rollback or server configuration mutation was requested or performed for this check.
+- Day 12.10 mandatory `backend_ports_private` remains **FAIL** (canonical 18 PASS / 0 WARN / 1 FAIL). Full release-grade 12.11 operations/reboot E2E, 12.12 soak, final Stable and cleanup remain **PENDING/BLOCKED**.
+- Pending recovery validation must be limited to restore **preflight** until a controlled maintenance window and disposable target are explicitly arranged; never restore over production as a test.
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
