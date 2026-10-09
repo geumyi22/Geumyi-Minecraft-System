@@ -48,10 +48,10 @@ function Convert-WfpEvent([string]$Xml) {
     if (-not $fields.ContainsKey($required)) { throw "EVENT_FIELD_MISSING" }
   }
   $pidText = [string]$fields.ProcessId
-  $pid = 0L
+  $eventPid = 0L
   if ($pidText.StartsWith("0x", [StringComparison]::OrdinalIgnoreCase)) {
-    $pid = [Convert]::ToInt64($pidText.Substring(2), 16)
-  } elseif (-not [long]::TryParse($pidText, [ref]$pid)) {
+    $eventPid = [Convert]::ToInt64($pidText.Substring(2), 16)
+  } elseif (-not [long]::TryParse($pidText, [ref]$eventPid)) {
     throw "EVENT_PID_NOT_NUMERIC"
   }
   $port = 0
@@ -63,7 +63,7 @@ function Convert-WfpEvent([string]$Xml) {
   return [pscustomobject]@{
     event_id=$id
     port=$port
-    pid=$pid
+    pid=$eventPid
     protocol=([string]$fields.Protocol)
     scope=(Get-WfpScope ([string]$fields.SourceAddress))
     is_java=([string]$fields.Application -match '(?i)(?:^|[\\/])javaw?\.exe$')
@@ -104,13 +104,13 @@ function Get-WfpSummary($Records, $LiveJava, $Plan) {
 }
 
 if ($Synthetic) {
-  function New-SyntheticEvent([int]$Id, [string]$Address, [string]$Pid, [int]$Port, [string]$App, [DateTimeOffset]$When) {
+  function New-SyntheticEvent([int]$Id, [string]$Address, [string]$SyntheticPid, [int]$Port, [string]$App, [DateTimeOffset]$When) {
     $date = $When.UtcDateTime.ToString("o")
     $esc = [System.Security.SecurityElement]::Escape($App)
     return @"
 <Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
 <System><EventID>$Id</EventID><TimeCreated SystemTime="$date" /></System>
-<EventData><Data Name="ProcessId">$Pid</Data><Data Name="Application">$esc</Data>
+<EventData><Data Name="ProcessId">$SyntheticPid</Data><Data Name="Application">$esc</Data>
 <Data Name="SourceAddress">$Address</Data><Data Name="SourcePort">$Port</Data>
 <Data Name="Protocol">6</Data></EventData></Event>
 "@
