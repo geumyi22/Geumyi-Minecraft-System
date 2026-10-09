@@ -56,6 +56,14 @@ This requires a **separate operator approval and maintenance window** for anythi
 - Windows `Get-NetIPInterface -IncludeAllCompartments` covers nondefault **IP interfaces**; documented `Get-NetTCPConnection` does **not** offer that switch. Interface compartment counts therefore contextualize the environment but **do not attribute a TCP socket to any compartment**. Do not infer `25573/25575/25576` are safely bound from that metadata alone.
 - Pending: operator runs this preflight on the confirmed server PC after synthetic CI. If it still cannot establish actual bind ownership, pause rather than escalating to an unauthorized production restart. Controlled disposable reproduction and maintenance-window approval come next. The canonical `backend_ports_private` remains FAIL and Stable blocked.
 
+## 2026-10-10 02:05:09 KST — actual process/config preflight received
+
+- Submitted `Day12-Process-Bind-20261010-020508.json` (private report), `phase=12.10-process-bind-preflight`, non-synthetic read-only `CAPTURED_REVIEW_REQUIRED`, `mutation_performed=false`, `secrets_exported=false`.
+- GSC config and all **four** server.properties files were readable and matched expected private Java ports `25570/25571/25572/25573`, RCON ports `25575/25576/25577/25579`, `enable-rcon=true`, and Java `server-ip=LOOPBACK_CONFIG`. No `rcon.ip` key was present, as recorded as `PROPERTY_NOT_PRESENT`; this is not evidence of RCON exposure or security.
+- Win32_Process returned **10 Java processes** with **10 readable command lines** and **2 Geumyi-named processes**. Process classifier output `kind=\"\"` for all 10, and no configured server directory path string was found in command lines. This shows no authoritative runtime Java process-to-profile ownership. The empty classifier output is explained by the tool's use of an **OrderedDictionary** rather than a PSObject when grouping `kind`; classification fixture/serialization repaired in source with no production changes. The absence of absolute server paths in process command lines can be ordinary relative-working-directory startup and is **not** proof of ownership failure.
+- Interface metadata: **1 compartment ID**, **0 nondefault** among reported IP interfaces; this does not prove the Java/RCON sockets' compartment identity. No additional broad network scans are justified.
+- **Assessment:** expected on-disk loopback server settings confirmed, but running Java/RCON bind remains unproven. Retain `backend_ports_private=FAIL` and release hold. Next is a tightly scoped, approved source-of-truth ownership/bind audit. No need for user to rerun this preflight just to obtain repaired process-family group labels; current evidence suffices for configuration verification.
+
 ## Source documents
 
 - [Day 12 Live Runbook](DAY12-LIVE-RUNBOOK.md)
