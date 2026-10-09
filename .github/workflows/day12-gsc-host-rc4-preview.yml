@@ -8,9 +8,11 @@ on:
     paths:
       - '.github/workflows/day12-gsc-host-rc4-preview.yml'
       - 'tools/day12/Build_Day12_GSC_Host_RC4_CI.ps1'
+      - 'tools/day12/Test_Day12_GSC_Host_RC4_AutoRollback_Disposable_CI.ps1'
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: day12-gsc-guard-host-rc4-preview
@@ -100,4 +102,53 @@ jobs:
           name: gsc-4.3.9-rc.4-UNSIGNED-DO-NOT-INSTALL
           path: candidate-output/*
           if-no-files-found: error
+          retention-days: 14
+
+  auto-rollback:
+    name: Real service failed-update auto-rollback (disposable Windows only)
+    needs: preview
+    runs-on: windows-latest
+    timeout-minutes: 16
+    env:
+      GEUMYI_GSC_RC_STAGE: isolated_ci_host_service
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download this run's pinned RC4 preview
+        uses: actions/download-artifact@v8
+        with:
+          name: gsc-4.3.9-rc.4-UNSIGNED-DO-NOT-INSTALL
+          path: candidate-output
+      - name: Ensure script is valid Windows PowerShell
+        shell: pwsh
+        run: |
+          $p='tools/day12/Test_Day12_GSC_Host_RC4_AutoRollback_Disposable_CI.ps1'
+          $tokens=$null; $errors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){$errors|ForEach-Object{Write-Host $_.ErrorId};throw 'Invalid CI rollback script'}
+      - name: Run actual Host RC4 Setup; force stale-service health and verify automatic rollback
+        shell: pwsh
+        run: |
+          & ./tools/day12/Test_Day12_GSC_Host_RC4_AutoRollback_Disposable_CI.ps1 -CandidateDir candidate-output
+          if($LASTEXITCODE -ne 0){throw 'Failed isolated Host rollback run'}
+          $p=Join-Path $env:RUNNER_TEMP 'Day12-GSC-Host-RC4-AutoRollback-Report.json'
+          if(-not (Test-Path -LiteralPath $p)){throw 'Missing rollback evidence'}
+          $r=Get-Content $p -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'DISPOSABLE_RC4_HOST_AUTOMATIC_ROLLBACK_PASS' -or
+             !$r.official_host_sha_verified -or !$r.service_health_438_before -or
+             !$r.stale_health_caused_update_rejection -or !$r.automatic_rollback_reported -or
+             !$r.original_host_restored_sha -or !$r.original_backup_verified_sha -or
+             !$r.new_setup_removed -or !$r.service_health_438_after -or
+             !$r.no_update_lock_residue -or !$r.service_removed -or !$r.registry_removed -or
+             $r.production_host_modified -or $r.production_network_modified -or
+             $r.game_servers_started -or $r.backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Automatic Host rollback verification contract failed'
+          }
+      - name: Save sanitized fail-closed report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc-host-rc4-automatic-rollback-report
+          path: ${{ runner.temp }}/Day12-GSC-Host-RC4-AutoRollback-Report.json
+          if-no-files-found: warn
           retention-days: 14
