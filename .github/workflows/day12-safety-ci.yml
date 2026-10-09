@@ -433,6 +433,20 @@ jobs:
              throw 'Preflight synthetic schema/regression failure'
           }
 
+      - name: Synthetic source-log bind evidence parser (no credentials)
+        shell: powershell
+        run: |
+          $dir=Join-Path $env:RUNNER_TEMP 'day12-startup-bind'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_Startup_Log_Bind_READ_ONLY.ps1 -Synthetic -OutputDir $dir
+          if($LASTEXITCODE -ne 0){throw 'Read-only Paper/RCON startup bind parser failed'}
+          $files=@(Get-ChildItem -LiteralPath $dir -File -Filter '*.json')
+          if($files.Count -ne 1){throw 'Expected one redacted startup log parser report'}
+          $r=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.parser_verified -or
+             -not $r.synthetic -or -not $r.read_only -or $r.mutation_performed){
+            throw 'Startup log parser schema or fail-closed warning regression'
+          }
+
       - name: Synthetic final verifier
         shell: powershell
         run: |
