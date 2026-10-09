@@ -103,7 +103,6 @@ try {
    }|ConvertTo-Json -Depth 8|Set-Content -LiteralPath $config -Encoding UTF8
   $binPath='"'+$installedHost+'" --service --config "'+$config+'"'
   New-Service -Name $service -DisplayName $service -BinaryPathName $binPath -StartupType Manual -ErrorAction Stop | Out-Null
-  if($LASTEXITCODE -ne 0){throw "CI_SERVICE_CREATE_FAILED"}
   $serviceCreated=$true
   [void](New-Item -Path $reg -Force -ErrorAction Stop)
   $regCreated=$true
