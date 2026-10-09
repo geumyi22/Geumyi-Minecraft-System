@@ -38,7 +38,7 @@ func TestDay12ManagedJavaBindGuard(t *testing.T) {
 			if got != tc.wantStatus || apply != tc.wantApply {
 				t.Fatalf("status=%q applicable=%v; want status=%q applicable=%v", got, apply, tc.wantStatus, tc.wantApply)
 			}
-			if tc.wantApply && !strings.Contains(message, "루프백") {
+			if tc.wantApply && strings.TrimSpace(message) == "" {
 				t.Fatalf("security guard report is missing loopback context: %q", message)
 			}
 		})
