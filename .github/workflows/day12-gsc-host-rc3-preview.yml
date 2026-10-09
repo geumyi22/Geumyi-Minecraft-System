@@ -5,7 +5,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - '.github/workflows/day12-gsc-guard-host-rc3-preview.yml'
+      - '.github/workflows/day12-gsc-host-rc3-preview.yml'
       - 'tools/day12/Build_Day12_GSC_Host_RC3_CI.ps1'
       - 'GSC/ServerCenter/cmd/setup/selfupdate_windows.go'
       - 'GSC/ServerCenter/cmd/setup/selfupdate_health_windows_test.go'
