@@ -1,0 +1,48 @@
+name: Day12 Disposable Firewall CI Stage
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-runner:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    env:
+      GEUMYI_DISPOSABLE_STAGE: approved_workflow_only
+    steps:
+      - name: Checkout source into disposable GitHub runner
+        uses: actions/checkout@v7
+      - name: Parse and check CI-only firewall stage source
+        shell: powershell
+        run: |
+          $path='tools/day12/Day12_Phase10_Disposable_Firewall_Loopback_CI.ps1'
+          $tokens=$null;$errors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors)
+          if($errors.Count -gt 0){throw 'Stage PowerShell syntax invalid'}
+      - name: Ephemeral port rule metadata loopback and owned-rule rollback test
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'geumyi-ci-firewall-stage-output'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_Disposable_Firewall_Loopback_CI.ps1 -DisposableRunner -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Disposable firewall stage is not PASS; see sanitized JSON artifact'}
+          $files=@(Get-ChildItem -LiteralPath $out -Filter '*.json' -File)
+          if($files.Count -ne 1){throw 'Exactly one stage JSON report required'}
+          $r=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'CI_LOOPBACK_SURVIVED_TEMPORARY_RULE' -or !$r.rule_created -or
+             !$r.owned_rule_removed -or !$r.loopback_before -or !$r.loopback_after -or
+             !$r.metadata_matched -or $r.private_ports_modified -or $r.production_host_touched -or
+             $r.remote_host_tested -or $r.ipv6_tested -or
+             $r.canonical_backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Disposable stage output contract failed'
+          }
+      - name: Upload sanitized temporary CI runner report (even if failed)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: day12-disposable-firewall-stage
+          path: ${{ runner.temp }}/geumyi-ci-firewall-stage-output/*.json
+          if-no-files-found: warn
+          retention-days: 14
