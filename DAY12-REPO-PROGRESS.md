@@ -261,6 +261,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Wild and Playground log age **10.6 min**, Lobby **60.3 min**, Other **4123.9 min**; Other was OFFLINE on previous fleet snapshots. App startup logs are **not** current process/sock ownership proof. Do not conflate 8/8 logs with 8/8 live connectivity. Actual online local TCP connectivity had been 6/6.
 - This corroborates stored `server-ip` loopback 4/4, past server-local 6/6 and second-PC private LAN nonreachability 0/8, but Windows TCP listener table source inconsistency remains. Classify `startup_app_bind_scope` as **8/8 PASS, historical**, while canonical `backend_ports_private` stays **FAIL**. No Stable or maintenance activation; no need to rerun the log parser. Continue non-live E2E/soak readiness and plan one controlled live attestation only if strictly necessary.
 
+## 2026-10-10 — ahead-of-time Day12.11/12.12 safety readiness (NO live E2E or soak claimed)
+
+- Reviewed `FINAL-E2E-REPORT.md` and added explicit prerequisites: no unauthorized production reboot, forced-crash, RCON stop, restoration, update apply/rollback or token revocation; use disposable/staging for destructive recovery simulations. The actual live Java/Bedrock/GSCM E2E remains **PENDING**, and 12.10 still blocks its release-grade completion.
+- Audited `Day12_Phase12_Soak_READ_ONLY.ps1`: previous name-only matching could compare two **different `java.exe` processes** during memory/handle deltas. Improved to match `process name + PID + process start time`, mark restart/new/lost identity separately, never invent deltas for a different process, refuse overwriting pre-existing Start/End/Report files, and keep duration >=8 h **REVIEW_REQUIRED**, never automatic PASS.
+- Windows Safety CI **37966288005 PASS** includes synthetic two-Java identity fixture, missing/replaced PID behavior, reserved `$PID` compatibility repair. Original fixture failed twice before the code correction; latest green result supersedes those earlier failed CI attempts. **No production soak or client test performed.**
+- Operator's explicit execution policy is saved in `DAY12-LIVE-RUNBOOK.md`: safe GitHub and CI work continues autonomously; request operator only for actual host execution or production-affecting approvals, without repetitive confirmations.
+- Full Day1–12 temporary-file cleanup remains deferred until Stable+E2E/soak evidence and separate cleanup safeguards.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
