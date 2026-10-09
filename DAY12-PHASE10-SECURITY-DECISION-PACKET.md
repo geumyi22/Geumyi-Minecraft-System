@@ -41,6 +41,12 @@
 - Do not change `auditpol` or security policy simply to make this check succeed. If WFP evidence is missing/incomplete, the strict gate remains OPEN. If it reveals wildcard/nonloopback binds, review immediately before further operations. Keep the original decision alternatives A/B/C unchanged and **never promote Stable automatically**.
 - [WFP read-only scope and evidence interpretation](DAY12-PHASE10-WFP-READONLY-PLAN.md).
 
+## Real WFP read-only host result — 2026-10-10 04:06 KST
+
+- Real server-PC JSON `Day12-WFP-Bind-20261010-040617.json`: `synthetic=false`, no mutation, Java process inventory found **11** instances, `event_count=0`, all eight observed services lack a matching WFP event, and result `UNAVAILABLE` with `AUDIT_RECORDS_UNAVAILABLE_OR_ACCESS_DENIED`.
+- **No WFP listener audit evidence was established**, and this is not a finding of an open external bind or inaccessible Minecraft service. The reporting code merged missing WFP history, Security-log access errors and query failures; original error details were intentionally not exported. Exact root cause cannot be inferred from this JSON.
+- **Do not repeat the original exact test**, enable success audits with `auditpol`, change Windows Firewall or restart Java. Refine collector error classification in CI first. Even positive historical WFP events would not prove exclusive *current* listener addresses, so the canonical private-port gate stays FAIL.
+
 ## Production-safety rule and operator handoff
 
 - User explicitly allows autonomous **source inspection, GitHub changes, documentation and synthetic CI** without repeated check-ins.
