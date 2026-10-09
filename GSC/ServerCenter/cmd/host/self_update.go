@@ -242,6 +242,16 @@ func compareGSCVersions(a, b string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	// Validate prerelease syntax BEFORE comparing numerical cores, so an
+	// invalid target cannot hide behind a newer core version number.
+	ap, err := gscVersionPrerelease(a)
+	if err != nil {
+		return 0, err
+	}
+	bp, err := gscVersionPrerelease(b)
+	if err != nil {
+		return 0, err
+	}
 	n := len(av)
 	if len(bv) > n {
 		n = len(bv)
@@ -260,14 +270,6 @@ func compareGSCVersions(a, b string) (int, error) {
 		if ai > bi {
 			return 1, nil
 		}
-	}
-	ap, err := gscVersionPrerelease(a)
-	if err != nil {
-		return 0, err
-	}
-	bp, err := gscVersionPrerelease(b)
-	if err != nil {
-		return 0, err
 	}
 	return gscComparePrerelease(ap, bp), nil
 }
