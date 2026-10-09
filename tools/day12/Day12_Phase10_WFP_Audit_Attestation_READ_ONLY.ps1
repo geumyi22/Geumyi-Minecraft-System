@@ -38,10 +38,15 @@ function Get-WfpScope([string]$Address) {
 
 function Convert-WfpEvent([string]$Xml) {
   [xml]$d = $Xml
-  $id = [int]$d.Event.System.EventID.InnerText
+  # Explicit XmlDocument XPath avoids PowerShell XML adapter collapsing
+  # EventID to a string (with no InnerText property under StrictMode).
+  $eventIdNode = $d.SelectSingleNode("/*[local-name()='Event']/*[local-name()='System']/*[local-name()='EventID']")
+  if ($null -eq $eventIdNode) { throw "EVENT_ID_MISSING" }
+  $id = [int]$eventIdNode.InnerText
   if ($id -notin @(5154, 5158)) { throw "UNEXPECTED_EVENT_ID" }
   $fields = @{}
-  foreach ($node in @($d.Event.EventData.Data)) {
+  $nodes = $d.SelectNodes("/*[local-name()='Event']/*[local-name()='EventData']/*[local-name()='Data']")
+  foreach ($node in $nodes) {
     $fields[[string]$node.GetAttribute("Name")] = [string]$node.InnerText
   }
   foreach ($required in @("ProcessId","SourcePort","SourceAddress","Protocol","Application")) {
@@ -56,8 +61,10 @@ function Convert-WfpEvent([string]$Xml) {
   }
   $port = 0
   if (-not [int]::TryParse($fields.SourcePort, [ref]$port)) { throw "EVENT_PORT_NOT_NUMERIC" }
+  $timeNode = $d.SelectSingleNode("/*[local-name()='Event']/*[local-name()='System']/*[local-name()='TimeCreated']")
+  if ($null -eq $timeNode) { throw "EVENT_TIME_MISSING" }
   $when = [DateTimeOffset]::Parse(
-    [string]$d.Event.System.TimeCreated.GetAttribute("SystemTime"),
+    [string]$timeNode.GetAttribute("SystemTime"),
     [System.Globalization.CultureInfo]::InvariantCulture
   )
   return [pscustomobject]@{
