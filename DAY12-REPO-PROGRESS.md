@@ -407,6 +407,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **Stop repeated equivalent capture:** Java-specific Allow candidates were narrowed to 0, broadest Any-program set to 36. Future work: inspect real rule identities only **privately** and prepare disposable-stage test of narrowly scoped remote deny, preserving local proxy/GSC traffic; no production policy change, restarts or rules deletion without exact rollback and explicit user approval.
 - Published sanitized analysis `DAY12-PHASE10-JAVA-RULE-LIVE-RESULT-20261010.md`; source JSON remains private. **Canonical Day12.10 `backend_ports_private` FAIL**; full Day12.11 E2E/12.12 live soak/12.13 Stable remain blocked.
 
+## 2026-10-10 — Real disposable Windows runner firewall + loopback + rollback smoke PASS (not live)
+
+- **Day12 Disposable Firewall CI Stage run `37982653272`: SUCCESS** on `f413f2853`. Downloaded its actual artifact `stage-20261009-194759.json`, verified ZIP CRC and JSON: `synthetic=false`, `result=CI_LOOPBACK_SURVIVED_TEMPORARY_RULE`, `rule_created=true`, `metadata_matched=true`, `loopback_before=true`, `loopback_after=true`, and **`owned_rule_removed=true`**.
+- The rule applied **only on a disposable GitHub-hosted Windows runner** to a single OS-assigned ephemeral TCP port and one nonloopback local IPv4 address. `private_ports_modified=false`, `production_host_touched=false`. No existing rule was disabled/removed. The script refuses non-GitHub CI use.
+- **Day12 standard Safety CI run `37982580208`: SUCCESS**, including synthetic protected-port refusal. This is **not** real-host firewall security closure: `remote_host_tested=false`, `ipv6_tested=false`, no Paper/RCON/Velocity/GSCM E2E, no current socket-owner attestation. Existing 36 broad Allow candidates are not approved for deletion.
+- Full design and artifact facts: `DAY12-PHASE10-DISPOSABLE-FIREWALL-STAGING.md` and `DAY12-PHASE10-DISPOSABLE-FIREWALL-RESULT-20261010.md`. Next work requires a truly separate remote-vantage disposable test and effective-policy/address-family review. No user host action needed for this CI proof; no production rule change is authorized.
+- **Canonical `backend_ports_private` FAIL**, Day12.11 release-grade E2E, 12.12 live soak and 12.13 Stable/cleanup **BLOCKED**; Golden 4/4 unchanged.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
