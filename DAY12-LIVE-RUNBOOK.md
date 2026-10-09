@@ -15,6 +15,13 @@
 - 새로운 일회성 유지보수 스크립트 `tools\\day12\\Day12_Phase10_Scoped_Graceful_Restart.cmd`: 놀이터 Java 25571 / RCON 25576 한 서버만 대상으로 GSC 정식 graceful restart(15초 countdown) 실행. **GSC v4.3.8, 온라인, 플레이어 0명 확증, 동시 작업 없음, 보호+검증된 전체 Golden 백업, 안전 업데이트 상태**를 모두 만족해야 실행합니다. 재시작·증거 수집은 단 한 번, 미확인 시 차단, 강제 종료·백업 복원·설정 변경 없음. 게임 호스트에 사용자가 실행해야 하는 것은 이 CMD 한 개입니다.
 - 안전 합성 CI PASS는 실서버 성공과 다릅니다. 한 번의 재시작 후에도 바인딩 주소가 확인되지 않으면 12.10 `backend_ports_private` FAIL 유지; 검증기 조건을 임의 완화하지 않습니다. 기존 자동 업데이트 정책은 서버 정상 시작 과정에서 작동할 수 있습니다. 자세한 절차: `DAY12-PHASE10-APPROVED-SCOPED-RESTART.md`.
 
+## 2026-10-10 02:41 — Playground restart preflight false block corrected
+
+- Operator's real Day12-Scoped-Restart-20261010-024155.json: Playground ONLINE, zero players, protected verified FULL backup present, no active jobs; result BLOCKED_UPDATE_BLOCK_START, mutation=false, restart_accepted=false. **No server restart occurred.**
+- GSC defines block_start as Go bool omitempty: a missing property means false. The first script incorrectly defaulted a missing property to true. Fixed only this default; explicit true, missing update status, unsafe/unknown update phases, players, jobs and missing verified backup still block.
+- After the revised Windows synthetic CI and Operator Kit are successful, operator runs the **new** tools/day12/Day12_Phase10_Scoped_Graceful_Restart.cmd once on SERVER PC, not the old blocked version, then provides only the fresh Desktop/Geumyi-Day12-Scoped-Restart JSON. No unbounded reruns.
+- App startup Java/RCON loopback 8/8 remains historical evidence; live OS exclusive bind and Day12.10 canonical verification are not yet satisfied. Stable remains BLOCKED.
+
 ## 원칙
 
 - 앞 단계가 FAIL/CHECK면 다음 변경 단계로 넘어가지 않습니다.
