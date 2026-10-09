@@ -83,6 +83,15 @@ This report is intentionally not marked PASS until the real server PC, Java clie
 - Day 12.10 mandatory `backend_ports_private` remains **FAIL** (canonical 18 PASS / 0 WARN / 1 FAIL). Full release-grade 12.11 operations/reboot E2E, 12.12 soak, final Stable and cleanup remain **PENDING/BLOCKED**.
 - Pending recovery validation must be limited to restore **preflight** until a controlled maintenance window and disposable target are explicitly arranged; never restore over production as a test.
 
+## Operator-reported Other backup retention preview — 2026-10-10 KST (read-only)
+
+- The operator replied **"됨"** to the exact GSC PC **Protection/Recovery → Other → retention preview** checklist and confirmed the **protected Other Golden backup was not included in deletion candidates**.
+- Record **OPERATOR_REPORTED_PASS** for the **Other profile's dry-run/preview protected-exclusion behavior** only. This does not independently verify all four profiles' preview results, execution-path safety, backup ZIP integrity or restore capability. No machine-readable retention preview was attached.
+- The user was specifically instructed **not** to click retention apply; do not claim any backup moved, modified or deleted. Prior four-server Golden backup SHA-256 verification and mobile protection UI observation are separate evidence.
+- Source `buildBackupRetentionDryRun` in `v4_backup_actions.go` skips `Protected` and checkpoint items, supporting the intended safe behavior but not upgrading this operator UI acknowledgment to a full production retention-apply test.
+- Existing Day 12.10 `backend_ports_private` **FAIL** (18 PASS / 0 WARN / 1 FAIL canonical), overall Day 12.11 final release-grade E2E **PENDING**, 12.12 live soak **PENDING**, 12.13 Stable **BLOCKED**.
+- **Next:** avoid repetitive routine UI acknowledgments. Focus assistant-side source/synthetic validation and a materially different runtime bind-attestation plan; ask the operator only when a genuinely new, scoped host-side proof or maintenance operation is necessary.
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
