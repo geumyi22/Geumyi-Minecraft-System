@@ -34,7 +34,17 @@ jobs:
               raise
           tag=os.environ["TAG"]
           xs=[r for r in arr if r.get("tag_name")==tag]
-          assert len(xs)==1, "Expected exactly one unlisted draft with pinned tag"
+          # GitHub may assign an 'untagged-...' placeholder internally while
+          # a draft has never been published. Match exact title and source.
+          if not xs:
+              xs=[r for r in arr if r.get("draft") is True
+                  and r.get("name")=="GSC 4.3.9-rc.1 Canary — DRAFT / NOT LIVE"
+                  and r.get("target_commitish")=="2e5bec5f4fa0275f6bef6266f7772de67e7a14b3"]
+          print("candidate-draft-count:",len(xs))
+          if not xs:
+              print("last-five-drafts:",[(x.get("tag_name"), x.get("name"), len(x.get("assets",[])))
+                     for x in arr if x.get("draft")][:5])
+          assert len(xs)==1, "Expected exactly one candidate draft by pin or exact title/source"
           r=xs[0]
           names=sorted(a["name"] for a in r["assets"])
           print("draft:",r["draft"],"prerelease:",r["prerelease"],
