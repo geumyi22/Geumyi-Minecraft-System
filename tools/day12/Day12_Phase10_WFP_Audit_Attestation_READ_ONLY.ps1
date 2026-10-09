@@ -36,6 +36,27 @@ function Get-WfpScope([string]$Address) {
   return "NON_LOOPBACK_REDACTED"
 }
 
+
+# Categorize failures without exporting OS exception messages or Security logs.
+# PowerShell Get-WinEvent often throws NoMatchingEventsFound when the XPath is valid
+# but no events are retained. The previous version erroneously merged that with access denied.
+function Get-WfpEventQueryErrorCategory($Record) {
+  $fqid = [string]$Record.FullyQualifiedErrorId
+  $ex = $Record.Exception
+  if ($fqid -match "(?i)NoMatchingEventsFound") {
+    return "NO_RETAINED_MATCHING_WFP_EVENTS"
+  }
+  if ($ex -is [System.UnauthorizedAccessException] -or
+      $ex -is [System.Security.SecurityException] -or
+      $fqid -match "(?i)(AccessDenied|Unauthorized|PermissionDenied)") {
+    return "SECURITY_LOG_ACCESS_DENIED"
+  }
+  if ($null -ne $ex -and (($ex.HResult -band 65535) -eq 5)) {
+    return "SECURITY_LOG_ACCESS_DENIED"
+  }
+  return "WFP_EVENT_QUERY_FAILED"
+}
+
 function Convert-WfpEvent([string]$Xml) {
   [xml]$d = $Xml
   # Explicit XmlDocument XPath avoids PowerShell XML adapter collapsing
@@ -148,11 +169,27 @@ if ($Synthetic) {
       (Get-WfpScope "::") -ne "WILDCARD") {
     throw "WFP_SYNTHETIC_FAIL_CLOSED_CLASSIFIER_FAILED"
   }
+  # Synthetic exception classification does not access the Windows Security log.
+  $erNo = [System.Management.Automation.ErrorRecord]::new(
+    [System.InvalidOperationException]::new("no matches"), "NoMatchingEventsFound",
+    [System.Management.Automation.ErrorCategory]::ObjectNotFound, $null)
+  $erDenied = [System.Management.Automation.ErrorRecord]::new(
+    [System.UnauthorizedAccessException]::new("access denied"), "PermissionDenied",
+    [System.Management.Automation.ErrorCategory]::PermissionDenied, $null)
+  $erBad = [System.Management.Automation.ErrorRecord]::new(
+    [System.InvalidOperationException]::new("bad query"), "InvalidArgument",
+    [System.Management.Automation.ErrorCategory]::InvalidArgument, $null)
+  if ((Get-WfpEventQueryErrorCategory $erNo) -ne "NO_RETAINED_MATCHING_WFP_EVENTS" -or
+      (Get-WfpEventQueryErrorCategory $erDenied) -ne "SECURITY_LOG_ACCESS_DENIED" -or
+      (Get-WfpEventQueryErrorCategory $erBad) -ne "WFP_EVENT_QUERY_FAILED") {
+    throw "WFP_SYNTHETIC_ERROR_CATEGORY_FAILED"
+  }
   $result = [ordered]@{
     schema=1;phase="12.10-wfp";synthetic=$true;read_only=$true
     result="SYNTHETIC_PASS";mutation_performed=$false;secrets_exported=$false
     scenarios=@("current-pid-loopback-v4-v6", "hexadecimal-pid", "wildcard-rejected",
-                "stale-pid-rejected", "missing-events-unknown")
+                "stale-pid-rejected", "missing-events-unknown",
+                "missing-history-vs-access-denied-vs-query-error")
     summary=$rows
     canonical_backend_ports_private="UNCHANGED_FAIL"
   }
@@ -166,6 +203,8 @@ $errorCategory = "NONE"
 $records = @()
 $processes = @()
 $limitReached = $false
+$processStatus = "NOT_CHECKED"
+$eventQueryStatus = "NOT_RUN"
 try {
   if (-not [Environment]::OSVersion.Platform.ToString().Equals("Win32NT")) {
     throw "WINDOWS_REQUIRED"
@@ -173,6 +212,7 @@ try {
   $now = [DateTimeOffset]::UtcNow
   # Keep only currently running Java process generations; never output raw paths.
   $java = @(Get-CimInstance -ClassName Win32_Process -Filter "Name = 'java.exe' OR Name = 'javaw.exe'" -ErrorAction Stop)
+  $processStatus = "CAPTURED"
   foreach ($p in $java) {
     if ($null -eq $p.CreationDate) { continue }
     $start = [DateTimeOffset]([datetime]$p.CreationDate)
@@ -185,7 +225,20 @@ try {
   $windowMs = 7 * 24 * 3600 * 1000
   $xpath = "*[System[(EventID=5154 or EventID=5158) and TimeCreated[timediff(@SystemTime) <= $windowMs]] and EventData[$portClause]]"
   $maxEvents = 2500
-  $events = @(Get-WinEvent -LogName Security -FilterXPath $xpath -MaxEvents $maxEvents -ErrorAction Stop)
+  try {
+    $events = @(Get-WinEvent -LogName Security -FilterXPath $xpath -MaxEvents $maxEvents -ErrorAction Stop)
+    $eventQueryStatus = "CAPTURED"
+  } catch {
+    $errorCategory = Get-WfpEventQueryErrorCategory $_
+    if ($errorCategory -eq "NO_RETAINED_MATCHING_WFP_EVENTS") {
+      $eventQueryStatus = "NO_MATCHING_EVENTS"
+      $status = "NO_EVIDENCE"
+    } else {
+      $eventQueryStatus = "ERROR"
+      $status = "UNAVAILABLE"
+    }
+    $events = @()
+  }
   $limitReached = $events.Count -ge $maxEvents
   foreach ($ev in $events) {
     try {
@@ -197,9 +250,17 @@ try {
       $errorCategory = "PARTIAL_WFP_EVENT_PARSE_ERROR"
     }
   }
+    if ($errorCategory -eq "PARTIAL_WFP_EVENT_PARSE_ERROR") {
+      $status = "UNAVAILABLE"
+    }
 } catch {
   $status = "UNAVAILABLE"
-  $errorCategory = "AUDIT_RECORDS_UNAVAILABLE_OR_ACCESS_DENIED"
+  if ($processStatus -ne "CAPTURED") {
+    $processStatus = "ERROR"
+    $errorCategory = "JAVA_PROCESS_INVENTORY_FAILED"
+  } else {
+    $errorCategory = "UNHANDLED_WFP_READER_ERROR"
+  }
 }
 
 $rows = @(Get-WfpSummary -Records $records -LiveJava $processes -Plan $targets)
@@ -210,6 +271,8 @@ if ($status -eq "REVIEW_REQUIRED" -and $records.Count -eq 0 -and $errorCategory 
 $report = [ordered]@{
   schema=1;phase="12.10-wfp";generated_at=(Get-Date).ToString("o")
   result=$status;error_category=$errorCategory
+  process_inventory_status=$processStatus
+  event_query_status=$eventQueryStatus
   synthetic=$false;read_only=$true
   provider="Existing Windows Security WFP audit event 5154/5158"
   audit_policy_changed=$false
@@ -229,5 +292,5 @@ $report = [ordered]@{
 $report | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $out -Encoding UTF8
 Write-Host ("WFP independent audit: "+$status+" / "+$errorCategory)
 Write-Host ("Report: "+$out)
-if ($status -eq "UNAVAILABLE") { exit 2 }
+if ($status -eq "UNAVAILABLE" -or $status -eq "NO_EVIDENCE") { exit 2 }
 exit 0
