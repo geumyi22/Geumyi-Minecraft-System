@@ -35,6 +35,14 @@ This report is intentionally not marked PASS until the real server PC, Java clie
 - This is **not** release-grade 12.11 PASS. Mandatory Day 12.10 `backend_ports_private` remains FAIL; do not promote Stable or mark Day 12 complete.
 - **Next safe operator step:** GSCM real-device read-only connectivity/reconnect, real-time fleet status and console-view check. Do not revoke/delete/re-pair devices, restart servers or apply updates for this basic check.
 
+## Operator-reported GSCM basic pre-E2E — 2026-10-10 KST (partial, non-release-grade)
+
+- Operator replied **"됨"** after the actual-device GSCM checklist: GSC connected and displayed fleet state, Wild/Playground/Lobby state matched observed operation, live status refreshed, connection survived app termination/relaunch, and console read/view worked.
+- Record **OPERATOR_REPORTED_PASS** limited to these five listed GSCM **read-only/basic connectivity** checks. Device platform (Android/iOS) and attached device-side logs were not supplied, so do not claim both platforms independently verified.
+- This does **not** verify GSCM mutation flows (start/stop/restart, backup/restore, updates, revoke/delete/re-pair) or all server profiles. In particular Other remained excluded from prior Java and Bedrock pre-E2E checks.
+- Day 12.10 mandatory `backend_ports_private` is still **FAIL**. Full 12.11 E2E and 12.13 Stable release are still **PENDING/BLOCKED**.
+- **Next:** plan safe partial operations checks and independent resolution of runtime backend bind attestation; avoid repeating the successful basic client checks or triggering production destructive operations.
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
