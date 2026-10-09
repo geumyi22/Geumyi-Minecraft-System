@@ -108,6 +108,14 @@
 - **Infrastructure limitation:** current single GitHub-hosted Windows runner cannot supply an independent routable stage client; no real two-host execution has occurred. Do not fake 2-host proof by connecting to the runner's own nonloopback address or exposing an insecure tunnel.
 - This is source/test-plan preparation only. Do not modify production firewall, restart GSC/Paper or remove the 36 broad Allow candidates. The existing mandatory `backend_ports_private` remains **FAIL**; a future compensating-control security gate would require explicit operator review and acceptance and must not silently override direct bind-owner proof.
 
+## GSC source guard rollout — one read-only operator check needed (2026-10-10)
+
+- Source patch is CI validated (Go/Host Test/System CI), but **not installed**. It will refuse fixed Day12 Paper profile startups if disk or GSC Java/RCON port settings deviate or Java `server-ip` isn't exactly `127.0.0.1`; it does not prove runtime RCON or Java socket ownership and is not a remedy for absent Windows TCP listener rows.
+- A distinct CI-tested, **read-only config compatibility** report is ready: `Day12_Phase10_GSC_Guard_Rollout_Precheck_READ_ONLY.cmd`. This is the **only required host action at the current handoff**. No repeated WFP/TCP listeners/second-PC scans.
+- Operator returns the sanitized `Day12-GSC-Guard-Precheck-*.json`; even `CONFIG_COMPATIBLE_REVIEW_ONLY` must not flip `backend_ports_private` or count as E2E proof. A `CHECK_REQUIRED` means classify and plan rollback before any change.
+- CI: GSC Host Test `37985531392` SUCCESS, System CI `37985531374` SUCCESS; Day12 Windows Safety CI `37985723489` SUCCESS and Operator Kit `37985700059` SUCCESS.
+- [Rollout source/verification handoff](DAY12-PHASE10-GSC-GUARD-ROLLOUT-HANDOFF.md). Do not automatically update production GSC, start/stop Java, change firewall, remove rules, touch Golden or claim Stable release. Separate approval required for every deployment with an effect on running host.
+
 ## Production-safety rule and operator handoff
 
 - User explicitly allows autonomous **source inspection, GitHub changes, documentation and synthetic CI** without repeated check-ins.
