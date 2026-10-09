@@ -46,7 +46,7 @@ try {
   # Real client-only installs advertise InstallLocation via this uninstall key.
   # Create it ONLY on a verified disposable GitHub Windows runner, never on a
   # user's machine, and remove exactly this owned test key in finally.
-  [void](New-Item -Path $reg -ItemType RegistryKey -ErrorAction Stop)
+  [void](New-Item -Path $reg -ErrorAction Stop)
   $registryCreated=$true
   [void](New-ItemProperty -LiteralPath $reg -Name "InstallLocation" -PropertyType String -Value $installed -Force -ErrorAction Stop)
   & gh release download "system-2026.10.07-day11-gsc438-beta" --repo $env:GITHUB_REPOSITORY --pattern "GeumyiServerCenter.exe" --dir $baseline --clobber
