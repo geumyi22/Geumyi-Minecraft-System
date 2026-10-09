@@ -11,10 +11,10 @@ $end=Join-Path $SessionDir "soak-end.json"
 $report=Join-Path $SessionDir "FINAL-SOAK-REPORT.json"
 function ProcKey([object]$p){
   $name=[string]$p.name
-  $pid=[int]$p.pid
+  $processId=[int]$p.pid
   $stamp=[string]$p.started_at
   if($stamp -eq ""){$stamp="START_TIME_UNAVAILABLE"}
-  return "$name|$pid|$stamp"
+  return "$name|$processId|$stamp"
 }
 function Compare-Procs([object[]]$Old,[object[]]$New){
   $start=@{};foreach($p in @($Old)){if($null -ne $p){$start[(ProcKey $p)]=$p}}
