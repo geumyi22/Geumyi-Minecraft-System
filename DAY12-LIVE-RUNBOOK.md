@@ -227,6 +227,13 @@
 - 다음 1회만 필요 시: **최신 Day12 Operator Kit**에서 서버 PC `tools\\day12\\Day12_Phase10_Startup_Log_Bind_READ_ONLY.cmd` 실행 → 바탕화면 `Geumyi-Day12-Startup-Bind\\Day12-Startup-Bind-*.json` 최신 하나 제출. `latest.log` 파일의 앞부분 최대 6MiB에서 Java/RCON 각각의 시작 시 수신 주소 안내문을 읽고 **루프백/와일드카드/기타**로 분류합니다. 로그 원문·비밀번호·닉네임·경로는 내보내지 않습니다. 서버 재시작이나 포트 접속 없음.
 - **경계:** Paper 로그 형식이 달라 안내문이 없으면 `NO_STARTUP_BIND_MESSAGE`로 보고하며 이를 안전하다고 간주하지 않습니다. 로그가 수신 주소를 나타내도 실행 시점 증거일 뿐 현재 소켓 바인딩을 보증하지 않습니다. RCON과 Java는 독립적으로 검토합니다. 12.10 `backend_ports_private` FAIL 및 Stable 차단 유지. 다음 단계가 운영 환경 변경을 요구할 경우 따로 승인받습니다.
 
+## 2026-10-10 02:20:13 애플리케이션 로그 확인: Java·RCON 8/8 시작 당시 루프백
+
+- `Day12-Startup-Bind-20261010-022013.json` 실제 서버 PC, 읽기 전용, 4개 프로필 `latest.log` 각각의 **Java+RCON 시작 주소 LOOPBACK 8/8 검출**. 야생/놀이터 로그 마지막 기록 10.6분 전, 로비 60.3분 전, 기타 4123.9분 전(이전 Fleet OFFLINE)이므로 **시작 당시 기록이지 현재 전 서버 온라인·리스너 독점 바인딩 증명이 아닙니다**. 로그 4개 모두 스캔 절단 없음.
+- 앞선 02:05 디스크 설정 4/4 loopback, localhost Java/RCON 6/6, 별도 PC 내부포트 LAN 0/8 불가 결과와 합치면 **정상 설계를 뒷받침하는 강한 다중 근거**를 확보했습니다. 현재 포트 노출을 확인한 증거는 없으나 **OS 런타임 리스너 모든 포트의 현재 bind+owner 확증은 미해결**입니다.
+- 이 단계에서 **추가 CMD 실행 요구하지 않음**. Java와 RCON의 시작 로그는 별도 증거로 완료 처리하되 기존 정식 `backend_ports_private` FAIL/12.10 OPEN, Stable BLOCKED 유지. 동일 TCP 진단과 로그 검사 반복 금지.
+- 다음은 assistant가 **GitHub의 12.11 E2E·12.12 soak 안전 준비**를 검토합니다. 실제 서버 중단·재시작·설정 변경이 필요한 경우에만 구체적 영향/백업/롤백을 알려 사용자 실행·승인을 받습니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
