@@ -455,6 +455,15 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **NO live install signed**, no deployment signing key called, no canary/beta/Stable publication, no operator installation authority. Unsigned preview must not be installed. GSC deploy requires user permission, valid signed prerelease and verified host-only transaction/rollback plus player/Golden checks. The canonical `backend_ports_private` remains **FAIL** and Day12.11 full E2E/12.12 soak/12.13 Stable **BLOCKED**.
 - See `DAY12-PHASE10-GSC-GUARD-ROLLOUT-HANDOFF.md` and `DAY12-PHASE10-GSC-4.3.9-RC-ROLLBACK-PLAN.md`. No more repeated file/port scans solely to duplicate the confirmed compatible 05:18 snapshot.
 
+## 2026-10-10 — GSC 4.3.9-rc.1 signed Canary DRAFT (uploaded bytes audited; NOT live)
+
+- User approved preparation of Canary testing distribution, **not** live production Host/Stable promotion. Built GSC-only `deployment-canary.json` from separately versioned, CI-passed unsigned 4.3.9-rc.1 candidate, pinned setup SHA256 `5d6a69ade04f3afb1c1e5367b5380559cadcf901eda35eb383d6cb83ed2ec539`.
+- Reused existing Ed25519 deployment key, derived public key matched historically published Day11 4.3.8 beta `deployment-public.pem`. No signing key change or private key exported. **Windows Setup.exe is NOT Authenticode-signed; signed manifest only.**
+- GitHub release creation job `37988376060` signed and created an unpublished **DRAFT** but finished FAIL on an inappropriate GET-by-tag lookup (GitHub untagged draft placeholder). Kept draft unlisted rather than creating a duplicate or publishing it.
+- Separate corrected read-only audit [`37988929955`](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/37988929955) **SUCCESS**: exactly one GitHub `draft=true`, `prerelease=true`, `published_at=null`, six correct GSC-only assets. Retrieved **actual** uploaded asset bytes and independently verified SHA256SUMS, pinned Setup SHA256, Ed25519 manifest signature and only GSC canary component. No Stable manifest.
+- Draft creation workflow now manual-only and refuses duplicate existing tag/title; no installed GSC can auto-discover this draft because normal update discovery skips drafts. **No signed GSC update applied to the user's computer.** Host remains GSC 4.3.8; Golden 4/4 and firewall/worlds unchanged. No further user action currently needed until secondary-PC controlled update/rollback is ready.
+- Comprehensive writeup: `DAY12-PHASE10-GSC-4.3.9-RC1-SIGNED-CANARY-DRAFT-REPORT.md`. Canonical `backend_ports_private` FAIL; 12.11 full E2E, 12.12 live soak and 12.13 Stable **BLOCKED**.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
