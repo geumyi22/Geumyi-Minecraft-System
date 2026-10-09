@@ -1,0 +1,71 @@
+name: Day12 GSC Host RC3 Disposable Windows Service Transaction
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/day12-gsc-host-rc3-disposable-service.yml'
+      - 'tools/day12/Test_Day12_GSC_Host_RC3_Disposable_Service_CI.ps1'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: day12-host-rc3-disposable-service
+  cancel-in-progress: false
+
+jobs:
+  actual-disposable-service:
+    name: Real Windows GSC Host service RC3 update/restore (never production)
+    runs-on: windows-latest
+    timeout-minutes: 15
+    env:
+      GEUMYI_GSC_RC_STAGE: isolated_ci_host_service
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+      - name: Download pinned successful unsigned RC3 preview
+        uses: actions/download-artifact@v8
+        with:
+          run-id: 37995231947
+          github-token: ${{ github.token }}
+          name: gsc-4.3.9-rc.3-UNSIGNED-DO-NOT-INSTALL
+          path: candidate-output
+      - name: Parse Windows PowerShell script without executing it
+        shell: pwsh
+        run: |
+          $p='tools/day12/Test_Day12_GSC_Host_RC3_Disposable_Service_CI.ps1'
+          $tokens=$null; $errors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -ne 0){
+            $errors|ForEach-Object{Write-Host $_.ErrorId}
+            throw 'Disposable Host script parse failed'
+          }
+      - name: Exercise pinned real Host 4.3.8 service to RC3 and manual restoration
+        shell: pwsh
+        run: |
+          & ./tools/day12/Test_Day12_GSC_Host_RC3_Disposable_Service_CI.ps1 -CandidateDir candidate-output
+          if($LASTEXITCODE -ne 0){throw 'Disposable Host exercise failed'}
+          $path=Join-Path $env:RUNNER_TEMP 'Day12-GSC-Host-RC3-Service-Report.json'
+          if(-not (Test-Path -LiteralPath $path)){throw 'Sanitized service test report missing'}
+          $r=Get-Content -LiteralPath $path -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'DISPOSABLE_HOST_SERVICE_UPDATE_AND_MANUAL_RESTORE_PASS' -or
+             !$r.baseline_host_sha_verified -or !$r.baseline_service_health_verified -or
+             !$r.real_service_update_verified -or !$r.installed_candidate_sha_verified -or
+             !$r.official_backup_sha_verified -or !$r.manual_service_restore_verified -or
+             !$r.service_removed -or !$r.registry_removed -or
+             $r.production_host_modified -or $r.minecraft_server_started -or
+             $r.backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Sanitized Host service pass contract not met'
+          }
+      - name: Preserve sanitized report (even when test fails)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: day12-host-rc3-disposable-service-report
+          path: ${{ runner.temp }}/Day12-GSC-Host-RC3-Service-Report.json
+          if-no-files-found: warn
+          retention-days: 14
