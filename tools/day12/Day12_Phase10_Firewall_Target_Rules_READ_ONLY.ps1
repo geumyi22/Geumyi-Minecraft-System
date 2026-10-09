@@ -207,8 +207,24 @@ try {
   $num=0
   foreach($r in $fw){
     $num++
+    # Cheap protocol/port prefilter first. Avoid six extra CIM calls
+    # for the many Windows rules unrelated to the guarded service ports.
     try {
       $port=Get-NetFirewallPortFilter -AssociatedNetFirewallRule $r -ErrorAction Stop
+    }catch{
+      $skipped++
+      $errors+="PORT_FILTER_QUERY_FAILED"
+      continue
+    }
+    $proto=Val $port "Protocol"
+    $protoScope=ProtocolScope $proto
+    if($protoScope -eq "OTHER"){continue}
+    $matches=$false
+    foreach($p in @($privatePorts+$positivePorts)){
+      if((PortOverlap (Val $port "LocalPort") $p) -ne "NO_MATCH"){$matches=$true;break}
+    }
+    if(-not $matches){continue}
+    try {
       $app=Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $r -ErrorAction Stop
       $address=Get-NetFirewallAddressFilter -AssociatedNetFirewallRule $r -ErrorAction Stop
       $intf=Get-NetFirewallInterfaceFilter -AssociatedNetFirewallRule $r -ErrorAction Stop
@@ -220,14 +236,6 @@ try {
       $errors+="ASSOCIATED_FILTER_QUERY_FAILED"
       continue
     }
-    $proto=Val $port "Protocol"
-    $protoScope=ProtocolScope $proto
-    if($protoScope -eq "OTHER"){continue}
-    $matches=$false
-    foreach($p in @($privatePorts+$positivePorts)){
-      if((PortOverlap (Val $port "LocalPort") $p) -ne "NO_MATCH"){$matches=$true;break}
-    }
-    if(-not $matches){continue}
     # All sensitive source attributes are reduced to coarse classifications;
     # no raw rule names/IDs, local/remote IPs, app paths or interface aliases.
     $alias=Val $intf "InterfaceAlias"
