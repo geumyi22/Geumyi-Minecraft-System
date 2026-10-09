@@ -32,6 +32,12 @@
 - GSC UpdateStatus.BlockStart is serialized with omitempty. Initial script treated a missing flag as true. Revised script interprets absent block_start as false only if updater status exists with known safe phase; explicit true, missing status, active update, no Golden, players and queued jobs still fail closed.
 - Synthetic tests cover omitted and explicitly true flags, unsafe downloading, missing update status, and safe available phase. Re-download the current Operator Kit; do not execute the stale preflight again. One guarded graceful Playground restart remains the only planned action. If it cannot confirm safety, it exits without mutation.
 
+## Result of the one authorized real-host restart (2026-10-10 02:47 KST)
+
+- `Day12-Scoped-Restart-20261010-024734.json`: GSC Playground graceful restart accepted, **job completed**, server **ONLINE before and after**, verified protected Golden, zero players, zero jobs, updater phase `current`, `block_start=false`.
+- A single native listener inventory was CAPTURED but returned **NOT_OBSERVED** for `25571` Java and `25576` RCON. Thus lifecycle PASS but **OS private bind proof still incomplete**. This result does not imply exposure or full security verification.
+- **Stop here. Do not repeat the restart** without a new hypothesis or approved operational need. Preserve all protected Golden backups; 12.10 canonical FAIL and Stable hold remain. Follow `DAY12-PHASE10-SECURITY-DECISION-PACKET.md` for acceptable next proof/policy routes.
+
 ## Consequences and rollback
 
 A successful Playground restart temporarily disconnects anyone there (the tool blocks if connected players are reported), and may run existing start-time plugin update policies. All other servers are intended to remain running. If restart health fails, retain the prior Golden backup and submit the JSON; do not perform automated restoration or another restart. Use GSC's existing controlled recovery/rollback path **only after** reviewing logs and backup health. The protected Golden remains immutable.
