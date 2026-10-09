@@ -60,7 +60,9 @@ jobs:
           if($r.result -ne 'DISPOSABLE_CLIENT_UPDATE_AND_MANUAL_RESTORE_PASS' -or
              !$r.baseline_sha_verified -or !$r.failed_update_preserved_client -or
              !$r.updated_client_hash_verified -or !$r.old_client_backup_verified -or
-             !$r.manual_restore_verified -or $r.real_subpc_modified -or
+             !$r.manual_restore_verified -or !$r.first_target_is_temporary -or
+             !$r.first_failure_caused_by_directory -or !$r.second_install_dir_is_temporary -or
+             !$r.owned_disposable_registry_key_removed -or $r.real_subpc_modified -or
              $r.production_server_modified -or $r.host_service_modified -or
              $r.backend_ports_private -ne 'UNCHANGED_FAIL'){
             throw 'Client-only disposable transaction did not pass'
