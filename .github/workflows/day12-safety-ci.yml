@@ -419,6 +419,20 @@ jobs:
             throw 'GetTcpTable2 listener+scope fixture contract failed'
           }
 
+      - name: Synthetic process and configuration binding preflight
+        shell: powershell
+        run: |
+          $dir=Join-Path $env:RUNNER_TEMP 'day12-process-bind-synthetic'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_Process_Bind_Preflight_READ_ONLY.ps1 -Synthetic -OutputDir $dir
+          if($LASTEXITCODE -ne 0){throw 'Day12 process/bind preflight synthetic failed'}
+          $out=@(Get-ChildItem -LiteralPath $dir -File -Filter '*.json')
+          if($out.Count -ne 1){throw 'Expected exactly one preflight report'}
+          $r=Get-Content -LiteralPath $out[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.allowlist_ok -or -not $r.no_password_export -or
+             -not $r.read_only -or -not $r.synthetic -or $r.mutation_performed){
+             throw 'Preflight synthetic schema/regression failure'
+          }
+
       - name: Synthetic final verifier
         shell: powershell
         run: |
