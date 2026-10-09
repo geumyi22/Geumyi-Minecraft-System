@@ -461,6 +461,20 @@ jobs:
             throw 'Soak synthetic process identity contract failed'
           }
 
+      - name: Synthetic guarded playground restart preflight (no server action)
+        shell: powershell
+        run: |
+          $dir=Join-Path $env:RUNNER_TEMP 'day12-scoped-restart-synthetic'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_Scoped_Graceful_Restart.ps1 -Synthetic -OutputDir $dir
+          if($LASTEXITCODE -ne 0){throw 'Scoped restart preflight synthetic failed'}
+          $files=@(Get-ChildItem -LiteralPath $dir -Filter '*.json' -File)
+          if($files.Count -ne 1){throw 'Scoped restart synthetic report missing'}
+          $r=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.synthetic -or
+             $r.mutation_performed -or $r.restart_accepted){
+            throw 'Guarded restart synthetic fail-closed regression'
+          }
+
       - name: Synthetic final verifier
         shell: powershell
         run: |
