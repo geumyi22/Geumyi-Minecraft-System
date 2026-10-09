@@ -68,7 +68,9 @@ try{
  if(Test-Path -LiteralPath $tempTarget){throw "TEMP_RESTORE_TARGET_EXISTS"}
  Copy-Item -LiteralPath $restore -Destination $tempTarget -ErrorAction Stop
  if(-not (HashMatches $tempTarget $oldHash)){throw "RESTORE_STAGED_SHA_MISMATCH"}
- Move-Item -LiteralPath $tempTarget -Destination $client -Force -ErrorAction Stop
+ $preimage=$client+".gsc-rc2-before-restore"
+ if(Test-Path -LiteralPath $preimage){throw "PREIMAGE_BACKUP_ALREADY_EXISTS"}
+ [IO.File]::Replace($tempTarget,$client,$preimage,$true)
  if(-not (HashMatches $client $oldHash)){throw "RESTORED_CLIENT_SHA_MISMATCH"}
  $report.restore_completed=$true
  $report.result="RESTORE_438_VERIFIED"
@@ -84,7 +86,7 @@ try{
  "INSTALLED_CLIENT_NOT_APPROVED_RC2","OFFICIAL_438_RECOVERY_SHA_MISMATCH",
  "MULTIPLE_GSC_CLIENT_PROCESSES_UNSAFE","PROCESS_PATH_UNREADABLE",
  "UNRELATED_GSC_CLIENT_PROCESS_UNSAFE","OPERATOR_CANCELLED","TEMP_RESTORE_TARGET_EXISTS",
- "RESTORE_STAGED_SHA_MISMATCH","RESTORED_CLIENT_SHA_MISMATCH")
+ "RESTORE_STAGED_SHA_MISMATCH","PREIMAGE_BACKUP_ALREADY_EXISTS","RESTORED_CLIENT_SHA_MISMATCH")
  $report.issue_code=if($allowed -contains $msg){$msg}else{"CHECK_REQUIRED_UNCLASSIFIED"}
  Write-Host ("Restore stopped: "+$report.issue_code)
 }finally{
