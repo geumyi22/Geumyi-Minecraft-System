@@ -125,9 +125,12 @@ jobs:
         run: |
           python tools/day12/test_validate_final_release_gates.py
           if($LASTEXITCODE -ne 0){throw 'Day12 final release gate synthetic tests failed'}
-          # The checked-in production release state MUST remain blocked.
+          # Before real final approval the manifest must be blocked; AFTER
+          # a genuine all-PASS closure, this CI itself must not prevent Stable.
+          $g=Get-Content -LiteralPath 'FINAL-RELEASE-GATES.json' -Raw -Encoding UTF8|ConvertFrom-Json
           python tools/day12/validate_final_release_gates.py FINAL-RELEASE-GATES.json
-          if($LASTEXITCODE -ne 2){throw 'Production final release gates unexpectedly open'}
+          $expected=if($g.status -eq 'VERIFIED_ALL_MANDATORY_GATES'){0}else{2}
+          if($LASTEXITCODE -ne $expected){throw 'Final release validator status/exit contract mismatch'}
           $global:LASTEXITCODE=0
 
       - name: Validate Day 12 JSON contracts
