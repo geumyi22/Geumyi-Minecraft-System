@@ -26,6 +26,12 @@
 - Synthetic Windows CI checks accepted preflight, active jobs, player present and missing Golden failure cases **without contacting any GSC host**. CI success does **not** establish real-server E2E.
 - **Stop and review**, rather than force stopping or starting repeatedly, if the script produces `BLOCKED_*`, `RESTART_JOB_*_REVIEW`, missing backup, auth/API error, or an unexpected update state.
 
+## 2026-10-10 02:41 — real preflight blocked by omitted update flag
+
+- Submitted Day12-Scoped-Restart-20261010-024155.json from the server PC: protected verified full Golden, Playground online, zero players and zero GSC control jobs passed; **no restart was accepted or performed**. BLOCKED_UPDATE_BLOCK_START is not proof of a real update block.
+- GSC UpdateStatus.BlockStart is serialized with omitempty. Initial script treated a missing flag as true. Revised script interprets absent block_start as false only if updater status exists with known safe phase; explicit true, missing status, active update, no Golden, players and queued jobs still fail closed.
+- Synthetic tests cover omitted and explicitly true flags, unsafe downloading, missing update status, and safe available phase. Re-download the current Operator Kit; do not execute the stale preflight again. One guarded graceful Playground restart remains the only planned action. If it cannot confirm safety, it exits without mutation.
+
 ## Consequences and rollback
 
 A successful Playground restart temporarily disconnects anyone there (the tool blocks if connected players are reported), and may run existing start-time plugin update policies. All other servers are intended to remain running. If restart health fails, retain the prior Golden backup and submit the JSON; do not perform automated restoration or another restart. Use GSC's existing controlled recovery/rollback path **only after** reviewing logs and backup health. The protected Golden remains immutable.
