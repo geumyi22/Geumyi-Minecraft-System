@@ -199,6 +199,13 @@
 - 다음 단일 실행: 최신 Operator Kit의 `tools\\day12\\Day12_Phase10_TcpTable2_READ_ONLY.cmd`, **서버 PC 일반 권한**. Windows 공식 IPv4 `GetTcpTable2`로 온라인 Java/RCON 6포트의 LISTEN 주소 범위만 3차례 읽습니다. TCP 접속, 서버 재시작, API 호출, 월드/방화벽/백업 변경 없음. 바탕화면 `Geumyi-Day12-TcpTable2\\Day12-TcpTable2-*.json` 최신 하나만 제출하세요. **Windows 합성 CI 통과 이후** 실행합니다.
 - 이 결과는 IPv4에 한정됩니다. 12.10 최종 검증과 외부 노출/IPv6/실게임 E2E는 별도입니다. 새 도구 결과만으로 `backend_ports_private`를 PASS로 바꾸거나 Stable을 배포하지 않습니다. 여전히 미확인이면 추가 단순 스캔을 멈추고 유지보수 창에 프로세스/리스너 설정을 직접 확인하는 설계 검토가 필요합니다.
 
+## 2026-10-10 01:51 결과 — GetTcpTable2 0/6, 반복 스캔 중단
+
+- `Day12-TcpTable2-20261010-015103.json`: **실서버** `GetTcpTable2` IPv4 표 조회 3/3 성공, 오류 없음, 대상 온라인 Java/RCON 포트 여섯 개 `25570/25571/25573/25575/25576/25579` 모두 **LISTEN 행 0개**. 네트워크 연결·설정 변경 없음. `0건`을 **포트 외부 노출이나 서비스 다운으로 단정 금지**; 기존 Native LISTENER(25570/25571/25579 loopback 관측), 6/6 localhost 연결, 서브 PC 0/8 내부 포트 불가와 측정 시점/방법이 다릅니다.
+- 이 보고서의 마지막 해석 및 후속 결정: [`DAY12-PHASE10-BIND-DECISION-REPORT.md`](DAY12-PHASE10-BIND-DECISION-REPORT.md). **반복 READ-ONLY TCP 진단은 여기서 중단**합니다. 전체 12.10 `backend_ports_private`는 기존 최종 실기기 검증의 **18 PASS / 0 WARN / 1 FAIL** 유지입니다.
+- 다음은 사용자가 별도 승인한 **유지보수 창 기반 실행 중 Java/RCON 프로세스 소유권·실제 bind 주소 검증**. 먼저 기존 증거/설정과 서비스 기동 경로를 읽기 전용으로 정리하고, 필요할 때만 승인된 한 서버로 범위를 제한한 제어 테스트를 계획합니다. 무단 서버 재부팅/종료, Windows 방화벽·ACL 변경, RCON 비밀번호/포트 변경, Golden 덮어쓰기, Stable 승격 금지. 별도 동의 전에 운영환경 변경하지 않습니다.
+- 다음 단계는 12.10의 근거 확보와 12.5 안전 검토 마무리이며, 그 후 12.11 Live E2E → 12.12 soak → 12.13 Stable → Day1–12 전체 파일 정리입니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
