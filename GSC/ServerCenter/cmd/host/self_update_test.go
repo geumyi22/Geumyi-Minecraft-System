@@ -96,6 +96,14 @@ func TestDay11SelfUpdateLaunchLockRejectsConcurrentAndRecoversStale(t *testing.T
 }
 
 
+func TestGSCPrereleaseMalformedVersionFailClosed(t *testing.T) {
+	for _, v := range []string{"4.3.9-", "4.3.9-rc..1", "4.3.9-rc/1"} {
+		if _, err := compareGSCVersions("4.3.8", v); err == nil {
+			t.Fatalf("invalid prerelease accepted: %q", v)
+		}
+	}
+}
+
 func TestDay11GSCVersionComparisonBlocksDowngrade(t *testing.T) {
 	cases := []struct {
 		a, b string
@@ -106,6 +114,18 @@ func TestDay11GSCVersionComparisonBlocksDowngrade(t *testing.T) {
 		{"4.3.8", "4.3.7", 1},
 		{"4.10.0", "4.9.9", 1},
 		{"v4.3.8", "4.3.8+119", 0},
+		{"4.3.8-rc.1", "4.3.8", -1},
+		{"4.3.9-rc.1", "4.3.9", -1},
+		{"4.3.9-rc.1", "4.3.9-rc.2", -1},
+		{"4.3.9-rc.2", "4.3.9-rc.10", -1},
+		{"4.3.9-alpha", "4.3.9-rc.1", -1},
+		{"4.3.9-rc.1", "4.3.9-rc.1+build5", 0},
+		{"4.3.9", "4.3.9-rc.10", 1},
+		{"4.3.8", "4.3.9-rc.1", -1},
+		{"4.3.9-rc.1", "4.3.8", 1},
+		{"4.3.9-rc.2", "4.3.9-rc.2.1", -1},
+		{"4.3.9-1", "4.3.9-beta", -1},
+
 	}
 	for _, tc := range cases {
 		got, err := compareGSCVersions(tc.a, tc.b)
