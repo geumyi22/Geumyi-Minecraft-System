@@ -141,6 +141,95 @@ func parseGSCVersion(v string) ([]int, error) {
 	return out, nil
 }
 
+// gscVersionPrerelease preserves prerelease ordering while keeping the
+// existing deployed numeric core parser. A release version is strictly newer
+// than its prerelease. Build metadata after '+' never affects precedence.
+func gscVersionPrerelease(v string) (string, error) {
+	v = strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(v, "v"), "V"))
+	if i := strings.IndexByte(v, '+'); i >= 0 {
+		v = v[:i]
+	}
+	i := strings.IndexByte(v, '-')
+	if i < 0 {
+		return "", nil
+	}
+	pre := v[i+1:]
+	if pre == "" {
+		return "", errors.New("empty GSC prerelease identifier")
+	}
+	for _, part := range strings.Split(pre, ".") {
+		if part == "" {
+			return "", errors.New("empty GSC prerelease segment")
+		}
+		for _, ch := range part {
+			if !(ch >= '0' && ch <= '9' || ch >= 'a' && ch <= 'z' ||
+				ch >= 'A' && ch <= 'Z' || ch == '-') {
+				return "", errors.New("invalid GSC prerelease segment")
+			}
+		}
+	}
+	return pre, nil
+}
+
+func gscNumericIdentifier(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func gscComparePrerelease(a, b string) int {
+	if a == b {
+		return 0
+	}
+	if a == "" {
+		return 1 // release > prerelease
+	}
+	if b == "" {
+		return -1
+	}
+	aa, bb := strings.Split(a, "."), strings.Split(b, ".")
+	for i := 0; i < len(aa) && i < len(bb); i++ {
+		if aa[i] == bb[i] {
+			continue
+		}
+		an, bn := gscNumericIdentifier(aa[i]), gscNumericIdentifier(bb[i])
+		if an && !bn {
+			return -1
+		}
+		if !an && bn {
+			return 1
+		}
+		if an {
+			ai := strings.TrimLeft(aa[i], "0")
+			bi := strings.TrimLeft(bb[i], "0")
+			if len(ai) < len(bi) {
+				return -1
+			}
+			if len(ai) > len(bi) {
+				return 1
+			}
+			if ai < bi {
+				return -1
+			}
+			return 1
+		}
+		if aa[i] < bb[i] {
+			return -1
+		}
+		return 1
+	}
+	if len(aa) < len(bb) {
+		return -1
+	}
+	return 1
+}
+
 func compareGSCVersions(a, b string) (int, error) {
 	av, err := parseGSCVersion(a)
 	if err != nil {
@@ -169,7 +258,15 @@ func compareGSCVersions(a, b string) (int, error) {
 			return 1, nil
 		}
 	}
-	return 0, nil
+	ap, err := gscVersionPrerelease(a)
+	if err != nil {
+		return 0, err
+	}
+	bp, err := gscVersionPrerelease(b)
+	if err != nil {
+		return 0, err
+	}
+	return gscComparePrerelease(ap, bp), nil
 }
 
 func requireNewerGSCVersion(target string) error {
