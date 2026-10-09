@@ -406,6 +406,30 @@ jobs:
           if($badProcess.ExitCode -eq 0){throw 'An invalid Golden report was accepted'}
           $global:LASTEXITCODE=0
 
+      - name: WFP 5154/5158 historical audit parser synthetic (no Security log access)
+        shell: powershell
+        run: |
+          $dest=Join-Path $env:RUNNER_TEMP 'day12-wfp-synthetic'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_WFP_Audit_Attestation_READ_ONLY.ps1 -Synthetic -OutputDir $dest
+          if($LASTEXITCODE -ne 0){throw 'WFP fixture command failed'}
+          $files=@(Get-ChildItem -LiteralPath $dest -Filter '*.json' -File)
+          if($files.Count -ne 1){throw 'WFP fixture must emit exactly one report'}
+          $t=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+          $a=@($t.summary | Where-Object {$_.port -eq 25570})
+          $b=@($t.summary | Where-Object {$_.port -eq 25571})
+          $c=@($t.summary | Where-Object {$_.port -eq 25572})
+          if($t.result -ne 'SYNTHETIC_PASS' -or -not $t.synthetic -or -not $t.read_only -or
+             $t.mutation_performed -or $t.secrets_exported -or
+             $t.canonical_backend_ports_private -ne 'UNCHANGED_FAIL' -or
+             $a.Count -ne 1 -or $a[0].finding -ne 'HISTORICAL_LOOPBACK_LISTEN_AND_BIND' -or
+             $b.Count -ne 1 -or $b[0].finding -ne 'REVIEW_NON_LOOPBACK_OR_UNPARSEABLE' -or
+             $c.Count -ne 1 -or $c[0].finding -ne 'NO_CURRENT_PROCESS_EVENT'){
+            throw 'WFP historical/audit fail-closed contract failed'
+          }
+          if((Get-Content -LiteralPath $files[0].FullName -Raw) -match 'C:\\Program Files\\Java|192\.0\.2\.1'){
+            throw 'WFP source path/address was leaked into report'
+          }
+
       - name: Synthetic native GetTcpTable2 IPv4 listener fixture
         shell: powershell
         run: |
