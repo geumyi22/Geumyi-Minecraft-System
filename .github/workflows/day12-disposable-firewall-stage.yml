@@ -2,6 +2,11 @@ name: Day12 Disposable Firewall CI Stage
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/day12-disposable-firewall-stage.yml'
+      - 'tools/day12/Day12_Phase10_Disposable_Firewall_Loopback_CI.ps1'
 
 permissions:
   contents: read
