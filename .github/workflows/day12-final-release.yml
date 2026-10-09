@@ -27,6 +27,8 @@ jobs:
           python-version: '3.13'
       - name: Final release gates
         run: python tools/day12/validate_final_release_gates.py FINAL-RELEASE-GATES.json
+      - name: Reject Stable when final Host native bind or runtime security is unproven
+        run: python tools/day12/validate_final_closure_evidence.py .
       - name: Closure documents finalized
         run: |
           python - <<'PY'
