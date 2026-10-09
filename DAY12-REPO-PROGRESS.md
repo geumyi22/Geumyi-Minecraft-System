@@ -382,6 +382,15 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Updated `tools/day12/Day12_Phase10_Firewall_Target_Rules_READ_ONLY.ps1` synthetic regression for known non-TCP versus genuine unknown protocols; **Windows Safety CI run `37980375757`: PASS** on commit `ecd6d7d98` (known non-TCP exclusion synthetic regression included). Full analysis: `DAY12-PHASE10-FIREWALL-TARGET-RESULT-20261010.md`. No live firewall, auditing, Java, world or Golden backup changes.
 - Security release decision unchanged: strict `backend_ports_private` **FAIL**; these counts lack application identity correlation and current bind ownership. Avoid requesting duplicate host scans; next engineering review of actual Java service identities and 40 broad rules must be fail-closed and preflighted before any changes.
 
+## 2026-10-10 — Java executable-to-firewall-rule correlation prepared (CI PASS)
+
+- After the operator's real 04:25 firewall rule snapshot (268 enabled rules, 40 broad Any-program Allow candidates on each private Java/RCON TCP port), implemented a separate **read-only Java executable program-filter correlation**: `tools/day12/Day12_Phase10_Java_Program_Rule_Match_READ_ONLY.ps1` plus Windows CMD launcher.
+- The script compares current Win32_Process `java.exe/javaw.exe` **ExecutablePath** to inbound ActiveStore per-rule application filter `Program` **in memory on the server PC**. It exports category counts and ephemeral rule ordinals, **not executable paths, raw firewall rule names/IDs, process command lines, PIDs, IP addresses or secrets**. It does not mutate Windows Firewall or processes.
+- Explicit categories distinguish `ALL_PROGRAMS`, `MATCHES_RUNNING_JAVA_EXE`, `NO_RUNNING_JAVA_EXE_MATCH`, `SPECIAL_SYSTEM_SCOPE`, `PROGRAM_UNRESOLVED` and `JAVA_IMAGE_INVENTORY_INCOMPLETE`. Incomplete Java executable paths fail closed. Matching any Java executable does **NOT** identify a Paper backend or listener owner and is **NOT** an effective firewall-policy decision.
+- **Windows Day 12 Read-Only Safety CI run 37981147007: PASS** (new synthetic Java/rule matching, path redaction and existing safety suite), source commit `8b2d3ec106e9146f7f9fdcac9784b71ffb78bfb1`. Instruction doc: `DAY12-PHASE10-JAVA-RULE-IDENTITY-REVIEW.md`. Operator Kit workflow on instruction+script-integrated `5a94afd73` running at time of this entry.
+- **Next meaningful input:** one new, scoped on-host process-aware application-rule report after kit build check. Do not re-request the old port-rule/Win32 TCP/WFP audit scans; do not claim private binding or Stable PASS from this result. The eventual specific deny/allow remediation still requires disposable-stage validation, health/rollback gates and **separate operator approval** before any host firewall mutation.
+- Golden 4/4 retained. Strict `backend_ports_private` **FAIL**; 12.11 release-grade E2E / 12.12 live soak / 12.13 Stable **BLOCKED**.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
