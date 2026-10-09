@@ -272,6 +272,20 @@ jobs:
             throw 'Loopback controlled fixture contract failure'
           }
 
+      - name: Synthetic active TCP server-endpoint trace against held loopback socket
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'day12-held-tcp'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_Active_Connection_Trace_READ_ONLY.ps1 -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Active TCP synthetic failed'}
+          $files=@(Get-ChildItem -LiteralPath $out -Filter '*.json' -File)
+          if($files.Count -ne 1){throw 'Active trace expected one JSON'}
+          $r=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.server_side_established_seen -or
+            -not $r.synthetic -or -not $r.read_only -or $r.mutation_performed){
+            throw 'Active trace controlled fixture regression'
+          }
+
       - name: Synthetic 12.10 configuration and bind evidence (fail-closed)
         shell: powershell
         run: |
