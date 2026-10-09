@@ -32,6 +32,13 @@
 5. **If application reports loopback:** useful additional evidence of start-time intent, still not an independent proof of **current** exclusive OS socket ownership. A controlled maintenance-window/live attestation or a separately approved equivalently strong segmented-network security policy may be necessary. It must not silently weaken the prior required standard.
 6. **Final sequence after positive proof:** rerun canonical read-only verifier once, reconcile remaining 12.1/12.2/12.5/12.7/12.9 live work, proceed 12.11 real Java/Bedrock/GSCM E2E → 12.12 soak → 12.13 Stable → user-approved Day1–12 temp cleanout.
 
+## 2026-10-10 02:20 real host application log result
+
+- Four configured profiles' present `latest.log` files independently reported **LOOPBACK** for Java **and** RCON startup binds, **8/8 startup message checks present** and no detected wildcard/nonloopback message.
+- Observed last-write ages in the operator-provided sanitized result: Wild/Playground ~11 min; Lobby ~60 min; Other ~69 h (offline in earlier GSC fleet). The tool did not export raw log lines, process IDs, usernames, passwords or addresses.
+- This confirms **Java+RCON start-time application claims**, directly addressing the earlier RCON ambiguity; it is not a new claim of simultaneous live sockets. The very stale Other log must **not** be used to claim currently-online RCON.
+- Existing `backend_ports_private` canonical gate is still FAIL because it explicitly requires positive runtime OS LISTEN bind evidence. Preserve that release block. Repeating the same diagnostics or altering a known-good server merely to make the scanner pass is not justified. Any controlled owner/bind attestation requires operator-approved maintenance and rollback.
+
 ## No-action boundaries
 
 This is repository analysis plus an optional scoped **read-only application-log** reporter. No server starts/stops, world writes, settings edits, Windows ACL/firewall changes, RCON credential access/export, backup deletion, or Stable promotion. A GitHub CI green result validates only the synthetic fixture, not the live host.
