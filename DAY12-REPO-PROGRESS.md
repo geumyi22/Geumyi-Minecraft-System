@@ -399,6 +399,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - User is asked only to run the new read-only CMD on the Minecraft SERVER PC once and share the new JSON, rather than rerunning the now-saturated TCP/WFP evidence scans. Any actual firewall changes, remote access policy revisions, loopback-affecting blocks or Stable promotion still require separately reviewed preflight and explicit consent.
 - Golden 4/4 remain untouched; mandatory `backend_ports_private` FAIL and full release gates remain blocked.
 
+## 2026-10-10 04:38 KST — real Java executable vs firewall application-rule correlation
+
+- User supplied `Day12-Java-Rule-Match-20261010-043824.json`, real server-PC read-only capture: **11/11 running Java paths captured**, three distinct executable images, **268** inbound ActiveStore rules, **zero associated-filter errors**, active network categories Private/Public. No firewall/process/world/backup mutations.
+- All eight private Java+RCON target TCP ports have the identical 98 Allow candidate classes: **40 `ALL_PROGRAMS`**, **0 `MATCHES_RUNNING_JAVA_EXE`**, **56 `NO_RUNNING_JAVA_EXE_MATCH`**, **2 `SPECIAL_SYSTEM_SCOPE`**, 0 unresolved, 0 incomplete inventory. One per-port Public/specific-program Block candidate **does not match the current Java executable set**. Six target candidate rows have unresolved port scope; do not confuse nested unknowns with extra rules.
+- Compared with the 04:25 firewall scope snapshot, **all 40 broad Allow candidate ordinals aligned** across captures (ordinal not a stable rule identifier). Of those 40, **36** are definite-port, `protocol=Any`, program/service/local+remote-address/interface all `Any`, authentication not required, with active network profile overlap. Remaining four: two named-port UNKNOWN, two local-address REDACTED. This is **metadata**, not an effective Windows Filtering Platform packet result, an external exposure finding, or OS bind-owner evidence.
+- **Stop repeated equivalent capture:** Java-specific Allow candidates were narrowed to 0, broadest Any-program set to 36. Future work: inspect real rule identities only **privately** and prepare disposable-stage test of narrowly scoped remote deny, preserving local proxy/GSC traffic; no production policy change, restarts or rules deletion without exact rollback and explicit user approval.
+- Published sanitized analysis `DAY12-PHASE10-JAVA-RULE-LIVE-RESULT-20261010.md`; source JSON remains private. **Canonical Day12.10 `backend_ports_private` FAIL**; full Day12.11 E2E/12.12 live soak/12.13 Stable remain blocked.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
