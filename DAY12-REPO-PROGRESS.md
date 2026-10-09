@@ -326,6 +326,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Only non-disruptive recovery preflight/CI preparations may proceed without a separate production maintenance plan. Protected Golden and known-good assets are unchanged.
 - **12.10 private backend bind gate stays FAIL** and 12.11 full E2E / 12.12 live soak / 12.13 Stable remain blocked.
 
+## 2026-10-10 — Other backup retention preview operator PASS
+
+- Operator replied **"됨"** after reviewing **GSC Other backup retention dry-run** and confirming that the protected Golden backup is **not** in deletion candidates. Record **OPERATOR_REPORTED_PASS** for this **single profile's non-mutating preview** only. No retention apply, backup deletion, protection toggle or restore was authorized/claimed.
+- Host source `buildBackupRetentionDryRun` excludes protected backups and checkpoints; this static review corroborates intended behavior without asserting all production profiles ran the preview or release-grade safety was closed.
+- Functional smoke checks completed to date: user-reported Java/Bedrock paths through Wild/Playground/Other, GSCM remote console and backup visibility, GSC updater read-only status, and Other retention preview. No need to repeat these simple confirmations.
+- Next priority is to resolve the Day12.10 **runtime listener address/ownership attestation discrepancy** with materially different evidence; no more redundant TCP table scans or blind production restarts. Maintain canonical `backend_ports_private` FAIL and Final Stable blocked.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
