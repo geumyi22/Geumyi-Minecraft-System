@@ -9,6 +9,7 @@ on:
       - 'deploy/components.json'
       - 'DAY12-LIVE-RUNBOOK.md'
       - 'DAY12-REPO-PROGRESS.md'
+      - 'DAY12-PHASE10-BIND-DECISION-REPORT.md'
       - 'FINAL-*.json'
       - 'FINAL-*.md'
       - '.github/workflows/day12-operator-kit.yml'
