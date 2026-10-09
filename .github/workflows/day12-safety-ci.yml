@@ -50,6 +50,55 @@ jobs:
           }
           Write-Host "Parsed $($files.Count) Day 12 PowerShell scripts."
 
+      - name: Day1-12 cleanup synthetic classifier and isolated Windows quarantine/restore
+        shell: powershell
+        run: |
+          $script=Join-Path (Get-Location) 'tools/day12/Geumyi_Day1To12_PC_Temp_Cleanup.ps1'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script -Synthetic
+          if($LASTEXITCODE -ne 0){throw 'Day1-12 cleanup classifier failed'}
+          $root=Join-Path $env:LOCALAPPDATA ('GeumyiCleanupCI-'+[guid]::NewGuid().ToString('N'))
+          $safe=Join-Path $root 'Geumyi-Day6-CI-Throwaway'
+          $protected=Join-Path $root 'Geumyi-Day9-CI-World'
+          $day12=Join-Path $root 'Geumyi-Day12-CI-HOLD'
+          $old=(Get-Date).AddDays(-21)
+          $origTemp=$env:TEMP;$origTmp=$env:TMP
+          try{
+            New-Item -Path $safe,$protected,$day12 -ItemType Directory -Force|Out-Null
+            $file=Join-Path $safe 'scratch.tmp'
+            Set-Content -LiteralPath $file -Value 'scratch-only'
+            New-Item -Path (Join-Path $protected 'world') -ItemType Directory|Out-Null
+            foreach($i in @($file,$safe,$protected,$day12)){
+              (Get-Item -LiteralPath $i).LastWriteTime=$old
+            }
+            $env:TEMP=$root;$env:TMP=$root
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script -Mode Preview -MinimumAgeDays 7
+            if($LASTEXITCODE -ne 0){throw 'CI cleanup Preview unexpectedly failed'}
+            $plans=Join-Path $env:LOCALAPPDATA 'Geumyi-Day1To12-Cleanup\Plans'
+            $p=Get-ChildItem -LiteralPath $plans -File -Filter 'plan-*.json' |
+              Sort-Object LastWriteTimeUtc -Descending|Select-Object -First 1
+            if($null -eq $p){throw 'Missing cleanup private plan'}
+            $plan=Get-Content -LiteralPath $p.FullName -Raw | ConvertFrom-Json
+            $safeRow=@($plan.items|Where-Object{$_.path -eq $safe})
+            $protectedRow=@($plan.items|Where-Object{$_.path -eq $protected})
+            $day12Row=@($plan.items|Where-Object{$_.path -eq $day12})
+            if($safeRow.Count -ne 1 -or -not $safeRow[0].eligible -or
+              $protectedRow.Count -ne 1 -or $protectedRow[0].eligible -or
+              $day12Row.Count -ne 1 -or $day12Row[0].eligible){
+              throw 'Temp allowlist/protected world/Day12 hold classifier regression'
+            }
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script -Mode Quarantine -PlanPath $p.FullName -Confirm 'QUARANTINE_GEUMYI_TEMP'
+            if($LASTEXITCODE -ne 0){throw 'CI cleanup quarantine failed'}
+            if(Test-Path -LiteralPath $safe){throw 'CI temp item was not quarantined'}
+            if(-not(Test-Path -LiteralPath $protected) -or -not(Test-Path -LiteralPath $day12)){throw 'Protected candidate moved'}
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script -Mode Restore -RunId $plan.run_id -Confirm 'RESTORE_GEUMYI_TEMP'
+            if($LASTEXITCODE -ne 0 -or -not(Test-Path -LiteralPath $safe)){throw 'CI restore failed'}
+            Write-Host 'Day1-12 cleanup isolated Windows preview/quarantine/restore PASS; Day12 HOLD confirmed'
+          }finally{
+            $env:TEMP=$origTemp;$env:TMP=$origTmp
+            if(Test-Path -LiteralPath $root){Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue}
+          }
+          $global:LASTEXITCODE=0
+
       - name: Read-only mutation guard
         shell: powershell
         run: |
