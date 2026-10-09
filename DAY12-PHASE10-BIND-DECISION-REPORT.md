@@ -30,7 +30,7 @@ The read-only data-gathering stage for this anomaly is **saturated**. Further re
 4. `server.properties` from earlier scoped binder evidence reported `server-ip=127.0.0.1` across the four managed server profiles. A configuration file can diverge from the actual running process binding or RCON listener; the canonical gate correctly requires runtime evidence.
 5. The official Windows `GetTcpTable2` API is an IPv4 TCP table. It does not establish IPv6 binding.
 6. The repeatedly empty/mismatching TCP tables might have process lifetime/compartment/collection/API interpretation causes. None is confirmed by this evidence. Do not assert compromise, service failure, a Windows platform defect, or a specific application bug.
-7. The 01:51 report does **not include an execution-host identity or a GSC-localhost fleet snapshot**; despite the operator instruction to run on the server PC, the JSON **does not independently establish it was executed on the actual Minecraft host**. If it ran on a remote management/sub PC, all six target LISTEN rows being absent would be unsurprising. Confirm the execution PC before planning any server interruption. The report also does not expose the total number of OS TCP entries, only the six target matches.
+7. The 01:51 report does not carry a host identity. **On 2026-10-10 the operator explicitly confirmed that `Day12_Phase10_TcpTable2_READ_ONLY.cmd` ran on the actual Minecraft SERVER PC, not the client/sub PC.** This settles the host-vantage ambiguity by operator attestation; it does not repair the missing runtime LISTEN rows or prove an OS defect. The report also does not expose total OS TCP rows, only the six target matches.
 
 ## Decision
 
@@ -43,7 +43,7 @@ The read-only data-gathering stage for this anomaly is **saturated**. Further re
 
 This requires a **separate operator approval and maintenance window** for anything touching live services:
 
-1. **Environment confirmation:** first verify with the operator that `GetTcpTable2` ran on the **server host** (the Windows PC actually running Minecraft Java server processes), not only on a GSCM client/sub PC. Do not transmit machine identifiers; a verbal confirmation is sufficient. If run on a different PC, classify its 0/6 result as wrong-vantage evidence, **not** a host failure, and do not proceed to production changes.
+1. **Environment confirmation: SATISFIED by operator attestation** (actual server PC, 2026-10-10). Do not repeat the question or request identifying machine data.
 2. **Preflight (READ ONLY):** review existing GSC fleet/PID provenance, running executable's actual bind arguments/config source, process compartment/context, Paper and RCON effective bind behavior, Windows IPv4/IPv6 listener ownership. Avoid writing full process command lines, paths or credentials to reports; require traceable redacted scopes and owner-category classifications.
 3. **Selectively isolate only if needed:** use an approved disposable/staging environment first to establish an authoritative bind attestation for Paper Java and RCON, with a documented rollback. Production restart or service isolation **requires user authorization** and preflight that the existing Golden recovery checkpoint is intact; do not regenerate or overwrite it.
 4. **If production change becomes necessary:** capture before state, stop/restart only the expressly approved server(s) after player-presence check, keep service interruption minimal, and abort/rollback on health change. Never touch live world/save state without approved procedure.
