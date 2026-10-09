@@ -36,6 +36,13 @@ Created `tools/day12/Day12_GSC_RC2_SubPC_Postcheck_READ_ONLY.ps1` with `.cmd` la
 
 **Pending operator action:** On the secondary PC, launch GSC Client normally from the Start menu **if it is closed**, then run the supplied **read-only** postcheck `.cmd`, return its latest `Desktop/Geumyi-Day12-SubPC-GSC/Day12-SubPC-GSC-RC2-Postcheck-*.json`. No reinstall, new Canary version, repeated full production WFP bind scans or automatic 4.3.8 restore. Only recommend restore if actual postcheck/UI evidence shows a regression.
 
+## Validated read-only SubPC post-update operator kit — 2026-10-10
+
+- [Windows PowerShell 5.1 CI `37993613980`](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/37993613980) **SUCCESS**, including synthetic good/bad process, wrong client SHA, Host role present, missing backup and unknown role failure cases.
+- Packaged one direct ZIP with only `Day12_GSC_RC2_SubPC_Postcheck_READ_ONLY.ps1`, corresponding one-click `.cmd`, `README-FIRST.txt` and `SHA256SUMS.txt`. Retrieved actual CI artifact and rechecked ZIP CRC + 3/3 nested SHA-256 checksum rows. Focused operator ZIP SHA-256: `9c296045e3dbc8b605eeaeade6e9894f35490cedebcb31bddb86e6bc01939406`.
+- Exactly **one new operator action**: on the **secondary PC**, launch the normal GSC Client if it is closed, run the read-only `Day12_GSC_RC2_SubPC_Postcheck_READ_ONLY.cmd` and provide `Desktop/Geumyi-Day12-SubPC-GSC/Day12-SubPC-GSC-RC2-Postcheck-*.json`. Neither update nor recovery should be rerun at this stage.
+- The tool's local HTTP probe is confined to `GET http://127.0.0.1:8790/app.ico`, with *optional* TCP PID corroboration. It reads no client-config contents or token, makes no remote Host request and does not start/restart the Client. A local PASS is not yet a real Host pairing/console E2E result.
+
 ## Mandatory safety gates unchanged
 
 The real Minecraft server PC has **not** been updated from GSC 4.3.8 in this work. Real Day12.10 `backend_ports_private` remains **FAIL** due missing authoritative dual-stack owner-attributed IPv4+IPv6 TCP bind evidence for 8 private Java/RCON ports. 12.11 full release E2E, 12.12 real soak and 12.13 Stable **BLOCKED**. The successful client-only Canary does not lift those gates.
