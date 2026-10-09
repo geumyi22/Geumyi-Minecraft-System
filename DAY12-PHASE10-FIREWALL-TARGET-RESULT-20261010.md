@@ -38,7 +38,7 @@ The **40 broad Any-program Allow candidates per private port remain** after this
 
 ## Engineering follow-up
 
-- Fixed `tools/day12/Day12_Phase10_Firewall_Target_Rules_READ_ONLY.ps1` to distinguish explicitly known non-TCP protocols from genuine unknowns; its CI synthetic fixture asserts exclusions. **The original operator JSON is retained as original evidence and was not rewritten.**
+- Fixed `tools/day12/Day12_Phase10_Firewall_Target_Rules_READ_ONLY.ps1` to distinguish explicitly known non-TCP protocols from genuine unknowns; its CI synthetic fixture asserts exclusions. **The original operator JSON is retained as original evidence and was not rewritten.** Windows Day 12 Safety CI run `37980375757` subsequently **PASS** for the corrected script on source commit `ecd6d7d98`; this is a synthetic classifier result, not a fresh production policy verdict.
 - Prepare a **read-only, target-executable-scoped** rule review design with stricter private classifier: compare actual active Paper Java executable identity to rule program identity *only on the local server*, expose coarse `PROGRAM_MATCH`/`PROGRAM_OTHER`/`PROGRAM_ANY`/`UNKNOWN` classification without leaking paths/PIDs. Validate from Windows synthetic fixtures first; avoid making users repeat unchanged host probes.
 - A compensating firewall-control release policy, if proposed, is **distinct** from proving canonical bind isolation; must be independently threat-modeled, explicitly approved and testable across LAN/overlay/IPv6 without GSC lockout.
 - Until then, proceed only with repository-side preparations. Strict gate still **FAIL**; 12.11 release-grade E2E, 12.12 real soak and 12.13 Stable are **PENDING/BLOCKED**.
