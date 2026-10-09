@@ -153,6 +153,13 @@
 - 검사기 파일 내용과 서버 프로세스, GSC 네트워크 정책, 서버 월드, 백업, 방화벽, ACL은 변경하지 않습니다. 도구 결과 `CAPTURED_REVIEW_REQUIRED`는 자료 수집 성공이지 실제 보안 완료 판정이 아닙니다. Native에서 실서버 리스너를 여전히 찾지 못하면 **12.10 FAIL 유지**; 추후 별도 방식의 포트/프로세스 관계를 조사합니다.
 - 새 보고서 검토 후 **필요할 때만** 정식 `tools\\day12\\Geumyi_Final_Verification.cmd`를 단 한 번 재실행합니다. 성공한 Golden/12.5/캐시를 재수집하거나, 12.11 E2E·12.12 soak·Stable 릴리즈를 앞당기지 않습니다.
 
+## Day 1~12 PC 임시파일 정리 도구 — 별도 준비, Day12 종료와 구분
+
+- 이번 정리 프로그램은 **Day12만이 아니라 Day1~Day12 전체**를 대상으로 설계했습니다. 실행 파일 `tools\\day12\\Geumyi_Day1To12_PC_Temp_Cleanup.cmd`; 설명 `DAY1-12-PC-CLEANUP-GUIDE.md`.
+- 지금 가능한 첫 단계는 메뉴 **1번 Preview**뿐입니다. 서버 PC든 관리/서브 PC든 각 컴퓨터에서 개별 실행해야 하며, Windows 사용자 TEMP 폴더의 과거 임시 작업물만 좁게 탐색합니다. Desktop/Downloads는 발견 목록만 만들고 이동하지 않습니다.
+- 아직 12.10 FAIL, 12.11/12.12 대기, 최종 Stable 차단이므로 **Day12 자료는 도구 자체에서 격리 불가**입니다. 이전 Day1~11 파일도 보존 검증·나이 조건(기본 7일)·리뷰된 계획과 승인 문구를 통과한 경우에만 복원 가능한 임시 격리로 이동할 수 있습니다. 영구 삭제는 14일 격리 후 별도 확인 시에만 가능합니다.
+- `%ProgramData%\\GeumyiServerCenter`, 실제 서버 월드·플러그인·Golden 백업·캐시·복구·로그·설정은 제외됩니다. `plan-*.json` 및 `manifest.json`은 절대 공개 저장소에 올리지 않습니다. 정리 성공을 Day12 완료 또는 release gate PASS와 혼동하지 않습니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
