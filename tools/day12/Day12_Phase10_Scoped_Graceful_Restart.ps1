@@ -51,9 +51,15 @@ function PreflightCheck([object]$State,[object]$Fleet,[object]$Players,[object]$
   if($our.Count -ne 1){return "FLEET_PROFILE_NOT_UNIQUE"}
   if(-not [bool](Prop $our[0] "online" $false)){return "TARGET_NOT_ONLINE"}
   $update=Prop $our[0] "status" $null
-  if([bool](Prop $update "block_start" $true)){return "UPDATE_BLOCK_START"}
-  $phase=[string](Prop $update "phase" "UNKNOWN")
-  if($phase -notin @("idle","ready","up_to_date","current","online","completed","none","")){return "UPDATE_STATE_UNKNOWN_OR_ACTIVE"}
+  if($null -eq $update){return "UPDATE_STATUS_MISSING"}
+  # Go's UpdateStatus.BlockStart JSON field is omitempty:
+  # a missing key means false, while an explicit true MUST block.
+  # Do not treat absence as a live update block (previous false-positive).
+  if([bool](Prop $update "block_start" $false)){return "UPDATE_BLOCK_START"}
+  $phase=([string](Prop $update "phase" "UNKNOWN")).Trim().ToLowerInvariant()
+  # Only allow known non-transactional updater states; unknown/active/failed
+  # states still block. These names match updater.go phase state machine.
+  if($phase -notin @("idle","ready","up_to_date","current","online","completed","none","available","applied","disabled","held","manual")){return "UPDATE_STATE_UNKNOWN_OR_ACTIVE"}
   if(-not [bool](Prop $Players "online" $false)){return "PLAYER_COUNT_NOT_PROVEN_ONLINE"}
   if([int](Prop $Players "count" -1) -ne 0){return "PLAYERS_PRESENT_OR_UNKNOWN"}
   $safe=@($Backups.backups|Where-Object{
@@ -71,6 +77,34 @@ if($Synthetic){
   $backups=[pscustomobject]@{backups=@([pscustomobject]@{
     protected=$true;verified=$true;scope="full";trashed=$false})}
   if((PreflightCheck $status $fleet $players $backups) -ne "PASS"){throw "SAFE_FIXTURE_FAILED"}
+  # The real 02:41 preflight falsely blocked omitted omitempty block_start.
+  # A missing key must be accepted ONLY when all remaining guards pass.
+  $omitted=[pscustomobject]@{servers=@([pscustomobject]@{
+    server_id="playground";online=$true;status=[pscustomobject]@{phase="idle"}})}
+  if((PreflightCheck $status $omitted $players $backups) -ne "PASS"){
+    throw "OMITTED_BLOCK_START_FALSE_POSITIVE_REGRESSION"
+  }
+  $blocked=[pscustomobject]@{servers=@([pscustomobject]@{
+    server_id="playground";online=$true;status=[pscustomobject]@{block_start=$true;phase="idle"}})}
+  if((PreflightCheck $status $blocked $players $backups) -ne "UPDATE_BLOCK_START"){
+    throw "EXPLICIT_UPDATE_BLOCK_BYPASS_REGRESSION"
+  }
+  $active=[pscustomobject]@{servers=@([pscustomobject]@{
+    server_id="playground";online=$true;status=[pscustomobject]@{phase="downloading"}})}
+  if((PreflightCheck $status $active $players $backups) -ne "UPDATE_STATE_UNKNOWN_OR_ACTIVE"){
+    throw "ACTIVE_UPDATE_TRANSACTION_BYPASS_REGRESSION"
+  }
+  $missing=[pscustomobject]@{servers=@([pscustomobject]@{
+    server_id="playground";online=$true})}
+  if((PreflightCheck $status $missing $players $backups) -ne "UPDATE_STATUS_MISSING"){
+    throw "MISSING_UPDATE_STATUS_BYPASS_REGRESSION"
+  }
+  $available=[pscustomobject]@{servers=@([pscustomobject]@{
+    server_id="playground";online=$true;status=[pscustomobject]@{phase="available"}})}
+  if((PreflightCheck $status $available $players $backups) -ne "PASS"){
+    throw "BENIGN_UPDATE_AVAILABLE_PHASE_REGRESSION"
+  }
+
   if((PreflightCheck $status $fleet ([pscustomobject]@{online=$true;count=1}) $backups) -ne "PLAYERS_PRESENT_OR_UNKNOWN"){throw "PLAYER_SAFETY_REGRESSION"}
   if((PreflightCheck $status $fleet $players ([pscustomobject]@{backups=@()}) ) -ne "NO_PROTECTED_VERIFIED_FULL_BACKUP"){throw "GOLDEN_SAFETY_REGRESSION"}
   if((PreflightCheck ([pscustomobject]@{gsc_version="4.3.8";active_jobs=1}) $fleet $players $backups) -ne "ACTIVE_JOBS_OR_MISSING_STATUS"){throw "JOB_SAFETY_REGRESSION"}
@@ -88,6 +122,18 @@ try{
   $players=GetJ "/api/v1/servers/playground/players"
   $backups=GetJ "/api/v4/backups?id=playground"
   $check=PreflightCheck $snap $fleet $players $backups
+  # Store only sanitized updater state, never raw response/credentials.
+  $selected=@($fleet.servers|Where-Object{[string](Prop $_ "server_id" "") -eq $serverId})
+  if($selected.Count -eq 1){
+    $up=Prop $selected[0] "status" $null
+    $report.update_preflight=[ordered]@{
+      status_present=($null -ne $up)
+      phase=([string](Prop $up "phase" "UNKNOWN"))
+      block_start_key_present=($null -ne $up -and $null -ne $up.PSObject.Properties["block_start"])
+      block_start=([bool](Prop $up "block_start" $false))
+    }
+  }
+
   $report.no_active_jobs=([int](Prop $snap "active_jobs" -1) -eq 0)
   $report.players_confirmed_zero=([bool](Prop $players "online" $false) -and [int](Prop $players "count" -1) -eq 0)
   $report.golden_verified=(@($backups.backups|Where-Object{
