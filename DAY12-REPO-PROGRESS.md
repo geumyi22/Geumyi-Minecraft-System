@@ -298,6 +298,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Existing world/server rollback snapshots must be kept; no production backup deletion or Day12 Stable promotion follows from this acceptance alone.
 - The prior Day12.11 partial client checks (Java / Bedrock Wild + Playground, GSCM basic, GSC console `list`) stay separate from full E2E. The **Other** route was deferred, and canonical Day12.10 `backend_ports_private` remains FAIL until authoritative runtime binding evidence exists.
 
+## 2026-10-10 — Other client routing operator acceptance
+
+- Operator replied **"됨"** to Other Java/Bedrock Lobby round-trip + previous-position checks; record **OPERATOR_REPORTED_PASS** for those client paths, not a machine-generated independent test. This extends prior Wild/Playground operator checks to Other.
+- No independent proof of Other start-job/lifecycle was provided, and no claim of validated reboot, rollback, restore, GSCM control flows or completed soak is made.
+- 12.10 mandatory `backend_ports_private` remains **FAIL** (last canonical 18/0/1); full Day12.11 / Day12.12 / Stable remain blocked. Do not repeat Golden backup, TCP provider scans or existing client checks unnecessarily.
+- Next safe operational step: inspect protected backup and verify metadata through the GSC GUI without creating/deleting/restoring a backup. All future mutation tests require independent safety gates.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
