@@ -40,8 +40,14 @@ class StableGateFailClosedTests(unittest.TestCase):
         gates = Path(__file__).resolve().parents[2] / "FINAL-RELEASE-GATES.json"
         data = json.loads(gates.read_text(encoding="utf-8-sig"))
         self.assertIn("phase_12_10_backend_ports_private", data["live_gates"])
-        self.assertNotEqual(data["live_gates"]["phase_12_10_backend_ports_private"], "PASS")
-        self.assertFalse(check_gates(data)[0])
+        allowed, _ = check_gates(data)
+        if data.get("status") != APPROVED_STATUS or (
+            data["live_gates"]["phase_12_10_backend_ports_private"] != "PASS"
+        ):
+            self.assertFalse(allowed)
+        # This test must NOT block a future genuinely approved all-PASS
+        # Stable manifest. Synthetic positive and negative fixtures below
+        # exercise the validator independently from today's live state.
 
     def test_missing_sections_fail(self):
         for key in ("repository_gates", "live_gates", "release", "status", "schema"):
