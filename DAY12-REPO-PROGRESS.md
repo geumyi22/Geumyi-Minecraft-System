@@ -333,6 +333,15 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Functional smoke checks completed to date: user-reported Java/Bedrock paths through Wild/Playground/Other, GSCM remote console and backup visibility, GSC updater read-only status, and Other retention preview. No need to repeat these simple confirmations.
 - Next priority is to resolve the Day12.10 **runtime listener address/ownership attestation discrepancy** with materially different evidence; no more redundant TCP table scans or blind production restarts. Maintain canonical `backend_ports_private` FAIL and Final Stable blocked.
 
+## 2026-10-10 — Independent WFP Security audit evidence tool (SYNTHETIC PASS only)
+
+- Instead of repeating inconsistent Windows TCP table scans, implemented `Day12_Phase10_WFP_Audit_Attestation_READ_ONLY.ps1/.cmd` to query **previously recorded Security log events 5154 (listen permitted) / 5158 (bind permitted)** for the eight private Java/RCON ports, read-only, with Windows Event Log port filtering. The tool does **not** enable auditing, change firewall/ports, contact services, restart processes or touch saves/backups.
+- It classifies event-address scope and correlates process ID + event time with currently running Java/javaw process start time. Sensitive raw IPs, PID, application paths and event XML are not exported. Wildcard/non-loopback, missing records, stale PID or truncated history **never** produce security PASS.
+- Initial Windows CI fixture found PowerShell XML adapter `InnerText` incompatibility under StrictMode; replaced adapter property with explicit XmlDocument XPath. Latest **Day 12 Read-Only Safety CI run 37977424905: PASS** on source commit `6b436cf6c`, including WFP IPv4/IPv6 loopback, wildcard, stale PID and absent-event synthetic cases.
+- **Operator Kit workflow run 37977424871: PASS** on identical source commit; archived kit ZIP includes script, launcher and `DAY12-PHASE10-WFP-READONLY-PLAN.md`. ZIP entries/CRC checked in model workspace, not executed on production.
+- **Next single action** is operator-run existing WFP Security log read on server PC, latest JSON in `Desktop\Geumyi-Day12-WFP`. Access-denied/no events means `UNAVAILABLE`/unknown, not an instruction to enable auditpol. Do **not** repeat earlier TCP inventories, change security policy, reboot or bypass the mandatory gate.
+- Strict `backend_ports_private` **FAIL** (last canonical 18 PASS/0 WARN/1 FAIL); full 12.11 E2E, live 12.12 soak and final Stable still blocked, notwithstanding operator-reported game/client smoke checks.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
