@@ -254,6 +254,13 @@
 - 이 단계에서 **추가 CMD 실행 요구하지 않음**. Java와 RCON의 시작 로그는 별도 증거로 완료 처리하되 기존 정식 `backend_ports_private` FAIL/12.10 OPEN, Stable BLOCKED 유지. 동일 TCP 진단과 로그 검사 반복 금지.
 - 다음은 assistant가 **GitHub의 12.11 E2E·12.12 soak 안전 준비**를 검토합니다. 실제 서버 중단·재시작·설정 변경이 필요한 경우에만 구체적 영향/백업/롤백을 알려 사용자 실행·승인을 받습니다.
 
+## 2026-10-10 02:47 실서버 재시작 성공, OS 바인딩 미관측 — 같은 동작 반복 금지
+
+- 서버 PC `Day12-Scoped-Restart-20261010-024734.json`: 놀이터 단독 `GSC_GRACEFUL_RESTART` 실제 수락→job=`completed`, 전후 ONLINE, 접속자 0명, 보호·검증 FULL 백업 확인, 작업 충돌 0, 업데이트 `current` / `block_start=false`. **정상 lifecycle 점검은 이번 1회로 완료**하되 게임 클라이언트 접속 테스트로 대체하지 않습니다.
+- 재시작 직후 Windows 네이티브 LISTEN 검사 `CAPTURED`, Java **25571 미관측**, RCON **25576 미관측**. 외부 노출이 발견된 것이 아니라 **전용 루프백 LISTEN의 실시간 증거 확보 실패**입니다. 8/8 시작 로그와 4/4 Java 설정 등 기존 양호한 신호 유지.
+- **같은 CMD 다시 실행하지 마세요.** 즉시 서버 재시작/강제 종료/복구/설정 수정 추가 금지. 기존 Golden 보존, Day12.10 `backend_ports_private` FAIL, Stable 차단.
+- 어시스턴트 다음 작업: Windows 네이티브 리스너 수집기·GSC 자체 PID 조회의 공통 구현 및 실제 검증 게이트를 Microsoft API 문서 기준으로 정적 검토하고, 독립적/비파괴적인 실시간 검증 대안과 12.11·12.12 준비만 진행합니다. 원인 확정 또는 새로운 증거 계획 없이는 추가 유사 CMD를 요청하지 않습니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
