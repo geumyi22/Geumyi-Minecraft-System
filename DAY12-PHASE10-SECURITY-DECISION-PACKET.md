@@ -62,6 +62,14 @@
 - Remaining security options: **A** a truly independent active OS/kernel owner+address attestation for each currently online backend IPv4+IPv6; **B** an explicit operator-approved compensating firewall/address-scope case after privately reconciling broad ActiveStore rules, effective denies, IPv6/overlay exposure and repeatable remote vantage checks; **C** stay blocked. Existing consent covers autonomous docs/source/CI preparations, **not** firewall/ACL/port/audit-policy edits or bypassing a mandatory gate.
 - Recommended near-term approach: preserve gate **C**, prepare option **B** as a review-only plan, and seek policy approval only if its residual risks and preflight/rollback have been demonstrated. No direct host action is needed now.
 
+## Scoped current firewall-rule candidate diagnostics prepared — 2026-10-10
+
+- Read-only ActiveStore per-port classifier `tools/day12/Day12_Phase10_Firewall_Target_Rules_READ_ONLY.cmd` is now available to characterize **both inbound Allow and Block candidates** for eight private TCP Java/RCON ports (and three public Velocity controls). This is substantively different from stale/missing listener snapshots and from 5154/5158 historical WFP auditing.
+- Windows Day 12 Safety CI run **`37979818433` PASS**, including fail-closed synthetic wildcard/range/list/unsupported port keywords, nonmatching profiles, ambiguous profiles, Block and authenticated-bypass cases. Operator Kit **`37979840571` PASS** with the accompanying compensating-control review document.
+- Runtime policy is **NOT yet collected**, and the tool cannot prove the actual *effective* WFP filtering decision or exclusive IPv4+IPv6 bind ownership. Any identified Block rules are candidates only; IPsec bypass, interface conditions, overlays and policy profiles demand further assessment.
+- Next needed input: one server-PC read-only targeted firewall JSON. No server restart, firewall rule update, command-shell service action, Golden re-backup, WFP repeated query or release security policy change is authorized.
+- The original strict `backend_ports_private` gate stays FAIL until separate runtime owner+socket evidence; operator approval will be required to adopt a materially different compensating-policy standard after risks and rollback are documented.
+
 ## Production-safety rule and operator handoff
 
 - User explicitly allows autonomous **source inspection, GitHub changes, documentation and synthetic CI** without repeated check-ins.
