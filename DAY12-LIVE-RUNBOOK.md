@@ -220,6 +220,13 @@
 - OS 인터페이스 구획 1개, 비기본 구획 0개. 이것만으로 소켓 구획이나 실제 바인딩은 확정 불가. 정리 문서 `DAY12-PHASE10-BIND-DECISION-REPORT.md` 참조.
 - **사용자는 이 보고서만을 위해 또 CMD를 실행할 필요 없음.** 반복 TCP/프로세스 스냅샷 중단. 다음은 GSC 실행 관리 소스와 Paper/RCON 바인딩 경로를 오프라인 코드 검토 후, 실제 서비스 중단이 반드시 필요할 때만 Golden 확인·유지보수 창·사용자 승인하 통제된 실서버 1대 점검. `backend_ports_private` FAIL, 12.10 OPEN, Stable BLOCKED 계속 유지.
 
+## 2026-10-10 12.10 GSC 소스 분석 — 새 TCP 스캔 중단, 시작 로그의 주소만 확인
+
+- GSC `getServerStatus`에서 ONLINE은 `tcpOpen("127.0.0.1", JavaPort)`로 판정합니다. 이는 TCP 로컬 접속 성공이지 바인딩 주소의 독점적 증명이 아닙니다. GSC `launchCommand`는 `start.bat`을 해당 서버 폴더에서 실행하므로 Java 실행 명령에 절대 경로가 빠질 수 있습니다. `rememberServerProcess`는 OS `GetExtendedTcpTable`의 포트 PID 행에 의존해 OS 조회가 누락되면 프로세스 확인에 실패할 수 있으나, 운영 장애 발생 여부는 별개입니다.
+- 공식 소스 대조 보고서: `DAY12-PHASE10-GSC-SOURCE-AUDIT.md` (판단·한계·대안). 기존 02:05 파일 설정 검사는 정상. **추가 TCP 표/프로세스 분류 재검사는 하지 않습니다.**
+- 다음 1회만 필요 시: **최신 Day12 Operator Kit**에서 서버 PC `tools\\day12\\Day12_Phase10_Startup_Log_Bind_READ_ONLY.cmd` 실행 → 바탕화면 `Geumyi-Day12-Startup-Bind\\Day12-Startup-Bind-*.json` 최신 하나 제출. `latest.log` 파일의 앞부분 최대 6MiB에서 Java/RCON 각각의 시작 시 수신 주소 안내문을 읽고 **루프백/와일드카드/기타**로 분류합니다. 로그 원문·비밀번호·닉네임·경로는 내보내지 않습니다. 서버 재시작이나 포트 접속 없음.
+- **경계:** Paper 로그 형식이 달라 안내문이 없으면 `NO_STARTUP_BIND_MESSAGE`로 보고하며 이를 안전하다고 간주하지 않습니다. 로그가 수신 주소를 나타내도 실행 시점 증거일 뿐 현재 소켓 바인딩을 보증하지 않습니다. RCON과 Java는 독립적으로 검토합니다. 12.10 `backend_ports_private` FAIL 및 Stable 차단 유지. 다음 단계가 운영 환경 변경을 요구할 경우 따로 승인받습니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
