@@ -17,6 +17,8 @@ func TestGSCUpdateHealthRequiresExactTargetVersion(t *testing.T) {
 		want bool
 	}{
 		{"matching candidate", `{"ok":true,"version":"4.3.9-rc.2","service":true,"generation":4}`, "4.3.9-rc.2", true},
+		{"not a service", `{"ok":true,"version":"4.3.9-rc.2","service":false,"generation":4}`, "4.3.9-rc.2", false},
+		{"missing service flag", `{"ok":true,"version":"4.3.9-rc.2","generation":4}`, "4.3.9-rc.2", false},
 		{"old host must fail candidate", `{"ok":true,"version":"4.3.8","service":true,"generation":4}`, "4.3.9-rc.2", false},
 		{"future host must fail candidate", `{"ok":true,"version":"4.3.9","service":true,"generation":4}`, "4.3.9-rc.2", false},
 		{"stray http 200 invalid body", "OK", "4.3.9-rc.2", false},
@@ -24,7 +26,8 @@ func TestGSCUpdateHealthRequiresExactTargetVersion(t *testing.T) {
 		{"not ok", `{"ok":false,"version":"4.3.9-rc.2","generation":4}`, "4.3.9-rc.2", false},
 		{"wrong generation", `{"ok":true,"version":"4.3.9-rc.2","generation":3}`, "4.3.9-rc.2", false},
 		{"malformed json", `{"ok":true,"version":"4.3.9-rc.2"`, "4.3.9-rc.2", false},
-		{"rollback gsc v4 accepted", `{"ok":true,"version":"4.3.8","generation":4}`, "", true},
+		{"rollback gsc v4 accepted", `{"ok":true,"version":"4.3.8","service":true,"generation":4}`, "", true},
+		{"rollback nonservice rejected", `{"ok":true,"version":"4.3.8","service":false,"generation":4}`, "", false},
 		{"rollback empty version rejected", `{"ok":true,"version":"","generation":4}`, "", false},
 		{"rollback unrelated service rejected", `{"ok":true,"version":"other","generation":2}`, "", false},
 	}
