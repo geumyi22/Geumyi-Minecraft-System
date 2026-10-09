@@ -200,6 +200,13 @@ if($Mode -eq "Quarantine"){
   New-Item -ItemType Directory -Force -Path $destDir|Out-Null
   $moved=@();$skipped=@();$idx=0
   $roots=@(Get-Roots)
+  # Write the local restore journal before moving the first candidate.
+  # Each recorded move is flushed to disk to tolerate partial operations.
+  $manifestPath=Join-Path $destDir "manifest.json"
+  $manifest=[ordered]@{schema=1;run_id=$id;created_utc=$now.ToString("o")
+    items=@();skipped_reasons=@()
+    note="PRIVATE LOCAL MANIFEST: contains source paths; needed for restore."}
+  $manifest|ConvertTo-Json -Depth 12|Set-Content -LiteralPath $manifestPath -Encoding UTF8
   foreach($p in @($plan.items)){
     $idx++
     if(-not [bool]$p.eligible){continue}
@@ -222,15 +229,27 @@ if($Mode -eq "Quarantine"){
       if([IO.Path]::GetPathRoot($origin) -ine [IO.Path]::GetPathRoot($dest)){
         $skipped+="DIFFERENT_VOLUME";continue
       }
-      Move-Item -LiteralPath $origin -Destination $dest -ErrorAction Stop
-      $moved+= [ordered]@{ordinal=$idx;original=$origin;stored=$dest
+      $journalRow=[ordered]@{ordinal=$idx;original=$origin;stored=$dest
         bytes=[int64]$p.bytes;day=[int]$day;restored=$false}
-    }catch{$skipped+="LOCKED_OR_MOVE_FAILED"}
+      # Crash-safe PRE-JOURNAL: a move interrupted after filesystem rename
+      # remains discoverable by Restore via its manifest record.
+      $manifest.items=@($moved)+@($journalRow)
+      $manifest|ConvertTo-Json -Depth 12|Set-Content -LiteralPath $manifestPath -Encoding UTF8
+      Move-Item -LiteralPath $origin -Destination $dest -ErrorAction Stop
+      $moved+= $journalRow
+    }catch{
+      if(-not(Test-Path -LiteralPath $dest -PathType Container)){
+        $manifest.items=@($moved)
+      }else{
+        # An interrupted move may have succeeded; keep its recovery journal.
+        if(@($moved|Where-Object{$_.stored -eq $dest}).Count -eq 0){$moved+= $journalRow}
+        $manifest.items=@($moved)
+      }
+      $skipped+="LOCKED_OR_MOVE_FAILED"
+    }
   }
-  $manifest=[ordered]@{schema=1;run_id=$id;created_utc=$now.ToString("o")
-    items=$moved;skipped_reasons=$skipped
-    note="PRIVATE LOCAL MANIFEST: contains source paths; needed for restore."}
-  $manifest|ConvertTo-Json -Depth 12|Set-Content -LiteralPath (Join-Path $destDir "manifest.json") -Encoding UTF8
+  $manifest.items=@($moved);$manifest.skipped_reasons=@($skipped)
+  $manifest|ConvertTo-Json -Depth 12|Set-Content -LiteralPath $manifestPath -Encoding UTF8
   $sum=[int64]0;foreach($i in $moved){$sum+=[int64]$i.bytes}
   [void](Report ([ordered]@{schema=1;mode="QUARANTINE";run_id=$id
       moved=$moved.Count;estimated_bytes=$sum;skipped=$skipped.Count
@@ -288,7 +307,7 @@ if($Mode -eq "Purge"){
     }
   }
   # Keep the manifest and audit report, only remove individually isolated items.
-  $manifest.purged_utc=[DateTime]::UtcNow.ToString("o")
+  $manifest|Add-Member -NotePropertyName "purged_utc" -NotePropertyValue ([DateTime]::UtcNow.ToString("o")) -Force
   $manifest|ConvertTo-Json -Depth 12|Set-Content -LiteralPath (Join-Path $folder "manifest.json") -Encoding UTF8
   [void](Report ([ordered]@{schema=1;mode="PURGE";run_id=$RunId;deleted_quarantined_items=$purged
     warning="Permanent deletion of quarantined items only; manifest/audit retained"}) "Day1To12-Cleanup-Purge")
