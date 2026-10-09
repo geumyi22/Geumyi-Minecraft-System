@@ -17,6 +17,21 @@ The operator's 02:05 live file read already showed all four existing Paper `serv
 - Hooked into `GSC/ServerCenter/cmd/host/v4_core.go` as `private_java_bind_config` and added Go tests for loopback IPv4/IPv6, wildcard IPv4/IPv6, missing/empty values, nonloopback address, invalid address, missing file and non-target profile preservation (`day12_private_java_guard_test.go`).
 - This patch has **no deployed code effect** until a separately versioned and approved GSC build is installed on the server PC. No production executable, port, socket, server process, firewall, world, RCON credentials or Golden backup changed by the source update.
 
+## 2026-10-10 — strict Java Properties shadow-key and RCON port hardening (source v2)
+
+Further review found that the first guard could be bypassed when the four reserved server IDs had a GSC `JavaPort` not equal to their expected port, because it returned `applicable=false`. It also used `readServerProperty`, which scans only the **first** `server-ip` entry and recognizes only plain `key=value`, whereas Java `Properties.load` supports colon/whitespace separators, Unicode-escaped keys, logical-line continuation and **later duplicate properties overriding earlier values**. These are genuine **preventive source validation gaps**; **they are not evidence of real misbinding on the user's server**.
+
+The updated `day12_private_java_guard.go`:
+
+- Checks all fixed Day12 IDs **even if a GSC profile port drifted**: Wild Java/RCON `25570/25575`; Playground `25571/25576`; Other `25572/25577`; Lobby `25573/25579`. Unrelated custom IDs remain excluded.
+- Rejects duplicate security keys, malformed/escaped key ambiguity and multiline/escaped critical values; recognizes Java-style colon or whitespace separators and decodes escaped key aliases to catch shadow definitions. It reads only `server-ip`, `server-port`, `enable-rcon`, `rcon.port`; **never reads or exports `rcon.password`**.
+- Requires a literal loopback Java bind IP, the expected Java port, `enable-rcon=true` and the expected RCON port **before GSC starts the known private backend**. This is an on-disk profile safety barrier, **not proof that the RCON socket binds to loopback**, and not a current Windows LISTEN/PID inventory.
+- Adds approximately **25 table-driven Go cases** for valid IPv4/IPv6 loopback, changed Java/RCON port, RCON disabled, missing keys, wildcard/nonloopback, Java `\\u` shadow aliases, colon/space separator shadows, duplicate entries and continuation lines. No existing runtime settings or server process is modified.
+- The stricter fixed-ID policy is a source change requiring **separate GSC release approval**. If a legitimate older profile named `wild`/etc. intentionally uses other ports, that profile will be blocked **only after this patch is deployed**, so migration compatibility must be reviewed during the release process.
+- Source/CI outcomes must be recorded from completed workflows for the updated commit; do **not** conflate them with the earlier v1 green workflow.
+
+**References:** [Oracle Java Properties grammar](https://docs.oracle.com/en/java/javase/26/docs/api/java.base/java/util/Properties.html), [Paper `server.properties` reference](https://docs.papermc.io/paper/reference/server-properties/).
+
 ## Explicit remaining limitations
 
 This safeguards **on-disk Java start configuration only**. It does not prove *current* OS listener addresses or process owners; it cannot stop a pre-existing process already listening; it does not constrain Java if a startup script overwrites the config after preflight; it **does not enforce or attest RCON's bind address**; and it does not address IPv6-mapped addresses or network overlays except where Paper Java's own `server-ip` is configured for loopback.
