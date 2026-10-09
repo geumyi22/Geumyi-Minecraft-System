@@ -517,3 +517,9 @@ No live item above is marked PASS unless real-machine/client evidence exists. In
 - Latest Day 12 Operator Kit: `37672459977` — **PASS**
 
 Therefore all currently defined **repository-side mandatory gates are PASS**. Final Stable/Maintenance remains blocked solely because live gates are intentionally pending.
+
+## 2026-10-10 — Host RC3 disposable Windows service transaction PASS (narrow scope)
+
+- [CI 37996301163](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/37996301163) **SUCCESS** after parsing dedicated CI-only PowerShell. Used official pinned 4.3.8 Host binary and a disposable Windows service with empty Minecraft backend catalog. Verified actual service 4.3.8 health, ran pinned unsigned 4.3.9-rc.3 Setup self-update, verified report `success`, exact candidate service health, candidate Host file SHA, original official Host backup SHA, and explicitly restored official 4.3.8 Host service/health. Cleaned the test-owned service and uninstall key. CI report artifact ID `11647122394`.
+- **Only success-path real Windows service update and manual Host restoration PASS.** Automatic helper rollback-on-failure, previously absent Setup.exe residue, on-Host Client relaunch, reboot persistence, and Server-PC production use **NOT TESTED/NOT APPROVED**. Detailed evidence and open rollback-source gap: `DAY12-PHASE10-GSC-HOST-UPDATE-GATE-HARDENING-20261010.md`.
+- This is **repository/CI-only**, not an operator installation. Real SubPC 4.3.9-rc.2 authenticated Host read E2E stays PASS; server-PC GSC Host remains 4.3.8, Golden 4/4 protected, private eight-port IPv4+IPv6 OS bind gate remains **FAIL**. No new operator action until remaining isolated failure/rollback checks and explicit Host maintenance approval. Day12.11/12.12/12.13 still BLOCKED.
