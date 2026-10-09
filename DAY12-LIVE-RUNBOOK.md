@@ -213,6 +213,13 @@
 - **다음 단일 READ-ONLY 진단:** 서버 PC에서 최신 Operator Kit의 `tools\\day12\\Day12_Phase10_Process_Bind_Preflight_READ_ONLY.cmd` 실행 → 바탕화면 `Geumyi-Day12-Process-Bind\\Day12-Process-Bind-*.json` 하나만 제출. GSC 설정에 있는 경로는 메모리에서만 활용하고 JSON에서는 서버별 `server-ip` 범위, Java/RCON 포트·활성 설정, Java 실행 종류·구성 파일 경로 문자열 일치 여부의 집계값만 기록합니다. 일반 권한, 재시작·TCP 포트 스캔·방화벽·백업 변경 없음.
 - `Get-NetIPInterface -IncludeAllCompartments`는 Microsoft 문서상 네트워크 **인터페이스** 구획 조회이며 `Get-NetTCPConnection` 소켓의 소속 구획을 자동 확인하지 않습니다. 보고서의 디렉터리/명령줄 부분 문자열 일치는 약한 단서일 뿐 실제 바인딩 증명이 아닙니다. 그다음에도 실서비스 소켓 주소 확인이 필요하면 **별도 사용자 승인 하 유지보수 창**에서 시행합니다. 12.10 FAIL, Stable BLOCKED 유지.
 
+## 2026-10-10 02:05 실서버 프로세스·설정 증거 접수 — 재검사 보류
+
+- `Day12-Process-Bind-20261010-020508.json` 실서버 보고서 읽기전용 CAPTURED: 야생·놀이터·기타·로비 **4개 구성 파일 모두 server-ip=LOOPBACK_CONFIG**, 계획된 Java/RCON 포트 일치, RCON 활성화. 기타 서버는 앞선 Fleet에서 OFFLINE이었으며 설정 존재와 현재 실행은 구분합니다.
+- Windows Java 프로세스는 **10개**, 실행 인수 읽기 **10개**, GSC 이름의 프로세스 **2개**. `kind=""` 집계는 프로세스 분류 자료형 처리 문제로 수정·Windows CI 합성 테스트 완료했지만 **실서버 분류를 재검증하지 않았음**. 서버 경로 인수 일치 0은 상대 경로 기반 시작 등의 가능성이 있어 즉시 오류로 간주하지 않음.
+- OS 인터페이스 구획 1개, 비기본 구획 0개. 이것만으로 소켓 구획이나 실제 바인딩은 확정 불가. 정리 문서 `DAY12-PHASE10-BIND-DECISION-REPORT.md` 참조.
+- **사용자는 이 보고서만을 위해 또 CMD를 실행할 필요 없음.** 반복 TCP/프로세스 스냅샷 중단. 다음은 GSC 실행 관리 소스와 Paper/RCON 바인딩 경로를 오프라인 코드 검토 후, 실제 서비스 중단이 반드시 필요할 때만 Golden 확인·유지보수 창·사용자 승인하 통제된 실서버 1대 점검. `backend_ports_private` FAIL, 12.10 OPEN, Stable BLOCKED 계속 유지.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
