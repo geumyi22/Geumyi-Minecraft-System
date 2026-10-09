@@ -406,6 +406,19 @@ jobs:
           if($badProcess.ExitCode -eq 0){throw 'An invalid Golden report was accepted'}
           $global:LASTEXITCODE=0
 
+      - name: Synthetic native GetTcpTable2 IPv4 listener fixture
+        shell: powershell
+        run: |
+          $dest=Join-Path $env:RUNNER_TEMP 'day12-tcptable2'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_TcpTable2_READ_ONLY.ps1 -Synthetic -OutputDir $dest
+          if($LASTEXITCODE -ne 0){throw 'GetTcpTable2 synthetic test failed'}
+          $files=@(Get-ChildItem -LiteralPath $dest -Filter '*.json' -File)
+          if($files.Count -ne 1){throw 'GetTcpTable2 test must emit exactly one report'}
+          $report=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($report.result -ne 'SYNTHETIC_PASS' -or -not $report.controlled_listener_observed -or -not $report.wildcard_classifier_verified -or $report.mutation_performed){
+            throw 'GetTcpTable2 listener+scope fixture contract failed'
+          }
+
       - name: Synthetic final verifier
         shell: powershell
         run: |
