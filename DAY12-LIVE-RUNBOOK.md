@@ -192,6 +192,13 @@
 - 최신 Operator Kit의 `tools\\day12\\Day12_Phase10_Provider_Diff_READ_ONLY.cmd`를 **서버 PC 일반 권한으로 단 한 번** 실행합니다. Windows Native TCP TABLE `LISTENER`/`ALL` 차이, PowerShell `Get-NetTCPConnection` 필터 사용 여부에 따른 차이, netstat 종료 코드만 확인합니다. 서버·월드·방화벽·ACL·Golden·캐시 변경 및 TCP 연결 시도는 없습니다.
 - 보고서 위치: 바탕화면 `Geumyi-Day12-Provider-Diff\\Day12-Provider-Diff-*.json`. 최신 파일 하나만 제출. `CAPTURED_REVIEW_REQUIRED`는 수집 성공일 뿐 보안 게이트 PASS가 아닙니다. 기존 `backend_ports_private` FAIL과 Stable 차단 유지.
 
+## 2026-10-10 01:43 결과 — 12.10 새 IPv4 네이티브 표 교차검증 1회
+
+- `Day12-Provider-Diff-20261010-014337.json`: 실서버 READ-ONLY 결과, `25571` (놀이터 Java) Windows Native IPv4 LISTENER 2종 **LOOPBACK 관측**, `25573`/`25575`/`25576`은 LISTEN 미관측. 같은 시점 Native ALL은 대상 0개, unfiltered CIM 0개, per-port CIM `NO_MATCHING_INSTANCE`, netstat 정상 종료 코드 0이지만 대상 0개. 원인을 앱 장애·공격·보안 정상 중 하나로 추정 확정하지 않습니다.
+- 이미 온라인 Java/RCON 6/6 TCP 로컬 연결, 분리된 PC 내부 0/8 접근 불가, Golden 4/4 및 12.5 ACL/방화벽 증거를 확보했습니다. **반복하지 마세요.**
+- 다음 단일 실행: 최신 Operator Kit의 `tools\\day12\\Day12_Phase10_TcpTable2_READ_ONLY.cmd`, **서버 PC 일반 권한**. Windows 공식 IPv4 `GetTcpTable2`로 온라인 Java/RCON 6포트의 LISTEN 주소 범위만 3차례 읽습니다. TCP 접속, 서버 재시작, API 호출, 월드/방화벽/백업 변경 없음. 바탕화면 `Geumyi-Day12-TcpTable2\\Day12-TcpTable2-*.json` 최신 하나만 제출하세요. **Windows 합성 CI 통과 이후** 실행합니다.
+- 이 결과는 IPv4에 한정됩니다. 12.10 최종 검증과 외부 노출/IPv6/실게임 E2E는 별도입니다. 새 도구 결과만으로 `backend_ports_private`를 PASS로 바꾸거나 Stable을 배포하지 않습니다. 여전히 미확인이면 추가 단순 스캔을 멈추고 유지보수 창에 프로세스/리스너 설정을 직접 확인하는 설계 검토가 필요합니다.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
