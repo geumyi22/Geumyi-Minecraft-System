@@ -120,6 +120,16 @@ jobs:
             }
           }
 
+      - name: Synthetic final Stable release gate omission and fail-closed tests
+        shell: pwsh
+        run: |
+          python tools/day12/test_validate_final_release_gates.py
+          if($LASTEXITCODE -ne 0){throw 'Day12 final release gate synthetic tests failed'}
+          # The checked-in production release state MUST remain blocked.
+          python tools/day12/validate_final_release_gates.py FINAL-RELEASE-GATES.json
+          if($LASTEXITCODE -ne 2){throw 'Production final release gates unexpectedly open'}
+          $global:LASTEXITCODE=0
+
       - name: Validate Day 12 JSON contracts
         shell: powershell
         run: |
