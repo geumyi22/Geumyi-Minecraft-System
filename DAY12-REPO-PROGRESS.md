@@ -358,6 +358,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **Next:** exactly one admin read-only v2 host event query, return generated JSON. No blind restarts, WFP auditpol enablement, firewall/ACL changes, world/backups mutation or Stable release.
 - Mandatory Day12.10 `backend_ports_private` **remains FAIL**; CI success validates code, not private host binds.
 
+## 2026-10-10 04:13:58 KST — actual Windows WFP v2: NO_EVIDENCE (path closed, not PASS)
+
+- Operator supplied `Day12-WFP-Bind-20261010-041357.json` produced **2026-10-10 04:13:58 +09:00** by real server-PC WFP v2 in a read-only run: `result=NO_EVIDENCE`, `error_category=NO_RETAINED_MATCHING_WFP_EVENTS`, `process_inventory_status=CAPTURED`, `event_query_status=NO_MATCHING_EVENTS`, `process_generations_seen=11`, `event_count=0`, `query_truncated=false`.
+- All eight target Java/RCON entries show `NO_CURRENT_PROCESS_EVENT` with **zero 5154 LISTEN and zero 5158 bind historical events**. This corrects the first-generation collector's ambiguous `UNAVAILABLE`: the targeted event log query completed without a retained match; it is **not** an access-denied or invalid-query finding. Whether WFP success audit was enabled at each original bind/start time was **not checked**.
+- The output establishes **no current socket ownership/binding scope, no external exposure, and no confirmed isolation**. The nonzero Java process count is not evidence that all four backends listen on the planned ports.
+- **Decision:** Stop repeating WFP 5154/5158 searches. Do not enable high-volume WFP success auditing, restart Java just to create historic events, change firewall/ACL or claim a security PASS. Microsoft describes `Audit Filtering Platform Connection` as high-volume, and neither absence nor existence of historical bind events is a complete current binding inventory.
+- Prior distinct evidence (4/4 loopback Java `server-ip`, 8/8 application startup loopback logs with stale Other at the time, 6/6 local TCP handshakes when 3 backends were online, 0/8 distant LAN private-port connects) remains scoped and incomplete. Proceed only with reviewed non-WFP native/current attestation or an explicitly approved compensating network-control security case. Canonical `backend_ports_private` = **FAIL**; no automatic Stable or cleanup.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
