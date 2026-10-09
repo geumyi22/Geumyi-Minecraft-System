@@ -439,6 +439,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - An intermediate commit `a47e2da44` had an expected **Host Test failure** because the old test fixtures lacked the new RCON requirements; tests were updated and rerun. Do not present that earlier failure as a production runtime issue.
 - Detailed source constraints in `DAY12-PHASE10-SOURCE-SAFETY-FIX-20261010.md`. **Not deployed to live GSC 4.3.8**; no host, firewall, proxy, world or Golden changes. This repairs concrete **future misconfiguration acceptance** but **does not resolve Windows native listener-table missing entries** or prove present Java/RCON socket ownership. `backend_ports_private` **FAIL**, Stable promotion **BLOCKED**.
 
+## 2026-10-10 — Ready for ONE read-only GSC rollout compatibility operator check
+
+- Fully source-hardened four fixed Paper backend IDs for exact `127.0.0.1` (matching existing GSC localhost management), fixed GSC and on-disk Java/RCON port pair and enabled RCON; reject critical-key duplicates and escaped aliases. **Source commit `c3f0894e0`: Host Test `37985531392` SUCCESS; System CI `37985531374` SUCCESS.** This is pre-launch protection only; not a fix/proof for missing Windows TCP LISTEN rows.
+- Built `Day12_Phase10_GSC_Guard_Rollout_Precheck_READ_ONLY.ps1/.cmd`; checks only existing `server.json` and 4 `server.properties` files; redacts paths/credentials, reports per-ID compatibility/issue codes without config edits or port connections. **Day12 Safety CI `37985723489`: SUCCESS** (synthetic), **Operator Kit `37985700059`: SUCCESS** (file packaging).
+- Extracted CRC-verified focused four-file ZIP `Geumyi_Day12_GSC_Guard_Precheck_READ_ONLY.zip` from the successful operator kit, with README and SHA256 manifest. **This is the first and only operator action needed now:** on Minecraft SERVER PC run the CMD once and send `Desktop\Geumyi-Day12-GSC-Guard\Day12-GSC-Guard-Precheck-*.json`, including CHECK_REQUIRED as-is.
+- **No GSC update, release, restart, firewall edit, Golden backup mutation, policy change or Stable promotion was performed.** The baseline GSC is still deployed 4.3.8; source changes remain undeployed. Do not ship a modified same-version 4.3.8 installer; plan uniquely versioned prerelease only after the real-host compatibility result and explicit deployment approval.
+- See `DAY12-PHASE10-GSC-GUARD-ROLLOUT-HANDOFF.md` for one-action handoff. Canonical `backend_ports_private` **FAIL**, Day12.11/12.12/12.13 remain blocked.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
