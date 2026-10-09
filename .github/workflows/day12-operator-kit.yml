@@ -44,7 +44,13 @@ jobs:
           if($null -eq $manifest.components.gst -or $null -eq $manifest.components.gds -or
              $null -eq $manifest.components.technology -or $null -eq $manifest.components.chemistry -or
              $null -eq $manifest.components.statusagent){throw "Operator Kit is missing required component baseline"}
-          Copy-Item DAY12-LIVE-RUNBOOK.md,DAY12-REPO-PROGRESS.md,FINAL-BASELINE.json,FINAL-VERSION-MATRIX.md,FINAL-NETWORK-TOPOLOGY.json,FINAL-RELEASE-GATES.json,OPERATOR-KIT-README.txt "$k/"
+          Copy-Item DAY12-LIVE-RUNBOOK.md,DAY12-REPO-PROGRESS.md,DAY1-12-PC-CLEANUP-GUIDE.md,FINAL-BASELINE.json,FINAL-VERSION-MATRIX.md,FINAL-NETWORK-TOPOLOGY.json,FINAL-RELEASE-GATES.json,OPERATOR-KIT-README.txt "$k/"
+          $cleanupCmd=Join-Path $k 'tools/day12/Geumyi_Day1To12_PC_Temp_Cleanup.cmd'
+          $cleanupEngine=Join-Path $k 'tools/day12/Geumyi_Day1To12_PC_Temp_Cleanup.ps1'
+          $cleanupMenu=Join-Path $k 'tools/day12/Geumyi_Day1To12_PC_Temp_Cleanup_Menu.ps1'
+          foreach($check in @($cleanupCmd,$cleanupEngine,$cleanupMenu,(Join-Path $k 'DAY1-12-PC-CLEANUP-GUIDE.md'))){
+            if(-not(Test-Path -LiteralPath $check -PathType Leaf)){throw ('Day1-12 cleanup kit missing: '+$check)}
+          }
           Compress-Archive -Path "$k/*" -DestinationPath Day12-Operator-Kit.zip -Force
       - uses: actions/upload-artifact@v7
         with:
