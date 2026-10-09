@@ -44,6 +44,13 @@ The table reflects the intended topology `FINAL-NETWORK-TOPOLOGY.json`, not a fr
 - Continue reviewing the known **38** broad inbound Allow candidates, including **33** unclassified and **15** higher-review profile candidates from 12.5. That prior count is historical; avoid calling it a freshly verified count.
 - This check, when CI-verified, could provide genuinely distinct **effective-policy metadata** compared to the previous name-only heuristic, but does not close strict `backend_ports_private` or authorize changing host firewall rules. No administrator intervention is requested until CI/kit verification completes.
 
+## Disposable runner test result — 2026-10-10
+
+- One GitHub Windows **disposable** runner test **PASS** in Actions run `37982653272`: a temporary nonloopback IPv4 local-address-scoped inbound TCP Block rule on an ephemeral port was created, locally read back and deleted in `finally`; its separate `127.0.0.1` listener remained connectable before and after. The original Minecraft host was **not** touched.
+- This limited result **does not verify remote filtering efficacy**, IPv6/overlay/DHCP changes, GSC/Velocity/Paper/RCON behavior, or current backend bind ownership. The mandatory canonical gate remains **FAIL**.
+- A second network vantage point, IPv4/IPv6 comparisons and application-aware/rollback proof are prerequisites to seeking approval for any production firewall change. Preserve current 36 broad candidate rules until identities and dependencies are privately resolved.
+- [CI outcome and exact limitations](DAY12-PHASE10-DISPOSABLE-FIREWALL-RESULT-20261010.md).
+
 ## Approval and rollback gate
 
 **Approval required before modifying any live security policy**. Present the actual exact rule changes and expected scope, dependencies, possible lockout/service impact, and a reversible rollback procedure to the operator. Require a separate **yes** to deploying the narrowly scoped rules. On any failed connectivity, backend health or unexpected client regression, undo only the approved new rules using the saved previous state, restore expected public entry and local GSC/RCON operations, and retain the Golden backups. A production restore is never the default rollback for a firewall-only change.
