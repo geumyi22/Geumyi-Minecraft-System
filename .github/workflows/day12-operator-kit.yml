@@ -12,6 +12,7 @@ on:
       - 'DAY12-PHASE10-BIND-DECISION-REPORT.md'
       - 'DAY12-PHASE10-GSC-SOURCE-AUDIT.md'
       - 'DAY12-PHASE10-SECURITY-DECISION-PACKET.md'
+      - 'DAY12-PHASE10-WINDOWS-TCP-API-AUDIT.md'
       - 'FINAL-*.json'
       - 'FINAL-*.md'
       - '.github/workflows/day12-operator-kit.yml'
@@ -47,7 +48,7 @@ jobs:
           if($null -eq $manifest.components.gst -or $null -eq $manifest.components.gds -or
              $null -eq $manifest.components.technology -or $null -eq $manifest.components.chemistry -or
              $null -eq $manifest.components.statusagent){throw "Operator Kit is missing required component baseline"}
-          Copy-Item DAY12-LIVE-RUNBOOK.md,DAY12-REPO-PROGRESS.md,DAY12-PHASE10-BIND-DECISION-REPORT.md,DAY12-PHASE10-GSC-SOURCE-AUDIT.md,DAY12-PHASE10-SECURITY-DECISION-PACKET.md,DAY1-12-PC-CLEANUP-GUIDE.md,FINAL-BASELINE.json,FINAL-VERSION-MATRIX.md,FINAL-NETWORK-TOPOLOGY.json,FINAL-RELEASE-GATES.json,OPERATOR-KIT-README.txt "$k/"
+          Copy-Item DAY12-LIVE-RUNBOOK.md,DAY12-REPO-PROGRESS.md,DAY12-PHASE10-BIND-DECISION-REPORT.md,DAY12-PHASE10-GSC-SOURCE-AUDIT.md,DAY12-PHASE10-SECURITY-DECISION-PACKET.md,DAY12-PHASE10-WINDOWS-TCP-API-AUDIT.md,DAY1-12-PC-CLEANUP-GUIDE.md,FINAL-BASELINE.json,FINAL-VERSION-MATRIX.md,FINAL-NETWORK-TOPOLOGY.json,FINAL-RELEASE-GATES.json,OPERATOR-KIT-README.txt "$k/"
           $cleanupCmd=Join-Path $k 'tools/day12/Geumyi_Day1To12_PC_Temp_Cleanup.cmd'
           $cleanupEngine=Join-Path $k 'tools/day12/Geumyi_Day1To12_PC_Temp_Cleanup.ps1'
           $cleanupMenu=Join-Path $k 'tools/day12/Geumyi_Day1To12_PC_Temp_Cleanup_Menu.ps1'
