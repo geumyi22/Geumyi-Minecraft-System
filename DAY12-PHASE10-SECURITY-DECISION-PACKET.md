@@ -93,6 +93,14 @@
 - User execution was read-only; no network policy change, rollback or staged implementation performed. **Stop further redundant TCP/WFP/candidate inventory scans.** Pre-stage explicit remote-only firewall controls and privately verify actual rule identities, GSC/Velocity/RCON/Bedrock dependencies before seeking narrowly scoped operator approval. Strict `backend_ports_private` **FAIL** and Stable closed.
 - [Read-only real-host outcome and 36-candidate priority](DAY12-PHASE10-JAVA-RULE-LIVE-RESULT-20261010.md).
 
+## Isolated GitHub-hosted Windows firewall candidate experiment — PASS, limited (2026-10-10)
+
+- To avoid live host changes, built `tools/day12/Day12_Phase10_Disposable_Firewall_Loopback_CI.ps1` and `.github/workflows/day12-disposable-firewall-stage.yml`. It **refuses to create a firewall rule on the real server PC** and operates only with an explicit GitHub CI runner guard and ephemeral TCP port.
+- Standard Windows Safety CI **`37982580208` SUCCESS**, disposable Windows staging workflow **`37982653272` SUCCESS**. Verified captured artifact: temporary inward TCP Block with a nonloopback CI IPv4 `LocalAddress`, rule metadata readback, loopback handshake success before/after, and **verified deletion of only the owned test rule** (`rule_created=true`, `owned_rule_removed=true`).
+- **Do not promote this to production proof:** no external remote host was used, no IPv6/overlay test, no GSC Paper/RCON process, no complete effective WFP filtering evidence, no actual production firewall change. This CI result supports only a future **scoped IPv4-local-address rule candidate** whose local loopback impact must still be independently verified on the target host/VM.
+- Next: prepare two-host disposable test with before/after remote TCP negative control and local positive control for both IP families; map the 36 broad Any-program rules to actual identities privately and preserve release rollback. A real server change will require explicit operator approval after all preflight/staging checks. Strict `backend_ports_private` **FAIL**.
+- [Full CI artifact assessment](DAY12-PHASE10-DISPOSABLE-FIREWALL-RESULT-20261010.md).
+
 ## Production-safety rule and operator handoff
 
 - User explicitly allows autonomous **source inspection, GitHub changes, documentation and synthetic CI** without repeated check-ins.
