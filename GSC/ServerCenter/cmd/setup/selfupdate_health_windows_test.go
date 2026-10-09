@@ -5,6 +5,8 @@ package main
 import (
 	"strings"
 	"testing"
+	"os"
+	"path/filepath"
 )
 
 func TestGSCUpdateHealthRequiresExactTargetVersion(t *testing.T) {
@@ -34,4 +36,42 @@ func TestGSCUpdateHealthRequiresExactTargetVersion(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGSCBackupRestoreReturnsSuccessOnlyWhenFilesRestored(t *testing.T) {
+	dir:=t.TempDir()
+	target:=filepath.Join(dir,"GeumyiServerHost.exe")
+	backup:=filepath.Join(dir,"previous-host.exe")
+	newFile:=filepath.Join(dir,"new-client.exe")
+	if err:=os.WriteFile(backup,[]byte("last-known-good"),0600);err!=nil{t.Fatal(err)}
+	if err:=os.WriteFile(target,[]byte("new-but-bad"),0600);err!=nil{t.Fatal(err)}
+	if err:=os.WriteFile(newFile,[]byte("new-only"),0600);err!=nil{t.Fatal(err)}
+	files:=[]selfUpdateFile{
+		{target:target,backup:backup,existed:true},
+		{target:newFile,backup:filepath.Join(dir,"none"),existed:false},
+	}
+	if err:=restoreSelfUpdateFiles(files);err!=nil{t.Fatalf("safe restore failed: %v",err)}
+	b,err:=os.ReadFile(target)
+	if err!=nil||string(b)!="last-known-good"{t.Fatalf("original host not restored: %v",err)}
+	if _,err:=os.Stat(newFile);!os.IsNotExist(err){t.Fatal("new-only file was not removed")}
+}
+
+func TestGSCRestoreNeverClaimsSuccessWhenBackupMissing(t *testing.T) {
+	dir:=t.TempDir()
+	missing:=filepath.Join(dir,"missing-old-client.exe")
+	badTarget:=filepath.Join(dir,"GeumyiServerCenter.exe")
+	goodTarget:=filepath.Join(dir,"GeumyiServerHost.exe")
+	goodBackup:=filepath.Join(dir,"host-old-backup.exe")
+	if err:=os.WriteFile(badTarget,[]byte("candidate"),0600);err!=nil{t.Fatal(err)}
+	if err:=os.WriteFile(goodTarget,[]byte("candidate-host"),0600);err!=nil{t.Fatal(err)}
+	if err:=os.WriteFile(goodBackup,[]byte("original-host"),0600);err!=nil{t.Fatal(err)}
+	files:=[]selfUpdateFile{
+		{target:badTarget,backup:missing,existed:true},
+		{target:goodTarget,backup:goodBackup,existed:true},
+	}
+	if err:=restoreSelfUpdateFiles(files);err==nil{t.Fatal("missing old Client backup must fail closed")}
+	hostData,err:=os.ReadFile(goodTarget)
+	if err!=nil||string(hostData)!="original-host"{t.Fatal("remaining recoverable files must still be restored")}
+	clientData,err:=os.ReadFile(badTarget)
+	if err!=nil||string(clientData)!="candidate"{t.Fatal("missing backup must not invent a recovery")}
 }
