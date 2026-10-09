@@ -331,6 +331,24 @@ jobs:
             throw "Phase 2+5 synthetic report contract failed"
           }
 
+      - name: Day12 12.10 two-host IPv4 IPv6 stage matrix fail-closed synthetic
+        shell: powershell
+        run: |
+          $dir=Join-Path $env:RUNNER_TEMP 'day12-two-host-matrix'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_TwoHost_Stage_Evidence_REVIEW_ONLY.ps1 -Synthetic -OutputDir $dir
+          if($LASTEXITCODE -ne 0){throw 'Two-host evidence matrix fixture failed'}
+          $files=@(Get-ChildItem -LiteralPath $dir -Filter '*.json' -File)
+          if($files.Count -ne 1){throw 'Expected exactly one stage evidence fixture result'}
+          $r=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.synthetic -or
+             -not $r.reads_existing_evidence_only -or
+             $r.firewall_mutation_performed -or $r.network_probes_performed -or
+             $r.canonical_backend_ports_private -ne 'UNCHANGED_FAIL' -or
+             $r.expected_positive_case -ne 'EVIDENCE_MATRIX_CONSISTENT_REVIEW_ONLY' -or
+             @($r.negative_cases).Count -ne 4){
+            throw 'Two-host fail-closed artifact schema regression'
+          }
+
       - name: Day12 12.10 CI-only temporary firewall guardrails synthetic
         shell: powershell
         run: |
