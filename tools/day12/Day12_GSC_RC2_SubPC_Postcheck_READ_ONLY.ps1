@@ -90,9 +90,7 @@ $validRC2=($clientHash -eq $expectedRC2)
 # Fail closed on any Host indication or failure to read role.
 try {
   if($clientPath -and (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $clientPath) "GeumyiServerHost.exe") -PathType Leaf)){$roleSafe=$false}
-  if($null -ne (Get-Service -Name "Geumyi Server Center Host" -ErrorAction Stop)){$roleSafe=$false}
-} catch [Microsoft.PowerShell.Commands.ServiceCommandException] {
-  # The absence of this service is expected on a client-only PC.
+  if($null -ne (Get-Service -Name "Geumyi Server Center Host" -ErrorAction SilentlyContinue)){$roleSafe=$false}
 } catch {
   $roleReadable=$false
 }
