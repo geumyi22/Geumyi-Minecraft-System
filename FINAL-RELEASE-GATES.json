@@ -17,6 +17,7 @@
     "phase_12_4_lifecycle_dry_run_review": "PENDING_LIVE",
     "phase_12_5_runtime_security_review": "PENDING_LIVE",
     "phase_12_7_offline_known_good_startup": "PENDING_LIVE",
+    "phase_12_10_backend_ports_private": "FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS",
     "phase_12_11_final_live_e2e": "PENDING_LIVE",
     "phase_12_12_soak": "PENDING_LIVE"
   },
