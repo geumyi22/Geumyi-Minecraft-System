@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/day12-gsc-guard-rc2-preview.yml'
       - 'tools/day12/Build_Day12_GSC_Guard_RC2_CI.ps1'
+      - 'tools/day12/Test_Day12_GSC_Client_RC2_Disposable_Transaction_CI.ps1'
       - 'GSC/ServerCenter/cmd/client/main.go'
       - 'GSC/ServerCenter/cmd/client/client_update_test.go'
       - 'GSC/ServerCenter/cmd/host/self_update.go'
