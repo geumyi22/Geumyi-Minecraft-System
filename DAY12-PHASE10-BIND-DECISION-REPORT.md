@@ -64,6 +64,14 @@ This requires a **separate operator approval and maintenance window** for anythi
 - Interface metadata: **1 compartment ID**, **0 nondefault** among reported IP interfaces; this does not prove the Java/RCON sockets' compartment identity. No additional broad network scans are justified.
 - **Assessment:** expected on-disk loopback server settings confirmed, but running Java/RCON bind remains unproven. Retain `backend_ports_private=FAIL` and release hold. Next is a tightly scoped, approved source-of-truth ownership/bind audit. No need for user to rerun this preflight just to obtain repaired process-family group labels; current evidence suffices for configuration verification.
 
+## 2026-10-10 02:20:13 KST — Java and RCON application-reported loopback for all 4 profiles
+
+- User uploaded `Day12-Startup-Bind-20261010-022013.json` privately; `phase=12.10-startup-log-bind`, `synthetic=false`, `read_only=true`, `result=CAPTURED_REVIEW_REQUIRED`, `mutation_performed=false`, `secrets_exported=false`. Do **not** copy original user logs or raw JSON into the repository.
+- **All 8 expected application startup bind messages were found and classified LOOPBACK**: Wild Java+RCON (1 each), Playground Java+RCON (1 each), Other Java+RCON (1 each), Lobby Java+RCON (1 each). No captured message classified wildcard/nonloopback; matched port expectations per redacted parser. All four `latest.log` sources were fully scanned, **no 6MiB truncation**.
+- **Age matters:** Wild and Playground logs were **10.6 min** old; Lobby **60.3 min**; Other **4123.9 min (~68h44m)** and previously seen OFFLINE. These are **application-reported at startup**, not contemporaneous proof that all four instances still run or that the current OS listeners are exclusively loopback. The offline Other profile must remain exempt from *online listener* requirements until it is started for full E2E.
+- Combines nonredundant evidence: on-disk Java `server-ip=127.0.0.1` (4/4), Java+RCON separate app startup loopback announcements (8/8), server-PC localhost online Java/RCON connectivity (6/6 at 01:19), and second-PC negative reachability (0/8 private at earlier time). **No confirmed backend exposure** in evidence, but no all-socket positive contemporary bind+owner proof either. The earlier Windows TCP lookup discrepancy persists.
+- **Decision:** App-side Java+RCON bind-intent validation **PASS 8/8**, OS runtime-exclusive bind validation **OPEN** and canonical 12.10 `backend_ports_private` **FAIL**; do not change `FINAL-RELEASE-GATES.json`, do not auto-promote Stable. **No more repeating startup logs, native scans, LAN tests, or re-reading the 02:05 preflight** absent a meaningful change. Next useful work is documentation/source-level readiness review for 12.11/12.12 and a single controlled runtime attestation during an explicitly approved maintenance window (not an automatic production restart).
+
 ## Source documents
 
 - [Day 12 Live Runbook](DAY12-LIVE-RUNBOOK.md)
