@@ -92,3 +92,9 @@ Historical Day 8–11 recovery evidence is intentionally retained.
 ### Phase 12.10 — provider-difference read-only diagnostic
 
 Run `Day12_Phase10_Provider_Diff_READ_ONLY.cmd` once on the server PC to compare Windows native TCP LISTENER and ALL classes, filtered/unfiltered NetTCPIP queries, and a sanitized netstat exit status. Only the unresolved 25571/25573/25575/25576 ports are included. No TCP connections are opened and no services, worlds, backup, firewall or configuration are changed. A Windows synthetic controlled-listener test passed. The report is not a release PASS; `backend_ports_private` remains fail-closed.
+
+### Phase 12.10 — GetTcpTable2 IPv4 independent API corroboration
+
+- After the 2026-10-10 01:43 live `Day12-Provider-Diff-20261010-014337.json` showed a `25571` loopback listener in native LISTENER classes but 0 matches in native ALL and unfiltered CIM, and 0 listener rows for `25573/25575/25576`, use `Day12_Phase10_TcpTable2_READ_ONLY.cmd` for one **targeted independent Windows API** crosscheck.
+- Reads only `GetTcpTable2` `MIB_TCPTABLE2` (IPv4), three short snapshots of the six GSC-online Java+RCON ports; emits only port, coarse address scope and sanitized status. No network connections, services, firewall/ACL, world, config, backups or credentials touched. An ephemeral CI loopback listener validates the P/Invoke layout and wildcard classifier.
+- A missing IPv4 row is inconclusive; an observed IPv4 loopback row does not alone prove IPv6 private binding or future state. The result **never promotes canonical `backend_ports_private`, 12.10, or Stable**. Do not keep repeating the 12.5 security, Golden, 6/6 loopback or LAN 0/8 tests.
