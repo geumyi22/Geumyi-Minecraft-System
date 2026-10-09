@@ -38,6 +38,12 @@ Operator-supplied `Day12-GSC-Guard-Precheck-20261010-051837.json` at **05:18:37 
 - **Regression fixed:** earlier failed RC CI runs `37986580332` and `37987139836` surfaced prerelease ordering/validation flaws in `compareGSCVersions`. Commit `2e5bec5f4` ensures `4.3.9-rc.1 < 4.3.9`, `rc.2 < rc.10`, malformed tags rejected before core comparisons, preventing prerelease clients from falsely rejecting final Stable versions. Prior failing experiments remain recorded; only the final validated RC artifact is usable as a *review input*.
 - **Critical:** GitHub CI signing key was NOT invoked, no signed manifest was generated or uploaded, no canary/beta tag or Stable release published. Existing 4.3.8 installation/players/Worlds/Golden/RCON/firewall were not modified. **Do not give this unsigned preview Setup.exe to the operator as an install instruction**.
 
+## Canary staging follow-up — signed-manifest GitHub Draft confirmed (2026-10-10)
+
+- [Read-only Canary draft artifact audit `37988929955`](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/37988929955) **SUCCESS**: all 6 attached assets downloaded again; hashes and manifest Ed25519 signature cryptographically verified. Prior published 4.3.8 beta `deployment-public.pem` matched new signing key. Initial draft-create workflow `37988376060` errored after creating a valid Draft due GitHub GET-by-tag returning 404 for an untagged draft; it did NOT publish a visible release. Subsequent audit used authenticated releases-list API.
+- Full evidence and exact deferred gates: `DAY12-PHASE10-GSC-4.3.9-RC1-SIGNED-CANARY-DRAFT-REPORT.md`.
+- **No operator action yet:** this is a **GitHub DRAFT**, not a publicly discoverable Canary release; the original 4.3.8 install remains untouched. Separate tested publishing/tag pin plus controlled second-PC installation/rollback is required before any real-world E2E or server PC action. Signed *manifest* does not imply Windows PE Authenticode signing. Keep strict `backend_ports_private` FAIL.
+
 ## Preflight checklist — BEFORE asking the operator to install
 
 1. Review the 4/4 latest on-host profile consistency against the candidate guard **at execution time**. The 05:18 report is current only as of capture; rerun it solely if configuration has since changed.
