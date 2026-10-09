@@ -11,6 +11,11 @@ if($env:GITHUB_ACTIONS -ne "true" -or
    [Environment]::OSVersion.Platform.ToString() -ne "Win32NT"){
   throw "REFUSED_OUTSIDE_DISPOSABLE_GITHUB_CI"
 }
+# Keep the original RC3 candidate reproducible; do not silently rebuild
+# a different unsigned RC3 payload after subsequent rollback source repairs.
+if($env:GITHUB_SHA -ne "f45f1ba58171cd8018b6c74d2a0ca8bafe1b47e0"){
+  throw "FROZEN_RC3_SOURCE_MISMATCH_USE_DISTINCT_RC"
+}
 $version="4.3.9-rc.3"
 $root=(Resolve-Path "GSC/ServerCenter").Path
 $work=Join-Path $env:RUNNER_TEMP "Geumyi-Day12-GSC-RC3-Source"
