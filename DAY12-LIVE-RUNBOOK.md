@@ -180,6 +180,12 @@
 - 다음 한 번만 최신 Operator Kit의 **서버 PC** `tools\\day12\\Day12_Phase10_Active_Connection_Trace_READ_ONLY.cmd` 실행. TCP 연결이 짧게 유지되는 동안 **미검출 포트 네 개**의 서버 측 `ESTABLISHED` endpoint를 관찰해 JSON에 기록합니다. 바탕화면 `Geumyi-Day12-Active-Connections\\Day12-Active-Connections-*.json` 최신 하나만 제출합니다. 관리자 권한 불필요, 명령·인증정보 없음, 소켓 handshake가 로그에 남을 수 있음. 먼저 CI 합성 시험 성공을 확인합니다.
 - 유효 권한·방화벽/ACL 변경, TCP listener 보안 완전 인증, Java/Bedrock 실사용 E2E는 아직 아님. 기존 12.5/Golden/LAN/Native/Loopback 진단을 반복하지 않습니다. 결과가 또 모호하면 프로세스·네트워크 컴파트먼트 등을 별도 검토합니다. 12.10 FAIL·Stable BLOCKED 유지.
 
+## 2026-10-10 01:27 ESTABLISHED endpoint 현장 결과 — 3개 루프백, 1개 미검출
+
+- `Day12-Active-Connections-20261010-012751.json`: GSC fleet 검사 전후 동일, Wild/Playground/Lobby ONLINE, Other OFFLINE. 직전 네이티브 LISTEN에서 누락된 네 포트 **25571/25573/25575/25576 전부 localhost 연결 성공**.
+- **25573 Lobby Java / 25575 Wild RCON / 25576 Playground RCON**: `Get-NetTCPConnection`과 .NET `IPGlobalProperties`가 각각 하나씩 `ESTABLISHED` 서버 측 로컬/원격 주소 `LOOPBACK` 관찰. **25571 Playground Java**: 접속은 성공했지만 서버 측 ESTABLISHED 행 0건, `Get-NetTCPConnection` 오류. `netstat`은 네 포트 모두 오류로 기록됨. 연결 직후 끊겼는지 등 원인은 미확인.
+- 이 결과는 실제 통신 성공을 보강하지만 **오직 루프백에서만 LISTEN 중임을 보장하지 않음**. 정식 12.10 `backend_ports_private` PASS 금지. 무의미한 전체 재검사 대신, 향후 보고서에 민감정보 없는 구체적 오류 유형과 실제 LISTEN 주소 검증을 추가하는 쪽으로 조사. Golden, LAN, ACL, 8787, 이전 6/6 테스트를 반복하지 않음.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
