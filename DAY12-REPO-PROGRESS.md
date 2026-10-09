@@ -342,6 +342,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **Next single action** is operator-run existing WFP Security log read on server PC, latest JSON in `Desktop\Geumyi-Day12-WFP`. Access-denied/no events means `UNAVAILABLE`/unknown, not an instruction to enable auditpol. Do **not** repeat earlier TCP inventories, change security policy, reboot or bypass the mandatory gate.
 - Strict `backend_ports_private` **FAIL** (last canonical 18 PASS/0 WARN/1 FAIL); full 12.11 E2E, live 12.12 soak and final Stable still blocked, notwithstanding operator-reported game/client smoke checks.
 
+## 2026-10-10 04:06 KST — real host WFP historical-audit evidence unavailable
+
+- User uploaded `Day12-WFP-Bind-20261010-040617.json` generated 04:06:17 KST on the actual server PC: `synthetic=false`, `read_only=true`, `mutation_performed=false`, `result=UNAVAILABLE`, `error_category=AUDIT_RECORDS_UNAVAILABLE_OR_ACCESS_DENIED`.
+- `event_count=0`, `process_generations_seen=11`, all **8** watched backend Java/RCON ports returned `NO_CURRENT_PROCESS_EVENT` with zero 5154/5158 records. `audit_policy_changed=false`; no socket evidence established. This **does not** show exposed ports, offline backends, unsafe binds, nor verified isolation.
+- Cause **unknown** because first WFP tool wraps event-log no-match, log-access denied, process-inventory and query failures into the same generic `UNAVAILABLE` category. Do **not** enable WFP auditing, restart servers, change firewall, reinterpret empty history as PASS or repeat the original collector unchanged.
+- Assistant follow-up: fix tool to classify the exact failure source and add synthetic regression for no-matches vs access denial vs query error, then Windows CI. No production changes until concrete useful new evidence is available.
+- Day12.10 canonical `backend_ports_private` remains **FAIL** (last 18/0/1); 12.11 final release-grade E2E / 12.12 soak / 12.13 Stable remain blocked.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
