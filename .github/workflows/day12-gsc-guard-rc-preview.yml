@@ -7,6 +7,10 @@ on:
     paths:
       - '.github/workflows/day12-gsc-guard-rc-preview.yml'
       - 'tools/day12/Build_Day12_GSC_Guard_RC_CI.ps1'
+      - 'GSC/ServerCenter/cmd/host/self_update.go'
+      - 'GSC/ServerCenter/cmd/host/self_update_test.go'
+      - 'GSC/ServerCenter/cmd/host/day12_private_java_guard.go'
+      - 'GSC/ServerCenter/cmd/host/day12_private_java_guard_test.go'
 
 permissions:
   contents: read
