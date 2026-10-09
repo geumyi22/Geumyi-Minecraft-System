@@ -487,6 +487,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **User action now necessary:** on **secondary PC**, keep GSC Client open, run `Day12_GSC_RC2_SubPC_Host_Proxy_READ_ONLY.cmd`, submit `Day12-SubPC-GSC-RC2-HostProxy-*.json`. No more install/rollback or identical postcheck needed.
 - GSC Host production stays 4.3.8; canonical `backend_ports_private` **FAIL**, Day12.11/12.12/12.13 production/Stable blocked.
 
+## 2026-10-10 06:37 KST — SubPC GSC 4.3.9-rc.2 Canary authenticated Host read E2E PASS
+
+- Operator-provided `Day12-SubPC-GSC-RC2-HostProxy-20261010-063730.json` (not committed) generated `2026-10-10T06:37:35.0886269+09:00`: **`SUBPC_RC2_AUTHENTICATED_HOST_STATUS_PASS`**, `issue_codes=[]`, real machine, read-only. Installed RC2 Client identity + absence of local Host role verified, Host `/api/health` **HTTP 200**, authenticated proxied `/api/status` **HTTP 200**, both GSC JSON schemas valid, server list structure present, actual remote Host version **4.3.8** and endpoints agree. `mutation_performed=false`, no server actions, token/URL/body export, no service restart. Canonical `backend_ports_private=UNCHANGED_FAIL`.
+- Combined with real 05:53 baseline, 06:24 signed offline SubPC Client update, and 06:31 local runtime/backup PASS: **SubPC 4.3.9-rc.2 Client-only Canary read path E2E closed as PASS**. No repeat same scans/installer needed. Reference: `DAY12-PHASE10-GSC-RC2-SUBPC-FINAL-CLIENT-E2E-20261010.md`.
+- Audited production GSC Host **self-update helper** separately. Found existing Host health gate would accept any HTTP 2xx, even if old Host remained, and rollback report could mark `rolled_back` after ignored restore errors. Fixed future source: candidate version match + GSC JSON/Generation check; rollback file error handling and restored GSC Host health verification; added Windows unit tests. Source **not deployed**, running Host stays 4.3.8. Reference: `DAY12-PHASE10-GSC-HOST-UPDATE-GATE-HARDENING-20261010.md`.
+- Preparing isolated **Host RC3 `4.3.9-rc.3` unsigned review-only preview** (distinct from signed SubPC Client rc2; never overwrite rc2 candidate). GitHub Actions `37995231947` initiated; conclusion **pending verification**. No Canary public release/Stable distribution or production GSC Host install.
+- **No user action right now** while repo-only Host validation continues. Actual Server-PC GSC Host update/restart must have separate explicit approval plus host-service stage/rollback, player/Golden preflight. Mandatory private-port dual-stack owner/bind proof remains **FAIL** and 12.11/12.12/12.13 live gates blocked.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
