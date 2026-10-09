@@ -67,6 +67,14 @@ This report is intentionally not marked PASS until the real server PC, Java clie
 - The canonical Day 12.10 `backend_ports_private` check remains **FAIL** (last live verifier 18 PASS / 0 WARN / 1 FAIL). No Stable/Maintenance promotion is allowed.
 - Next non-disruptive mobile coverage: check **GSCM backup list and protected/GOLDEN indicators** without running backup, restore, delete, or unprotect actions. Prior host-side protected Golden 4/4 evidence already exists; no new backup generation is needed.
 
+## Operator-reported GSCM protected Golden backup inventory — 2026-10-10 KST (read-only, partial)
+
+- Operator replied **"됨"** to the GSCM **Backup/Protection/Recovery** menu read-only checklist: list visible for **Wild / Playground / Other / Lobby**, and the four corresponding **Golden backups displayed as protected**.
+- Mark **OPERATOR_REPORTED_PASS** for mobile UI **inventory visibility and protection indicators** only. No new archive was created, no bytes rehashed, no actual backup recovery/restore was attempted and no independent on-device screenshot/report was provided.
+- Prior server-PC Golden 4/4 verified backup evidence remains separate; do not count UI indication alone as new integrity verification or as protection against failed restoration.
+- Mandatory Day 12.10 `backend_ports_private` remains **FAIL** (last canonical 18 PASS / 0 WARN / 1 FAIL); Day 12.11 full E2E, 12.12 soak, Final Stable and irreversible cleanup remain **BLOCKED/PENDING**.
+- Follow-up should verify the restore **preflight only**, on a safe path confirmed in source/UI before instructing the operator. **Do not trigger real restore, remove protection, delete backups, or interrupt live servers.**
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
