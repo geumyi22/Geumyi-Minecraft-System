@@ -47,6 +47,12 @@
 - **No WFP listener audit evidence was established**, and this is not a finding of an open external bind or inaccessible Minecraft service. The reporting code merged missing WFP history, Security-log access errors and query failures; original error details were intentionally not exported. Exact root cause cannot be inferred from this JSON.
 - **Do not repeat the original exact test**, enable success audits with `auditpol`, change Windows Firewall or restart Java. Refine collector error classification in CI first. Even positive historical WFP events would not prove exclusive *current* listener addresses, so the canonical private-port gate stays FAIL.
 
+## WFP v2 synthetic/XPath verification — 2026-10-10
+
+- New event-query failure classifier maps Windows `NoMatchingEventsFound` to `NO_EVIDENCE`; access denied / query failure / process inventory failure remain explicitly `UNAVAILABLE`. Both are strictly non-PASS. The updated report adds source status metadata without exporting raw Security event data.
+- **Windows Safety CI `37978595664` PASS**, including actual Windows Event Log XPath acceptance and synthetic no-match/access-denied/invalid-query branches. **Operator Kit `37978317238` PASS**; corrected v2 script was packaged as the normalized ZIP `Geumyi-Day12-WFP-Diagnostic-v2.zip` for user download.
+- The only justified next host action is a **single** read-only v2 Security history query (administrator if log privileges require it) and JSON upload, so the exact reason for the previous `UNAVAILABLE` can be classified. This still does not prove current exclusive loopback binding; do not change the security gate or enable verbose WFP auditing.
+
 ## Production-safety rule and operator handoff
 
 - User explicitly allows autonomous **source inspection, GitHub changes, documentation and synthetic CI** without repeated check-ins.
