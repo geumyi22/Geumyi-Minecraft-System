@@ -92,6 +92,13 @@ This report is intentionally not marked PASS until the real server PC, Java clie
 - Existing Day 12.10 `backend_ports_private` **FAIL** (18 PASS / 0 WARN / 1 FAIL canonical), overall Day 12.11 final release-grade E2E **PENDING**, 12.12 live soak **PENDING**, 12.13 Stable **BLOCKED**.
 - **Next:** avoid repetitive routine UI acknowledgments. Focus assistant-side source/synthetic validation and a materially different runtime bind-attestation plan; ask the operator only when a genuinely new, scoped host-side proof or maintenance operation is necessary.
 
+## 2026-10-10 04:06 KST — Real Windows WFP audit probe outcome (NO INDEPENDENT BIND PROOF)
+
+- User supplied `Day12-WFP-Bind-20261010-040617.json` from the actual server PC. This is a non-synthetic read-only report (`synthetic=false`, `mutation_performed=false`) with `result=UNAVAILABLE`, `error_category=AUDIT_RECORDS_UNAVAILABLE_OR_ACCESS_DENIED`, `event_count=0`, `process_generations_seen=11`, `query_truncated=false`.
+- All **8** private Java/RCON target entries returned `NO_CURRENT_PROCESS_EVENT` (0 listen, 0 bind). Thus **no event-time listener address or owner was proved**; zero evidence does not indicate ports were exposed, offline or isolated.
+- Original WFP reader's catch block conflates no matching Security events, authorization failure, process inventory error and invalid query. It cannot establish a specific root cause from this report. An updated classifier is under Windows synthetic CI; user should **not rerun the original script**.
+- Canonical `backend_ports_private` remains **FAIL**; final 12.11 release-grade E2E, 12.12 soak and 12.13 Stable remain **PENDING/BLOCKED**. No Windows audit-policy changes, firewall changes or production restarts were authorized.
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
