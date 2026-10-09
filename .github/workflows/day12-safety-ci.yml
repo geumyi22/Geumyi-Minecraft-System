@@ -50,6 +50,27 @@ jobs:
           }
           Write-Host "Parsed $($files.Count) Day 12 PowerShell scripts."
 
+      - name: Dual-stack SubPC exposure probe synthetic and unsafe-target rejection
+        shell: powershell
+        run: |
+          $tool='tools/day12/Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.ps1'
+          $out=Join-Path $env:RUNNER_TEMP 'subpc-dualstack-fixture'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'SubPC dual-stack classifier synthetic failed'}
+          $r=Get-Content -LiteralPath (Join-Path $out 'Day12-SubPC-DualStack-Synthetic.json') -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or !$r.read_only -or !$r.synthetic -or
+             $r.private_ports_probed -or $r.mutation_performed -or
+             $r.canonical_backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'SubPC dual-stack classifier report contract failed'
+          }
+          $badLog=Join-Path $out 'rejected-local-target.txt'
+          $bad=Start-Process -FilePath 'powershell.exe' -NoNewWindow -Wait -PassThru -RedirectStandardError $badLog -ArgumentList @(
+            '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$tool,
+            '-TargetIPv4','127.0.0.1','-TargetIPv6','::1','-OutputDir',$out
+          )
+          if($bad.ExitCode -eq 0){throw 'SubPC tool accepted localhost target'}
+          $global:LASTEXITCODE=0
+
       - name: Day1-12 cleanup synthetic classifier and isolated Windows quarantine/restore
         shell: powershell
         run: |
