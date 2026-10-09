@@ -59,6 +59,14 @@ This report is intentionally not marked PASS until the real server PC, Java clie
 - Remaining test scope: runtime `backend_ports_private` security attestation (last canonical final verifier 18 PASS / 0 WARN / 1 FAIL), full operations/backup-restore/update and startup/reboot/offline E2E, real-device GSCM mutating actions, soak and release closure. These items are **not** implicitly PASS.
 - Safe next user step: inspect GSC **Backup/Recovery** protected backup inventory and last verification status **read-only**; do not create, overwrite, delete or restore backups to collect this simple GUI observation. Protected Golden 4/4 was already separately verified earlier.
 
+## Operator-reported GSCM remote Other console — 2026-10-10 KST (partial, non-release-grade)
+
+- Operator responded **"됨"** after being instructed to open the **Other** server's console in the **GSCM mobile app**, execute the read-only Minecraft `list` command, and confirm that the response displayed successfully.
+- Record as **OPERATOR_REPORTED_PASS** for the mobile GSCM **Other console command-and-response** flow only. The response did not include a command transcript or proof of any independent RCON transport, so do not generalize it to every remote mutation or all server consoles.
+- Java/Bedrock Other routing and existing GSCM basic read-only checks remain separately operator-reported; Windows host reboot, backup/restore, update/rollback, GSCM credential/device lifecycle and long-duration soak still pending.
+- The canonical Day 12.10 `backend_ports_private` check remains **FAIL** (last live verifier 18 PASS / 0 WARN / 1 FAIL). No Stable/Maintenance promotion is allowed.
+- Next non-disruptive mobile coverage: check **GSCM backup list and protected/GOLDEN indicators** without running backup, restore, delete, or unprotect actions. Prior host-side protected Golden 4/4 evidence already exists; no new backup generation is needed.
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
