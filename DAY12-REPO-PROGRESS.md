@@ -391,6 +391,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **Next meaningful input:** one new, scoped on-host process-aware application-rule report after kit build check. Do not re-request the old port-rule/Win32 TCP/WFP audit scans; do not claim private binding or Stable PASS from this result. The eventual specific deny/allow remediation still requires disposable-stage validation, health/rollback gates and **separate operator approval** before any host firewall mutation.
 - Golden 4/4 retained. Strict `backend_ports_private` **FAIL**; 12.11 release-grade E2E / 12.12 live soak / 12.13 Stable **BLOCKED**.
 
+## 2026-10-10 — Java/firewall identity tool packaged and ready (NO live PASS)
+
+- **Windows Day12 Safety CI 37981147007: PASS** (new Java program-path identity classifier plus full safety suite). **Day12 Operator Kit 37981322016: PASS** on integration commit `5a94afd73` and contains `tools/day12/Day12_Phase10_Java_Program_Rule_Match_READ_ONLY.ps1/.cmd` plus `DAY12-PHASE10-JAVA-RULE-IDENTITY-REVIEW.md`.
+- Downloaded CI artifact, verified wrapper and original inner ZIP CRC; created a small focused ZIP `Geumyi_Day12_Java_Firewall_Identity_READ_ONLY.zip` containing PS1/CMD, review document, Korean instructions and SHA256SUMS. Reopened and verified all five files, with forbidden firewall mutation commands absent from the examined PS1.
+- This tool compares current Java/javaw executable **path identity** with Windows ActiveStore **application-filter path identity** locally, then emits **only match categories**, ephemeral rule ordinals and aggregate counts. It does NOT determine Paper backend PID/socket ownership, effective WFP packet decisions, private IPv4+IPv6 binds or 12.10 PASS. No server-PC execution has yet been observed.
+- User is asked only to run the new read-only CMD on the Minecraft SERVER PC once and share the new JSON, rather than rerunning the now-saturated TCP/WFP evidence scans. Any actual firewall changes, remote access policy revisions, loopback-affecting blocks or Stable promotion still require separately reviewed preflight and explicit consent.
+- Golden 4/4 remain untouched; mandatory `backend_ports_private` FAIL and full release gates remain blocked.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
