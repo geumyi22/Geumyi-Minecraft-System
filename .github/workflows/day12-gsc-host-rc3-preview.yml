@@ -1,0 +1,110 @@
+name: Day12 GSC Host RC3 Preview (UNSIGNED — DO NOT INSTALL)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/day12-gsc-guard-host-rc3-preview.yml'
+      - 'tools/day12/Build_Day12_GSC_Host_RC3_CI.ps1'
+      - 'GSC/ServerCenter/cmd/setup/selfupdate_windows.go'
+      - 'GSC/ServerCenter/cmd/setup/selfupdate_health_windows_test.go'
+      - 'GSC/ServerCenter/cmd/client/main.go'
+      - 'GSC/ServerCenter/cmd/client/client_update_test.go'
+      - 'GSC/ServerCenter/cmd/host/self_update.go'
+      - 'GSC/ServerCenter/cmd/host/self_update_test.go'
+      - 'GSC/ServerCenter/cmd/host/day12_private_java_guard.go'
+      - 'GSC/ServerCenter/cmd/host/day12_private_java_guard_test.go'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: day12-gsc-guard-host-rc3-preview
+  cancel-in-progress: false
+
+jobs:
+  baseline:
+    name: Require verified baseline dependencies and GSC tests
+    uses: ./.github/workflows/system-ci.yml
+
+  preview:
+    name: Build distinct 4.3.9-rc.3 preview in disposable Windows CI
+    needs: baseline
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      GEUMYI_GSC_RC_STAGE: isolated_ci_review_only
+    steps:
+      - name: Checkout (read-only GitHub source)
+        uses: actions/checkout@v7
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: GSC/ServerCenter/go.mod
+          cache: false
+      - name: Download verified StatusAgent / GDS / GST payload dependencies
+        uses: actions/download-artifact@v8
+        with:
+          pattern: '*'
+          path: ci-deps
+      - name: Restore exactly three verified GSC installer plugin payloads
+        shell: pwsh
+        run: |
+          $dest='GSC/ServerCenter/cmd/setup/payload'
+          $m=@(
+            @('statusagent-0.5.4','GeumyiStatusAgent-0.5.4.jar'),
+            @('gds-1.1.1','GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar'),
+            @('gst-1.1.1-hotfix','GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar')
+          )
+          foreach($entry in $m){
+            $source=Join-Path (Join-Path 'ci-deps' $entry[0]) $entry[1]
+            if(-not (Test-Path -LiteralPath $source)){throw ('missing previously built dependency: '+$entry[0])}
+            Copy-Item -LiteralPath $source -Destination (Join-Path $dest $entry[1]) -ErrorAction Stop
+          }
+      - name: Parse isolated preview builder
+        shell: pwsh
+        run: |
+          $errors=$null; $tokens=$null
+          [void][Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path 'tools/day12/Build_Day12_GSC_Host_RC3_CI.ps1'),
+            [ref]$tokens,[ref]$errors)
+          if(@($errors).Count){throw 'RC builder syntax failed'}
+      - name: CI-only 4.3.9-rc.3 Go unit, installer build, host selftest and SHA256
+        shell: pwsh
+        run: |
+          & ./tools/day12/Build_Day12_GSC_Host_RC3_CI.ps1 -OutputDir candidate-output
+          if($LASTEXITCODE -ne 0){throw 'RC preview builder failed'}
+          $m=Get-Content -LiteralPath candidate-output/RC-METADATA.json -Raw -Encoding UTF8 | ConvertFrom-Json
+          if($m.candidate_version -ne '4.3.9-rc.3' -or !$m.review_only -or !$m.unsigned -or
+             !$m.go_test_pass -or !$m.day10_host_selftest_pass -or $m.operator_install_approved -or
+             $m.production_host_modified -or $m.stable_published -or
+             $m.backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Versioned review-only RC metadata contract invalid'
+          }
+          $files=@('GeumyiServerCenter-v4.3.9-rc.3-Setup.exe',
+                   'GeumyiServerHost-v4.3.9-rc.3.exe',
+                   'GeumyiServerCenter-v4.3.9-rc.3.exe',
+                   'RC-METADATA.json','DO-NOT-INSTALL-README.txt')
+          foreach($n in $files){
+            if(-not (Test-Path -LiteralPath "candidate-output/$n")){throw "RC output missing: $n"}
+          }
+          $sha=Get-Content candidate-output/SHA256SUMS.txt -Encoding ascii
+          if(@($sha).Count -ne 5){throw 'Missing RC SHA256 entries'}
+          foreach($row in $sha){
+            if($row -notmatch '^([0-9a-f]{64})  (.+)$'){throw 'Invalid RC checksum format'}
+            $actual=(Get-FileHash -LiteralPath ("candidate-output/"+$Matches[2]) -Algorithm SHA256).Hash.ToLowerInvariant()
+            if($actual -ne $Matches[1]){throw 'RC content digest mismatch'}
+          }
+      - name: Ensure original main source was not re-versioned
+        shell: pwsh
+        run: |
+          git diff --exit-code -- 'GSC/ServerCenter'
+          if($LASTEXITCODE -ne 0){throw 'RC preview modified tracked 4.3.8 source'}
+      - name: Archive UNSIGNED review-only candidate (not Stable, never published)
+        uses: actions/upload-artifact@v7
+        with:
+          name: gsc-4.3.9-rc.3-UNSIGNED-DO-NOT-INSTALL
+          path: candidate-output/*
+          if-no-files-found: error
+          retention-days: 14
