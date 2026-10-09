@@ -131,15 +131,15 @@ function Test-Day12PrivateListenerEvidence {
      $ExpectedJava.Count -eq 0 -or $ExpectedJava.Count -ne $ExpectedRcon.Count -or
      $VerifiedJavaPids.Count -eq 0){return $false}
   $privatePorts=@(25570,25571,25572,25573,25575,25576,25577,25579)
-  $javaRconPairs=@{25570=25575;25571=25576;25572=25577;25573=25579}
+  $javaRconPairs=@{"25570"=25575;"25571"=25576;"25572"=25577;"25573"=25579}
   $relevant=@($Rows|Where-Object{$null -ne $_ -and $privatePorts -contains [int]$_.port})
   if($relevant.Count -eq 0){return $false}
   foreach($row in $relevant){
     if([string]$row.address -notin @("127.0.0.1","::1","::ffff:127.0.0.1")){return $false}
   }
   foreach($javaPort in $ExpectedJava){
-    if(-not $javaRconPairs.ContainsKey([int]$javaPort)){return $false}
-    $rconPort=[int]$javaRconPairs[[int]$javaPort]
+    if(-not $javaRconPairs.ContainsKey([string]$javaPort)){return $false}
+    $rconPort=[int]$javaRconPairs[[string]$javaPort]
     if($ExpectedRcon -notcontains $rconPort){return $false}
     $owners=@()
     foreach($port in @([int]$javaPort,$rconPort)){
@@ -183,20 +183,47 @@ if($Synthetic){
   }
   $fixture=[pscustomobject]@{server_id="wild";status=[pscustomobject]@{phase="idle"}}
   if([bool](Optional $fixture "status.block_start" $false)){throw "optional fleet metadata regression"}
+  $native4="GetExtendedTcpTable_OWNER_PID_IPv4"
+  $native6="GetExtendedTcpTable_OWNER_PID_IPv6"
   $safeFixture=@(
-    [pscustomobject]@{port=25570;address="127.0.0.1"},
-    [pscustomobject]@{port=25575;address="::1"}
+    [pscustomobject]@{port=25570;address="127.0.0.1";pid=1234;source=$native4},
+    [pscustomobject]@{port=25575;address="::1";pid=1234;source=$native6}
   )
-  $passSafe=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED"
-  $failMissing=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @(25570) -ExpectedRcon @(25575,25576) -NativeStatus "CAPTURED"
-  $failNoNative=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "ERROR"
-  $failNoFleet=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @() -ExpectedRcon @() -NativeStatus "CAPTURED"
+  $passSafe=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED" -VerifiedJavaPids @(1234)
+  $failMissing=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @(25570) -ExpectedRcon @(25575,25576) -NativeStatus "CAPTURED" -VerifiedJavaPids @(1234)
+  $failNoNative=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "ERROR" -VerifiedJavaPids @(1234)
+  $failNoFleet=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @() -ExpectedRcon @() -NativeStatus "CAPTURED" -VerifiedJavaPids @(1234)
   $failWildcard=Test-Day12PrivateListenerEvidence -Rows @(
-    [pscustomobject]@{port=25570;address="0.0.0.0"},
-    [pscustomobject]@{port=25575;address="::1"}
-  ) -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED"
-  if(-not $passSafe -or $failMissing -or $failNoNative -or $failNoFleet -or $failWildcard){
-    throw "Private listener gate fail-closed regression"
+    [pscustomobject]@{port=25570;address="0.0.0.0";pid=1234;source=$native4},
+    [pscustomobject]@{port=25575;address="::1";pid=1234;source=$native6}
+  ) -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED" -VerifiedJavaPids @(1234)
+  $failIPv6Wildcard=Test-Day12PrivateListenerEvidence -Rows @(
+    [pscustomobject]@{port=25570;address="127.0.0.1";pid=1234;source=$native4},
+    [pscustomobject]@{port=25575;address="::1";pid=1234;source=$native6},
+    [pscustomobject]@{port=25575;address="::";pid=1234;source=$native6}
+  ) -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED" -VerifiedJavaPids @(1234)
+  $failOtherOwner=Test-Day12PrivateListenerEvidence -Rows $safeFixture -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED" -VerifiedJavaPids @(5678)
+  $failPidMissing=Test-Day12PrivateListenerEvidence -Rows @(
+    [pscustomobject]@{port=25570;address="127.0.0.1";pid=0;source=$native4},
+    [pscustomobject]@{port=25575;address="::1";pid=1234;source=$native6}
+  ) -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED" -VerifiedJavaPids @(1234)
+  $failNetstatOnly=Test-Day12PrivateListenerEvidence -Rows @(
+    [pscustomobject]@{port=25570;address="127.0.0.1";pid=1234;source="netstat"},
+    [pscustomobject]@{port=25575;address="127.0.0.1";pid=1234;source="Get-NetTCPConnection"}
+  ) -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED" -VerifiedJavaPids @(1234)
+  $failSplitOwner=Test-Day12PrivateListenerEvidence -Rows @(
+    [pscustomobject]@{port=25570;address="127.0.0.1";pid=1234;source=$native4},
+    [pscustomobject]@{port=25575;address="::1";pid=5678;source=$native6}
+  ) -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED" -VerifiedJavaPids @(1234,5678)
+  $failConflictingSource=Test-Day12PrivateListenerEvidence -Rows @(
+    [pscustomobject]@{port=25570;address="127.0.0.1";pid=1234;source=$native4},
+    [pscustomobject]@{port=25570;address="127.0.0.1";pid=5678;source="netstat"},
+    [pscustomobject]@{port=25575;address="::1";pid=1234;source=$native6}
+  ) -ExpectedJava @(25570) -ExpectedRcon @(25575) -NativeStatus "CAPTURED" -VerifiedJavaPids @(1234)
+  if(-not $passSafe -or $failMissing -or $failNoNative -or $failNoFleet -or
+     $failWildcard -or $failIPv6Wildcard -or $failOtherOwner -or
+     $failPidMissing -or $failNetstatOnly -or $failSplitOwner -or $failConflictingSource){
+    throw "Private listener native-owner/Java/RCON fail-closed regression"
   }
   $r=[ordered]@{schema=2;tool="Geumyi Final Verification";read_only=$true;synthetic=$true;result="SYNTHETIC_PASS";summary=[ordered]@{pass=1;warn=0;fail=0};checks=@(Check "synthetic" "PASS" "CI contract")}
   $r|ConvertTo-Json -Depth 8|Set-Content $out -Encoding UTF8;$r|ConvertTo-Json -Depth 8|Set-Content $canonical -Encoding UTF8;exit 0
@@ -284,12 +311,14 @@ if($fleet){
 }
 $missingRcon=@($requiredRcon|Where-Object{$target=$_;@($privateListeners|Where-Object{[int]$_.port -eq $target}).Count -eq 0})
 # Do not turn a no-listeners / no-fleet / missing-native situation into PASS.
-$privacyOK=Test-Day12PrivateListenerEvidence -Rows $portRows -ExpectedJava $requiredJava -ExpectedRcon $requiredRcon -NativeStatus ([string]$nativeResult.status)
+$verifiedJavaPids=@(Get-Day12VerifiedJavaPids -Rows $portRows)
+$privacyOK=Test-Day12PrivateListenerEvidence -Rows $portRows -ExpectedJava $requiredJava -ExpectedRcon $requiredRcon -NativeStatus ([string]$nativeResult.status) -VerifiedJavaPids $verifiedJavaPids
 [void]$checks.Add((Check "backend_ports_private" $(if($privacyOK){"PASS"}else{"FAIL"}) (
   "public_backend_listener_observations="+$backendPublic.Count+
   "; private_listener_observations="+$privateListeners.Count+
   "; online_java_missing="+($missingJava -join ",")+
   "; online_rcon_missing="+($missingRcon -join ",")+
+  "; native_java_owner_count="+$verifiedJavaPids.Count+
   "; native_provider="+[string]$nativeResult.status+
   "; tcp_inventory="+$tcpInventorySource
 )))
@@ -319,6 +348,7 @@ $r=[ordered]@{
   native_error_categories=@($nativeResult.error_categories)
   notes=@(
     "Native OWNER_PID IPv4+IPv6 and BASIC IPv4 listener classes augment Get-NetTCPConnection/.NET/netstat.",
+    "Native owner-PID IPv4+IPv6 coverage, Java/javaw process identity and same-owner Java/RCON pairing are mandatory.",
     "Native provider failure or missing online Java/RCON listener evidence fails the backend privacy gate closed.",
     "No observed listener is not evidence of private bind; public/wildcard listener evidence is a failure.",
     "Real Java/Bedrock login/routing and GSCM device E2E are separate Phase 12.11 gates.",
