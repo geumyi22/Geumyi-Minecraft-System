@@ -1,10 +1,10 @@
 name: GeumyiLobby
-version: 0.1.0
+version: 0.1.1
 main: kr.geumyi.lobby.GeumyiLobby
 api-version: '26.3'
 author: Geumyi Server
 contributors: [OpenAI]
-description: Lightweight Day 10 lobby world, protection and Velocity server selector.
+description: Protected lobby world, multi-page compass information hub, and GSC-gated Velocity server selector.
 commands:
   lobbyadmin:
     description: Geumyi Lobby administration
