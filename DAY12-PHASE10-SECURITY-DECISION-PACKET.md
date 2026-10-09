@@ -85,6 +85,14 @@
 - Its `MATCHES_RUNNING_JAVA_EXE` result refers to **any running Java executable image**, *not* a proven Minecraft Paper backend or socket owner. `NO_RUNNING_JAVA_EXE_MATCH` does not mean a rule can be deleted, particularly if Java paths change, some servers are stopped or access is incomplete.
 - After one sanitized host JSON is supplied, use it to scope a potential narrow fix; prepare and test the **exact** candidate firewall policy in disposable staging first, then request explicit operator approval with rollback if a host policy mutation is warranted. No firewall rule modification, backup mutation, server restart, auditpol change or release PASS is authorized/claimed now.
 
+## Real 04:38 Java image-to-firewall identity assessment — 2026-10-10
+
+- Server-PC `Day12-Java-Rule-Match-20261010-043824.json` = `CAPTURED_FOR_REVIEW`; 11 Java processes, **all 11 paths captured**, three distinct images, 268 firewall rules, zero filter failures. For **each** private Java/RCON port: **40** Allow/Any-program, **0** Allow/matching Java executable, **56** other image, **2** System; one per-port Block targets a different executable, six ambiguous port-scope candidates (included in the preceding counts).
+- Joined with the 04:25 firewall report's 40 matching ephemeral ordinal entries: **36** maximum-breadth potential inbound Allow rules with `Any` program/protocol/port/local+remote address/interface/service and active profile; two UNKNOWN named-port, two restricted/redacted local-address. Each could serve unrelated system/network features; **none is safely removable from this sanitized metadata alone**. Never treat the ordinals as stable firewall identifiers.
+- **Clear boundary:** no program-specific Java allow found does **not** imply Java can never connect remotely, because Any-program rules can apply. Conversely, existence of broad candidates does **not** prove Java sockets bind externally or firewall admits the packet. The single Block is non-Java and is not valid compensating isolation proof.
+- User execution was read-only; no network policy change, rollback or staged implementation performed. **Stop further redundant TCP/WFP/candidate inventory scans.** Pre-stage explicit remote-only firewall controls and privately verify actual rule identities, GSC/Velocity/RCON/Bedrock dependencies before seeking narrowly scoped operator approval. Strict `backend_ports_private` **FAIL** and Stable closed.
+- [Read-only real-host outcome and 36-candidate priority](DAY12-PHASE10-JAVA-RULE-LIVE-RESULT-20261010.md).
+
 ## Production-safety rule and operator handoff
 
 - User explicitly allows autonomous **source inspection, GitHub changes, documentation and synthetic CI** without repeated check-ins.
