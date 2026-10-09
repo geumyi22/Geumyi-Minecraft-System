@@ -43,6 +43,14 @@ This report is intentionally not marked PASS until the real server PC, Java clie
 - Day 12.10 mandatory `backend_ports_private` is still **FAIL**. Full 12.11 E2E and 12.13 Stable release are still **PENDING/BLOCKED**.
 - **Next:** plan safe partial operations checks and independent resolution of runtime backend bind attestation; avoid repeating the successful basic client checks or triggering production destructive operations.
 
+## Operator-reported GSC console command check — 2026-10-10 KST (partial, non-release-grade)
+
+- Operator replied **"됨"** after being asked to execute the read-only `list` Minecraft server console command through **GSC PC management UI** for both Wild and Playground and confirm that the command responses displayed normally.
+- Record **OPERATOR_REPORTED_PASS** for **Wild and Playground GSC console `list` command-and-response only**. This supports partial console/RCON functionality but does not separately identify which transport path GSC used or prove all RCON operations, auth policy, console subscriptions, or other backend behavior.
+- No screenshots, machine-readable command transcript or standalone transport check accompanied the acknowledgment. Lobby/Other console checks and deliberate server-state transitions remain pending.
+- Day12.10 `backend_ports_private` still FAIL; 12.11 final E2E and Stable remain blocked.
+- Next scoped pre-E2E: Other backend preflight in GSC (ONLINE/OFFLINE, no active update or job and safe-start readiness); if safe, bring it online through normal GSC action without force-start, then test Lobby <-> Other using Java and Bedrock clients. No server security, firewall or restore mutation is authorized by this acknowledgment.
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
