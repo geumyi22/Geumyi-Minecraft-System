@@ -35,7 +35,7 @@ public static class GeumyiDay12TcpListenerV2 {
     IntPtr table=Load(family,tableClass,ref size);
     try {
       int n=Marshal.ReadInt32(table,0);
-      int stride=tableClass==0?20:(family==2?24:56);
+      int stride=tableClass<=2?20:(family==2?24:56);
       if(n<0 || (long)n*stride+4>size) throw new InvalidOperationException("NATIVE_ROW_BOUNDS");
       var rows=new List<Row>();
       for(int i=0;i<n;i++){
@@ -57,7 +57,7 @@ public static class GeumyiDay12TcpListenerV2 {
           long scope=(long)(uint)Marshal.ReadInt32(r,16);
           ip=new IPAddress(addr,scope).ToString();
         }
-        int pid=tableClass==0?0:Marshal.ReadInt32(r,family==23?52:20);
+        int pid=tableClass<=2?0:Marshal.ReadInt32(r,family==23?52:20);
         rows.Add(new Row{port=port,address=ip,pid=pid});
       }
       return rows.ToArray();
@@ -66,6 +66,9 @@ public static class GeumyiDay12TcpListenerV2 {
   public static Row[] ReadOwnerV4(){return ReadTable(2,3);} // TCP_TABLE_OWNER_PID_LISTENER
   public static Row[] ReadOwnerV6(){return ReadTable(23,3);}
   public static Row[] ReadBasicV4(){return ReadTable(2,0);} // TCP_TABLE_BASIC_LISTENER
+  public static Row[] ReadOwnerAllV4(){return ReadTable(2,5);} // TCP_TABLE_OWNER_PID_ALL
+  public static Row[] ReadOwnerAllV6(){return ReadTable(23,5);}
+  public static Row[] ReadBasicAllV4(){return ReadTable(2,2);} // TCP_TABLE_BASIC_ALL
 }
 '@
   $providers=New-Object System.Collections.ArrayList
@@ -111,4 +114,53 @@ public static class GeumyiDay12TcpListenerV2 {
   $passCount=@($providers|Where-Object{$_.status -eq "CAPTURED"}).Count
   $status=if($passCount -eq $providers.Count){"CAPTURED"}elseif($passCount -gt 0){"PARTIAL"}else{"ERROR"}
   return [pscustomobject]@{status=$status;rows=@($found.ToArray());providers=@($providers.ToArray());error_categories=@($errors)}
+}
+
+# Separate diagnostic only: alternate ALL tables can expose a collector or
+# transient-state discrepancy. It is never used to silently mark ports safe.
+function Get-Day12NativeAllTcpInventory {
+  [CmdletBinding()]
+  param([int[]]$WantedPorts)
+  if($PSVersionTable.PSEdition -eq "Core" -and -not $IsWindows){
+    return [pscustomobject]@{status="UNSUPPORTED";rows=@();providers=@();error_categories=@("NON_WINDOWS")}
+  }
+  # Call the existing listener reader once to compile/load the checked
+  # Windows interop type, but don't export its contents here.
+  $init=Get-Day12NativeTcpInventory -WantedPorts @()
+  if($init.status -eq "ERROR" -or $init.status -eq "UNSUPPORTED"){
+    return [pscustomobject]@{status="ERROR";rows=@();providers=@();error_categories=@("NATIVE_TYPE_UNAVAILABLE")}
+  }
+  $specs=@(
+    [pscustomobject]@{name="OWNER_PID_ALL_IPv4";method="owner4"},
+    [pscustomobject]@{name="OWNER_PID_ALL_IPv6";method="owner6"},
+    [pscustomobject]@{name="BASIC_ALL_IPv4";method="basic4"}
+  )
+  $providers=@();$found=@();$errors=@()
+  foreach($spec in $specs){
+    try{
+      $raw=@()
+      switch($spec.method){
+        "owner4" {$raw=@([GeumyiDay12TcpListenerV2]::ReadOwnerAllV4())}
+        "owner6" {$raw=@([GeumyiDay12TcpListenerV2]::ReadOwnerAllV6())}
+        "basic4" {$raw=@([GeumyiDay12TcpListenerV2]::ReadBasicAllV4())}
+        default {throw "INVALID_METHOD"}
+      }
+      $matched=0
+      foreach($entry in $raw){
+        if($null -eq $entry -or $WantedPorts -notcontains [int]$entry.port){continue}
+        $matched++
+        $found+= [pscustomobject]@{
+          port=[int]$entry.port;address=[string]$entry.address
+          pid=[int]$entry.pid;source=[string]$spec.name
+        }
+      }
+      $providers+= [pscustomobject]@{source=$spec.name;status="CAPTURED";matched=$matched;total_rows=$raw.Count}
+    }catch{
+      $providers+= [pscustomobject]@{source=$spec.name;status="ERROR";matched=0;total_rows=0}
+      $errors+= "NATIVE_ALL_QUERY_ERROR"
+    }
+  }
+  $good=@($providers|Where-Object{$_.status -eq "CAPTURED"}).Count
+  $status=if($good -eq 3){"CAPTURED"}elseif($good -gt 0){"PARTIAL"}else{"ERROR"}
+  return [pscustomobject]@{status=$status;rows=@($found);providers=@($providers);error_categories=@($errors)}
 }
