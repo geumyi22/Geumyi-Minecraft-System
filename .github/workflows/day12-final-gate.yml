@@ -17,6 +17,8 @@ jobs:
           python-version: '3.13'
       - name: Validate all final gates
         run: python tools/day12/validate_final_release_gates.py FINAL-RELEASE-GATES.json
+      - name: Fail closed on contradictory real Host privacy and security reports
+        run: python tools/day12/validate_final_closure_evidence.py .
       - name: Validate closure artifacts are no longer pending
         run: |
           python - <<'PY'
