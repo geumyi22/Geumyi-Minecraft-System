@@ -350,6 +350,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Assistant follow-up: fix tool to classify the exact failure source and add synthetic regression for no-matches vs access denial vs query error, then Windows CI. No production changes until concrete useful new evidence is available.
 - Day12.10 canonical `backend_ports_private` remains **FAIL** (last 18/0/1); 12.11 final release-grade E2E / 12.12 soak / 12.13 Stable remain blocked.
 
+## 2026-10-10 — WFP v2 error-classifier correction and Windows CI verification
+
+- The real 04:06 WFP JSON supplied 0/8 target evidence and generic `UNAVAILABLE`. Rather than interpreting this as backend failure or changing audit settings, corrected `Day12_Phase10_WFP_Audit_Attestation_READ_ONLY.ps1` to distinguish `NO_RETAINED_MATCHING_WFP_EVENTS` (`result=NO_EVIDENCE`) from `SECURITY_LOG_ACCESS_DENIED`, `WFP_EVENT_QUERY_FAILED` and `JAVA_PROCESS_INVENTORY_FAILED` (all non-PASS). Added `process_inventory_status` and `event_query_status` metadata without exposing logs, IPs, PIDs or paths.
+- Windows synthetic test for exception classification and fail-closed scope **PASS**; independent Windows Event Log XPath parsing against Application channel **PASS** (no protected Security events read in CI). **Day 12 Read-Only Safety CI run 37978595664: PASS** for source commit `2c9473a9b`; all workflow steps green.
+- Operator Kit `37978317238` **PASS**, includes corrected WFP v2 script, launcher and updated plan. Downloaded, unpacked the GitHub artifact ZIP wrapper, normalized ZIP paths and verified all entries, CRC and v2 content. Published independently as `Geumyi-Day12-WFP-Diagnostic-v2.zip` to the current ChatGPT conversation (not auto-deployed to live host).
+- **Next:** exactly one admin read-only v2 host event query, return generated JSON. No blind restarts, WFP auditpol enablement, firewall/ACL changes, world/backups mutation or Stable release.
+- Mandatory Day12.10 `backend_ports_private` **remains FAIL**; CI success validates code, not private host binds.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
