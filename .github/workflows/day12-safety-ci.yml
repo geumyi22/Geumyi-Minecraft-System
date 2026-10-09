@@ -447,6 +447,20 @@ jobs:
             throw 'Startup log parser schema or fail-closed warning regression'
           }
 
+      - name: Synthetic Day 12.12 multi-Java soak process identity delta
+        shell: powershell
+        run: |
+          $session=Join-Path $env:RUNNER_TEMP 'day12-soak-synthetic'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase12_Soak_READ_ONLY.ps1 -Synthetic -SessionDir $session
+          if($LASTEXITCODE -ne 0){throw 'Soak synthetic process identity test failed'}
+          $file=Join-Path $session 'soak-synthetic.json'
+          if(-not(Test-Path -LiteralPath $file -PathType Leaf)){throw 'Soak synthetic report missing'}
+          $r=Get-Content -LiteralPath $file -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.process_identity_tested -or
+             -not $r.no_cross_process_delta -or -not $r.read_only -or $r.mutation_performed){
+            throw 'Soak synthetic process identity contract failed'
+          }
+
       - name: Synthetic final verifier
         shell: powershell
         run: |
