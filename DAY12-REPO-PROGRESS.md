@@ -479,6 +479,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Analyzed Client's existing reverse proxy (`GSC/ServerCenter/cmd/client/main.go`) and Host authenticated read-only `/api/status` (`GSC/ServerCenter/cmd/host/main.go`). Created `tools/day12/Day12_GSC_RC2_SubPC_Host_Proxy_READ_ONLY.ps1/.cmd` to check local client-to-Host GET `/api/health` and GET `/api/status` without reading/exporting credentials, addresses or status body; CI pending. This avoids repeating local file scans or any server process restart.
 - Production server GSC remains 4.3.8; strict `backend_ports_private` **FAIL** and Day12.11/12.12/12.13 Stable still blocked.
 
+## 2026-10-10 — SubPC RC2 authenticated Host connection check READY
+
+- Real secondary-PC local RC2 runtime **PASS** at 06:31, source trace in `DAY12-PHASE10-GSC-RC2-SUBPC-REAL-APPLY-20261010.md`.
+- GSC Client reverse proxy `127.0.0.1:8790/api/` forwards read-only health/status to the configured Host; `/api/status` requires the existing auth token. Prepared **GET-only** `tools/day12/Day12_GSC_RC2_SubPC_Host_Proxy_READ_ONLY.ps1/.cmd`, without reading or exporting credentials/status bodies/remote URLs, no server control action, install, service or firewall change.
+- [Windows CI `37994303062`](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/37994303062) **SUCCESS**. Verified actual CI artifact: CRC pass, 3/3 member SHA256 rows match; focused operator ZIP `Day12_GSC_RC2_SubPC_HOST_PROXY_READ_ONLY.zip` SHA256 `8e636728ec44b32238d5be8aefc0d5fe8c8e616606120779b1a4576e89ffec73`; only read-only CMD/PS1 and README/SHA256SUMS included.
+- **User action now necessary:** on **secondary PC**, keep GSC Client open, run `Day12_GSC_RC2_SubPC_Host_Proxy_READ_ONLY.cmd`, submit `Day12-SubPC-GSC-RC2-HostProxy-*.json`. No more install/rollback or identical postcheck needed.
+- GSC Host production stays 4.3.8; canonical `backend_ports_private` **FAIL**, Day12.11/12.12/12.13 production/Stable blocked.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
