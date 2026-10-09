@@ -25,6 +25,6 @@ This safeguards **on-disk Java start configuration only**. It does not prove *cu
 
 ## CI and operational rollout
 
-The source patch triggers normal System CI and Day 11 Host Test workflows. **Only record their PASS after their actual workflow runs finish.** A failure should be fixed in the repository before any new GSC build is considered.
+The source patch triggered **Day 11 Host Test workflow [37984182804](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/37984182804): SUCCESS** and **System CI [37984182578](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/37984182578): SUCCESS**, both on `14f4412ca98baeee9f2421395eb6f86347c25ce3`. These are repository/CI test results only; no operator-machine runtime validation or new GSC installer deployment is claimed.
 
 After source CI, do **not** silently replace the deployed GSC 4.3.8 binary: user approval, versioning, install/rollback plans and real-machine verification are mandatory.
