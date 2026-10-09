@@ -1,0 +1,158 @@
+name: Day12 GSC RC2 Signed Client-Only Offline Operator Kit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/day12-gsc-rc2-client-offline-operator-kit.yml'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  signed-offline-client:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SIGNING_KEY_B64: ${{ secrets.DEPLOYMENT_ED25519_PRIVATE_KEY_B64 }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.25'
+          cache: false
+      - uses: actions/download-artifact@v8
+        with:
+          run-id: 37990368782
+          github-token: ${{ github.token }}
+          name: gsc-4.3.9-rc.2-UNSIGNED-DO-NOT-INSTALL
+          path: rc2-ci
+      - name: Pin CI source and fetch official 4.3.8 Client
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p bundle old-client
+          gh release download system-2026.10.07-day11-gsc438-beta --repo "$GITHUB_REPOSITORY" --pattern GeumyiServerCenter.exe --dir old-client
+          echo '05402a24c499b9457a4d587817d1ef1393acb74992b63712970a6c94b7f65c61  old-client/GeumyiServerCenter.exe' | sha256sum --check
+          python3 - <<'PY'
+          import json,hashlib,pathlib
+          p=pathlib.Path('rc2-ci')
+          m=json.loads((p/'RC-METADATA.json').read_text(encoding='utf-8-sig'))
+          assert m['candidate_version']=='4.3.9-rc.2' and m['deployed_baseline_version']=='4.3.8'
+          assert m['source_commit']=='8a02ef221ada5936e5ef6d5c0826fa8d1880d123'
+          assert m['review_only'] is True and m['unsigned'] is True
+          assert m['go_test_pass'] is True and m['day10_host_selftest_pass'] is True
+          assert m['operator_install_approved'] is False and m['production_host_modified'] is False
+          assert m['backend_ports_private']=='UNCHANGED_FAIL'
+          rows=(p/'SHA256SUMS.txt').read_text(encoding='ascii').splitlines()
+          assert len(rows)==5
+          for row in rows:
+            sha,n=row.split('  ',1)
+            assert hashlib.sha256((p/n).read_bytes()).hexdigest()==sha
+          assert hashlib.sha256((p/'GeumyiServerCenter-v4.3.9-rc.2-Setup.exe').read_bytes()).hexdigest()=='2a623e25193d6b92dc4ec69b9ce76f098b246541c2861087f7c4911ae297602f'
+          assert hashlib.sha256((p/'GeumyiServerCenter-v4.3.9-rc.2.exe').read_bytes()).hexdigest()=='c3057d6dfc2e88232a857932e960866c12fd6c8b65c40d2252ed71d6000fe111'
+          print('PINNED_OFFICIAL_438_AND_RC2_SOURCE_PASS')
+          PY
+          cp rc2-ci/GeumyiServerCenter-v4.3.9-rc.2-Setup.exe bundle/
+          cp old-client/GeumyiServerCenter.exe bundle/GeumyiServerCenter-v4.3.8-Recovery.exe
+          cp tools/day12/Day12_GSC_RC2_SubPC_*_APPROVAL_REQUIRED.* bundle/
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o bundle/Geumyi-GSC-Client-Canary-Verify.exe tools/day12/GSC_Client_Offline_Signature_Verifier.go
+          go build -trimpath -o /tmp/ClientCanaryVerifier-Linux tools/day12/GSC_Client_Offline_Signature_Verifier.go
+          python3 - <<'PY'
+          import json
+          obj={
+            'schema':1,'purpose':'gsc-client-only-canary-offline-test',
+            'channel':'canary-offline','version':'4.3.9-rc.2',
+            'source_commit':'8a02ef221ada5936e5ef6d5c0826fa8d1880d123',
+            'repository':'geumyi22/Geumyi-Minecraft-System','target_role':'client_only',
+            'baseline_client_sha256':'05402a24c499b9457a4d587817d1ef1393acb74992b63712970a6c94b7f65c61',
+            'candidate_setup_sha256':'2a623e25193d6b92dc4ec69b9ce76f098b246541c2861087f7c4911ae297602f',
+            'candidate_client_sha256':'c3057d6dfc2e88232a857932e960866c12fd6c8b65c40d2252ed71d6000fe111',
+            'production_host_install_allowed':False,'public_release_published':False,
+            'explicit_operator_action_required':True
+          }
+          with open('bundle/deployment-client-canary.json','w',encoding='utf-8') as f:
+            json.dump(obj,f,ensure_ascii=False,indent=2)
+            f.write('\n')
+          PY
+      - name: Sign client-only scope with existing Day11 Ed25519 key
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$SIGNING_KEY_B64" ]]; then echo "::error::Key missing"; exit 1; fi
+          key="$RUNNER_TEMP/client-canary-private.pem"
+          trap 'rm -f "$key"' EXIT
+          (umask 077; printf %s "$SIGNING_KEY_B64" | base64 --decode > "$key")
+          openssl pkey -in "$key" -check -noout >/dev/null
+          openssl pkey -in "$key" -pubout -out bundle/deployment-public.pem
+          echo 'f21e62e87bb9d68ba05a964e0efd2e160ac249ebfbbf5f4a5125bae8f11718e3  bundle/deployment-public.pem' | sha256sum --check
+          openssl pkeyutl -sign -rawin -inkey "$key" -in bundle/deployment-client-canary.json -out bundle/deployment-client-canary.json.sig
+          openssl pkeyutl -verify -rawin -pubin -inkey bundle/deployment-public.pem -in bundle/deployment-client-canary.json -sigfile bundle/deployment-client-canary.json.sig
+      - name: Verify positive and tampered negative cases with same Go source
+        shell: bash
+        run: |
+          set -euo pipefail
+          /tmp/ClientCanaryVerifier-Linux bundle | grep -Fx GSC_CLIENT_OFFLINE_SIGNATURE_AND_FILE_HASH_PASS
+          cp -a bundle invalid-bundle
+          python3 - <<'PY'
+          p='invalid-bundle/deployment-client-canary.json.sig'
+          d=bytearray(open(p,'rb').read());d[0]^=1
+          open(p,'wb').write(d)
+          PY
+          if /tmp/ClientCanaryVerifier-Linux invalid-bundle; then echo "::error::Forged signature accepted";exit 1;fi
+          cp -a bundle invalid-setup
+          printf tampered >> invalid-setup/GeumyiServerCenter-v4.3.9-rc.2-Setup.exe
+          if /tmp/ClientCanaryVerifier-Linux invalid-setup; then echo "::error::Modified setup accepted";exit 1;fi
+      - name: Add instructions, all-member digests and ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > bundle/README-FIRST.txt <<'TEXT'
+          GSC 4.3.9-rc.2 CANARY CLIENT-ONLY SUB PC TRIAL
+          ==========================================================
+          This is a real GSC Client update if you run APPLY.cmd.
+          NEVER run on the Minecraft SERVER PC.
+          Windows EXE files are not Authenticode-signed. The OFFLINE
+          CLIENT-ONLY manifest IS Ed25519 signed with the same key as
+          the original GSC 4.3.8 release. The bundled verifier checks
+          signature, key identity, installer and official recovery hash.
+
+          Unzip the ZIP into one folder on your already-approved SUB PC.
+          Run Day12_GSC_RC2_SubPC_Apply_APPROVAL_REQUIRED.cmd.
+          It rechecks Client-only role and exact official 4.3.8 binary.
+          To apply, TYPE: UPDATE CLIENT ONLY. Approve the Windows UAC.
+          Send Desktop\Geumyi-Day12-SubPC-GSC\latest Apply JSON.
+          The GSC tray client may close and reopen while it updates.
+
+          Only if restore is required, right-click
+          Day12_GSC_RC2_SubPC_Restore_438_APPROVAL_REQUIRED.cmd and
+          select Run as administrator; TYPE: RESTORE 4.3.8.
+          Send Desktop\Geumyi-Day12-SubPC-GSC\latest Restore JSON.
+
+          This is an OFFLINE Actions artifact, NOT a GitHub Release.
+          No public Canary/Stable was published and no fleet device
+          can auto-discover it. Host/Java/RCON/Bedrock/worlds unchanged.
+          Day12 backend_ports_private remains FAIL. Stable is BLOCKED.
+          TEXT
+          (cd bundle && sha256sum * > SHA256SUMS.txt)
+          python3 - <<'PY'
+          import pathlib,zipfile,hashlib
+          root=pathlib.Path('bundle')
+          for line in (root/'SHA256SUMS.txt').read_text().splitlines():
+            h,name=line.split('  ',1)
+            assert hashlib.sha256((root/name).read_bytes()).hexdigest()==h
+          name='Day12-GSC-RC2-SUBPC-CLIENTONLY-SIGNED-OFFLINE.zip'
+          with zipfile.ZipFile(name,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+            for f in sorted(root.iterdir()):
+              if f.is_file():z.write(f,f.name)
+          with zipfile.ZipFile(name) as z:
+            assert z.testzip() is None
+            assert 'deployment-client-canary.json.sig' in z.namelist()
+          print('SIGNED_OFFLINE_CLIENTONLY_PACKAGE_PASS')
+          PY
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc-rc2-subpc-clientonly-signed-operator-kit
+          path: Day12-GSC-RC2-SUBPC-CLIENTONLY-SIGNED-OFFLINE.zip
+          if-no-files-found: error
+          retention-days: 14
