@@ -291,6 +291,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - **Decision: do not restart again simply to chase native listener rows; stop repeated scanning**. No forced termination, firewall/ACL change, restore or delete. This attempt has demonstrated safe lifecycle/backup guards in one real Playground run, but **12.10 canonical `backend_ports_private` remains FAIL**, Day12.11 release-grade E2E and 12.12 live soak pending; Stable/Day1–12 cleanup blocked.
 - Distinct next analysis: code-level validate Windows IP Helper P/Invoke struct/class/offsets against Microsoft documentation and assess whether a genuinely independent attestation can be designed without lowering the mandatory gate. Continue repository-side preparations automatically; host actions only when a substantive new proof plan exists.
 
+
+## 2026-10-10 — Lobby Garden Nexus v2 user acceptance
+
+- Operator stated **"좋다 패스"** after delivery of the Garden Nexus v2 lobby world and GeumyiLobby 0.1.1 compass-menu package. Treat this as **user acceptance of the lobby revision** (operator-reported PASS), not an independent automated world integrity or live Java/Bedrock plugin end-to-end test.
+- Existing world/server rollback snapshots must be kept; no production backup deletion or Day12 Stable promotion follows from this acceptance alone.
+- The prior Day12.11 partial client checks (Java / Bedrock Wild + Playground, GSCM basic, GSC console `list`) stay separate from full E2E. The **Other** route was deferred, and canonical Day12.10 `backend_ports_private` remains FAIL until authoritative runtime binding evidence exists.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
