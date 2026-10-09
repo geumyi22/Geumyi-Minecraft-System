@@ -286,6 +286,12 @@ jobs:
             throw 'Active trace controlled fixture regression'
           }
 
+      - name: Native ALL provider differential fixture
+        shell: powershell
+        run: |
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_Provider_Diff_READ_ONLY.ps1 -Synthetic -OutputDir (Join-Path $env:RUNNER_TEMP 'day12-provider-diff')
+          if($LASTEXITCODE -ne 0){throw 'Provider differential fixture failed'}
+
       - name: Synthetic 12.10 configuration and bind evidence (fail-closed)
         shell: powershell
         run: |
