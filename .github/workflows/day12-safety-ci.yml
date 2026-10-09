@@ -331,6 +331,26 @@ jobs:
             throw "Phase 2+5 synthetic report contract failed"
           }
 
+      - name: Day12 12.10 running Java executable / firewall application matching (synthetic)
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'day12-java-rule-match'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_Java_Program_Rule_Match_READ_ONLY.ps1 -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Java executable rule matching synthetic failed'}
+          $files=@(Get-ChildItem -LiteralPath $out -File -Filter '*.json')
+          if($files.Count -ne 1){throw 'Java rule matching expected one JSON'}
+          $r=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.synthetic -or -not $r.read_only -or
+             $r.mutation_performed -or $r.secrets_exported -or
+             $r.canonical_backend_ports_private -ne 'UNCHANGED_FAIL' -or
+             $r.categories.ALL_PROGRAMS -ne 1 -or
+             $r.categories.MATCHES_RUNNING_JAVA_EXE -ne 2 -or
+             $r.categories.PROGRAM_UNRESOLVED -ne 1){
+            throw 'Java firewall correlation fail-closed contract failed'
+          }
+          $raw=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8
+          if($raw -match 'C:\\Java\\bin|C:\\Other\\daemon'){throw 'Path leaked into summary report'}
+
       - name: Day12 12.10 ActiveStore eight-private-port firewall candidate classifier (synthetic)
         shell: powershell
         run: |
