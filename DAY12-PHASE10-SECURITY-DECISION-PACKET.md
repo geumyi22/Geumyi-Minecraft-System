@@ -26,6 +26,13 @@
 
 **C. Leave this gate OPEN.** If neither strict proof nor a reviewed compensating policy is supported, treat the instance as operationally reachable locally with useful security signals, but **do not claim Day12.10 secure closure or release Stable**. Non-live CI, docs, recovery-kit and soak-test preparation can continue without changing runtime.
 
+## Update after one successful Playground restart (2026-10-10 02:47)
+
+- Protected verified full backup, zero players, no active jobs and safe update state were demonstrated on server PC. One GSC graceful Playground restart was accepted/completed, server returned ONLINE. Immediately subsequent Windows Native OWNER_PID/BASIC LISTENER queries CAPTURED but again could not observe Java 25571 or RCON 25576.
+- **A plain restart is not a viable proven path to strict-positive bind evidence. Do not repeat it.** Source API layout review (`DAY12-PHASE10-WINDOWS-TCP-API-AUDIT.md`) did not reveal an obvious struct/offset bug. No actual root cause, public exposure or exclusive loopback ownership is established.
+- The standing operator permission covers ordinary one-server restarts with safety preconditions, but not broad/high-risk security changes. Use remaining preapproved work for GitHub, CI, readiness and non-disruptive test design.
+- Maintain options A/B/C, with current choice C (strict gate OPEN). An adequate alternative requires materially different and trustworthy evidence, not simply accepting old 8/8 application logs as new positive OS binding observations.
+
 ## Production-safety rule and operator handoff
 
 - User explicitly allows autonomous **source inspection, GitHub changes, documentation and synthetic CI** without repeated check-ins.
