@@ -231,11 +231,14 @@ func gscHealthIsTarget(r io.Reader, expectedVersion string) bool {
 		OK         bool   `json:"ok"`
 		Version    string `json:"version"`
 		Generation int    `json:"generation"`
+		Service    bool   `json:"service"`
 	}
 	if err := json.NewDecoder(io.LimitReader(r, 32*1024)).Decode(&h); err != nil {
 		return false
 	}
-	return h.OK && h.Version != "" && h.Generation == 4 &&
+	// A client process or unrelated HTTP app must not impersonate an
+	// upgraded Windows Host service, even with an otherwise valid version.
+	return h.OK && h.Service && h.Version != "" && h.Generation == 4 &&
 		(expectedVersion == "" || h.Version == expectedVersion)
 }
 
