@@ -133,6 +133,12 @@ jobs:
           if($LASTEXITCODE -ne $expected){throw 'Final release validator status/exit contract mismatch'}
           $global:LASTEXITCODE=0
 
+      - name: Synthetic final native-owner and security-evidence veto tests
+        shell: pwsh
+        run: |
+          python tools/day12/test_validate_final_closure_evidence.py
+          if($LASTEXITCODE -ne 0){throw 'Final live closure evidence fail-closed test failed'}
+          $global:LASTEXITCODE=0
       - name: Validate Day 12 JSON contracts
         shell: powershell
         run: |
