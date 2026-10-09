@@ -4,6 +4,14 @@ Status: **PENDING LIVE EXECUTION**
 
 This report is intentionally not marked PASS until the real server PC, Java client, Bedrock client and GSCM device flows are executed.
 
+## Live operator safety rules (prepared, NOT executed)
+
+- All checks below remain unchecked until the **user actually executes** them on the server PC, Java/Bedrock clients and GSCM devices; CI and saved configuration evidence do not replace game-client E2E.
+- Production reboot, intentional server shutdown, forced-loss/crash recovery, RCON stop, restore/apply/rollback and device-token revocation are **service-changing actions**. Require an explicit user-approved maintenance window, preserve the existing 4/4 Golden checkpoints and known-good artifacts, check active players and document rollback before executing them.
+- Run deliberate **unexpected-loss or destructive recovery simulations on disposable/staging**, not by killing production Java processes or modifying live world data. Production restore must not be initiated just to check a box; use safe preflight or an explicitly approved disposable restore target.
+- Gate status: Day 12.10 canonical `backend_ports_private` remains unresolved after real-host loopback-app-start logs 8/8; do not bypass by interpreting the log as contemporary OS socket proof.
+- The 12.12 soak monitor was hardened in source to compare **name+PID+process-start-time** and refuse overwriting Start/End reports. Its CI synthetic PASS is not a real soak. Do not begin an 8–12 h live soak unless the operator has agreed to the planned monitoring window and 12.11 prerequisites.
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
