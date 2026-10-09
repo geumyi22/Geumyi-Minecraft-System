@@ -70,6 +70,14 @@
 - Next needed input: one server-PC read-only targeted firewall JSON. No server restart, firewall rule update, command-shell service action, Golden re-backup, WFP repeated query or release security policy change is authorized.
 - The original strict `backend_ports_private` gate stays FAIL until separate runtime owner+socket evidence; operator approval will be required to adopt a materially different compensating-policy standard after risks and rollback are documented.
 
+## 04:25 KST real targeted ActiveStore result — broad Allow review required
+
+- Server-PC `Day12-Firewall-Target-20261010-042526.json`: 268 enabled inbound ActiveStore rules, 118 initial prefiltered candidates, 0 filter failures, active Private/Public network categories, all profiles default inbound Block. Per backend port the initial coarse tool counted 113 Allow candidates / one Public specific-program Block candidate / 21 ambiguous.
+- **Corrected over-count:** 15 of the 21 ambiguities were actually non-TCP rules (ICMPv6 x12, ICMPv4 x1, IPv6 encapsulation x1, IGMP x1). Updated classifier excludes these known non-TCP protocols while preserving truly unknowns. Re-analysis of original report per private Java/RCON TCP port: **98 candidate Allow, 1 Block and 6 unknown**. These are *not* tested Windows Filtering Platform effective decisions.
+- Critical remaining review subset: **40 Allow rules per port** have `program_scope=ANY`, `remote_address_scope=ANY` and a plausible TCP/Any protocol. Most also have any local address and active profiles; the original report does not show which services require them. Do not disable any broad rule blindly.
+- The 1 Block rule is scoped to an unspecified executable and Public profile; not confirmed Paper-specific. No new private-port exposure was established, nor did this produce exclusive bind evidence. Existing 0/8 LAN private-port negative test is still only a historical single-vantage result.
+- [Full sanitized 04:25 firewall analysis](DAY12-PHASE10-FIREWALL-TARGET-RESULT-20261010.md). No further host action is requested simply to repeat the same capture. Gate 12.10 remains **FAIL**; neither fallback firewall policy nor Stable promotion is approved.
+
 ## Production-safety rule and operator handoff
 
 - User explicitly allows autonomous **source inspection, GitHub changes, documentation and synthetic CI** without repeated check-ins.
