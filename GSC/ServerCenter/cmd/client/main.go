@@ -393,12 +393,110 @@ func parseClientVersion(v string) ([]int, error) {
 	return out, nil
 }
 
+// Keep the client-only self-update comparator consistent with the Host.
+// Numeric core comparison alone incorrectly treated 4.3.9-rc.1 as equal to
+// 4.3.9, preventing RC -> final upgrades on a secondary client PC.
+func clientPrerelease(v string) (string, error) {
+	v = strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(v, "v"), "V"))
+	if i := strings.IndexByte(v, '+'); i >= 0 {
+		v = v[:i]
+	}
+	i := strings.IndexByte(v, '-')
+	if i < 0 {
+		return "", nil
+	}
+	pre := v[i+1:]
+	if pre == "" {
+		return "", fmt.Errorf("empty client prerelease identifier")
+	}
+	for _, part := range strings.Split(pre, ".") {
+		if part == "" {
+			return "", fmt.Errorf("empty client prerelease segment")
+		}
+		if len(part) > 1 && part[0] == '0' && clientNumericIdentifier(part) {
+			return "", fmt.Errorf("numeric client prerelease segment has leading zeros")
+		}
+		for _, c := range part {
+			if !(c >= '0' && c <= '9' || c >= 'a' && c <= 'z' ||
+				c >= 'A' && c <= 'Z' || c == '-') {
+				return "", fmt.Errorf("invalid client prerelease segment")
+			}
+		}
+	}
+	return pre, nil
+}
+func clientNumericIdentifier(v string) bool {
+	if v == "" {
+		return false
+	}
+	for _, c := range v {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+func compareClientPrerelease(a, b string) int {
+	if a == b {
+		return 0
+	}
+	if a == "" {
+		return 1
+	}
+	if b == "" {
+		return -1
+	}
+	left, right := strings.Split(a, "."), strings.Split(b, ".")
+	for i := 0; i < len(left) && i < len(right); i++ {
+		if left[i] == right[i] {
+			continue
+		}
+		ln, rn := clientNumericIdentifier(left[i]), clientNumericIdentifier(right[i])
+		if ln && !rn {
+			return -1
+		}
+		if !ln && rn {
+			return 1
+		}
+		if ln {
+			a1, b1 := strings.TrimLeft(left[i], "0"), strings.TrimLeft(right[i], "0")
+			if len(a1) < len(b1) {
+				return -1
+			}
+			if len(a1) > len(b1) {
+				return 1
+			}
+			if a1 < b1 {
+				return -1
+			}
+			return 1
+		}
+		if left[i] < right[i] {
+			return -1
+		}
+		return 1
+	}
+	if len(left) < len(right) {
+		return -1
+	}
+	return 1
+}
 func compareClientVersions(a, b string) (int, error) {
 	av, err := parseClientVersion(a)
 	if err != nil {
 		return 0, err
 	}
 	bv, err := parseClientVersion(b)
+	if err != nil {
+		return 0, err
+	}
+	// Validate both prereleases before comparing the numeric core; otherwise
+	// a malformed target with a larger core would silently pass.
+	ap, err := clientPrerelease(a)
+	if err != nil {
+		return 0, err
+	}
+	bp, err := clientPrerelease(b)
 	if err != nil {
 		return 0, err
 	}
@@ -421,7 +519,7 @@ func compareClientVersions(a, b string) (int, error) {
 			return 1, nil
 		}
 	}
-	return 0, nil
+	return compareClientPrerelease(ap, bp), nil
 }
 
 func safeClientUpdatePart(v string) string {
