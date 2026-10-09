@@ -464,6 +464,14 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Draft creation workflow now manual-only and refuses duplicate existing tag/title; no installed GSC can auto-discover this draft because normal update discovery skips drafts. **No signed GSC update applied to the user's computer.** Host remains GSC 4.3.8; Golden 4/4 and firewall/worlds unchanged. No further user action currently needed until secondary-PC controlled update/rollback is ready.
 - Comprehensive writeup: `DAY12-PHASE10-GSC-4.3.9-RC1-SIGNED-CANARY-DRAFT-REPORT.md`. Canonical `backend_ports_private` FAIL; 12.11 full E2E, 12.12 live soak and 12.13 Stable **BLOCKED**.
 
+## 2026-10-10 06:24 KST — Secondary-PC GSC Client Canary RC2 real update SUCCESS
+
+- Operator-provided `Day12-SubPC-GSC-RC2-Apply-20261010-062426.json`: `result=SUBPC_CLIENT_RC2_APPLY_VERIFIED`; original official 4.3.8 Client hash PASS, Client-only role PASS, offline Ed25519 signed manifest and package PASS, explicit operator approval PASS, real updater helper success PASS, installed **4.3.9-rc.2 Client binary hash PASS**, original 4.3.8 backup hash PASS. `host_service_modified=false`, `game_server_modified=false`. Source evidence only; no private credentials stored.
+- `client_relaunch_reported=false`. Source shows the helper only attempts relaunch when the Client was already running at update start, so this field alone does **not** prove failure. The actual active RC2 Client process, local UI endpoint and Host connectivity were **not verified yet**.
+- Prepared source-only/read-only follow-up `tools/day12/Day12_GSC_RC2_SubPC_Postcheck_READ_ONLY.ps1/.cmd`. [Windows CI `37993613980`](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/37993613980) **SUCCESS**. Operator ZIP unwrapped from CI and CRC/3 checksum entries verified; SHA-256 `9c296045e3dbc8b605eeaeade6e9894f35490cedebcb31bddb86e6bc01939406`. It cannot update/restart/change firewall or config; reads only Client EXE hash/process, static localhost icon, prior helper status/4.3.8 backup and Host absence.
+- **User action now required:** on verified SubPC, start GSC normally if closed, run `Day12_GSC_RC2_SubPC_Postcheck_READ_ONLY.cmd` once and send its latest JSON. Do **not** reinstall 4.3.9-rc.2 or restore 4.3.8 unless subsequent evidence warrants it.
+- Server PC GSC remains **4.3.8**; Golden 4/4/worlds/Windows policy not altered. Strict `backend_ports_private` **FAIL**, 12.11/12.12/12.13 production/Stable gates **BLOCKED**. Details: `DAY12-PHASE10-GSC-RC2-SUBPC-REAL-APPLY-20261010.md`.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
