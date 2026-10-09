@@ -258,6 +258,20 @@ jobs:
             throw 'Native controlled listener report contract failed'
           }
 
+      - name: Synthetic online Java/RCON loopback TCP probe (controlled temporary listener)
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'day12-loopback-synthetic'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_Loopback_Compare_READ_ONLY.ps1 -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Loopback synthetic probe failed'}
+          $files=@(Get-ChildItem -LiteralPath $out -Filter '*.json' -File)
+          if($files.Count -ne 1){throw 'Loopback probe expected exactly one result'}
+          $r=Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.read_only -or -not $r.synthetic -or
+            -not $r.control_open_works -or -not $r.control_closed_denied -or $r.mutation_performed){
+            throw 'Loopback controlled fixture contract failure'
+          }
+
       - name: Synthetic 12.10 configuration and bind evidence (fail-closed)
         shell: powershell
         run: |
