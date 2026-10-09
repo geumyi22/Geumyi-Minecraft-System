@@ -7,8 +7,10 @@ on:
     paths:
       - '.github/workflows/day12-gsc-canary-draft-audit.yml'
 
+# Draft releases can be hidden from read-only GitHub Actions tokens.
+# Grant release visibility to the audit job; script performs GET only.
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   audit:
