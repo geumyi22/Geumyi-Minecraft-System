@@ -38,10 +38,10 @@ function Compare-Procs([object[]]$Old,[object[]]$New){
     }
   }
   $lost=@($start.Keys|Where-Object{-not $seen.ContainsKey($_)}).Count
-  $new=@($rows|Where-Object{-not $_.same_identity_at_start}).Count
+  $added=@($rows|Where-Object{-not $_.same_identity_at_start}).Count
   $unverified=@($rows|Where-Object{$_.same_identity_at_start -and -not $_.start_time_available}).Count
   return [ordered]@{rows=@($rows);missing_process_identity_count=$lost
-    new_process_identity_count=$new;matched_without_start_time=$unverified
+    new_process_identity_count=$added;matched_without_start_time=$unverified
     continuous_process_identity_verified=($lost -eq 0 -and $new -eq 0 -and $unverified -eq 0)}
 }
 function Snapshot(){
