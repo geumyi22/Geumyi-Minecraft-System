@@ -224,9 +224,9 @@ func startHostServiceStrict() error {
 // listener on 8787 could respond while the candidate Host never started.
 // Require the actual GSC Host health JSON to match the requested version.
 func gscHealthIsTarget(r io.Reader, expectedVersion string) bool {
-	if expectedVersion == "" {
-		return false
-	}
+	// Empty expectedVersion is ONLY used after rollback, to check that
+	// a GSC v4 Host came back. The candidate commit always supplies the
+	// exact intended version to avoid accepting a stale Host.
 	var h struct {
 		OK         bool   `json:"ok"`
 		Version    string `json:"version"`
@@ -235,7 +235,8 @@ func gscHealthIsTarget(r io.Reader, expectedVersion string) bool {
 	if err := json.NewDecoder(io.LimitReader(r, 32*1024)).Decode(&h); err != nil {
 		return false
 	}
-	return h.OK && h.Version == expectedVersion && h.Generation == 4
+	return h.OK && h.Version != "" && h.Generation == 4 &&
+		(expectedVersion == "" || h.Version == expectedVersion)
 }
 
 func waitGSCHealth(timeout time.Duration, expectedVersion string) bool {
@@ -437,7 +438,7 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 		report.Error = reason.Error()
 		if hostExists {
 			if err := startHostServiceStrict(); err == nil {
-				report.HostHealth = waitGSCHealth(30 * time.Second, "4.3.8")
+				report.HostHealth = waitGSCHealth(30 * time.Second, "")
 			}
 		}
 		if clientWasRunning {
