@@ -1,0 +1,75 @@
+name: Day12 GSC RC2 Client Transaction on Disposable Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/day12-gsc-rc2-client-disposable-transaction.yml'
+      - 'tools/day12/Test_Day12_GSC_Client_RC2_Disposable_Transaction_CI.ps1'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  isolated-client-only:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    env:
+      GEUMYI_GSC_RC_STAGE: isolated_ci_review_only
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Fetch pinned successful 4.3.9-rc.2 CI preview binaries
+        uses: actions/download-artifact@v8
+        with:
+          run-id: 37990368782
+          github-token: ${{ github.token }}
+          name: gsc-4.3.9-rc.2-UNSIGNED-DO-NOT-INSTALL
+          path: candidate-output
+      - name: Fail closed on exact source and hashes
+        shell: pwsh
+        run: |
+          $meta=Get-Content candidate-output/RC-METADATA.json -Raw -Encoding UTF8|ConvertFrom-Json
+          if($meta.source_commit -ne '8a02ef221ada5936e5ef6d5c0826fa8d1880d123' -or
+             $meta.candidate_version -ne '4.3.9-rc.2' -or !$meta.review_only -or
+             !$meta.unsigned -or !$meta.go_test_pass -or !$meta.day10_host_selftest_pass -or
+             $meta.stable_published -or $meta.production_host_modified -or
+             $meta.backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Pinned disposable candidate metadata invalid'
+          }
+          $rows=@(Get-Content candidate-output/SHA256SUMS.txt -Encoding ascii)
+          if($rows.Count -ne 5){throw 'Invalid preview checksum count'}
+          foreach($row in $rows){
+            if($row -notmatch '^([a-f0-9]{64})  (.+)$'){throw 'Untrusted checksum row'}
+            $want=$Matches[1];$name=$Matches[2]
+            if((Get-FileHash -LiteralPath ("candidate-output/"+$name) -Algorithm SHA256).Hash.ToLowerInvariant() -ne $want){throw 'Preview asset digest mismatch'}
+          }
+      - name: Run actual client-only helper fault injection and manual restore on this disposable CI runner
+        shell: pwsh
+        run: |
+          $p='tools/day12/Test_Day12_GSC_Client_RC2_Disposable_Transaction_CI.ps1'
+          $tokens=$null;$errors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -ne 0){throw 'Disposable PowerShell parse error'}
+          & ./$p -CandidateDir candidate-output
+          $f=Join-Path $env:RUNNER_TEMP 'Day12-RC2-Client-Transaction-Report.json'
+          if(-not (Test-Path -LiteralPath $f)){throw 'No disposable report'}
+          $r=Get-Content -LiteralPath $f -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'DISPOSABLE_CLIENT_UPDATE_AND_MANUAL_RESTORE_PASS' -or
+             !$r.baseline_sha_verified -or !$r.failed_update_preserved_client -or
+             !$r.updated_client_hash_verified -or !$r.old_client_backup_verified -or
+             !$r.manual_restore_verified -or $r.real_subpc_modified -or
+             $r.production_server_modified -or $r.host_service_modified -or
+             $r.backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Client-only disposable transaction did not pass'
+          }
+      - name: Upload sanitized evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc-rc2-client-disposable-test-readonly-report
+          path: ${{ runner.temp }}/Day12-RC2-Client-Transaction-Report.json
+          if-no-files-found: warn
+          retention-days: 14
