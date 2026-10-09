@@ -75,3 +75,102 @@ func TestGSCRestoreNeverClaimsSuccessWhenBackupMissing(t *testing.T) {
 	clientData,err:=os.ReadFile(badTarget)
 	if err!=nil||string(clientData)!="candidate"{t.Fatal("missing backup must not invent a recovery")}
 }
+
+
+func TestGSCSelfUpdateLedgerAlwaysIncludesPotentialNewSetup(t *testing.T) {
+	dir := t.TempDir()
+	host := filepath.Join(dir, "GeumyiServerHost.exe")
+	client := filepath.Join(dir, "GeumyiServerCenter.exe")
+	setup := filepath.Join(dir, "GeumyiServerCenter-Setup.exe")
+	cases := []struct {
+		name string
+		host bool
+		client bool
+		want []string
+	}{
+		{"host and client", true, true, []string{host, client, setup}},
+		{"host only", true, false, []string{host, setup}},
+		{"client only", false, true, []string{client, setup}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := selfUpdateTargetPaths(tc.host, tc.client, host, client, setup)
+			if len(got) != len(tc.want) {
+				t.Fatalf("got %d ledger paths, want %d", len(got), len(tc.want))
+			}
+			for i := range got {
+				if got[i] != tc.want[i] {
+					t.Fatalf("target[%d] = %q, want %q", i, got[i], tc.want[i])
+				}
+			}
+		})
+	}
+}
+
+func TestGSCFailedUpdateRemovesNewSetupAndRestoresHost(t *testing.T) {
+	dir := t.TempDir()
+	backupDir := filepath.Join(dir, "backup")
+	if err := os.Mkdir(backupDir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	host := filepath.Join(dir, "GeumyiServerHost.exe")
+	setup := filepath.Join(dir, "GeumyiServerCenter-Setup.exe")
+	if err := os.WriteFile(host, []byte("original-host"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	// Setup did not exist before update (common on a pre-existing installation).
+	paths := selfUpdateTargetPaths(true, false, host, "", setup)
+	ledger := make([]selfUpdateFile, 0, len(paths))
+	for _, path := range paths {
+		record, err := backupSelfUpdateFile(path, backupDir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ledger = append(ledger, record)
+	}
+	if len(ledger) != 2 || !ledger[0].existed || ledger[1].existed {
+		t.Fatalf("ledger must remember original Host and absent Setup: %+v", ledger)
+	}
+	if err := os.WriteFile(host, []byte("bad-candidate"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(setup, []byte("new-setup"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := restoreSelfUpdateFiles(ledger); err != nil {
+		t.Fatalf("rollback failed: %v", err)
+	}
+	original, err := os.ReadFile(host)
+	if err != nil || string(original) != "original-host" {
+		t.Fatalf("rollback did not restore original Host: %v", err)
+	}
+	if _, err := os.Stat(setup); !os.IsNotExist(err) {
+		t.Fatalf("new Setup binary was left behind after rollback: %v", err)
+	}
+}
+
+func TestGSCFailedUpdateRestoresExistingSetup(t *testing.T) {
+	dir := t.TempDir()
+	backupDir := filepath.Join(dir, "backup")
+	if err := os.Mkdir(backupDir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	setup := filepath.Join(dir, "GeumyiServerCenter-Setup.exe")
+	if err := os.WriteFile(setup, []byte("original-setup"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	record, err := backupSelfUpdateFile(setup, backupDir)
+	if err != nil || !record.existed {
+		t.Fatalf("existing Setup backup failed: %v", err)
+	}
+	if err := os.WriteFile(setup, []byte("candidate-setup"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := restoreSelfUpdateFiles([]selfUpdateFile{record}); err != nil {
+		t.Fatal(err)
+	}
+	content, err := os.ReadFile(setup)
+	if err != nil || string(content) != "original-setup" {
+		t.Fatalf("existing Setup was not restored: %v", err)
+	}
+}
