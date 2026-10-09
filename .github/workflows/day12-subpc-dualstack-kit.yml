@@ -1,0 +1,95 @@
+name: Day12 SubPC DualStack ReadOnly Kit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/day12/Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.ps1'
+      - 'tools/day12/Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.cmd'
+      - 'DAY12-PHASE10-SUBPC-DUALSTACK-RUNBOOK.md'
+      - '.github/workflows/day12-subpc-dualstack-kit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  subpc-readonly-kit:
+    name: Windows zero-network synthetic verification and focused kit
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - name: Parse PowerShell and check read-only launcher
+        shell: powershell
+        run: |
+          $script='tools/day12/Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.ps1'
+          $tokens=$null;$errors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){
+            $errors|ForEach-Object{Write-Host $_.ErrorId}
+            throw 'SubPC PowerShell syntax not valid'
+          }
+          $cmd=Get-Content 'tools/day12/Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.cmd' -Raw
+          if($cmd -notmatch 'powershell.exe.*Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.ps1' -or
+             $cmd -match '(?i)-NonInteractive'){
+            throw 'SubPC interactive launcher contract failed'
+          }
+      - name: Synthetic classifier, loopback rejection and no network probes
+        shell: powershell
+        run: |
+          $script='tools/day12/Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.ps1'
+          $out=Join-Path $env:RUNNER_TEMP 'SubPC-DualStack-CI'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Synthetic classifier failed'}
+          $r=Get-Content (Join-Path $out 'Day12-SubPC-DualStack-Synthetic.json') -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or !$r.read_only -or !$r.synthetic -or
+             $r.mutation_performed -or $r.private_ports_probed -or
+             $r.canonical_backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Synthetic artifact invalid'
+          }
+          $log=Join-Path $out 'unsafe-target-rejection.txt'
+          $bad=Start-Process powershell.exe -NoNewWindow -Wait -PassThru -RedirectStandardError $log -ArgumentList @(
+            '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$script,
+            '-TargetIPv4','127.0.0.1','-TargetIPv6','::1','-OutputDir',$out)
+          if($bad.ExitCode -eq 0){throw 'Unexpectedly allowed local loopback target'}
+          $log2=Join-Path $out 'unsafe-v6-rejection.txt'
+          $badV6=Start-Process powershell.exe -NoNewWindow -Wait -PassThru -RedirectStandardError $log2 -ArgumentList @(
+            '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$script,
+            '-TargetIPv4','192.168.1.100','-TargetIPv6','::1','-OutputDir',$out)
+          if($badV6.ExitCode -eq 0){throw 'Unexpectedly allowed IPv6 loopback target'}
+          Write-Host 'SubPC no-network fixture and unsafe-target refusal PASS'
+      - name: Package only read-only SubPC scripts and instructions
+        shell: powershell
+        run: |
+          $k=Join-Path $env:RUNNER_TEMP 'Geumyi-Day12-SubPC-DualStack-READ-ONLY'
+          New-Item -ItemType Directory -Force -Path $k|Out-Null
+          Copy-Item 'tools/day12/Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.ps1' $k
+          Copy-Item 'tools/day12/Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.cmd' $k
+          Copy-Item 'DAY12-PHASE10-SUBPC-DUALSTACK-RUNBOOK.md' $k
+          $hashes=@(Get-ChildItem $k -File|Sort-Object Name|ForEach-Object{
+            [ordered]@{file=$_.Name;sha256=(Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
+          })
+          [ordered]@{schema=1;role='SUBPC_ONLY';production_mutation='FORBIDDEN'
+            canonical_backend_ports_private='UNCHANGED_FAIL';files=$hashes
+          }|ConvertTo-Json -Depth 5|Set-Content -LiteralPath (Join-Path $k 'SHA256-MANIFEST.json') -Encoding UTF8
+          $zip='Geumyi-Day12-SubPC-DualStack-READ-ONLY.zip'
+          Compress-Archive -Path (Join-Path $k '*') -DestinationPath $zip -Force
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $z=[IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip).Path)
+          try{
+            $names=@($z.Entries|ForEach-Object{$_.FullName})
+            if($names.Count -ne 4 -or
+               $names -notcontains 'Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.ps1' -or
+               $names -notcontains 'Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.cmd' -or
+               $names -notcontains 'DAY12-PHASE10-SUBPC-DUALSTACK-RUNBOOK.md' -or
+               $names -notcontains 'SHA256-MANIFEST.json'){
+              throw 'Focused SubPC ZIP content verification failed'
+            }
+          }finally{$z.Dispose()}
+          Get-FileHash $zip -Algorithm SHA256|Format-List
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-subpc-dualstack-readonly-kit
+          path: Geumyi-Day12-SubPC-DualStack-READ-ONLY.zip
+          retention-days: 30
