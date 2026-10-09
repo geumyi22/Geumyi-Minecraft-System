@@ -49,6 +49,13 @@ This requires a **separate operator approval and maintenance window** for anythi
 4. **If production change becomes necessary:** capture before state, stop/restart only the expressly approved server(s) after player-presence check, keep service interruption minimal, and abort/rollback on health change. Never touch live world/save state without approved procedure.
 5. **Revalidation:** run the updated canonical `Geumyi_Final_Verification.cmd` **once** after a real fix or fresh authoritative binding evidence. Only mark 12.10 PASS if all mandatory checks actually pass with supported evidence. Then proceed with pending 12.5 security approval, 12.11 Java/Bedrock/GSCM actual E2E and 12.12 soak; 12.13 Stable only after release gates all pass.
 
+## Operator attestation and next minimal evidence step (2026-10-10)
+
+- Operator explicitly answered **"서버컴"**, confirming the 01:51 `GetTcpTable2` collector was executed on the actual Minecraft host. This resolves the execution-location question; **do not ask again or treat the six absent entries as a sub-PC vantage artifact**.
+- Prepared a **nonmutating Windows process/config provenance preflight** `tools/day12/Day12_Phase10_Process_Bind_Preflight_READ_ONLY.cmd`. This is **not another TCP listener scan or handshake probe**. It reads only the four GSC profile directory references from local config (without exporting paths), an allowlist of harmless Java/RCON `server.properties` keys, Java/GSC process family/kind counts, and OS network-interface compartment metadata. It never records command-line text, PIDs, usernames, server absolute paths, password/token keys, or personal IPs. Process-to-profile mapping is a weak heuristic and **must not** be interpreted as runtime bind proof.
+- Windows `Get-NetIPInterface -IncludeAllCompartments` covers nondefault **IP interfaces**; documented `Get-NetTCPConnection` does **not** offer that switch. Interface compartment counts therefore contextualize the environment but **do not attribute a TCP socket to any compartment**. Do not infer `25573/25575/25576` are safely bound from that metadata alone.
+- Pending: operator runs this preflight on the confirmed server PC after synthetic CI. If it still cannot establish actual bind ownership, pause rather than escalating to an unauthorized production restart. Controlled disposable reproduction and maintenance-window approval come next. The canonical `backend_ports_private` remains FAIL and Stable blocked.
+
 ## Source documents
 
 - [Day 12 Live Runbook](DAY12-LIVE-RUNBOOK.md)
