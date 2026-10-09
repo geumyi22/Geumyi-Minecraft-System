@@ -13,6 +13,9 @@ if(@(Get-Process -Name GeumyiServerCenter -ErrorAction SilentlyContinue).Count -
    $null -ne (Get-Service -Name "Geumyi Server Center Host" -ErrorAction SilentlyContinue)){
   throw "REFUSE_EXISTING_CLIENT_OR_HOST_PROCESS"
 }
+$reg="HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GeumyiServerCenter"
+if(Test-Path -LiteralPath $reg){throw "REFUSE_PREEXISTING_GSC_UNINSTALL_REGISTRY_KEY"}
+$registryCreated=$false
 $oldPF=$env:ProgramFiles;$oldPD=$env:PROGRAMDATA;$oldAD=$env:APPDATA
 $temp=(Resolve-Path -LiteralPath $env:RUNNER_TEMP).Path
 $root=Join-Path $temp "Day12-GSC-RC2-Client-Transaction"
@@ -40,6 +43,12 @@ try {
   $installed=Join-Path $env:ProgramFiles "Geumyi Server Center"
   $baseline=Join-Path $root "official-438"
   New-Item -ItemType Directory -Path $installed,$baseline -Force | Out-Null
+  # Real client-only installs advertise InstallLocation via this uninstall key.
+  # Create it ONLY on a verified disposable GitHub Windows runner, never on a
+  # user's machine, and remove exactly this owned test key in finally.
+  [void](New-Item -Path $reg -ItemType RegistryKey -ErrorAction Stop)
+  $registryCreated=$true
+  [void](New-ItemProperty -LiteralPath $reg -Name "InstallLocation" -PropertyType String -Value $installed -Force -ErrorAction Stop)
   & gh release download "system-2026.10.07-day11-gsc438-beta" --repo $env:GITHUB_REPOSITORY --pattern "GeumyiServerCenter.exe" --dir $baseline --clobber
   if($LASTEXITCODE -ne 0){throw "OFFICIAL_438_CLIENT_DOWNLOAD_FAILED"}
   $original=Join-Path $baseline "GeumyiServerCenter.exe"
@@ -102,6 +111,15 @@ try {
   if(-not $report.manual_restore_verified){throw "MANUAL_RESTORE_SHA_FAILED"}
   $report.result="DISPOSABLE_CLIENT_UPDATE_AND_MANUAL_RESTORE_PASS"
 }finally{
+  if($registryCreated) {
+    try {
+      Remove-Item -LiteralPath $reg -Recurse -Force -ErrorAction Stop
+      $report.owned_disposable_registry_key_removed=(-not (Test-Path -LiteralPath $reg))
+    } catch {
+      $report.owned_disposable_registry_key_removed=$false
+      $report.result="CI_REGISTRY_CLEANUP_FAILED"
+    }
+  }
   $env:ProgramFiles=$oldPF;$env:PROGRAMDATA=$oldPD;$env:APPDATA=$oldAD
   $report|ConvertTo-Json -Depth 7|Set-Content -LiteralPath (Join-Path $temp "Day12-RC2-Client-Transaction-Report.json") -Encoding UTF8
 }
