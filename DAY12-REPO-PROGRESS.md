@@ -312,6 +312,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Next safe coverage is to **view** the mobile GSCM backup/protection inventory (no restore or deletion). All production-changing tests still need their preflight and scoped approval.
 - Phase 12.10 binding attestation remains **FAIL** and 12.11 full E2E / 12.12 live soak / Final Stable remain **PENDING**.
 
+## 2026-10-10 — GSCM protected Golden backup list
+
+- Operator acknowledged **"됨"** to GSCM backup/protection inventory visibility for all 4 servers, with corresponding Golden items displaying protected. **OPERATOR_REPORTED_PASS**, read-only UI visibility and indicator check only.
+- This does not constitute a new ZIP/SHA-256 integrity run or actual restore verification. Existing verified server-PC 4/4 Golden checkpoints are preserved; no repeat Golden capture needed.
+- Prepare a safe restore preflight/health path without any production restore or backup modification; source-check exact available operator action before instructions.
+- 12.10 live `backend_ports_private` = **FAIL**, 12.11 release-grade E2E and Stable **BLOCKED**, no security gate relaxation.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
