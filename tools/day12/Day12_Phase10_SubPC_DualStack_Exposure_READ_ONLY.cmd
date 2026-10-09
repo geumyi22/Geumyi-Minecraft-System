@@ -8,7 +8,7 @@ echo ========================================================
 echo WARNING: Do not run this on Minecraft SERVER PC.
 echo No service restart, firewall edits, credentials or files touched.
 echo.
-powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%~dp0Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.ps1"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Day12_Phase10_SubPC_DualStack_Exposure_READ_ONLY.ps1"
 set "RESULT=%ERRORLEVEL%"
 echo.
 echo Report folder: Desktop\Geumyi-Day12-DualStack-Proof
