@@ -94,11 +94,42 @@ jobs:
             $actual=(Get-FileHash -LiteralPath ("candidate-output/"+$Matches[2]) -Algorithm SHA256).Hash.ToLowerInvariant()
             if($actual -ne $Matches[1]){throw 'RC content digest mismatch'}
           }
+      - name: Test actual client-only 4.3.8 to rc.2 helper and manual restore in disposable Windows
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $path='tools/day12/Test_Day12_GSC_Client_RC2_Disposable_Transaction_CI.ps1'
+          $e=$null;$t=$null
+          [void][Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $path),[ref]$t,[ref]$e)
+          if(@($e).Count -ne 0){throw 'PowerShell client transaction harness parse error'}
+          & ./$path -CandidateDir candidate-output
+          if($LASTEXITCODE -ne 0){throw 'Disposable client-only transaction failed'}
+          $report=Get-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'Day12-RC2-Client-Transaction-Report.json') -Raw -Encoding UTF8|ConvertFrom-Json
+          if($report.result -ne 'DISPOSABLE_CLIENT_UPDATE_AND_MANUAL_RESTORE_PASS' -or
+             !$report.baseline_sha_verified -or !$report.failed_update_preserved_client -or
+             !$report.updated_client_hash_verified -or !$report.old_client_backup_verified -or
+             !$report.manual_restore_verified -or $report.real_subpc_modified -or
+             $report.production_server_modified -or $report.host_service_modified -or
+             $report.backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Disposable client transaction report failed closed'
+          }
+
       - name: Ensure original main source was not re-versioned
         shell: pwsh
         run: |
           git diff --exit-code -- 'GSC/ServerCenter'
           if($LASTEXITCODE -ne 0){throw 'RC preview modified tracked 4.3.8 source'}
+      - name: Upload sanitized disposable-client transaction evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc-rc2-client-only-disposable-transaction
+          path: ${{ runner.temp }}/Day12-RC2-Client-Transaction-Report.json
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Archive UNSIGNED review-only candidate (not Stable, never published)
         uses: actions/upload-artifact@v7
         with:
