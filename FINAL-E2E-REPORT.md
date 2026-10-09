@@ -27,6 +27,14 @@ This report is intentionally not marked PASS until the real server PC, Java clie
 - This is a safe pre-E2E functional observation, **not** the release-grade 12.11 Java E2E PASS: the 12.10 mandatory `backend_ports_private` gate is still FAIL, and the complete four-backend real-client path is pending.
 - **Next operator action:** Bedrock client public entry -> Lobby -> Wild / Playground -> Lobby -> verify return and previous-location behavior. Do not expose backend ports, change firewall, or restart servers merely for this check.
 
+## Operator-reported Bedrock pre-E2E — 2026-10-10 KST (partial, non-release-grade)
+
+- Operator replied **"됨"** after the four-step Bedrock client checklist: public Bedrock entry -> Lobby; Lobby -> Wild -> Lobby; Lobby -> Playground -> Lobby; and previous-location preservation on re-entry.
+- Record as **OPERATOR_REPORTED_PASS** for these specific Bedrock paths only. No client-generated log, screenshot or independent verification accompanied the reply.
+- Other was excluded, as it was OFFLINE in the latest prior known fleet snapshot. Lobby -> Other, identity/permission regression, complete Java/Bedrock full E2E, operations and GSCM remain pending.
+- This is **not** release-grade 12.11 PASS. Mandatory Day 12.10 `backend_ports_private` remains FAIL; do not promote Stable or mark Day 12 complete.
+- **Next safe operator step:** GSCM real-device read-only connectivity/reconnect, real-time fleet status and console-view check. Do not revoke/delete/re-pair devices, restart servers or apply updates for this basic check.
+
 ## Prerequisites
 
 - [ ] Phase 12.0 Golden Baseline + protected Golden backups PASS
