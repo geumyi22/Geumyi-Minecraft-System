@@ -54,6 +54,7 @@ jobs:
           & (Join-Path $root 'Geumyi-GSC-Client-Canary-Verify.exe') $bad
           if($LASTEXITCODE -eq 0){throw 'Forged Ed25519 signature accepted by Windows verifier'}
           Write-Host 'WINDOWS_SIGNATURE_TAMPER_REJECTED'
+          $global:LASTEXITCODE=0
       - name: Parse Apply and Restore scripts with Windows PowerShell 5.1, no execution
         shell: powershell
         run: |
