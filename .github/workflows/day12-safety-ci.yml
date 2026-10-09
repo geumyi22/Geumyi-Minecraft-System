@@ -331,6 +331,21 @@ jobs:
             throw "Phase 2+5 synthetic report contract failed"
           }
 
+      - name: Day12 12.10 GSC guard rollout compatibility checker synthetic
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'day12-gsc-guard-rollout-fixture'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase10_GSC_Guard_Rollout_Precheck_READ_ONLY.ps1 -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'GSC rollout compatibility synthetic failed'}
+          $f=@(Get-ChildItem -LiteralPath $out -Filter '*.json' -File)
+          if($f.Count -ne 1){throw 'GSC precheck synthetic output count mismatch'}
+          $r=Get-Content -LiteralPath $f[0].FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.synthetic -or
+             -not $r.read_only -or $r.mutation_performed -or
+             $r.backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'GSC precheck invariant regression'
+          }
+
       - name: Day12 12.10 two-host IPv4 IPv6 stage matrix fail-closed synthetic
         shell: powershell
         run: |
