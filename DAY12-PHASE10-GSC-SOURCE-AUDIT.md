@@ -39,6 +39,12 @@
 - This confirms **Java+RCON start-time application claims**, directly addressing the earlier RCON ambiguity; it is not a new claim of simultaneous live sockets. The very stale Other log must **not** be used to claim currently-online RCON.
 - Existing `backend_ports_private` canonical gate is still FAIL because it explicitly requires positive runtime OS LISTEN bind evidence. Preserve that release block. Repeating the same diagnostics or altering a known-good server merely to make the scanner pass is not justified. Any controlled owner/bind attestation requires operator-approved maintenance and rollback.
 
+## Post-restart native API source audit (2026-10-10 02:47)
+
+- One real Playground graceful restart completed and returned ONLINE; the two target OS listener entries remained `NOT_OBSERVED` even immediately after restart. This confirms **a restart is not a demonstrated remedy for this evidence gap**.
+- SDK crosscheck in `DAY12-PHASE10-WINDOWS-TCP-API-AUDIT.md`: GSC's Go IP Helper `GetExtendedTcpTable`, the separate PowerShell/.NET helper, and the IPv4-only `GetTcpTable2` reader use row sizes/offsets consistent with the published TCP structs. No obvious static decoding error found, but **root cause remains unverified**.
+- Avoid more same-method diagnostics, arbitrary Windows changes or a weakened canonical PASS. App 8/8 start-loopback evidence stays valid but historical; current socket owner/bind proof remains missing. **12.10 OPEN, Stable blocked**.
+
 ## No-action boundaries
 
 This is repository analysis plus an optional scoped **read-only application-log** reporter. No server starts/stops, world writes, settings edits, Windows ACL/firewall changes, RCON credential access/export, backup deletion, or Stable promotion. A GitHub CI green result validates only the synthetic fixture, not the live host.
