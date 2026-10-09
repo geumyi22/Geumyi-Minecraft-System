@@ -16,7 +16,7 @@ if(-not $admin.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
 $service="Geumyi Server Center Host"
 $reg="HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\GeumyiServerCenter"
 if($null -ne (Get-Service -Name $service -ErrorAction SilentlyContinue) -or
-   Test-Path -LiteralPath $reg -or
+   (Test-Path -LiteralPath $reg) -or
    @(Get-Process -Name GeumyiServerHost -ErrorAction SilentlyContinue).Count -gt 0 -or
    @(Get-Process -Name GeumyiServerCenter -ErrorAction SilentlyContinue).Count -gt 0){
   throw "REFUSE_PREEXISTING_GSC_STATE"
@@ -101,8 +101,8 @@ try {
     auto_start_agent=$false;mobile_enabled=$false;
     update=@{enabled=$false;repository="";channel="stable"}
    }|ConvertTo-Json -Depth 8|Set-Content -LiteralPath $config -Encoding UTF8
-  $binPath='\"'+$installedHost+'\" --service --config \"'+$config+'\"'
-  & sc.exe create $service "binPath= $binPath" "start= demand" "obj= LocalSystem"
+  $binPath='"'+$installedHost+'" --service --config "'+$config+'"'
+  New-Service -Name $service -DisplayName $service -BinaryPathName $binPath -StartupType Manual -ErrorAction Stop | Out-Null
   if($LASTEXITCODE -ne 0){throw "CI_SERVICE_CREATE_FAILED"}
   $serviceCreated=$true
   [void](New-Item -Path $reg -Force -ErrorAction Stop)
