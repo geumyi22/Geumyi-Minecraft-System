@@ -206,6 +206,13 @@
 - 다음은 사용자가 별도 승인한 **유지보수 창 기반 실행 중 Java/RCON 프로세스 소유권·실제 bind 주소 검증**. 먼저 기존 증거/설정과 서비스 기동 경로를 읽기 전용으로 정리하고, 필요할 때만 승인된 한 서버로 범위를 제한한 제어 테스트를 계획합니다. 무단 서버 재부팅/종료, Windows 방화벽·ACL 변경, RCON 비밀번호/포트 변경, Golden 덮어쓰기, Stable 승격 금지. 별도 동의 전에 운영환경 변경하지 않습니다.
 - 다음 단계는 12.10의 근거 확보와 12.5 안전 검토 마무리이며, 그 후 12.11 Live E2E → 12.12 soak → 12.13 Stable → Day1–12 전체 파일 정리입니다.
 
+## 2026-10-10 서버 PC 실행 확인 — 12.10 다음 작업은 프로세스/설정 읽기 전용 확인
+
+- 사용자 답변: **"서버컴"**. 01:51 `GetTcpTable2` JSON은 Java Minecraft 서버가 실제로 실행되는 Windows **서버 PC**에서 생성됐습니다. 검사 위치를 다시 물어볼 필요가 없습니다. 0/6 대상 LISTEN 미검출은 진짜 서버 측 관측 불일치이지만, **서비스 중단·외부 노출·안전 바인딩 확정 근거는 아닙니다**.
+- 기존 01:19 로컬 Java/RCON **6/6 성공**, 01:12·01:43 일부 Native LISTEN 루프백 관측, 01:27 일부 ESTABLISHED 루프백, 서브 PC 내부 0/8 접근 불가는 이미 확보했으므로 재실행하지 않습니다.
+- **다음 단일 READ-ONLY 진단:** 서버 PC에서 최신 Operator Kit의 `tools\\day12\\Day12_Phase10_Process_Bind_Preflight_READ_ONLY.cmd` 실행 → 바탕화면 `Geumyi-Day12-Process-Bind\\Day12-Process-Bind-*.json` 하나만 제출. GSC 설정에 있는 경로는 메모리에서만 활용하고 JSON에서는 서버별 `server-ip` 범위, Java/RCON 포트·활성 설정, Java 실행 종류·구성 파일 경로 문자열 일치 여부의 집계값만 기록합니다. 일반 권한, 재시작·TCP 포트 스캔·방화벽·백업 변경 없음.
+- `Get-NetIPInterface -IncludeAllCompartments`는 Microsoft 문서상 네트워크 **인터페이스** 구획 조회이며 `Get-NetTCPConnection` 소켓의 소속 구획을 자동 확인하지 않습니다. 보고서의 디렉터리/명령줄 부분 문자열 일치는 약한 단서일 뿐 실제 바인딩 증명이 아닙니다. 그다음에도 실서비스 소켓 주소 확인이 필요하면 **별도 사용자 승인 하 유지보수 창**에서 시행합니다. 12.10 FAIL, Stable BLOCKED 유지.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
