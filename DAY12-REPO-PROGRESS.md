@@ -269,6 +269,13 @@ Only sanitized derived findings are committed. Existing Golden backups, artifact
 - Operator's explicit execution policy is saved in `DAY12-LIVE-RUNBOOK.md`: safe GitHub and CI work continues autonomously; request operator only for actual host execution or production-affecting approvals, without repetitive confirmations.
 - Full Day1–12 temporary-file cleanup remains deferred until Stable+E2E/soak evidence and separate cleanup safeguards.
 
+## 2026-10-10 — operator accepted routine restarts; prepared bounded 12.10 one-server job
+
+- Operator granted standing permission for routine server restarts/checks without repeated permission questions. **No ability for ChatGPT to directly execute OS commands on their Windows machine**. This does not authorize dangerous filesystem/security changes or irreversible operations.
+- Added `Day12_Phase10_Scoped_Graceful_Restart.ps1/.cmd` for **Playground ONLY**. Fail-closed preconditions: GSC 4.3.8, target online, player query proves count 0, zero global jobs, verified protected FULL Golden backup, no update-block state. It enqueues one **GSC graceful restart job**, waits for completion, re-checks online, and (when online) samples native Java 25571/RCON 25576 listener evidence once. Any observed nonloopback target listener is an explicit security review failure. No force-kill, auto-retry, world restore, firewall/ACL or backup changes.
+- `DAY12-PHASE10-APPROVED-SCOPED-RESTART.md` provides operator execution, impact, stop conditions and fallback. Synthetic CI tests normal preflight and no-player/no-Golden/active-job guards without API calls. **Actual user host restart PENDING until the operator runs the CMD**; no live runtime binding proof claimed.
+- Original app-reported Java/RCON 8/8 loopback startup messages, backed by log ages, remain valid as historical evidence. **12.10 fails closed** and Stable is blocked. A successful one-server restart does not by itself prove all online backends privately bound.
+
 ## Safety boundary
 
 No live item above is marked PASS unless real-machine/client evidence exists. In particular, the repository currently **cannot** be switched to Maintenance Mode and the final Stable release gate remains closed.
