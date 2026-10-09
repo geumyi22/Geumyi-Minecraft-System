@@ -101,6 +101,13 @@
 - Next: prepare two-host disposable test with before/after remote TCP negative control and local positive control for both IP families; map the 36 broad Any-program rules to actual identities privately and preserve release rollback. A real server change will require explicit operator approval after all preflight/staging checks. Strict `backend_ports_private` **FAIL**.
 - [Full CI artifact assessment](DAY12-PHASE10-DISPOSABLE-FIREWALL-RESULT-20261010.md).
 
+## Two-host disposable stage matrix prepared — 2026-10-10 (NOT RUN)
+
+- New scope: `DAY12-PHASE10-TWO-HOST-STAGING-PLAN.md` requires distinct disposable Windows stage-server and stage-client, remote IPv4+IPv6 reachability verified *before* a scoped ephemeral-port deny, remote denial verified *after*, and restored remote reachability on rollback. Independent local loopback TCP and public TCP+UDP controls, owned-rule cleanup and correct process health remain mandatory throughout.
+- A new offline reviewer `Day12_Phase10_TwoHost_Stage_Evidence_REVIEW_ONLY.ps1` is **not a live network test**; it requires explicit evidence rows and deliberately marks even a coherent self-reported staging matrix as `EVIDENCE_MATRIX_CONSISTENT_REVIEW_ONLY`, not PASS. Its CI synthetic fixture rejects still-accessible IPv6, same-host purported remote tests, failed public controls and missing rollback.
+- **Infrastructure limitation:** current single GitHub-hosted Windows runner cannot supply an independent routable stage client; no real two-host execution has occurred. Do not fake 2-host proof by connecting to the runner's own nonloopback address or exposing an insecure tunnel.
+- This is source/test-plan preparation only. Do not modify production firewall, restart GSC/Paper or remove the 36 broad Allow candidates. The existing mandatory `backend_ports_private` remains **FAIL**; a future compensating-control security gate would require explicit operator review and acceptance and must not silently override direct bind-owner proof.
+
 ## Production-safety rule and operator handoff
 
 - User explicitly allows autonomous **source inspection, GitHub changes, documentation and synthetic CI** without repeated check-ins.
