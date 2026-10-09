@@ -48,6 +48,12 @@ When the Windows synthetic test and packaging both pass, one optional, read-only
 
 Windows synthetic test constructs 5154/5158 XML records for loopback IPv4 and IPv6, wildcard binds and a stale PID, then exercises the parser and classifier **without querying Security log or opening any TCP listener**. Failing case must not be scored PASS. Source code and CI compilation do not count as on-host runtime evidence.
 
+## 2026-10-10 operator result and classifier correction
+
+The actual server PC provided `Day12-WFP-Bind-20261010-040617.json` with **11 currently running Java/javaw process generations**, **zero** matching 5154/5158 records for all eight backend ports, `result=UNAVAILABLE`, `error_category=AUDIT_RECORDS_UNAVAILABLE_OR_ACCESS_DENIED`. Neither positive nor negative bind facts can be inferred from this output. No security configuration or server process was changed.
+
+The original reader wrongly grouped valid XPath queries with no matching events together with access denied, invalid event queries and process-enumeration failures. The next reader revision distinguishes `NO_RETAINED_MATCHING_WFP_EVENTS` → `NO_EVIDENCE`; `SECURITY_LOG_ACCESS_DENIED` → `UNAVAILABLE`; `WFP_EVENT_QUERY_FAILED` → `UNAVAILABLE`; and `JAVA_PROCESS_INVENTORY_FAILED` → `UNAVAILABLE`. All remain **not PASS**, and never change the canonical security release gate. Windows synthetic CI must pass before a revised operator kit is used. Do not simply repeat the previously-run version.
+
 ## Remaining release blockers
 
 Windows TCP listener table discrepancy; separate complete Day12.11 operations/reboot E2E; 8–12h live soak; then, and only then, Day12.13 Stable release. Do not repeat completed client smoke checks or protected Golden backup checks simply to make a report look fuller.
