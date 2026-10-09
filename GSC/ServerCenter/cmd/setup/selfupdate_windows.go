@@ -275,14 +275,26 @@ func backupSelfUpdateFile(target, backupDir string) (selfUpdateFile, error) {
 	return f, nil
 }
 
-func restoreSelfUpdateFiles(files []selfUpdateFile) {
+// A rollback must NOT be reported successful when even one old executable
+// could not be restored. Always attempt all targets; return a bounded,
+// path-free error so reports do not disclose installation locations.
+func restoreSelfUpdateFiles(files []selfUpdateFile) error {
+	failed := false
 	for _, f := range files {
 		if f.existed {
-			_ = copyFileStrict(f.backup, f.target, 0755)
+			if err := copyFileStrict(f.backup, f.target, 0755); err != nil {
+				failed = true
+			}
 		} else {
-			_ = os.Remove(f.target)
+			if err := os.Remove(f.target); err != nil && !errors.Is(err, os.ErrNotExist) {
+				failed = true
+			}
 		}
 	}
+	if failed {
+		return errors.New("one or more GSC files could not be restored")
+	}
+	return nil
 }
 
 func relaunchSelfUpdateClient(report *selfUpdateReport, clientTarget string) {
@@ -432,16 +444,29 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 		if hostExists {
 			_ = stopHostServiceStrict()
 		}
-		restoreSelfUpdateFiles(files)
-		report.RolledBack = true
+		restoreErr := restoreSelfUpdateFiles(files)
+		report.RolledBack = restoreErr == nil
 		report.Status = "rolled_back"
 		report.Error = reason.Error()
-		if hostExists {
-			if err := startHostServiceStrict(); err == nil {
+		if restoreErr != nil {
+			report.Status = "rollback_failed"
+			report.Error += "; " + restoreErr.Error()
+		}
+		if hostExists && restoreErr == nil {
+			if err := startHostServiceStrict(); err != nil {
+				report.RolledBack = false
+				report.Status = "rollback_failed"
+				report.Error += "; old Host service restart failed"
+			} else {
 				report.HostHealth = waitGSCHealth(30 * time.Second, "")
+				if !report.HostHealth {
+					report.RolledBack = false
+					report.Status = "rollback_failed"
+					report.Error += "; restored Host health not verified"
+				}
 			}
 		}
-		if clientWasRunning {
+		if clientWasRunning && restoreErr == nil {
 			relaunchSelfUpdateClient(&report, clientTarget)
 		}
 	}
