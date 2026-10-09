@@ -186,6 +186,12 @@
 - **25573 Lobby Java / 25575 Wild RCON / 25576 Playground RCON**: `Get-NetTCPConnection`과 .NET `IPGlobalProperties`가 각각 하나씩 `ESTABLISHED` 서버 측 로컬/원격 주소 `LOOPBACK` 관찰. **25571 Playground Java**: 접속은 성공했지만 서버 측 ESTABLISHED 행 0건, `Get-NetTCPConnection` 오류. `netstat`은 네 포트 모두 오류로 기록됨. 연결 직후 끊겼는지 등 원인은 미확인.
 - 이 결과는 실제 통신 성공을 보강하지만 **오직 루프백에서만 LISTEN 중임을 보장하지 않음**. 정식 12.10 `backend_ports_private` PASS 금지. 무의미한 전체 재검사 대신, 향후 보고서에 민감정보 없는 구체적 오류 유형과 실제 LISTEN 주소 검증을 추가하는 쪽으로 조사. Golden, LAN, ACL, 8787, 이전 6/6 테스트를 반복하지 않음.
 
+## 다음 한 번 (2026-10-10) — Windows LISTENER/ALL 제공자 비교
+
+- 직전 검사에서 Java/RCON 6/6 로컬 연결 성공했고, ESTABLISHED 로그에서는 25573/25575/25576 서버 측 루프백 확인, 25571만 결과 없음. netstat 네 포트 모두 오류. 다만 오류 원인은 기록되지 않았습니다. **동일한 TCP 연결 검사 반복 금지.**
+- 최신 Operator Kit의 `tools\\day12\\Day12_Phase10_Provider_Diff_READ_ONLY.cmd`를 **서버 PC 일반 권한으로 단 한 번** 실행합니다. Windows Native TCP TABLE `LISTENER`/`ALL` 차이, PowerShell `Get-NetTCPConnection` 필터 사용 여부에 따른 차이, netstat 종료 코드만 확인합니다. 서버·월드·방화벽·ACL·Golden·캐시 변경 및 TCP 연결 시도는 없습니다.
+- 보고서 위치: 바탕화면 `Geumyi-Day12-Provider-Diff\\Day12-Provider-Diff-*.json`. 최신 파일 하나만 제출. `CAPTURED_REVIEW_REQUIRED`는 수집 성공일 뿐 보안 게이트 PASS가 아닙니다. 기존 `backend_ports_private` FAIL과 Stable 차단 유지.
+
 ## 1. 한 번에 READ-ONLY 수집
 
 서버 PC에서 tools\day12\Day12_Collect_All_READ_ONLY.cmd 실행.
