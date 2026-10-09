@@ -70,7 +70,8 @@ if($Synthetic){
   Write-Host "Process/config allowlist synthetic PASS"
   exit 0
 }
-$root=Join-Path (if($env:PROGRAMDATA){$env:PROGRAMDATA}else{"C:\ProgramData"}) "GeumyiServerCenter"
+$pd=if($env:PROGRAMDATA){$env:PROGRAMDATA}else{"C:\ProgramData"}
+$root=Join-Path $pd "GeumyiServerCenter"
 $configPath=Join-Path $root "server.json"
 $cfg=$null;$cfgStatus="CONFIG_MISSING"
 try{
