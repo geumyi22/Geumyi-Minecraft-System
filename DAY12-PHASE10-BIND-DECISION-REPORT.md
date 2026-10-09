@@ -72,6 +72,11 @@ This requires a **separate operator approval and maintenance window** for anythi
 - Combines nonredundant evidence: on-disk Java `server-ip=127.0.0.1` (4/4), Java+RCON separate app startup loopback announcements (8/8), server-PC localhost online Java/RCON connectivity (6/6 at 01:19), and second-PC negative reachability (0/8 private at earlier time). **No confirmed backend exposure** in evidence, but no all-socket positive contemporary bind+owner proof either. The earlier Windows TCP lookup discrepancy persists.
 - **Decision:** App-side Java+RCON bind-intent validation **PASS 8/8**, OS runtime-exclusive bind validation **OPEN** and canonical 12.10 `backend_ports_private` **FAIL**; do not change `FINAL-RELEASE-GATES.json`, do not auto-promote Stable. **No more repeating startup logs, native scans, LAN tests, or re-reading the 02:05 preflight** absent a meaningful change. Next useful work is documentation/source-level readiness review for 12.11/12.12 and a single controlled runtime attestation during an explicitly approved maintenance window (not an automatic production restart).
 
+## Closure choice prepared — no runtime decision auto-approved
+
+- `DAY12-PHASE10-SECURITY-DECISION-PACKET.md` documents **strict positive runtime owner/bind proof**, a separately approved **compensating-control security assessment**, and **keeping the gate OPEN** when neither is established. The new application Java/RCON startup evidence 8/8 is already recorded and is not the same as live OS socket proof.
+- The current decision is **C: keep 12.10 OPEN and Stable BLOCKED**, without further repeated TCP/log diagnostics or unsafe production restarts. Any proposal to change the original security acceptance criteria requires explicit operator approval, independent effective firewall/IPv6/overlay evidence, and fail-closed implementation/review.
+
 ## Source documents
 
 - [Day 12 Live Runbook](DAY12-LIVE-RUNBOOK.md)
