@@ -1,3 +1,9 @@
+## 2026-10-10 — Android GSCM console 4-second auto-refresh user-confirmed normal
+
+Operator reports **`안드로이드 콘솔 정상`** after a targeted GSCM Android fresh-log 4-second auto-poll test. Mark the **Android mobile console visible auto-refresh regression PASS_USER_REPORTED_REAL_DEVICE**, do not repeat; GSC desktop console previously passed independently. The Android report alone does NOT close full GSCM status/control/WebSocket recovery or prove patched iOS installation and its console auto-refresh.
+
+**Next short check:** In an already connected **Bedrock** Wild server, check the BACAP achievements/advancements Korean display and a representative Chemistry/Technology model/icon/custom mapped item; and in Playground, confirm intended existing sound/resource effect. These are individual canonical Day12.11 pack cases, not guaranteed by the earlier broad routing `정상`. No restart, re-install or re-map needed. iOS patched console refresh should be checked separately **only after** actual installation of its updated IPA.
+
 ## 2026-10-10 — Java Wild and Playground existing resource packs user-confirmed normal
 
 Operator answered **`정상`** to the specific request to inspect currently installed Java Wild **and** Playground packs. Record **user-reported in-game visual PASS** for `JAVA_WILD_PLAYGROUND_EXISTING_PACKS`; do not request a reinstall, re-apply, restart or repeated proof absent regression. The complete 25-case form is not yet signed/fully executed.

@@ -1,3 +1,12 @@
+### 2026-10-10 — Android GSCM console 4-second auto-refresh user-confirmed normal
+
+- After receiving the GitHub Actions Android GSCM `GSCM-1.1.5-build117-Android` APK link and specific instructions to open the Android GSCM server console, leave it open with 4-second refresh active and observe fresh logs without manual refresh, the operator replied exactly **"안드로이드 콘솔 정상"**. Treat as **PASS_USER_REPORTED_REAL_ANDROID_CONSOLE_POLLING** for the scoped four-second auto-refresh regression. The full console command/control, WebSocket transport loss/reconnect and other GSCM operations are distinct and not automatically proved.
+- Source fix `57f45031188eab5467b8dc22c3c8a858fe8bcb81` defaults mobile console polling on; Android build workflow `38057619603` passed. This conversational real-device result is distinct from CI; no fresh installed APK SHA/device diagnostic file supplied.
+- GSC PC console 4-second auto-refresh was also user-reported normal; Java public-entry/route/last-position and Wild+Playground resource-pack checks were user-reported normal. **Do not rerun these short checks** without a regression.
+- **iOS console auto-refresh remains untested after an updated iOS build installation.** Earlier `둘다 정상` was limited to Android+iOS GSCM session/status/reconnection smoke; it does not establish that the patched iOS console update has been installed.
+- Next quick real-device tests can verify distinct Bedrock Wild BACAP Korean translation, ChemTech item models and mapped custom items if not already specifically observed; do not infer from prior broad `정상` pack-switch smoke. No server restart, pack reapply, live world/backup change or security policy modification.
+- 12.11 full canonical 25-case evidence incomplete; 12.7 offline start OPEN, 12.10 `backend_ports_private` strict FAIL, 12.12 soak last, 12.13 Stable blocked.
+
 ### 2026-10-10 — Java Wild and Playground existing resource packs user-confirmed normal
 
 - Immediately after the operator was specifically instructed to visually check **both Java Minecraft Wild and Playground** resource packs, including representative already-installed custom textures/items/effects, they answered exactly **"정상"**. Classify the scoped Day12.11 case `JAVA_WILD_PLAYGROUND_EXISTING_PACKS` as **PASS_USER_REPORTED_REAL_CLIENT**, based on the user's visual confirmation, not machine-captured screenshot/metadata. No resource pack redeployment, server config edits or restart is needed. Preserve the Java packs and prior scoped Bedrock pack repair.
