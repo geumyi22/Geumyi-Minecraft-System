@@ -163,35 +163,17 @@ func nativeJavaStats(port int) (JavaStats, bool) {
 	return out, true
 }
 
+// portPID is used for lifecycle tracking and force-stop targeting. A TCP
+// connection row with this local port is NOT sufficient evidence that its
+// owning process is the listening server (client-side ESTABLISHED rows can
+// carry the same local port). Reject any non-LISTEN state and fail closed.
+// On OS versions with anomalous native TCP state 0, this deliberately yields
+// 'unavailable' rather than selecting a potentially unrelated process.
 func portPID(port int) (int, error) {
-	for _, family := range []uint32{2, 23} {
-		var size uint32
-		tcpTable.Call(0, uintptr(unsafe.Pointer(&size)), 0, uintptr(family), 3, 0)
-		if size < 4 {
-			continue
-		}
-		buf := make([]byte, size)
-		rc, _, _ := tcpTable.Call(uintptr(unsafe.Pointer(&buf[0])), uintptr(unsafe.Pointer(&size)), 0, uintptr(family), 3, 0)
-		if rc != 0 {
-			continue
-		}
-		stride, po, pi := 24, 8, 20
-		if family == 23 {
-			stride, po, pi = 56, 20, 52
-		}
-		count := int(binary.LittleEndian.Uint32(buf[:4]))
-		for i := 0; i < count; i++ {
-			off := 4 + i*stride
-			if off+stride > len(buf) {
-				break
-			}
-			row := buf[off : off+stride]
-			if int(binary.BigEndian.Uint16(row[po:po+2])) == port {
-				return int(binary.LittleEndian.Uint32(row[pi : pi+4])), nil
-			}
-		}
+	if pid, ok := listenerPID(port); ok && pid > 0 {
+		return pid, nil
 	}
-	return 0, fmt.Errorf("포트 %d의 프로세스를 확인하지 못했습니다", port)
+	return 0, fmt.Errorf("포트 %d의 LISTEN 소유 프로세스를 확인하지 못했습니다", port)
 }
 
 var udpTable = syscall.NewLazyDLL("iphlpapi.dll").NewProc("GetExtendedUdpTable")
