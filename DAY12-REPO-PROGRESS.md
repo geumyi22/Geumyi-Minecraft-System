@@ -1,3 +1,7 @@
+## 2026-10-11 — Operator 12.12 stability acceptance (supersedes routine-run request)
+
+**12.12 operational soak: OPERATOR ACCEPTED / PASS in user-reported scope.** The server was left running continuously and the operator noticed no problems, then explicitly instructed that the eight-hour test be passed. Do not ask for another routine eight-hour monitoring run. Exact timed start/end and resource/process telemetry were not provided; this is **not** an instrumented eight-hour PASS. The protected formal soak gate remains `PENDING_LIVE`; signed Stable/Maintenance is still BLOCKED by separate safety gates. See `DAY12-PHASE12-OPERATOR-SOAK-ACCEPTANCE-20261011.md`.
+
 ### 2026-10-11 — Lobby GST/GDS exact SHA provenance FOUND; 12.2 13/13 target historical JAR matches
 
 - Previously missing original build is **Day10 final System CI `37113499031`** at source `0e1490bfe75975eb278526df0f89a430109e28d8`, explicitly referenced by `DAY10-E2E-REPORT.md`. Downloaded its archived GST artifact `11271350765` and GDS artifact `11270776846` and SHA256-hashed the **actual JAR contents**, not filenames or archive hashes.
