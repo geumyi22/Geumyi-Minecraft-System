@@ -69,3 +69,8 @@ Alongside actual `37627140918` release artifacts:
 ## Public digest reference ledger
 
 Created `deploy/day12-trusted-component-digests.json` as an **immutable-for-this-review reference list** of the five matched component IDs, expected server roles, pinned full 64-character release/CI JAR SHA256 values, and exact GitHub release asset IDs or Actions artifact IDs. This contains **only public release/CI digests**, never hashes collected directly from the user's private report or host paths. The historical 2026-10-09 server-PC comparison was performed privately before writing the reference ledger. These reference hashes are useful for a later **separately executed** real-host integrity check, but the ledger alone does not attest live load, process ownership, binary signing, or Stable release eligibility. No operator rerun of the existing one-click summary is needed just to publish this ledger.
+
+
+### Why the Lobby aliases have different names
+
+Reviewed actual source `tools/day10/finish_day10.ps1`: the Day-10 Lobby installer intentionally downloaded `gst-1.1.1-hotfix` and `gds-1.1.1` artifacts from a **fresh successful System CI run**, then copied their JARs to `lobby/plugins/GeumyiServerTools-1.1.1.jar` and `lobby/plugins/GeumyiDiscordStatus-1.1.1.jar` respectively. Thus **different Lobby filenames are intentional deployment policy**, not an arbitrary file anomaly. The old Lobby hash sizes line up with a later CI-sized artifact, but the **exact 2026 Day-10 CI run ID and exact byte digest of its artifacts have not been positively correlated to those installed files**. Do not claim this last hash provenance gate PASS solely from this source-code design. No relabel/reinstall is authorized.
