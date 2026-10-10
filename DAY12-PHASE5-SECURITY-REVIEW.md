@@ -1,5 +1,14 @@
 # Day 12 Phase 12.5 — Live Security Evidence & Decision Record
 
+## 2026-10-11 — Focused ActiveStore and local identity review (newest evidence)
+
+The earlier 2026-10-09 evidence below is retained as historical capture, **not the latest inventory**. Latest real-host read-only report (`DAY12-PHASE5-DECISION-SHARE-ONLY-THIS.json`, 03:09 KST) examined **269** enabled inbound Allow rules, with **38** broad Any-app/Any-port candidates: 36 local-address-any HIGH_REVIEW, 2 address-scoped. Private+Public network categories active, 3 profile defaults inbound Block, zero collection errors. GSC Host runs **LocalSystem** and all three GSC ProgramData/runtime directory targets have an inherited `BUILTIN_USERS` create-files/create-directories Allow ACE without observed delete/permission-change/ownership bits. Individual ACE declarations do not establish effective nonadmin token rights or a vulnerability. See [focused live report](DAY12-PHASE5-LIVE-FOCUSED-SCOPE-RESULT-20261011.md).
+
+Subsequent **03:23 KST** local-only rule identity hint result (no rescanning, no policy change): all **38** paired rules were categorized by names into **22 Windows-feature hints, 11 unclassified, 3 gaming, 2 VPN/overlay**; review tiers **15 Public-overlap, 21 Private-focused, 2 locally address-scoped**; three scope-comparison groups of sizes 7,8,21. No actual rule necessity or WFP effect was proven, and similar names/scope do not authorize removal. Only the sanitized aggregate is committed; raw identities and paths remain private on operator PC. See [live rule identity result](DAY12-PHASE5-RULE-IDENTITY-LIVE-RESULT-20261011.md).
+
+**Phase 12.5: evidence collection complete, effective-security approval OPEN.** No firewall/ACL mutation, no server restart or new user diagnostic justified solely by these count/name summaries. Formal Stable/Maintenance and canonical backend-port gate remain fail-closed.
+
+
 Updated: 2026-10-09 06:43 KST  
 Scope: **READ-ONLY** evidence and review. This is not permission to edit a running host, firewall, ACL, binaries, or backups.
 
