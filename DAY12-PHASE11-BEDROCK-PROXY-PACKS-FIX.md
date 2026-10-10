@@ -1,6 +1,16 @@
 # Day 12.11 — Bedrock resource packs on a 3× Geyser-Velocity proxy
 
-**Status: proposal + read-only inventory tool. No real proxy changes or pack deliveries verified.**
+**Status: root-discovery correction after actual operator report 2026-10-10 11:55:08 KST. No proxy changes or in-game pack delivery proven.**
+
+### Real first pass and exact repository-derived root fix
+
+The real `Day12-Bedrock-Pack-Inventory-20261010-115508.json` returned `root_present=false`, and all three proxy directory checks were absent. **This was a scanner path error, not evidence that Bedrock packs are missing**. The previous scan's `GeumyiServerCenter\\Network\\Velocity` default was guessed and did not match Day10's deployed four-proxy directory.
+
+Source-of-truth `tools/day10/finish_four_servers.ps1` line 22 sets `$proxyRoot=Join-Path $env:PROGRAMDATA "GeumyiServerCenter\\Network\\FourServer"`, copies each proxy under `wild`, `playground`, `other`, and registers scheduled tasks with these directories as `WorkingDirectory` near line 230. The inventory default now reads exactly `%PROGRAMDATA%\\GeumyiServerCenter\\Network\\FourServer` (without recording this full local path in emitted JSON). After CI succeeds, **run the corrected script once on the real serverPC; do not re-use old ZIP/version**. It is read-only, never restarts a server, and does not infer absent packs when root is missing.
+
+If `root_present=false` again, the actual deployment has likely moved, and should be found using existing scheduler task WorkingDirectory metadata without broad disk scans. Do not re-copy packs to an invented location.
+
+
 
 ## Root cause (Geyser official documentation)
 

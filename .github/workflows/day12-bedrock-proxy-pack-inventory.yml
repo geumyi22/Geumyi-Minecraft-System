@@ -24,6 +24,11 @@ jobs:
           if(@($errors).Count -gt 0){throw 'Read-only inventory parser error'}
           $root=Join-Path $env:RUNNER_TEMP 'not-a-real-server'
           $out=Join-Path $env:RUNNER_TEMP 'safe-report'
+          $sourceText=Get-Content -LiteralPath $p -Raw -Encoding UTF8
+          if(-not $sourceText.Contains('GeumyiServerCenter\Network\FourServer') -or
+              $sourceText.Contains('GeumyiServerCenter\Network\Velocity')){
+            throw 'Live Day10 four-server canonical proxy root regressed'
+          }
           $global:LASTEXITCODE=0
           & $p -ProxyRoot $root -OutputDir $out
           if(-not $?-or $LASTEXITCODE -ne 0){throw 'Inventory read failed'}

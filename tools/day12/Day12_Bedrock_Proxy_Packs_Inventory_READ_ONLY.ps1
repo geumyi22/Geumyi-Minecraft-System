@@ -8,7 +8,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 # Inventory only: Never installs, moves, deletes or reloads a resource pack.
 if([string]::IsNullOrWhiteSpace($ProxyRoot)){
   $pd=if($env:PROGRAMDATA){$env:PROGRAMDATA}else{"C:\ProgramData"}
-  $ProxyRoot=Join-Path $pd "GeumyiServerCenter\Network\Velocity"
+  $ProxyRoot=Join-Path $pd "GeumyiServerCenter\Network\FourServer"
 }
 if([string]::IsNullOrWhiteSpace($OutputDir)){
   $OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Day12-Bedrock-Pack-Inventory"
