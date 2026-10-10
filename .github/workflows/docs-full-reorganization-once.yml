@@ -1,4 +1,5 @@
 name: One-time full documentation reorganization
+# Retry after generated INDEX.md trailing-newline fix.
 
 on:
   push:
