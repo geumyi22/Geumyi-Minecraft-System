@@ -1,3 +1,16 @@
+
+## 2026-10-10 — Bedrock resource-pack switch issue user-confirmed normal
+
+**Incident-specific outcome: RESOLVED — USER-REPORTED BEDROCK NORMAL.** Following three-entrance proxy pack deployment and a successful host-verified V4 scoped restart, the operator replied **"정상"** to a request to test Bedrock reconnection, packs and Lobby→Wild/Playground/Other. Record the operator's in-game acceptance as a smoke-level PASS, while preserving the distinction between the operator's short response and independent evidence.
+
+Evidence boundary:
+- Confirmed host report: 9 archived approved packs + 3 approved custom mappings staged in 3 Geyser-Velocity processes; V4 proxy restart 3/3 with fresh process pairs and Java TCP/Bedrock RakNet responses.
+- User reported **normal** client behavior after the test instructions; client screenshots, exact entrypoint-by-entrypoint results, exact individual item/icon/sound/language checks, and Geyser pack acceptance logs were **not** provided.
+- No basis to claim that every one of 212 mappings, all Playground sounds, BACAP localization or all three entrypoints have independent per-case attestation.
+- Previous documents below are a chronological audit trail: statements about "client E2E pending" represent the status **before** the subsequent operator "정상" confirmation.
+- Do not confuse closing this pack-switch incident with the **broader** Day12.11 25-case live validation, security Day12.10, host offline boot Day12.7, 8–12h soak Day12.12 or Stable release.
+
+
 ## 2026-10-10 22:12 KST — OPERATOR HOST V4 THREE-PROXY RESTART PASS; Bedrock client still pending
 
 Real operator report `Day12-Bedrock-Proxy-Restart-Result-20261010-221241.json`:

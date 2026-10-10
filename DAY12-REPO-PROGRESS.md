@@ -1,3 +1,13 @@
+
+### 2026-10-10 — Bedrock resource-pack switch issue user-confirmed normal
+
+- User explicitly responded **"정상"** after the previous step-by-step request to reconnect from a fully closed Bedrock session, check the three public Bedrock entrypoints, travel Lobby → Wild → Playground → Other → Lobby, and check Wild ChemTech/BACAP and Playground pack appearance.
+- **Operator-reported real Bedrock client smoke: NORMAL / PASS for the reported resource-pack-switch issue.** This is a *one-word user outcome report*, not a screenshot/log nor independent assistant-run E2E; do not infer per-port timestamps, detailed item/audio coverage, 212 mapping definitions individually, or client cache-negotiation logs. If an evidence form requires per-case details, record those cases as unverified rather than fabricate them.
+- Independently host-backed: V2 pack deployment = 9 approved .mcpack + 3 approved mappings; V4 `Day12-Bedrock-Proxy-Restart-Result-20261010-221241.json` = 3/3 new parent-child process pairs, Java/RakNet probes all passing, no Paper/GSC/world/Java pack/firewall changes.
+- **Close the incident "Bedrock packs absent after Lobby→backend" as RESOLVED (USER-CONFIRMED NORMAL)**; no more pack reinstall or scoped proxy restarts required absent regression. Keep original SHA-256 references, 12-file journal/rollback safety, and backup baseline unchanged.
+- **Do not mark the whole Day12.11 25-case final E2E or Day12 complete.** Still pending: 12.7 offline host boot test, 12.10 native private-backend port-owner security proof (previous fail), remaining Java/GSCM/live ops cases, 12.12 soak 8–12h, final Stable gate.
+
+
 ### 2026-10-10 22:12 KST — Day12.11 scoped proxy restart verified PASS on host
 
 - Operator `Day12-Bedrock-Proxy-Restart-Result-20261010-221241.json`: `SCOPED_RESTART_VERIFIED_CLIENT_E2E_PENDING`, `THREE_NEW_PROCESS_PAIRS_AND_JAVA_RAKNET_PASS`. All 3 named Velocity proxies successfully restarted sequentially with freshly verified parent/child JVM pairs and GSC Java TCP/Bedrock RakNet probes.

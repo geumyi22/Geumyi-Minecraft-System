@@ -212,6 +212,8 @@ It emits a machine-readable report plus PASS/WARN/FAIL counts.
 
 ## 12.11 — Final live E2E
 
+**Bedrock resource-pack Lobby→backend fix (2026-10-10): RESOLVED, USER-REPORTED NORMAL.** Original 3 packs + 212-definition custom mapping are installed across three Geyser-Velocity instances (9 archives + 3 mappings); all three proxy process-pair restarts were host-verified via Java/RakNet probes; the operator then replied `정상` to the Bedrock pack rejoin and server-switch test instructions. The user outcome is a smoke-level acceptance, not independently itemized proof of each port, language key, sound or icon. **The 25-case Day12.11 final E2E remains open** pending all required evidence; no Stable/Day12 completion claim.
+
 Server PC:
 - Windows reboot;
 - GSC/Velocity/backend startup;
