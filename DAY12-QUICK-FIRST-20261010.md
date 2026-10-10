@@ -1,3 +1,9 @@
+## 2026-10-10 — Java Wild and Playground existing resource packs user-confirmed normal
+
+Operator answered **`정상`** to the specific request to inspect currently installed Java Wild **and** Playground packs. Record **user-reported in-game visual PASS** for `JAVA_WILD_PLAYGROUND_EXISTING_PACKS`; do not request a reinstall, re-apply, restart or repeated proof absent regression. The complete 25-case form is not yet signed/fully executed.
+
+**Next fast test:** On Android GSCM **if** the newly built APK has been installed, leave a server console open and check whether a newly produced log line appears without manually refreshing (around 4 seconds). On iOS only test when an updated app has actually been installed; do not claim its new auto-refresh was deployed based on the previous iOS server-status smoke. Server/Wild/Playground files untouched.
+
 ## 2026-10-10 — Java public Lobby entry, three routes and previous position operator-confirmed normal
 
 Operator replied **`전부 정상`** to the real Java-client request for three public TCP entrypoints → Lobby, Lobby↔Wild/Playground/Other traversal and prior-location restoration. **Mark all three narrowly user-confirmed functional outcomes PASS**, without pretending a machine-readable 25-case E2E form or independent instrumentation was produced. Do **not** ask the operator to rerun those travel checks in the absence of a regression.
