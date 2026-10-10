@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.1+151 — GSCM 업데이트 알림 개선 (검증 후보)
+- 앱 실행 시 GitHub 최신 공개 Stable GSCM 패키지 자동 확인 (사용자 설정으로 끄기 가능), 설정 화면의 수동 확인·릴리즈 연결 추가.
+- 설치된 앱 버전과 Build Number를 비교하고 Draft/Prerelease 및 잘못된 APK 자산을 제외.
+- Android APK 설치는 OS의 사용자 승인과 동일한 기존 앱 서명을 요구하며, iOS unsigned IPA는 자동 설치 대상이 아님.
+- 자동 다운로드·무인 설치 기능을 주장하지 않음. 배포용 서명 APK와 기기 테스트 전까지 개발/CI 후보 상태.
+
 ## 1.5.0+150 — 2026-10-11 패키지 Stable
 - [Android APK / iOS 미서명 IPA](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150)를 수동 설치용 Stable로 공개. 마지막 실기기 확인 1.1.5+117 기준으로 버전 정리했으며 신규 모바일 기능을 주장하지 않음.
 - Flutter analyze/test, Android 영구 릴리즈 서명 빌드, iOS unsigned 패키징 CI 성공. Apple 서명/프로비저닝은 별도 필요.

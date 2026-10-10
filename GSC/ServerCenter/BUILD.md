@@ -1,4 +1,4 @@
-# Build GSC 4.5.0
+# Build GSC 4.5.1
 
 Requires Go 1.23.2 or compatible on Windows. Run `powershell -File build.ps1`.
 
@@ -12,4 +12,4 @@ The build script compiles Host and Client EXEs from this source before embedding
 
 Run `go test ./...` for the recovered unit tests. Building the complete installer still requires the release payloads above.
 
-Version 4.5.0 is a version-alignment maintenance release from audited existing source, not a claim of new gameplay features. Publish only artifacts freshly compiled by the 4.5.0 System CI, not renamed old binaries.
+Version 4.5.1 is a version-alignment maintenance release from audited existing source, not a claim of new gameplay features. Publish only artifacts freshly compiled by the 4.5.1 System CI, not renamed old binaries.

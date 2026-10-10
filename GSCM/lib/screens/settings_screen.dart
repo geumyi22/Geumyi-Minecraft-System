@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 
+import '../core/app_update.dart';
 import '../core/connection_store.dart';
 import '../core/dashboard_controller.dart';
 import '../core/gsc_api.dart';
@@ -24,9 +29,99 @@ class _SettingsScreenState extends State<SettingsScreen> {
   MobileStatus? mobileStatus;
   bool loading = true;
   bool mobileBusy = false;
+  bool appUpdateBusy = false;
+  bool checkUpdatesAtStartup = true;
+  GscmAppUpdate? appUpdate;
+  String? appUpdateError;
+  final SharedPreferencesAsync _updatePrefs = SharedPreferencesAsync();
+  static const _autoCheckKey = 'gscm.app_update.check_at_startup';
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+    _initAppUpdates();
+  }
+
+  Future<void> _initAppUpdates() async {
+    try {
+      final enabled = await _updatePrefs.getBool(_autoCheckKey) ?? true;
+      if (!mounted) return;
+      setState(() => checkUpdatesAtStartup = enabled);
+      if (enabled) await _checkAppUpdate(notify: false);
+    } catch (e) {
+      if (mounted) setState(() => appUpdateError = '설정을 불러오지 못했습니다: $e');
+    }
+  }
+
+  Future<void> _setAutoUpdateCheck(bool enabled) async {
+    try {
+      await _updatePrefs.setBool(_autoCheckKey, enabled);
+      if (mounted) setState(() => checkUpdatesAtStartup = enabled);
+      if (enabled) await _checkAppUpdate(notify: false);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('업데이트 확인 설정 저장 실패: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _checkAppUpdate({required bool notify}) async {
+    if (appUpdateBusy) return;
+    setState(() { appUpdateBusy = true; appUpdateError = null; });
+    try {
+      final result = await const GscmAppUpdateService().checkLatest();
+      if (!mounted) return;
+      setState(() => appUpdate = result);
+      if (result.updateAvailable) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('GSCM ${result.version}+${result.build} 업데이트가 있습니다'),
+            action: SnackBarAction(
+              label: '릴리즈 보기',
+              onPressed: () => _openAppRelease(result.releaseUrl),
+            ),
+          ),
+        );
+      } else if (notify) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('설치된 GSCM은 최신 공개 패키지 이상입니다')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => appUpdateError = e.toString());
+      if (notify) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('업데이트 확인 실패 · 네트워크 또는 GitHub 상태를 확인하세요')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => appUpdateBusy = false);
+    }
+  }
+
+  Future<void> _openAppRelease(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.scheme != 'https' || uri.host != 'github.com' ||
+        !uri.path.startsWith('/geumyi22/Geumyi-Minecraft-System/releases/tag/')) {
+      return;
+    }
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw StateError('브라우저를 열 수 없습니다');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('릴리즈 페이지 열기 실패: $e')),
+        );
+      }
+    }
+  }
+
 
   Future<void> _load() async {
     setState(() => loading = true);
@@ -164,6 +259,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 10),
         Wrap(spacing: 6, runSpacing: 6, children: [for (final f in info?.features ?? const <String>[]) Chip(label: Text(f, style: const TextStyle(fontSize: 11)))]),
       ])),
+      const SizedBox(height: 12),
+      SectionCard(
+        title: 'GSCM 앱 업데이트',
+        icon: Icons.system_update_alt_rounded,
+        trailing: appUpdateBusy
+            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+            : null,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('앱 실행 시 새 버전 자동 확인'),
+            subtitle: const Text('GitHub 공개 Stable 릴리즈를 확인합니다. 앱을 자동 설치하지는 않습니다.'),
+            value: checkUpdatesAtStartup,
+            onChanged: appUpdateBusy ? null : _setAutoUpdateCheck,
+          ),
+          if (appUpdate != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              '설치: ${appUpdate!.installedVersion}+${appUpdate!.installedBuild} · 공개 최신: ${appUpdate!.version}+${appUpdate!.build}',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(appUpdate!.updateAvailable
+                ? '새 GSCM 버전이 있습니다. 설치는 사용자가 직접 승인해야 합니다.'
+                : '현재 설치본보다 최신인 공개 Stable 패키지는 없습니다.'),
+            if (appUpdate!.updateAvailable) ...[
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () => _openAppRelease(appUpdate!.releaseUrl),
+                icon: const Icon(Icons.open_in_new),
+                label: const Text('GitHub 릴리즈에서 업데이트'),
+              ),
+            ],
+          ],
+          if (appUpdateError != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(appUpdateError!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            ),
+          const SizedBox(height: 6),
+          FilledButton.tonalIcon(
+            onPressed: appUpdateBusy ? null : () => _checkAppUpdate(notify: true),
+            icon: const Icon(Icons.refresh),
+            label: const Text('지금 업데이트 확인'),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            Platform.isIOS
+                ? 'iOS: 미서명 IPA는 자동 설치할 수 없습니다. Apple 서명 및 프로비저닝이 필요합니다.'
+                : 'Android: APK 설치 시 시스템 승인이 필요하며 기존 앱과 서명이 일치해야 합니다.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ]),
+      ),
       const SizedBox(height: 12),
       SectionCard(
         title: '모바일 관리',

@@ -415,7 +415,7 @@ func apiV4ExternalUpdateStage(w http.ResponseWriter, r *http.Request) {
 		"schema": 1, "created": time.Now().Format(time.RFC3339), "root": root,
 		"staged": staged, "blocked": blocked, "skipped": skipped, "metadata_errors": metaErrs,
 		"live_files_modified": false,
-		"next_step": "maintenance approval + backup + player-aware restart + health gate + rollback",
+		"next_step": "Staging only; Geyser/Floodgate use rolling apply. ViaVersion/ViaBackwards require all backend servers offline + explicit apply; restart and verify afterwards.",
 	}
 	if len(staged) > 0 {
 		if err := os.MkdirAll(root, 0755); err == nil {
@@ -511,8 +511,8 @@ func readExternalStagePlan(root string) (externalStagePlanFile, error) {
 		return plan, errors.New("external stage plan root mismatch")
 	}
 	for _, item := range plan.Staged {
-		if item.Component != "geyser" && item.Component != "floodgate" {
-			continue
+		if item.Component != "geyser" && item.Component != "floodgate" && item.Component != "viaversion" && item.Component != "viabackwards" {
+			return plan, fmt.Errorf("unknown external component %q", item.Component)
 		}
 		name, err := safeExternalStageName(item.File)
 		if err != nil {
