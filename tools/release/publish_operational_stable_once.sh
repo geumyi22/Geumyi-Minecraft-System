@@ -74,7 +74,8 @@ Day 12 공식 보안 게이트(내부 포트 네이티브 바인딩, Windows 방
 
 운영 마감: https://github.com/geumyi22/Geumyi-Minecraft-System/blob/main/PROJECT-CLOSEOUT-2026-10-11.md
 EOF
-gh release create "$TAG" --draft --target "$SHA" --title 'Geumyi Minecraft System — Stable 운영 기준 (GSC 4.3.8 / GSCM 1.1.5+117)' --notes-file "$RUNNER_TEMP/release-notes.md"
+gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$SHA" --jq '{ref,sha:.object.sha}'
+gh release create "$TAG" --verify-tag --draft --title 'Geumyi Minecraft System — Stable 운영 기준 (GSC 4.3.8 / GSCM 1.1.5+117)' --notes-file "$RUNNER_TEMP/release-notes.md"
 gh release upload "$TAG" dist/*
 gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" > "$RUNNER_TEMP/draft.json"
 python3 - "$RUNNER_TEMP/draft.json" <<'PY'
