@@ -1,0 +1,90 @@
+name: Day12 SubPC Tailnet READ ONLY Kit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/day12/Day12_Phase10_SubPC_Tailnet_Exposure_READ_ONLY.ps1'
+      - 'tools/day12/Day12_Phase10_SubPC_Tailnet_Exposure_READ_ONLY.cmd'
+      - 'DAY12-PHASE10-TAILNET-OVERLAY-READONLY-20261010.md'
+      - '.github/workflows/day12-subpc-tailnet-readonly-kit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-synthetic-and-package:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - name: PowerShell parse and read-only fixed TCP scope
+        shell: powershell
+        run: |
+          $path='tools/day12/Day12_Phase10_SubPC_Tailnet_Exposure_READ_ONLY.ps1'
+          $tokens=$null;$errors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count){$errors|ForEach-Object{Write-Host $_.ErrorId};throw 'Tailnet read-only PowerShell parse failed'}
+          $source=Get-Content -LiteralPath $path -Raw
+          foreach($forbidden in @('New-NetFirewallRule','Set-NetFirewallRule','Remove-NetFirewallRule',
+             'Restart-Service','Stop-Service','Start-Service','Stop-Process','Set-NetIPAddress',
+             'Get-NetTCPConnection','GetExtendedTcpTable','tailscale up','tailscale down','auditpol')){
+            if($source -match [regex]::Escape($forbidden)){throw ('Forbidden operation '+$forbidden)}
+          }
+          $launch=Get-Content 'tools/day12/Day12_Phase10_SubPC_Tailnet_Exposure_READ_ONLY.cmd' -Raw
+          if($launch -notmatch 'powershell.exe.*Day12_Phase10_SubPC_Tailnet_Exposure_READ_ONLY.ps1' -or
+             $launch -match '-NonInteractive'){throw 'Interactive SubPC launcher contract broken'}
+      - name: Run zero-network Tailscale classification, refuse loopback and ordinary LAN
+        shell: powershell
+        run: |
+          $path='tools/day12/Day12_Phase10_SubPC_Tailnet_Exposure_READ_ONLY.ps1'
+          $out=Join-Path $env:RUNNER_TEMP 'tailnet-synthetic'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $path -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Tailnet source synthetic classification failed'}
+          $r=Get-Content (Join-Path $out 'Day12-Tailnet-Synthetic.json') -Raw -Encoding UTF8|ConvertFrom-Json
+          if(!$r.synthetic -or !$r.read_only -or $r.private_ports_probed -or $r.mutation_performed -or
+             $r.result -ne 'SYNTHETIC_PASS' -or $r.canonical_backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Tailnet synthetic contract invalid'
+          }
+          $stderr=Join-Path $out 'invalid-target.txt'
+          $p=Start-Process powershell.exe -PassThru -Wait -NoNewWindow -RedirectStandardError $stderr -ArgumentList @(
+            '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$path,
+            '-ServerTailnetIPv4','192.168.0.2','-OutputDir',$out)
+          if($p.ExitCode -eq 0){throw 'Tailnet overlay tool accepted ordinary LAN address'}
+          Write-Host 'Tailnet synthetic PASS; no real network probes'
+      - name: Package and verify focused read-only Tailscale kit
+        shell: powershell
+        run: |
+          $folder=Join-Path $env:RUNNER_TEMP 'Geumyi-Day12-SubPC-Tailnet-READ-ONLY'
+          New-Item -ItemType Directory -Path $folder -Force|Out-Null
+          Copy-Item 'tools/day12/Day12_Phase10_SubPC_Tailnet_Exposure_READ_ONLY.ps1' $folder
+          Copy-Item 'tools/day12/Day12_Phase10_SubPC_Tailnet_Exposure_READ_ONLY.cmd' $folder
+          Copy-Item 'DAY12-PHASE10-TAILNET-OVERLAY-READONLY-20261010.md' $folder
+          [ordered]@{
+            schema=1;scope='SUBPC_TAILNET_ONLY';server_mutation='FORBIDDEN'
+            original_backend_ports_private='UNCHANGED_FAIL'
+            files=@(Get-ChildItem $folder -File|Sort-Object Name|ForEach-Object{
+              [ordered]@{name=$_.Name;sha256=(Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
+            })
+          }|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $folder 'SHA256-MANIFEST.json') -Encoding UTF8
+          $zip='Geumyi-Day12-SubPC-Tailnet-READ-ONLY.zip'
+          Compress-Archive -Path (Join-Path $folder '*') -DestinationPath $zip -Force
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $z=[IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip).Path)
+          try{
+            $names=@($z.Entries|ForEach-Object{$_.FullName})
+            if($names.Count -ne 4 -or
+               $names -notcontains 'Day12_Phase10_SubPC_Tailnet_Exposure_READ_ONLY.ps1' -or
+               $names -notcontains 'Day12_Phase10_SubPC_Tailnet_Exposure_READ_ONLY.cmd' -or
+               $names -notcontains 'DAY12-PHASE10-TAILNET-OVERLAY-READONLY-20261010.md' -or
+               $names -notcontains 'SHA256-MANIFEST.json'){
+              throw 'Tailnet read-only artifact member verification failed'
+            }
+          }finally{$z.Dispose()}
+          Write-Host 'Tailnet focused archive exists and exact members confirmed'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-subpc-tailnet-readonly-kit
+          path: Geumyi-Day12-SubPC-Tailnet-READ-ONLY.zip
+          retention-days: 30
