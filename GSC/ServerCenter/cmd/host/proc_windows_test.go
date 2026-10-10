@@ -63,3 +63,40 @@ func TestWindowsListeningProcessLookup(t *testing.T) {
 		})
 	}
 }
+
+ // Regression: a connected client's ephemeral local port appears in Windows
+ // TCP owner tables but is NOT a listening server. Never hand its PID to
+ // rememberServerProcess or forceStopServer as if it owned a Java listener.
+func TestWindowsPortPIDRejectsEstablishedClientPort(t *testing.T) {
+	for _, tc := range []struct{network, address string}{
+		{"tcp4", "127.0.0.1:0"},
+		{"tcp6", "[::1]:0"},
+	} {
+		t.Run(tc.network, func(t *testing.T) {
+			ln, err := net.Listen(tc.network, tc.address)
+			if err != nil { t.Skipf("loopback listener unsupported: %v", err) }
+			defer ln.Close()
+			client, err := net.Dial(tc.network, ln.Addr().String())
+			if err != nil { t.Fatal(err) }
+			defer client.Close()
+			accepted, err := ln.Accept()
+			if err != nil { t.Fatal(err) }
+			defer accepted.Close()
+			local := client.LocalAddr().(*net.TCPAddr).Port
+			if local == ln.Addr().(*net.TCPAddr).Port {
+				t.Fatal("unexpected same client ephemeral and server listener port")
+			}
+			if pid, err := portPID(local); err == nil || pid != 0 {
+				t.Fatalf("non-listener connected client port %d attributed to pid %d: %v", local, pid, err)
+			}
+		})
+	}
+}
+
+func TestWindowsPortPIDRejectsOutOfRangePort(t *testing.T) {
+	for _, port := range []int{-1, 0} {
+		if pid, err := portPID(port); err == nil || pid != 0 {
+			t.Fatalf("invalid port %d attributed to pid %d: %v", port, pid, err)
+		}
+	}
+}
