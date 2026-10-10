@@ -13,7 +13,7 @@
 - 사용자 답변 **"상관없음 그런건 앞으로도"**: 플레이어/백업/작업 충돌을 사전 점검한 **통상적인 개별 마인크래프트 서버 재시작·안전 점검은 매번 허락을 다시 묻지 않고** 실행 계획에 포함할 수 있습니다. 단, 어시스턴트는 서버 PC에 직접 접근할 수 없으므로 실제 PC 실행 파일은 사용자가 실행해야 합니다.
 - 월드 복구/복원, 영구 삭제, Windows 전체 재부팅, 다중 서버 강제 종료, 방화벽/ACL/네트워크 보안 정책 변경, 비밀번호 변경, 롤백이 어려운 업데이트 등은 **이 포괄적 허락에 포함되지 않습니다**. 손실·중단이 큰 경우 별도 범위와 복구 절차를 확인합니다.
 - 새로운 일회성 유지보수 스크립트 `tools\\day12\\Day12_Phase10_Scoped_Graceful_Restart.cmd`: 놀이터 Java 25571 / RCON 25576 한 서버만 대상으로 GSC 정식 graceful restart(15초 countdown) 실행. **GSC v4.3.8, 온라인, 플레이어 0명 확증, 동시 작업 없음, 보호+검증된 전체 Golden 백업, 안전 업데이트 상태**를 모두 만족해야 실행합니다. 재시작·증거 수집은 단 한 번, 미확인 시 차단, 강제 종료·백업 복원·설정 변경 없음. 게임 호스트에 사용자가 실행해야 하는 것은 이 CMD 한 개입니다.
-- 안전 합성 CI PASS는 실서버 성공과 다릅니다. 한 번의 재시작 후에도 바인딩 주소가 확인되지 않으면 12.10 `backend_ports_private` FAIL 유지; 검증기 조건을 임의 완화하지 않습니다. 기존 자동 업데이트 정책은 서버 정상 시작 과정에서 작동할 수 있습니다. 자세한 절차: `DAY12-PHASE10-APPROVED-SCOPED-RESTART.md`.
+- 안전 합성 CI PASS는 실서버 성공과 다릅니다. 한 번의 재시작 후에도 바인딩 주소가 확인되지 않으면 12.10 `backend_ports_private` FAIL 유지; 검증기 조건을 임의 완화하지 않습니다. 기존 자동 업데이트 정책은 서버 정상 시작 과정에서 작동할 수 있습니다. 자세한 절차: `docs/day12/phases/phase-10/DAY12-PHASE10-APPROVED-SCOPED-RESTART.md`.
 
 ## 2026-10-10 02:41 — Playground restart preflight false block corrected
 
@@ -164,7 +164,7 @@
 - `Day12-Rule-ACL-Review-20261009-064327.json` 확인: 5개 ACL 대상 **전부 올바른 라벨**, `CAPTURED_FOR_REVIEW`, 오류 0건, 새 `delete_children` 비트 정상 출력, 방화벽 규칙 재검사 없음. **12.5 ACL 재수집을 반복하지 않습니다**.
 - 일반 사용자 그룹 `BUILTIN_USERS`의 기존 GSC `server.json` 파일/0.5.4 Agent JAR에 직접 쓰기/삭제 허용이 없습니다. GSC ProgramData, Runtime, Runtime/Agent **디렉터리**에서는 파일/폴더 생성 허용이 관찰되지만 `Delete`, `DeleteChild`, `ChangePermissions`, `TakeOwnership`은 거짓입니다. 다섯 대상 모두 상속을 사용합니다.
 - 38개 광범위 방화벽 Allow 규칙(용도 미분류 33개), 실제 NTFS 유효 권한 및 GSC Host/Updater 실행 계정은 **미검증**입니다. 해당 ACL과 규칙은 즉시 삭제·상속 해제하면 오히려 시스템이 손상될 수 있으므로 현재 **어떤 설정도 변경하지 않습니다**.
-- 전체 근거·문제 범위·변경 승인 전 체크리스트: `DAY12-PHASE5-SECURITY-REVIEW.md`. `12.5` 자료 수집은 완료, 보안 게이트는 **OPEN**. 이후 중요한 차단 항목은 `12.10` Java backend/RCON 실리스너 바인딩, `12.11` E2E, `12.12` soak입니다. Golden/기존 네트워크 검사/기존 ACL 전부 재검사 금지. `12.13` Stable 계속 차단.
+- 전체 근거·문제 범위·변경 승인 전 체크리스트: `docs/day12/phases/phase-05/DAY12-PHASE5-SECURITY-REVIEW.md`. `12.5` 자료 수집은 완료, 보안 게이트는 **OPEN**. 이후 중요한 차단 항목은 `12.10` Java backend/RCON 실리스너 바인딩, `12.11` E2E, `12.12` soak입니다. Golden/기존 네트워크 검사/기존 ACL 전부 재검사 금지. `12.13` Stable 계속 차단.
 
 ## 다음 단일 작업 — 12.10 새 Native TCP 테이블 종류 교차검증
 
@@ -222,7 +222,7 @@
 ## 2026-10-10 01:51 결과 — GetTcpTable2 0/6, 반복 스캔 중단
 
 - `Day12-TcpTable2-20261010-015103.json`: **실서버** `GetTcpTable2` IPv4 표 조회 3/3 성공, 오류 없음, 대상 온라인 Java/RCON 포트 여섯 개 `25570/25571/25573/25575/25576/25579` 모두 **LISTEN 행 0개**. 네트워크 연결·설정 변경 없음. `0건`을 **포트 외부 노출이나 서비스 다운으로 단정 금지**; 기존 Native LISTENER(25570/25571/25579 loopback 관측), 6/6 localhost 연결, 서브 PC 0/8 내부 포트 불가와 측정 시점/방법이 다릅니다.
-- 이 보고서의 마지막 해석 및 후속 결정: [`DAY12-PHASE10-BIND-DECISION-REPORT.md`](DAY12-PHASE10-BIND-DECISION-REPORT.md). **반복 READ-ONLY TCP 진단은 여기서 중단**합니다. 전체 12.10 `backend_ports_private`는 기존 최종 실기기 검증의 **18 PASS / 0 WARN / 1 FAIL** 유지입니다.
+- 이 보고서의 마지막 해석 및 후속 결정: [`docs/day12/phases/phase-10/DAY12-PHASE10-BIND-DECISION-REPORT.md`](docs/day12/phases/phase-10/DAY12-PHASE10-BIND-DECISION-REPORT.md). **반복 READ-ONLY TCP 진단은 여기서 중단**합니다. 전체 12.10 `backend_ports_private`는 기존 최종 실기기 검증의 **18 PASS / 0 WARN / 1 FAIL** 유지입니다.
 - 다음은 사용자가 별도 승인한 **유지보수 창 기반 실행 중 Java/RCON 프로세스 소유권·실제 bind 주소 검증**. 먼저 기존 증거/설정과 서비스 기동 경로를 읽기 전용으로 정리하고, 필요할 때만 승인된 한 서버로 범위를 제한한 제어 테스트를 계획합니다. 무단 서버 재부팅/종료, Windows 방화벽·ACL 변경, RCON 비밀번호/포트 변경, Golden 덮어쓰기, Stable 승격 금지. 별도 동의 전에 운영환경 변경하지 않습니다.
 - 다음 단계는 12.10의 근거 확보와 12.5 안전 검토 마무리이며, 그 후 12.11 Live E2E → 12.12 soak → 12.13 Stable → Day1–12 전체 파일 정리입니다.
 
@@ -237,13 +237,13 @@
 
 - `Day12-Process-Bind-20261010-020508.json` 실서버 보고서 읽기전용 CAPTURED: 야생·놀이터·기타·로비 **4개 구성 파일 모두 server-ip=LOOPBACK_CONFIG**, 계획된 Java/RCON 포트 일치, RCON 활성화. 기타 서버는 앞선 Fleet에서 OFFLINE이었으며 설정 존재와 현재 실행은 구분합니다.
 - Windows Java 프로세스는 **10개**, 실행 인수 읽기 **10개**, GSC 이름의 프로세스 **2개**. `kind=""` 집계는 프로세스 분류 자료형 처리 문제로 수정·Windows CI 합성 테스트 완료했지만 **실서버 분류를 재검증하지 않았음**. 서버 경로 인수 일치 0은 상대 경로 기반 시작 등의 가능성이 있어 즉시 오류로 간주하지 않음.
-- OS 인터페이스 구획 1개, 비기본 구획 0개. 이것만으로 소켓 구획이나 실제 바인딩은 확정 불가. 정리 문서 `DAY12-PHASE10-BIND-DECISION-REPORT.md` 참조.
+- OS 인터페이스 구획 1개, 비기본 구획 0개. 이것만으로 소켓 구획이나 실제 바인딩은 확정 불가. 정리 문서 `docs/day12/phases/phase-10/DAY12-PHASE10-BIND-DECISION-REPORT.md` 참조.
 - **사용자는 이 보고서만을 위해 또 CMD를 실행할 필요 없음.** 반복 TCP/프로세스 스냅샷 중단. 다음은 GSC 실행 관리 소스와 Paper/RCON 바인딩 경로를 오프라인 코드 검토 후, 실제 서비스 중단이 반드시 필요할 때만 Golden 확인·유지보수 창·사용자 승인하 통제된 실서버 1대 점검. `backend_ports_private` FAIL, 12.10 OPEN, Stable BLOCKED 계속 유지.
 
 ## 2026-10-10 12.10 GSC 소스 분석 — 새 TCP 스캔 중단, 시작 로그의 주소만 확인
 
 - GSC `getServerStatus`에서 ONLINE은 `tcpOpen("127.0.0.1", JavaPort)`로 판정합니다. 이는 TCP 로컬 접속 성공이지 바인딩 주소의 독점적 증명이 아닙니다. GSC `launchCommand`는 `start.bat`을 해당 서버 폴더에서 실행하므로 Java 실행 명령에 절대 경로가 빠질 수 있습니다. `rememberServerProcess`는 OS `GetExtendedTcpTable`의 포트 PID 행에 의존해 OS 조회가 누락되면 프로세스 확인에 실패할 수 있으나, 운영 장애 발생 여부는 별개입니다.
-- 공식 소스 대조 보고서: `DAY12-PHASE10-GSC-SOURCE-AUDIT.md` (판단·한계·대안). 기존 02:05 파일 설정 검사는 정상. **추가 TCP 표/프로세스 분류 재검사는 하지 않습니다.**
+- 공식 소스 대조 보고서: `docs/day12/phases/phase-10/DAY12-PHASE10-GSC-SOURCE-AUDIT.md` (판단·한계·대안). 기존 02:05 파일 설정 검사는 정상. **추가 TCP 표/프로세스 분류 재검사는 하지 않습니다.**
 - 다음 1회만 필요 시: **최신 Day12 Operator Kit**에서 서버 PC `tools\\day12\\Day12_Phase10_Startup_Log_Bind_READ_ONLY.cmd` 실행 → 바탕화면 `Geumyi-Day12-Startup-Bind\\Day12-Startup-Bind-*.json` 최신 하나 제출. `latest.log` 파일의 앞부분 최대 6MiB에서 Java/RCON 각각의 시작 시 수신 주소 안내문을 읽고 **루프백/와일드카드/기타**로 분류합니다. 로그 원문·비밀번호·닉네임·경로는 내보내지 않습니다. 서버 재시작이나 포트 접속 없음.
 - **경계:** Paper 로그 형식이 달라 안내문이 없으면 `NO_STARTUP_BIND_MESSAGE`로 보고하며 이를 안전하다고 간주하지 않습니다. 로그가 수신 주소를 나타내도 실행 시점 증거일 뿐 현재 소켓 바인딩을 보증하지 않습니다. RCON과 Java는 독립적으로 검토합니다. 12.10 `backend_ports_private` FAIL 및 Stable 차단 유지. 다음 단계가 운영 환경 변경을 요구할 경우 따로 승인받습니다.
 
@@ -267,7 +267,7 @@
 - Use the **updated Operator Kit**, on the Minecraft server PC. Run `tools\day12\Day12_Phase10_WFP_Audit_Attestation_READ_ONLY.cmd` **once**. This reads existing Windows Security audit events **5154/5158**, not the previous network TCP table; may require administrator rights to *read Security events only*. No changes to auditing, firewall, TCP ports, services, worlds or Golden backups.
 - Submit the newest `Desktop\Geumyi-Day12-WFP\Day12-WFP-Bind-*.json` file. Report contains **only service/port/scope categories and event counts**, not raw event XML, addresses, executable paths, PIDs or credentials.
 - `UNAVAILABLE`/no matching events means missing historical evidence—not broken Minecraft, and not PASS. Do **not** enable `auditpol`, repeat stale TCP scans, blindly restart servers or switch to an unreviewed fallback. An event showing wildcard/nonloopback bind requires focused security investigation. Strict `backend_ports_private` stays **FAIL**.
-- Reference: [WFP read-only plan](DAY12-PHASE10-WFP-READONLY-PLAN.md).
+- Reference: [WFP read-only plan](docs/day12/phases/phase-10/DAY12-PHASE10-WFP-READONLY-PLAN.md).
 
 ## 1. 한 번에 READ-ONLY 수집
 
@@ -353,4 +353,4 @@ Day12_Phase12_Soak_READ_ONLY.cmd에서 Start → 실제 사용/idle → End. 가
 
 ## 2026-10-10 — quick-first order supersedes soak-first suggestion
 
-The operator requested **shorter checks before the 8-hour soak**. Follow `DAY12-QUICK-FIRST-20261010.md`. Begin with non-disruptive GSCM Android+iOS status/reconnect and GSC console read-only `list`, then Java actual Lobby/routing/last-location checks. Keep 12.4 as no-action after zero cleanup candidates and preserve Golden backups. Do not create/launch an eight-hour monitor now, and do not repeat already accepted Bedrock pack/Velocity restarts. Day12.10 strict security and the broad 25-case E2E remain open.
+The operator requested **shorter checks before the 8-hour soak**. Follow `docs/day12/operations/DAY12-QUICK-FIRST-20261010.md`. Begin with non-disruptive GSCM Android+iOS status/reconnect and GSC console read-only `list`, then Java actual Lobby/routing/last-location checks. Keep 12.4 as no-action after zero cleanup candidates and preserve Golden backups. Do not create/launch an eight-hour monitor now, and do not repeat already accepted Bedrock pack/Velocity restarts. Day12.10 strict security and the broad 25-case E2E remain open.
