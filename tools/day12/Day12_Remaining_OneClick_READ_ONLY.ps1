@@ -93,7 +93,10 @@ function Agent-ProcessEvidence([string]$ExpectedName){
   return [ordered]@{canonical_file_present=$installed
     agent_command_status=$state;matching_processes=$found
     expected_launches=$current;noncanonical_launches=$legacy
-    active_agent_identity_is_proven=($state -eq "EXPECTED_AGENT_COMMAND_FOUND" -and $installed)
+    expected_agent_filename_in_java_command=($state -eq "EXPECTED_AGENT_COMMAND_FOUND")
+    active_agent_identity_is_proven=$false
+    release_sha256_authenticity_verified=$false
+    provenance_limit="Filename in JVM command line is observed; no trusted release digest or runtime loaded-JAR identity attested."
   }
 }
 function PolicyEvidence {
@@ -191,6 +194,8 @@ if($Synthetic){
     release_manifest_readable=($null -ne $gates)
     current_manifest_status=[string](Field $gates "status" "NOT_AVAILABLE")
     nonpass_live_gate_count=$blocks
+    manifest_nonpass_count_including_historical_stale_values=$blocks
+    this_tool_reconciled_prior_live_pass_evidence=$false
     stable_allowed_by_this_review=$false;maintenance_allowed_by_this_review=$false
   })
 }
