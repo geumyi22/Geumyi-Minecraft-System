@@ -8,6 +8,7 @@ CLOSED_REQUIRED = {
     "12.0A", "12.0B", "12.3", "12.4", "12.7-cache", "12.8",
     "12.10-lan4", "12.10-lan6", "12.10-tail4", "12.10-tail6",
     "12.10-gsc-auth", "12.2-installed-provenance", "12.1-pack-assets",
+    "12.7-disposable-actual-gsc-paper-offline-source",
 }
 OPEN_REQUIRED = {"12.1", "12.2", "12.4", "12.5", "12.7", "12.10", "12.11", "12.12", "12.13"}
 
@@ -51,6 +52,12 @@ def validate(ledger, gates):
         "84/84" not in cache_rows[0].get("scope", "")
     ):
         errors.append("REAL_CACHE_EVIDENCE_SCOPE_INVALID")
+    disposable = [r for r in closed if isinstance(r, dict) and
+                  r.get("code") == "12.7-disposable-actual-gsc-paper-offline-source"]
+    if len(disposable) != 1 or disposable[0].get("status") != (
+        "DISPOSABLE_CI_REAL_PROCESSES_PASS_NOT_OPERATOR_OFFLINE"
+    ) or "not" not in disposable[0].get("not_proven", "").lower():
+        errors.append("DISPOSABLE_CI_NOT_OPERATOR_OFFLINE_SCOPE_MISSING")
     offline_rows = [r for r in opened if isinstance(r, dict) and r.get("code") == "12.7"]
     if len(offline_rows) != 1 or "OPEN" not in offline_rows[0].get("status", ""):
         errors.append("OFFLINE_START_WAS_INCORRECTLY_CLOSED")
