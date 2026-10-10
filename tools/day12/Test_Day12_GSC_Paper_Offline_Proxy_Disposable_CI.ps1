@@ -49,6 +49,27 @@ function WaitPort([int]$p,[int]$secs,[object]$process){
   }
   return $false
 }
+# CI-only: the TCP listener can open before Paper finishes the first world boot.
+# The earliest stop command can race console-command context creation on Paper 26.3.
+# Require the observable Done marker and then a short stable listening interval.
+function WaitPaperWorldReady([object]$Process,[string]$LogPath,[int]$Secs) {
+  $until=(Get-Date).AddSeconds($Secs)
+  $doneSeen=$null
+  while((Get-Date) -lt $until) {
+    if($Process.HasExited){return $false}
+    if(Test-Path -LiteralPath $LogPath -PathType Leaf) {
+      try {
+        $tail=(Get-Content -LiteralPath $LogPath -Tail 50 -ErrorAction Stop) -join "`n"
+        if($tail -match 'Done \\([0-9.]+s\\)! For help, type "help"') {
+          if($null -eq $doneSeen){$doneSeen=Get-Date}
+          if(((Get-Date)-$doneSeen).TotalSeconds -ge 6 -and (Connected 25789)) {return $true}
+        }
+      }catch{}
+    }
+    Start-Sleep -Milliseconds 600
+  }
+  return $false
+}
 function SafeWrite{
   $report|ConvertTo-Json -Depth 6|Set-Content -LiteralPath $reportPath -Encoding UTF8
   Write-Host ("Disposable result: "+$report.result)
@@ -95,10 +116,22 @@ try{
   $first.StartInfo.RedirectStandardInput=$true
   if(-not $first.Start()){throw "INITIAL_JAVA_PROCESS_FAILED"}
   if(-not(WaitPort 25789 240 $first)){throw "INITIAL_PAPER_NOT_READY"}
+  if(-not(WaitPaperWorldReady $first (Join-Path $paperDir "logs\\latest.log") 100)){
+    throw "INITIAL_PAPER_WORLD_READY_NOT_CONFIRMED"
+  }
   $report.real_paper_initial_online_boot=$true
   $first.StandardInput.WriteLine("stop")
   $first.StandardInput.Flush()
-  if(-not $first.WaitForExit(75000)){throw "INITIAL_PAPER_NOT_GRACEFULLY_STOPPED"}
+  if(-not $first.WaitForExit(15000)){
+    # Exactly one additional graceful request is allowed after a Paper console race;
+    # never force-kill in normal initial-prewarm success logic.
+    $first.StandardInput.WriteLine("stop")
+    $first.StandardInput.Flush()
+    if(-not $first.WaitForExit(60000)){throw "INITIAL_PAPER_NOT_GRACEFULLY_STOPPED"}
+  }
+  if($first.ExitCode -ne 0){throw "INITIAL_PAPER_NONZERO_EXIT"}
+  $firstLog=Get-Content -LiteralPath (Join-Path $paperDir "logs\\latest.log") -Raw -ErrorAction Stop
+  if($firstLog -notmatch '(?i)Stopping server'){throw "INITIAL_PAPER_GRACEFUL_STOP_LOG_MISSING"}
   $report.initial_graceful_stop=$true
   $first.Dispose();$first=$null
   if(Connected 25789){throw "PAPER_PREWARM_STILL_LISTENING"}
