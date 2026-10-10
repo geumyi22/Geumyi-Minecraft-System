@@ -68,6 +68,12 @@ function Run-ReadOnlyChild([string]$Name,[string]$Script,[string[]]$Arguments,[s
   }catch{$status="COLLECTION_EXCEPTION"}
   return [ordered]@{captured=($status -eq "CAPTURED");reason=$status;phase=$ExpectedPhase;exit_code=$code;data=$record}
 }
+function Classify-ManagedContent([bool]$Captured,[int]$Enabled,[int]$Signals){
+  if(-not $Captured){return "PREFLIGHT_CAPTURE_INCOMPLETE"}
+  if($Enabled -gt 0){return "MANAGED_CONTENT_CONFIGURED_E2E_REQUIRED"}
+  if($Signals -gt 0){return "EXISTING_PACK_SIGNALS_UNMANAGED"}
+  return "NO_MANAGED_ENTRIES_EXISTING_PACKS_NOT_DISPROVEN"
+}
 function Agent-ProcessEvidence([string]$ExpectedName){
   $installed=Test-Path -LiteralPath (Join-Path (
     Join-Path ([Environment]::GetFolderPath("CommonApplicationData")) "GeumyiServerCenter\Runtime\Agent") $ExpectedName) -PathType Leaf
@@ -126,6 +132,12 @@ function StatusOf([string]$Phase){@($phaseRows|Where-Object{$_.phase -eq $Phase}
 if($Synthetic){
   # No application requests, registry/CIM reads, child commands or network
   # operations in this branch. Contract test for the mandatory nine gates.
+  if((Classify-ManagedContent $true 0 0) -ne "NO_MANAGED_ENTRIES_EXISTING_PACKS_NOT_DISPROVEN" -or
+     (Classify-ManagedContent $true 0 2) -ne "EXISTING_PACK_SIGNALS_UNMANAGED" -or
+     (Classify-ManagedContent $true 2 2) -ne "MANAGED_CONTENT_CONFIGURED_E2E_REQUIRED" -or
+     (Classify-ManagedContent $false 0 0) -ne "PREFLIGHT_CAPTURE_INCOMPLETE"){
+    throw "MANAGED_CONTENT_VS_ALREADY_INSTALLED_PACKS_CLASSIFIER_REGRESSION"
+  }
   foreach($item in @(
     @("12.1","Managed Content","LIVE_APPLY_E2E_REQUIRED"),
     @("12.2","Runtime Components","PROCESS_IDENTITY_REVIEW_REQUIRED"),
@@ -167,17 +179,13 @@ if($Synthetic){
       }
     }
   }
-  $contentStatus=if(-not $content.captured){"PREFLIGHT_CAPTURE_INCOMPLETE"}
-    elseif($enabled -gt 0){"MANAGED_CONTENT_CONFIGURED_E2E_REQUIRED"}
-    elseif($observedPackSignals -gt 0){"EXISTING_PACK_SIGNALS_UNMANAGED"}
-    else{"NO_MANAGED_ENTRIES_EXISTING_PACKS_NOT_DISPROVEN"}
+  $contentStatus=Classify-ManagedContent ([bool]$content.captured) $enabled $observedPackSignals
   Row "12.1" "Managed Content" $contentStatus "Preserve currently installed Wild/Playground packs; decide only whether GSC should manage them, then verify actual application with real clients" ([ordered]@{
     preflight_collected=$content.captured;preflight_reason=$content.reason
     enabled_managed_entries=$enabled;manifest_available=($null -ne $manifest)
     observed_config_or_file_signals=$observedPackSignals
     server_pack_signals=@($observedServers)
     zero_manifest_entries_means_no_installed_packs=$false
-    user_reported_wild_playground_pack_presence_not_live_attested_by_this_tool=$true
     bedrock_apply_proven=$false
   })
   $inventory=Run-ReadOnlyChild "12.2-inventory" "Day12_Phase2_Component_Inventory_READ_ONLY.ps1" @() "12.2"
