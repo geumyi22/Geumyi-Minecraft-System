@@ -4,7 +4,9 @@
   "notes": [
     "Do not commit private download URLs or credentials.",
     "Entries are disabled until source artifacts and hashes are verified.",
-    "Bedrock/Geyser pack deployment remains inventory/preflight-only until the exact live pack directory is confirmed by Phase 12.1."
+    "Bedrock/Geyser pack deployment remains inventory/preflight-only until the exact live pack directory is confirmed by Phase 12.1.",
+    "Operator confirmed that Wild and Playground already have packs applied as of 2026-10-10; empty enabled management entries must NOT be used to infer that either server lacks installed packs.",
+    "Never overwrite, auto-install duplicates, delete or take over existing Wild/Playground packs based solely on this template. Adoption into GSC managed content requires separately checked sources, hashes, server paths and rollback plan."
   ],
   "resourcepacks": [
     {
@@ -29,5 +31,18 @@
       "target_file": "",
       "expected_sha256": ""
     }
-  ]
+  ],
+  "existing_content_operator_report": {
+    "observed_at": "2026-10-10",
+    "server_ids": [
+      "wild",
+      "playground"
+    ],
+    "scope": "PACKS_ALREADY_APPLIED_OPERATOR_REPORT",
+    "classification": "EXISTING_SERVER_CONTENT_OUTSIDE_MANAGED_MANIFEST",
+    "pack_kind": "UNSPECIFIED_BY_OPERATOR",
+    "exact_pack_list": "NOT_ATTESTED_BY_THIS_TEMPLATE",
+    "management_adoption_approved": false,
+    "automated_apply_approved": false
+  }
 }
