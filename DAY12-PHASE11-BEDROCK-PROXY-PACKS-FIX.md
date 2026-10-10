@@ -28,6 +28,19 @@ This now provides direct evidence of a missing **Geyser-side pack delivery insta
 The assistant recovered the operator's **four original** archive/mapping bytes from their private Library. Their SHA-256 hashes match `deploy/day12-existing-pack-reference.json` exactly, and each .mcpack ZIP CRC/manifest passed offline reinspection. The operator was provided a **private, non-GitHub** ZIP bundle named `Geumyi-Day12-Bedrock-Pack-Fix-ORIGINALS.zip` with original 3 .mcpack binaries, original 212-item mapping and **Preview / Apply-without-restart / hash-guarded Rollback** commands. The scripts never change live worlds, GSC, Java resource-pack URLs, firewall or scheduled tasks; `Apply` is fail-closed on any pre-existing .zip/.mcpack in the three target pack folders, pre-existing other JSON mappings, disabled/unknown custom-content config, absent Geyser runtime files, or source SHA-256 mismatches. A local journal permits transaction-only rollback. These Windows commands have **not yet been executed on the server PC** and the private bundle is **not hosted in GitHub**. The next user/operator action is Preview on server PC, send its redacted JSON if blocked; if `READY_FOR_APPLY_NO_MUTATION`, Apply and send the resulting JSON. Proxy reload/restart and Bedrock client E2E remain separate operator gates.
 
 
+## 2026-10-10 13:04 KST — operator Apply failed; no completion claim
+
+The operator uploaded `Day12-Bedrock-Fix-Apply-20261010-130417.json`:
+- `status=BLOCKED_OR_FAILED_NO_COMPLETION_CLAIM`
+- `code=UNEXPECTED_ERROR_CHECK_LOCAL_CONSOLE`
+- `manual_proxy_restart_required=false`; no actual Bedrock pack client E2E
+- Report does **not** prove whether any subset of the 12 intended files was staged before failure. Do not retry Apply/restart or invoke rollback blindly.
+
+**Confirmed error-reporting bug in the PRIVATE v1 `Bedrock_Pack_Transaction.ps1` bundle:** catch sanitization used regex `(?i)(\\\\|/|[A-Za-z]:)`. The `[A-Za-z]:` branch matches blocker identifiers containing a proxy label such as `wild:CUSTOM_CONTENT_NOT_CONFIRMED_TRUE`, hiding actionable preflight blockers as generic `UNEXPECTED_ERROR_CHECK_LOCAL_CONSOLE`. The underlying failure is **not diagnosed yet**.
+
+A replacement independent **READ-ONLY forensics ZIP** (private, not committed) was prepared, with `Day12_Bedrock_Apply_Forensics_READ_ONLY.cmd` and `.ps1`. It reads existing transaction journal presence/state/allowlist, hashes 12 intended targets, counts packs and mapping files, inspects custom-content enabled/disabled/absent, and writes a sanitized JSON report to Desktop `Geumyi-Day12-Bedrock-Fix-Reports`. It does not mutate production paths. Await actual operator JSON before any Apply/Rollback/reload; neither completion nor safe rollback is inferred.
+
+
 ## Root cause (Geyser official documentation)
 
 Bedrock accepts new/removed server resource packs at initial login. A normal Velocity backend transfer does **not** trigger another resource-pack negotiation, unlike Java's per-backend resource-pack request. Geyser's official docs explicitly say per-backend resource packs are unavailable natively on proxies, although a third-party transfer/reconnect plugin can simulate them: https://geysermc.org/wiki/geyser/packs/
