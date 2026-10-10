@@ -13,3 +13,7 @@ The new `tools/day12/audit_phase6_release_chain.py` verifies the source chain an
 [Day12 Phase6 Release Chain Source Audit run 38066005282](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38066005282) completed **SUCCESS**. It ran the actual fail-closed source audit with synthetic negative gate cases and the real-byte manifest generator temporary fixture. No production signing or publication occurred.
 
 The original `deploy/day12-scoped-evidence-ledger.json` CI enforces an exact set of **14** previously established closed-scope evidence IDs. Phase review outcomes for 12.9 / 12.2 / 12.6 were initially added to that protected array, causing a `CLOSED_SCOPED_EVIDENCE_KEYS_WRONG` source validation error. They are now moved to the separate `phase_review_decisions` section, **without weakening or expanding the fixed pass list**. An audit success can therefore coexist with the unchanged final Stable block.
+
+## Later 2026-10-11 provenance update (supersedes prior Lobby exception)
+
+Both Lobby alias JARs were subsequently matched by full SHA-256 to archived original Day10 System CI run `37113499031`; the 13/13 historical installed component copies have pinned content origins. See `DAY12-PHASE2-LOBBY-PROVENANCE-RESOLVED-20261011.md`. This does **not** establish current loaded/plugin-enabled runtime identity or satisfy the still-blocked live release gates. **No signed Stable publication, host change or production rollout is authorized by this source-only audit.**
