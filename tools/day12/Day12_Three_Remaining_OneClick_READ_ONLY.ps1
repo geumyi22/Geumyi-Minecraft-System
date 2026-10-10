@@ -18,15 +18,15 @@ function JarRole([string]$CommandLine) {
 
 function ClassifyCensus([object[]]$Rows, [hashtable]$Udp, [string]$HostServiceStatus) {
   $java = @($Rows | Where-Object { $_.name -in @("java.exe", "javaw.exe") })
-  $host = @($Rows | Where-Object { $_.name -ieq "GeumyiServerHost.exe" })
+  $hostRows = @($Rows | Where-Object { $_.name -ieq "GeumyiServerHost.exe" })
   $velocity = @($java | Where-Object { (JarRole ([string]$_.command_line)) -eq "VELOCITY" })
   $paper = @($java | Where-Object { (JarRole ([string]$_.command_line)) -eq "PAPER" })
   $vPids = @($velocity | ForEach-Object { [int]$_.pid })
   $pPids = @($paper | ForEach-Object { [int]$_.pid })
   $roots = @($velocity | Where-Object { [int]$_.parent_pid -notin $vPids })
   $leaves = @($velocity | Where-Object { [int]$_.parent_pid -in $vPids })
-  $unique = @($vPids + $pPids + @($host | ForEach-Object { [int]$_.pid }) | Select-Object -Unique)
-  $allKnown = @($vPids + $pPids + @($host | ForEach-Object { [int]$_.pid }))
+  $unique = @($vPids + $pPids + @($hostRows | ForEach-Object { [int]$_.pid }) | Select-Object -Unique)
+  $allKnown = @($vPids + $pPids + @($hostRows | ForEach-Object { [int]$_.pid }))
   $pidUnique = ($unique.Count -eq $allKnown.Count)
   $pairs = ($roots.Count -eq 3 -and $leaves.Count -eq 3 -and $velocity.Count -eq 6)
   if ($pairs) {
@@ -46,13 +46,13 @@ function ClassifyCensus([object[]]$Rows, [hashtable]$Udp, [string]$HostServiceSt
       $owned += $owner
     }
   }
-  $hostOk = ($HostServiceStatus -eq "Running" -and $host.Count -eq 1)
+  $hostOk = ($HostServiceStatus -eq "Running" -and $hostRows.Count -eq 1)
   $paperOk = ($paper.Count -eq 4 -and @($pPids | Select-Object -Unique).Count -eq 4)
   $healthy = ($hostOk -and $paperOk -and $pairs -and $udpMatch -and $pidUnique)
   return [ordered]@{
     result=if($healthy){"PASS_HOST_PROCESS_CENSUS_SCOPED"}else{"REVIEW_REQUIRED"}
     service_running=($HostServiceStatus -eq "Running")
-    gsc_host_process_count=[int]$host.Count
+    gsc_host_process_count=[int]$hostRows.Count
     velocity_process_count=[int]$velocity.Count
     velocity_parent_child_3_pairs=[bool]$pairs
     velocity_udp_3_port_owner_matches_child=[bool]$udpMatch
