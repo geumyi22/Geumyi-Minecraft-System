@@ -1,6 +1,6 @@
 # Geumyi Minecraft System — Canonical Day Timeline
 
-기준일: 2026-10-07
+기준일: 2026-10-11
 
 이 문서는 프로젝트의 **일차 번호와 완료 상태를 결정하는 단일 기준(source of truth)** 입니다.
 기존 `DAY*-*.md`, CI run, release, E2E 보고서의 역사적 번호는 이 문서의 번호와 동일하게 유지합니다.
@@ -28,7 +28,10 @@
 | 9 | Transaction / Backup / Rollback | ✅ 완료 | transaction journal, backup/staging/atomic replacement, post-start health gate, interrupted recovery, automatic rollback, failure injection + 서버 PC Final E2E |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 | Java four-server/Lobby/routing/reboot E2E + Bedrock real-client routing/return/location behavior를 사용자 실기기 확인으로 PASS. See `DAY10-E2E-REPORT.md` |
 | 11 | Operations UX & Fleet Management | ✅ 완료 | **GSC 4.3.8 live / GSCM 1.1.5+117 live verified**. Phase 11.0~11.7, Client/Host self-update, Protection & Recovery 2.0, Final integrated READ-ONLY E2E, Java/Bedrock real-client smoke 및 마지막 GSCM 2개 device check까지 사용자 확인 PASS. See `DAY11-FINAL-REPORT.md` |
-| 12 | Final Production Hardening & Closure | 🔄 진행 중 | repository-side CI/DR 검증과 12.0A/12.0B Golden, 12.7 cache Build 근거 유지. **2026-10-10 베드락 로비 전환 리소스팩 문제는 사용자 실기기 ‘정상’ 보고로 해당 문제 해결 처리**; V4 프록시 3개 재시작 PASS. 다만 12.10 사설 포트 보안 검증, 종합 E2E/soak/Stable은 여전히 미완료 |
+| 12 | Final Production Hardening & Closure | ✅ **소규모 운영 마감 (2026-10-11)** | Wild·Playground·Lobby 공통 기능 운영자 PASS, 기타(Other) 추가 시험 면제, Golden 4/4, cache 84/84, 재해 복구/롤백 일회용 CI 통과. **12.5 실효 보안·12.10 정식 네이티브 보안·12.13 정식 Stable 릴리즈는 미승인**; 소규모 운영 PASS와 정식 Release PASS는 별개. 상세: `PROJECT-CLOSEOUT-2026-10-11.md` |
+
+
+> **2026-10-11 최종 범위 변경:** 사용자의 명시적 결정으로 Day 12는 소규모 서버 **운영 및 개발 작업 종료**로 마감했습니다. 이 문서 아래에 남은 과거 `Day 12 현재 진행 상태` 상세 항목은 당시 엄격한 **정식 Stable 검증 상태의 역사적 스냅샷**입니다. 그것이 운영 마감 취소를 의미하지 않으며, 거꾸로 운영 마감이 `FINAL-RELEASE-GATES.json`을 자동으로 PASS로 변경하지도 않습니다.
 
 ## Day 8 / Day 9 완료 상태
 
