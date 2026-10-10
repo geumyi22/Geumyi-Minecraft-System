@@ -1,0 +1,107 @@
+name: Day12 Phase7 Isolated Offline Sandbox Capability Kit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/day12/Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.ps1'
+      - 'tools/day12/Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.cmd'
+      - 'DAY12-PHASE7-DISPOSABLE-SANDBOX-PLAN-20261010.md'
+      - '.github/workflows/day12-phase7-offline-sandbox-capability.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard-no-real-host-effects:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - name: Parse and enforce no real network/VM/Windows policy mutations
+        shell: powershell
+        run: |
+          $p='tools/day12/Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.ps1'
+          $tok=$null;$err=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tok,[ref]$err)
+          if(@($err).Count){$err|ForEach-Object{Write-Host $_.ErrorId};throw 'Sandbox capability PowerShell parse failed'}
+          $source=Get-Content $p -Raw -Encoding UTF8
+          foreach($forbidden in @('Start-Process','Restart-Service','Stop-Service','Start-Service',
+            'Start-VM','New-VM','Enable-WindowsOptionalFeature','Set-NetFirewallRule',
+            'New-NetFirewallRule','Remove-NetFirewallRule','Disable-NetAdapter',
+            'Enable-NetAdapter','Set-DnsClientServerAddress','Invoke-RestMethod',
+            'Invoke-WebRequest','Copy-Item','Move-Item','Remove-Item')){
+            if($source -match '(?im)^\s*(?:\&\s*)?'+[regex]::Escape($forbidden)+'\s'){
+              throw ('Disallowed staging preparation command '+$forbidden)
+            }
+          }
+          $cmd=Get-Content 'tools/day12/Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.cmd' -Raw -Encoding UTF8
+          if($cmd -notmatch 'powershell.exe.*Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.ps1'){
+            throw 'One-click entrypoint missing'
+          }
+      - name: Synthetic approve/deny state machine must not claim guest startup
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'day12-sandbox-synthetic'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File 'tools/day12/Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.ps1' -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Failed sandbox read-only synthetic test'}
+          $s=Get-Content (Join-Path $out 'Day12-Sandbox-Capability-READ-ONLY.json') -Raw -Encoding UTF8|ConvertFrom-Json
+          if($s.result -ne 'ISOLATED_SANDBOX_PREREQUISITES_PRESENT_NOT_EXECUTED' -or
+             -not $s.synthetic -or -not $s.read_only -or
+             $s.production_changes -or $s.server_restarted -or
+             $s.virtual_machine_or_sandbox_started -or
+             $s.checks.actual_offline_gsc_paper_boot_verified -or
+             $s.stable_release_allowed -or
+             $s.canonical_backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Sandbox capability classifier falsely claims an offline boot'
+          }
+      - name: Disposable CI machine without GSC Host must be refused
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'day12-sandbox-refused-nonhost'
+          $log=Join-Path $env:RUNNER_TEMP 'day12-sandbox-refusal-stderr.txt'
+          $proc=Start-Process powershell.exe -Wait -NoNewWindow -PassThru -RedirectStandardError $log -ArgumentList @(
+            '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',
+            'tools/day12/Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.ps1',
+            '-OutputDir',$out)
+          if($proc.ExitCode -eq 0){throw 'Staging capability unexpectedly accepted non-host CI runner'}
+          if(Test-Path (Join-Path $out 'Day12-Sandbox-Capability-READ-ONLY.json')){
+            throw 'Real Host summary was forged from CI'
+          }
+      - name: Build exactly one focused read-only capability ZIP with SHA256 filelist
+        shell: powershell
+        run: |
+          $dir=Join-Path $env:RUNNER_TEMP 'Day12-Offline-Sandbox-Capability'
+          New-Item -ItemType Directory -Force -Path $dir|Out-Null
+          Copy-Item 'tools/day12/Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.ps1' $dir
+          Copy-Item 'tools/day12/Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.cmd' $dir
+          Copy-Item 'DAY12-PHASE7-DISPOSABLE-SANDBOX-PLAN-20261010.md' $dir
+          $src=@(Get-ChildItem -LiteralPath $dir -File)
+          if($src.Count -ne 3){throw 'Unplanned source in release kit'}
+          [ordered]@{
+            schema=1;purpose='READ_ONLY_WINDOWS_SANDBOX_CAPABILITY_ONLY'
+            real_network_outage_proven=$false;guest_started=$false
+            files=@($src|Sort-Object Name|ForEach-Object{
+              [ordered]@{name=$_.Name;sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
+            })
+          }|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $dir 'SHA256-MANIFEST.json') -Encoding UTF8
+          $zip='Day12-Offline-Sandbox-Capability-READONLY.zip'
+          Compress-Archive -Path "$dir/*" -DestinationPath $zip -Force
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive=[IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip).Path)
+          try{
+            $members=@($archive.Entries|Where-Object{$_.Name}|ForEach-Object{$_.FullName.Replace('\','/')})
+            if($members.Count -ne 4){throw 'Unexpected ZIP entry count'}
+            foreach($n in @('Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.ps1',
+              'Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.cmd',
+              'DAY12-PHASE7-DISPOSABLE-SANDBOX-PLAN-20261010.md','SHA256-MANIFEST.json')){
+              if($members -notcontains $n){throw ('Missing ZIP member '+$n)}
+            }
+          }finally{$archive.Dispose()}
+          Write-Host 'Windows sandbox no-mutation capability kit SHA256/layout PASS'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-offline-sandbox-capability-readonly-kit
+          path: Day12-Offline-Sandbox-Capability-READONLY.zip
+          retention-days: 30
