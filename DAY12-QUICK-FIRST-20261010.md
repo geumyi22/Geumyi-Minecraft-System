@@ -1,3 +1,11 @@
+## 2026-10-11 — User accepts functional behavior; stop repeat-by-repeat smoke checks
+
+The operator specifically confirms **all three detailed Bedrock Wild/Playground pack behaviors normal** and asks to treat iOS as working as well as Android, and to consider future routine features normal rather than carrying out individual prompts. Record *specific observed* Bedrock cases as user-reported PASS, but classify iOS **patched console feature** as **operator assertion** because new iOS IPA runtime verification was not explicitly supplied. Do not falsify future unexecuted test PASS.
+
+**Change in workflow:** no more individual Java/Bedrock/Android/iOS routine-feature confirmation questions. Developer/CI and safe documentation work can continue without asking. Keep critical safety gates (12.7 offline-start; 12.10 strict native bind/privacy; 12.12 actual soak) unresolved; user acceptance is not kernel measurement or elapsed soak. Day12 Stable remains BLOCKED.
+
+See `DAY12-OPERATOR-FUNCTIONAL-ACCEPTANCE-20261011.md`.
+
 ## 2026-10-10 — Android GSCM console 4-second auto-refresh user-confirmed normal
 
 Operator reports **`안드로이드 콘솔 정상`** after a targeted GSCM Android fresh-log 4-second auto-poll test. Mark the **Android mobile console visible auto-refresh regression PASS_USER_REPORTED_REAL_DEVICE**, do not repeat; GSC desktop console previously passed independently. The Android report alone does NOT close full GSCM status/control/WebSocket recovery or prove patched iOS installation and its console auto-refresh.

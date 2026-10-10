@@ -5,6 +5,12 @@ Role: **final project milestone before Maintenance Mode**
 
 Day 12 is not a feature-dump. Its purpose is to leave Geumyi Minecraft System in a state where normal operation no longer depends on manual file copying or frequent development work.
 
+## Operator functional acceptance vs release verification — 2026-10-11
+
+The operator states all game/GSC/GSCM features appear normal, explicitly accepts the three detailed Bedrock content checks, and requests no further drip-fed routine function checks. See `DAY12-OPERATOR-FUNCTIONAL-ACCEPTANCE-20261011.md`. GSCM iOS patched-console behavior is operator-asserted, **not** separately proven with an updated iOS binary/device log. Historical successful Java/GSC/Android and Bedrock checks remain accepted in their exact scopes.
+
+**Do not auto-pass unexecuted 25-case tests** from this broad statement. The strict 12.10 backend privacy gate remains FAIL; actual 12.7 offline start and 12.12 eight-hour soak are untested, so Stable/Maintenance remain blocked. Stop repeated routine test requests; prioritize safe source/CI work and only ask for indispensable, separately approved real host safety operations.
+
 ## Repository-side verified evidence
 
 - Day 12 full synthetic/read-only Safety CI: **PASS** — run `37670902211`
