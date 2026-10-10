@@ -1,3 +1,18 @@
+## 2026-10-10 21:27 KST — Six Velocity process attribution clarified
+
+Actual operator `Day12-Velocity-6Process-Forensics-20261010-212757.json`: Java total 10; six Velocity candidates form **three 1-parent/1-child pairs** that start about 3 seconds apart after the exact three Day10 scheduled tasks. UDP owners:
+- wild/19132: Java child PID 10408, parent PID 4156;
+- playground/19133: child 10400, parent 4172;
+- other/19134: child 10416, parent 4192.
+
+All three tasks are Running, actions/working dirs match original Day10; GSC Java TCP and Bedrock RakNet application probes PASS for all three; PowerShell TCP listener provider returned no rows (previous known inconsistency), but UDP provider returned one unique child owner per port.
+
+**Conclusion:** not six independently bound proxy service endpoints; evidence supports three service process trees. However it is **NOT proven** whether `Stop-ScheduledTask` will terminate both parent and child; the read-only report says `process_identity_completely_proven=false` and `safe_to_restart=false`. Previous V1–V3 restart tools incorrectly assumed one JVM process per task and must not be run. No process has been stopped by these tools yet.
+
+V4 conservative scope: define validated exactly 6-commandline candidates, 3 roots and 3 unique children, and each public UDP owning PID equals the matching child; require 12 fingerprints/journal, 3 matching Day10 tasks and all three GSC application probes. One named task at a time, requiring BOTH specific parent and child to disappear with other four unchanged and the target Java/RakNet probe to go offline **before** issuing Start-ScheduledTask. If Stop only removes the parent but leaves the child serving, **halt, do not force kill and do not auto-restart**, as that requires operator review. After Start, require a fresh pair, both protocol probes healthy and unchanged other four PIDs. No Paper/GSC/world/Java packs/backups/firewall/task definition changes. Operator authorization requires zero online players and typing `NO PLAYERS`; any partial outcome is distinctly reported. Static/synthetic Windows tests of shared pure topology function are not a real Windows operational restart test.
+
+Original pack files still staged 9 + 3; actual Bedrock new-session pack acquisition/custom mapping E2E NOT yet observed; Stable release blocked.
+
 ## 2026-10-10 21:19 KST — V3 correctly detects **six** Velocity candidates, restart still prohibited
 
 Operator report `Day12-Bedrock-Proxy-Restart-Precheck-20261010-211932.json`:

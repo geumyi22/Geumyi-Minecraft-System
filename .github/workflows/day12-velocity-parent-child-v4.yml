@@ -1,0 +1,55 @@
+name: Day12 Velocity Parent Child Scoped Restart V4 Regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/day12/Day12_Velocity_ParentChild_V4.ps1'
+      - '.github/workflows/day12-velocity-parent-child-v4.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-parent-child:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Windows PowerShell 5.1 synthetic topology / rejection tests
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          Set-StrictMode -Version Latest
+          $p='tools/day12/Day12_Velocity_ParentChild_V4.ps1'
+          $token=$null;$errors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$token,[ref]$errors)
+          if(@($errors).Count -gt 0){throw 'PowerShell parser error'}
+          . ./$p
+          $rows=@(
+            [pscustomobject]@{pid=4156;parent_pid=2484;kind='TASK_STYLE_RELATIVE_JAR'},
+            [pscustomobject]@{pid=4172;parent_pid=2484;kind='TASK_STYLE_RELATIVE_JAR'},
+            [pscustomobject]@{pid=4192;parent_pid=2484;kind='TASK_STYLE_RELATIVE_JAR'},
+            [pscustomobject]@{pid=10400;parent_pid=4172;kind='TASK_STYLE_RELATIVE_JAR'},
+            [pscustomobject]@{pid=10408;parent_pid=4156;kind='TASK_STYLE_RELATIVE_JAR'},
+            [pscustomobject]@{pid=10416;parent_pid=4192;kind='TASK_STYLE_RELATIVE_JAR'}
+          )
+          $owners=@{wild=10408;playground=10400;other=10416}
+          $pairs=@(Resolve-ThreeProxyPairs -Candidates $rows -UdpOwners $owners)
+          if($pairs.Count -ne 3){throw 'Valid six-process topology rejected'}
+          if(@($pairs|Where-Object{$_.id -eq 'wild' -and $_.root_pid -eq 4156 -and $_.child_pid -eq 10408}).Count -ne 1){throw 'Wild wrong'}
+          if(@($pairs|Where-Object{$_.id -eq 'playground' -and $_.root_pid -eq 4172 -and $_.child_pid -eq 10400}).Count -ne 1){throw 'Playground wrong'}
+          if(@($pairs|Where-Object{$_.id -eq 'other' -and $_.root_pid -eq 4192 -and $_.child_pid -eq 10416}).Count -ne 1){throw 'Other wrong'}
+          function RequireReject($testRows,$testOwners,$label){
+            $failed=$false
+            try {$null=Resolve-ThreeProxyPairs -Candidates $testRows -UdpOwners $testOwners}
+            catch {$failed=$true}
+            if(-not $failed){throw ('Unexpected accepted unsafe fixture: '+$label)}
+          }
+          RequireReject @($rows|Where-Object{$_.pid -ne 10416}) $owners 'missing child'
+          RequireReject $rows @{wild=10408;playground=10408;other=10416} 'duplicate owner'
+          RequireReject $rows @{wild=10408;playground=10400;other=1} 'wrong owner'
+          $extra=@($rows+[pscustomobject]@{pid=20000;parent_pid=2484;kind='TASK_STYLE_RELATIVE_JAR'})
+          RequireReject $extra $owners 'extra candidate'
+          $otherCommand=@($rows | ForEach-Object{[pscustomobject]@{pid=$_.pid;parent_pid=$_.parent_pid;kind=$_.kind}})
+          $otherCommand[0].kind='OUTSIDE_EXPECTED_PROXY_ROOT'
+          RequireReject $otherCommand $owners 'other jar path'
+          Write-Host '3 proxy pairs + 5 fail-closed fixtures PASS; no production tasks/processes touched'
