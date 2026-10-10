@@ -1,3 +1,11 @@
+### 2026-10-11 — #2 unknown Java single-role safe follow-up kit verified
+
+- Prior actual operator report `Day12-2-12-17-SHARE-SUMMARY-20261011-002947.json` returned 1 GSC Host Running, 6 Velocity = three good parent/child pairs, UDP 19132–19134 owned by respective child, 3 recognized Paper Java plus one unclassified Java and no candidate PID collision. `REVIEW_REQUIRED` due to hardcoded assumption all four Paper servers were running.
+- Created narrowly scoped `tools/day12/Day12_Unknown_Java_Role_READ_ONLY.ps1` and one-click CMD at source commit `ffdf959b510a9f6d3d09a822ff5e548e26970e0a`. The tool safely classifies the unknown `-jar` family (including known `GeumyiStatusAgent`) without exporting raw cmdline, PIDs, paths or host secrets. It calls only unauthenticated loopback GET `/api/v1/snapshot`; if unavailable it fails closed.
+- Windows PowerShell 5.1 parser and positive/negative fixtures **PASS** at [CI run 38064468850](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38064468850); packaged artifact `Day12-Unknown-Java-READ-ONLY` ID `11674860737`. ZIP CRC and expected pair of files verified offline; operator one-click ZIP directly shared. **Real host result pending.**
+- If exactly six Velocity, three Paper, one StatusAgent, four valid canonical GSC servers with three ONLINE and one OFFLINE are observed, return scoped role reconciliation PASS, **not** proof of exact Paper PID↔server ownership or private kernel TCP binds. If four servers ONLINE but three Paper, unknown jar family, unreadable cmdline or denied snapshot: return REVIEW_REQUIRED.
+- No production changes/host restarts/process stops. 12/17 stay limited to earlier disposable CI. 12.10 backend_ports_private FAIL, 12.7 offline real host, 12.12 soak and Stable remain OPEN.
+
 ### 2026-10-11 00:29 KST — operator's real 2/12/17 one-click report reviewed
 
 - User submitted **`Day12-2-12-17-SHARE-SUMMARY-20261011-002947.json`**, `synthetic=false`, `read_only=true`, `generated_at=2026-10-10T15:29:47.2566812Z`. Original per-host file is *not committed*.
