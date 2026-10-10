@@ -226,5 +226,9 @@ try{
   }
   SafeWrite
 }
-if($report.result -ne "DISPOSABLE_REAL_GSC_PAPER_PROCESS_SCOPED_OFFLINE_SOURCE_PASS"){exit 2}
+if($ExerciseCrashRecovery){
+  if($report.result -ne "DISPOSABLE_REAL_GSC_PAPER_CRASH_RECOVERY_PASS"){exit 2}
+}else{
+  if($report.result -ne "DISPOSABLE_REAL_GSC_PAPER_PROCESS_SCOPED_OFFLINE_SOURCE_PASS"){exit 2}
+}
 exit 0
