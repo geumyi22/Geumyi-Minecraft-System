@@ -135,6 +135,14 @@
       "scope": "Historic real host 2026-10-09 digest capture: StatusAgent 1/1, Technology 2/2, GST 3/3, GDS 3/3, Chemistry 2/2 match pinned public release/CI; 2 Lobby alias builds remain unidentified",
       "source": "DAY12-PHASE2-FINAL-PROVENANCE-REVIEW-20261011.md",
       "not_proven": "Original Day10 CI run and detached signatures for Lobby GST/GDS; fresh enabled runtime attestation; complete 12.2 final release gate"
+    },
+    {
+      "code": "12.6",
+      "title": "Release chain source and fail-closed gate review",
+      "status": "REPOSITORY_AUDIT_CI_PENDING",
+      "scope": "Real final-release source, mandatory gates, SHA256 manifest fixture; no live signing",
+      "source": "DAY12-PHASE6-RELEASE-CHAIN-REVIEW-20261011.md",
+      "not_proven": "Signed final release and full live host/cloud/mobile deployment"
     }
   ],
   "unresolved_release_requirements": [

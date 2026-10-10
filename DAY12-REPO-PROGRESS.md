@@ -1,3 +1,7 @@
+### 2026-10-11 — 12.6 repository release-chain audit source and GitHub CI prepared
+
+- Added source-only regression audit and workflow for required release dependencies, private-backend and health/security fail-closed predicates, sign/verify ordering, SHA256 manifest actual-byte hashing, and synthetic negative checks. No Stable release or real operator host action. CI result not yet known in this commit.
+
 ### 2026-10-11 — 12.2 repo-side component provenance review completed with two explicit Lobby gaps
 
 - Existing real host Oct-09 SHA captured; five pinned public release/CI component refs matched **11/11 targeted copies** (1 StatusAgent, 2 Technology, 3 GST, 3 GDS, 2 Chemistry). Reconfirmed actual GitHub release v3 asset digests for 3 legacy components on Oct-11.
