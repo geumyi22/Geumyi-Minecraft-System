@@ -1,3 +1,12 @@
+### 2026-10-11 — 12.11 #2/#12/#17 combined safe one-click kit CI PASS, host result pending
+
+- User requested a **single-session** verification for the three unwaived numbered 12.11 tests: **#2 no duplicate/orphan Java/GSC/Velocity; #12 unexpected loss→RECOVERING; #17 update Dry-run/Canary/Rollback**.
+- Repo commit `e61730334fbb6b46dbe0afb676b6991c0a9195e3` created safe host read-only one-click census and Windows CI integration; a Windows PowerShell reserved-`$Host` naming collision was corrected at `44df060954e70f0ada7c208ab94d00c013345914`.
+- **Windows GitHub Actions CI `38063619014` SUCCESS**: PowerShell 5.1 positive/negative fixture tests PASS, plus real GSC Go disposable state-machine recovery decision, dry-run, canary policy restore and on-disk temporary plugin update transaction rollback tests PASS. See workflow `https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38063619014`.
+- CI artifact `Geumyi-Day12-Three-Remaining-OneClick-READ-ONLY` (ID **11673324745**) contains one nested one-click ZIP. It was downloaded, unwrapped and ZIP CRC-checked in the assistant's container. The inner zip has `Start_Day12_Three_Remaining_READ_ONLY.cmd`, `Day12_Three_Remaining_OneClick_READ_ONLY.ps1`, `CI-EVIDENCE.json`, and the runbook.
+- **Real server-PC operator action remaining:** unzip the inner kit, run the CMD once on **SERVER PC**, upload only the JSON in `Desktop\Geumyi-Day12-Three-Tests\Day12-2-12-17-SHARE-SUMMARY-*.json`. The script never stops, restarts or kills GSC/Java services; does not change world, Golden backups, firewall/ACL, port bindings or update configurations.
+- **#12 and #17 remain limited to disposable source/transaction/Canary tests**: No actual running Paper crash/recovery or live signed update, no real host/process fault injection. Strict full 25-case 12.11 E2E remains OPEN even if host #2 census PASS. Operator could separately waive stronger coverage later, but no fabricated PASS. **12.10 backend_ports_private FAIL**, 12.7 offline known-good real host and 12.12 long soak remain OPEN. Stable blocked.
+
 ### 2026-10-11 — 15 of 18 remaining Day12.11 items operator-PASS / repeat testing waived
 
 - User explicitly selected **1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 18** from the preceding numbered 18-item Day12.11 gap list (NOT phase numbers), directing PASS. Record all fifteen as **OPERATOR_ACCEPTED_PASS_TEST_WAIVED**, and do not request re-tests of those fifteen in future ordinary workflow.

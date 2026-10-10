@@ -20,3 +20,9 @@ No command in the Windows operator kit executes a service stop, kill, start, res
 - This is unrelated to 12.7 offline startup, 12.10 strict native socket proof and 12.12 8-hour soak; all remain open and final Stable remains blocked.
 
 CI link will appear under `Day12 Three Remaining Checks Bundle (2,12,17)` workflow. If workflow fails, do not use the kit.
+
+## CI result: 2026-10-11
+
+- GitHub workflow: [Day12 Three Remaining Checks Bundle (2,12,17) — SUCCESS](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38063619014), verified Windows PowerShell 5.1 and focused real Go temporary-file tests.
+- Artifact ID: `11673324745`, outer GitHub artifact contains a nested kit ZIP. No GSC/Velocity/Paper code/host configs were changed by this CI workflow.
+- **Host #2 remains pending the operator's one-time read-only CMD and JSON**. 12/17 only source/staging Go integration tests, not an actual real process crash, live signed canary or production rollback. Never claim full 3/3 real E2E.

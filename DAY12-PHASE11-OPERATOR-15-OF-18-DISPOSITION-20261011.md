@@ -1,3 +1,7 @@
+## 2026-10-11 — Combined #2/#12/#17 Safe CI PASS; only #2 real host census pending
+
+[Workflow SUCCESS](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38063619014) with ZIP artifact `Geumyi-Day12-Three-Remaining-OneClick-READ-ONLY`. The Windows PowerShell synthetic parser/topology and GSC Go recovery-state/dry-run/canary-policy/temp-file rollback tests passed. **#2 actual server-PC process census** still requires the operator to run the bundled **read-only CMD** and share one sanitized JSON. **#12 actual staged crash/recovery** and **#17 actual staged signed release apply/canary** were **not** performed by this test, so broader E2E gates remain OPEN. No dangerous production mutation is authorized.
+
 # Day 12.11 — 18-item remainder operator PASS disposition (2026-10-11 KST)
 
 This is **not** the canonical 25-case live E2E checklist, and it does **not** change the Stable release gate. It is an explicit record of the operator's requested statuses for the **18-entry outstanding-test numbered list** published immediately before their reply.
