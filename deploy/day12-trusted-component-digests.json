@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "purpose": "PINNED_PUBLIC_REFERENCE_DIGESTS_FOR_DAY12_2_NOT_RUNTIME_ATTESTATION",
+  "recorded_at": "2026-10-10 KST",
+  "runtime_last_observed": "2026-10-09 06:13 KST",
+  "private_machine_sha256_values_committed": false,
+  "all_hashes_are_public_project_release_or_ci_reference": true,
+  "release_gate_authorized": false,
+  "pending": [
+    "LOBBY_GST_GDS_SOURCE_BUILD_IDENTITY",
+    "CURRENT_ENABLED_PLUGIN_RUNTIME_E2E",
+    "NATIVE_BACKEND_SOCKET_OWNER_BIND",
+    "ALL_OTHER_FINAL_GATES"
+  ],
+  "references": [
+    {
+      "component": "statusagent",
+      "version": "0.5.4",
+      "sha256": "eb6b2f5cdff52bcebdb833fee34b846b07c81c42895ea71e5081824ba3a618ed",
+      "file": "GeumyiStatusAgent-0.5.4.jar",
+      "targets": [
+        "host"
+      ],
+      "source_type": "DAY11_CI_CONTAINED_JAR_WITH_SIDECAR",
+      "workflow_run_id": 37627140918,
+      "artifact_id": 11484034230,
+      "observed_matched": 1,
+      "observed_total": 1
+    },
+    {
+      "component": "technology",
+      "version": "0.1.4",
+      "sha256": "62ed65c4967ea5cce1448ab5d9b00c5de47f9c21690afa162165730fc4c6604e",
+      "file": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+      "targets": [
+        "wild",
+        "other"
+      ],
+      "source_type": "DAY11_CI_CONTAINED_JAR_WITH_SIDECAR",
+      "workflow_run_id": 37627140918,
+      "artifact_id": 11485305843,
+      "observed_matched": 2,
+      "observed_total": 2
+    },
+    {
+      "component": "gst",
+      "version": "1.1.1",
+      "sha256": "af0509ea77f49fab6bf4dea48ddc0d030e50fa0880eb9250185b47e5ec696ac7",
+      "file": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+      "targets": [
+        "wild",
+        "playground",
+        "other"
+      ],
+      "source_type": "GITHUB_RELEASE_ASSET_DIGEST",
+      "release_tag": "mc-2026.09.26-v3",
+      "release_asset_id": 590320437,
+      "observed_matched": 3,
+      "observed_total": 3
+    },
+    {
+      "component": "gds",
+      "version": "1.1.1",
+      "sha256": "0f8d3c39b52e205720b1945351cfbac9f09bda74a11264fb1a8a9f9868cbf977",
+      "file": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+      "targets": [
+        "wild",
+        "playground",
+        "other"
+      ],
+      "source_type": "GITHUB_RELEASE_ASSET_DIGEST",
+      "release_tag": "mc-2026.09.26-v3",
+      "release_asset_id": 590320391,
+      "observed_matched": 3,
+      "observed_total": 3
+    },
+    {
+      "component": "chemistry",
+      "version": "0.4.1",
+      "sha256": "1b31161a17deb89436efa0de5a9e5d857d2fc56d63688089fcbc2d337f808605",
+      "file": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+      "targets": [
+        "wild",
+        "other"
+      ],
+      "source_type": "GITHUB_RELEASE_ASSET_DIGEST",
+      "release_tag": "mc-2026.09.26-v3",
+      "release_asset_id": 590320390,
+      "observed_matched": 2,
+      "observed_total": 2
+    }
+  ],
+  "notes": [
+    "These are public expected reference SHA256 digests; not signed in-place runtime attestation.",
+    "Observed hash equality is from private 2026-10-09 server-PC report; report itself is not committed.",
+    "Lobby GST/GDS alias binaries are excluded from this reference until exact authoritative source is confirmed.",
+    "No live service, world, backup, firewall or installed JAR was changed.",
+    "Changes to targets or plugin binaries require separate explicit approval and tested rollback."
+  ]
+}
