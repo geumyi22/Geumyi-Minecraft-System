@@ -174,7 +174,7 @@
     {
       "code": "12.12",
       "status": "EIGHT_TO_TWELVE_HOUR_SOAK_OPEN",
-      "next": "Operator actual Start/End capture, 8–12 hours and review CPU, memory, logs, process continuity and gameplay",
+      "next": "Owner accepts sustained problem-free runtime as operational eight-hour soak PASS and waives rerun; formal instrumented duration/process-health evidence was not supplied and stays open only as a protected Stable release prerequisite, not a requested routine test",
       "requires_live_client": false,
       "requires_production_change": false
     },
@@ -214,6 +214,15 @@
       "scope": "Real final-release source, mandatory gates, SHA256 manifest fixture; no live signing",
       "source": "DAY12-PHASE6-RELEASE-CHAIN-REVIEW-20261011.md",
       "not_proven": "Signed final release and full live host/cloud/mobile deployment",
+      "ledger_scope": "PHASE_REVIEW_NOT_IN_CLOSED_SCOPED_RELEASE_GATES"
+    },
+    {
+      "code": "12.12",
+      "title": "Sustained operation, operator accepted as eight-hour soak",
+      "status": "OPERATOR_ACCEPTED_UNINSTRUMENTED_SOAK_PASS",
+      "scope": "On 2026-10-11 operator reports server left running continuously without noticed trouble and explicitly approves treating Day12 eight-hour soak as passed in operator-acceptance scope; repeat routine test waived",
+      "source": "DAY12-PHASE12-OPERATOR-SOAK-ACCEPTANCE-20261011.md",
+      "not_proven": "No recorded start/end timestamps or independently verified >=8 elapsed hours; no sample-by-sample CPU/RAM/PID/error telemetry, no automated soak JSON; no formal Stable release gate evidence",
       "ledger_scope": "PHASE_REVIEW_NOT_IN_CLOSED_SCOPED_RELEASE_GATES"
     }
   ]
