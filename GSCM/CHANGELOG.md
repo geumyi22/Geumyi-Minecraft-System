@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0+150 — 2026-10-11 패키지 Stable
+- [Android APK / iOS 미서명 IPA](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150)를 수동 설치용 Stable로 공개. 마지막 실기기 확인 1.1.5+117 기준으로 버전 정리했으며 신규 모바일 기능을 주장하지 않음.
+- Flutter analyze/test, Android 영구 릴리즈 서명 빌드, iOS unsigned 패키징 CI 성공. Apple 서명/프로비저닝은 별도 필요.
+- 신규 패키지를 기기에 설치하거나 실기기 E2E 검증을 완료했다고 주장하지 않음.
+
 ## 1.1.5 — Build 117 — Day-11 final
 - Added Protection & Recovery 2.0 mobile controls for backup provenance, restore preflight, protection/Trash state and destructive-action safeguards.
 - Coordinated with GSC 4.3.8.

@@ -1,6 +1,6 @@
 # Geumyi Minecraft System — 작업 로드맵
 
-기준일: 2026-10-07
+기준일: 2026-10-11 (Day 12 종료 상태 갱신)
 
 > **일차 번호와 상태의 단일 기준은 [DAY-TIMELINE.md](DAY-TIMELINE.md)입니다.**
 > Day 번호는 개발 날짜 수가 아니라 milestone 번호입니다. Day 4는 삭제된 일차가 아니라 **신규 구현 없이 실서버 E2E 검증/마감을 수행한 milestone**입니다.
@@ -18,7 +18,7 @@
 | 9 | Transaction / Backup / Rollback | ✅ 완료 |
 | 10 | Full E2E + Lobby / Proxy Network | ✅ 완료 |
 | 11 | Operations UX & Fleet Management — GSC 4.3.8 / GSCM 1.1.5+117 | ✅ 완료 |
-| 12 | Final Production Hardening & Closure | 🔄 진행 중 — repository/CI prep verified; live closure gates pending |
+| 12 | Final Production Hardening & Closure | ✅ 소규모 운영 수락 기준 마감; 엄격한 정식 보안/자동 Stable 배포 게이트는 미통과 |
 
 ## Day 1~3 — 복구와 기반 정리
 
@@ -156,6 +156,8 @@ Day 11 안정화 버그:
 - 의도적 종료 -> OFFLINE / 실제 crash -> RECOVERING -> 자동 재시작
 
 ## Day 12 — Final Production Hardening & Closure
+
+> **종료 상태 (2026-10-11):** Day 12는 사용자 승인에 따라 소규모 운영 기준으로 마감됐습니다. 아래 목록은 역사적 개발 목표이며 정식 릴리즈 보안 게이트가 전부 통과했다는 뜻이 아닙니다. [4.5.0/1.5.0+150 수동 설치 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150)은 공개됐지만 서명 자동 업데이트 및 Maintenance Mode 승인은 계속 차단됩니다. [최종 종료 보고](PROJECT-CLOSEOUT-2026-10-11.md) · [게이트](FINAL-RELEASE-GATES.json)
 
 Day 12는 신규 기능을 계속 늘리는 단계가 아니라 **장기 무인/저관리 운영이 가능한 최종 제품 상태**를 만드는 마지막 milestone입니다.
 

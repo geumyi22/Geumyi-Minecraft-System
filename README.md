@@ -2,6 +2,8 @@
 
 > **프로젝트 종료 정리 (2026-10-11):** 일반 기능 개발과 반복 테스트는 소규모 서버 운영 기준으로 마감했습니다. GitHub/PC 정리 기록과 유지할 복구 자산은 [PROJECT-CLOSEOUT-2026-10-11.md](PROJECT-CLOSEOUT-2026-10-11.md)에 있습니다. 정식 Stable 릴리즈의 엄격한 보안 게이트는 아직 통과하지 않았습니다.
 
+**최신 수동 설치 패키지:** [GSC 4.5.0 / GSCM 1.5.0+150 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150) (2026-10-11 공개, Latest). 단, 실제 운영 기기에서 마지막으로 확인된 버전은 GSC 4.3.8 / GSCM 1.1.5+117입니다. 서명된 자동 Stable 배포와 정식 실환경 보안 승인은 별도입니다.
+
 GSC 4.5.0 및 GSCM 1.5.0+150 Stable 빌드 대상의 소스·복구 근거·CI·리소스팩을 모은 저장소입니다. **원본 그대로 회수한 소스와 바이너리 기준으로 재구성한 소스를 구분해서 기록합니다.**
 
 | Component | Baseline | Path | Recovery status |

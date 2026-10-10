@@ -9,4 +9,10 @@ On 2026-10-11 the operator requested a major cleanup of experimental CI history 
 - To restore a needed job in the future, copy its `.yml.txt` bytes back under `.github/workflows/<name>.yml`, then review its dependencies and permissions before enabling it. **Do not** blindly restore a security or release experiment into an always-on production CI workflow.
 - Historic workflow run IDs in the source documentation may point to runs deliberately deleted by the closeout cleanup. Preserve pinned/important evidence according to `docs/archive/2026-10-11-before-cleanup-inventory.json` and the `geumyi-closeout-audit` Actions artifact.
 
+## 2026-10-11 패키지 공개 후 추가 보관
+
+- [공개 워크플로 SUCCESS](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38082558818) 이후 게시 일회성 정의 `ops-publish-packaged-stable-once.yml.txt`를 보관했습니다.
+- 중복 빌드/구버전 Stable 발행을 막기 위해 `release-gsc450-gscm150-stable.yml`, `ops-stable-baseline-publish-once.yml`도 각 `.yml.txt`로 **원본 Git blob SHA 그대로** 보관하고 활성 디렉터리에서 제외했습니다.
+- 이 작업 후 활성 워크플로 **18개**, 보관된 워크플로 YAML 소스 **41개**. 정식 보안 게이트 워크플로, 공통 빌더, 다른 운영 CI는 그대로 유지합니다.
+
 The repository's `main` commit history has not been force-pushed or rewritten, and original signed baseline release tags have not been deleted.

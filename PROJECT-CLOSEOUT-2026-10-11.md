@@ -12,9 +12,17 @@
 
 ## 종료의 정확한 의미
 
-**프로젝트 기능 개발 및 반복 테스트 종료 / 소규모 운영 기준 수락**이다. **정식 Stable 릴리즈 발행/서명 완료가 아니다.** `FINAL-RELEASE-GATES.json`의 `backend_ports_private=FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS`, `stable_release_allowed=false`, `maintenance_mode_allowed=false`를 거짓 통과로 바꾸지 않는다. 운영을 시작하거나 계속할 수 있다는 사용자의 판단은 별개의 정책 승인이다.
+**프로젝트 기능 개발 및 반복 테스트 종료 / 소규모 운영 기준 수락**이다. **엄격한 보안 게이트를 통과한 서명 자동배포 Stable 승인이 완료됐다는 뜻은 아니다.** `FINAL-RELEASE-GATES.json`의 `backend_ports_private=FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS`, `stable_release_allowed=false`, `maintenance_mode_allowed=false`를 거짓 통과로 바꾸지 않는다. 운영을 시작하거나 계속할 수 있다는 사용자의 판단은 별개의 정책 승인이다.
 
 중요한 새 보안 문제, 백업 오류, 데이터 손상, 버전 호환성 문제가 실제로 생기는 경우에만 새로운 검증·패치를 시작한다. 사용자 승인으로 이미 완료된 기능 테스트는 반복하지 않는다.
+
+## 종료 후 수동 설치 Stable 공개 (2026-10-11)
+
+- [GSC 4.5.0 / GSCM 1.5.0+150 통합 릴리즈](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150)를 공개하고 Latest로 지정했습니다. Windows EXE, Android APK, iOS **미서명** IPA 및 무결성 증빙 포함 **10개 자산**이 등록됐습니다.
+- [원본 CI](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38081642958)의 컴포넌트 빌드·테스트·체크섬 검사는 통과했으나 원본 게시 단계가 404 오류로 실패했습니다. 기존 검증 자산을 그대로 사용하는 [후속 게시 워크플로](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38082558818)가 SUCCESS로 끝났습니다.
+- **운영 버전과 구분:** 마지막 실기기 검증은 GSC 4.3.8/GSCM 1.1.5+117입니다. 이번 새 버전의 실제 설치 또는 E2E를 검증했다고 표시하지 않습니다.
+- 서명된 `deployment-stable.json`은 발행하지 않았고 `FINAL-RELEASE-GATES.json`의 실환경 보안·장기 검증 제한을 수정하지 않았습니다. PC/월드/Golden 백업 자동 변경도 없습니다.
+- 배포용 일회성 워크플로 소스는 `docs/archive/workflows/`에 보관했고 기존 서명 릴리즈/태그는 유지했습니다.
 
 ## GitHub 저장소 보관 및 정리
 
@@ -24,6 +32,8 @@
 - 이 기록에 이미 링크된 CI 실행의 로그와 artifact를 삭제하면 해당 증거 접근이 소실되므로 자동 보존 집합을 이용한다. 이것도 100% 모든 종전 외부 참조를 검출한다는 보장은 없다.
 
 ## 최종 GitHub 실제 정리 결과 (2026-10-11)
+
+> 다음 숫자는 최초 대규모 정리 직후 스냅샷입니다. 이후 추가 커밋과 패키지 릴리즈 공개 및 워크플로 보관으로 현재 숫자가 달라질 수 있습니다.
 
 | 항목 | 정리 전 | 최종 확인 | 의미 |
 |---|---:|---:|---|

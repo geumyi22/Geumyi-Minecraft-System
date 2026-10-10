@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-11 — GSC 4.5.0 / GSCM 1.5.0+150 수동 설치 Stable 공개
+- [최신 패키지 릴리즈](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150): Windows GSC Setup/Host/Client, Android 서명 APK, iOS 미서명 IPA 및 체크섬·출처 기록 등 10개 등록.
+- [원본 빌드](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38081642958)의 테스트/해시 검증은 통과. 게시 단계의 오류는 [후속 게시 검증](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38082558818) SUCCESS로 마무리.
+- Day 12의 소규모 운영 기준 마감과 정식 서명 자동배포 보안 승인 차단을 명확히 구분. 사용자 운영 기기나 백업은 변경하지 않음.
+- 일회성 릴리즈 워크플로를 보관하고 사용하지 않는 활성 정의를 제거함.
+
 ## 2026-10-07 — Day 11 closure
 
 - Promoted the verified Day-11 runtime baseline to **GSC 4.3.8** and **GSCM 1.1.5+117**.
