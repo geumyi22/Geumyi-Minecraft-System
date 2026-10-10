@@ -192,6 +192,9 @@ Build a `Geumyi-Recovery-Kit` containing recovery scripts/manifests/documentatio
 
 ## 12.9 — Final UX cleanup
 
+**Console live log UX source fix prepared 2026-10-10:** GSC desktop previously refreshed only on manual/navigation; GSCM had 4-second polling disabled by default. Both updated at source to 4-second active-console polling with manual override; requires host/client binary rollout and actual UI observation before runtime PASS. This is not WebSocket streaming. No RCON/WebSocket protocol or backend changes.
+
+
 Remove or retire:
 - temporary test-only controls;
 - duplicate/obsolete wording;

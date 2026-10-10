@@ -1,3 +1,9 @@
+## 2026-10-10 — console refresh improvement, CURRENTLY SOURCE ONLY
+
+User confirmed GSC console `list` prints a response, but console log display otherwise refreshes only upon navigation or manual reload. Source review shows GSC desktop log lacks polling entirely; GSCM console already supports 4-second polling but default is OFF.
+
+**Safe immediate use:** GSC desktop use Refresh; GSCM tap its 4-second refresh toggle once. **GitHub-only patch:** both consoles will auto-poll every 4 seconds when opened; GSC has checkbox to pause, avoids updating offscreen or hidden tabs and preserves scroll while reading. **Not WebSocket-push streaming.** The patched GSC/GSCM binaries are NOT YET deployed, so current runtime is unchanged. `list` response smoke supports GSC RCON command execution only; WS/reconnect behavior and full final E2E not proved. `DAY12-REPO-PROGRESS.md` records test links and boundaries.
+
 ## 2026-10-10 — GSCM Android/iOS user-reported short smoke normal
 
 The operator's exact two-platform result is **"둘다 정상"** in response to an Android+iOS GSCM display/refresh/reconnect request. Mark both platforms' **status/reconnect smoke checks** as user-reported normal, with no changes to the running servers.
