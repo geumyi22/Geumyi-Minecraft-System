@@ -42,7 +42,7 @@ function Compare-Procs([object[]]$Old,[object[]]$New){
   $unverified=@($rows|Where-Object{$_.same_identity_at_start -and -not $_.start_time_available}).Count
   return [ordered]@{rows=@($rows);missing_process_identity_count=$lost
     new_process_identity_count=$added;matched_without_start_time=$unverified
-    continuous_process_identity_verified=($lost -eq 0 -and $new -eq 0 -and $unverified -eq 0)}
+    continuous_process_identity_verified=($lost -eq 0 -and $added -eq 0 -and $unverified -eq 0 -and $start.Count -gt 0)}
 }
 function Snapshot(){
   $pd=if($env:PROGRAMDATA){$env:PROGRAMDATA}else{"C:\ProgramData"}
@@ -88,6 +88,25 @@ if($Synthetic){
      $match[0].working_set_delta -ne 50 -or $restarted.Count -ne 1 -or
      $null -ne $restarted[0].working_set_delta){
     throw "SOAK_PROCESS_IDENTITY_COMPARISON_REGRESSION"
+  }
+  # An additional process without a disappearing old process MUST fail
+  # strict continuous identity. The prior "$new" typo silently missed this.
+  $c=@($a)+@([pscustomobject]@{
+    name="java";pid=104;started_at="2026-10-10T01:10:00Z";working_set=95;handles=9
+  })
+  $onlyAdded=Compare-Procs $a $c
+  if($onlyAdded.missing_process_identity_count -ne 0 -or
+     $onlyAdded.new_process_identity_count -ne 1 -or
+     $onlyAdded.continuous_process_identity_verified){
+    throw "SOAK_NEW_PROCESS_WITHOUT_EXIT_MUST_NOT_BE_CONTINUOUS"
+  }
+  $unchanged=Compare-Procs $a $a
+  if(-not $unchanged.continuous_process_identity_verified){
+    throw "SOAK_IDENTICAL_PROCESS_IDENTITIES_MUST_BE_CONTINUOUS"
+  }
+  $empty=Compare-Procs @() @()
+  if($empty.continuous_process_identity_verified){
+    throw "SOAK_EMPTY_PROCESS_SET_MUST_NOT_BE_CONTINUOUS"
   }
   [ordered]@{schema=2;phase="12.12";synthetic=$true;read_only=$true
     result="SYNTHETIC_PASS";process_identity_tested=$true
