@@ -350,3 +350,7 @@ Day12_Phase12_Soak_READ_ONLY.cmd에서 Start → 실제 사용/idle → End. 가
 - **All 84/84 cached files verified SHA-256 and size** against the existing local manifest. `missing=0`, `mismatched_sha256=0`, `mismatched_size=0`, `invalid_record=0`, `duplicate_names=0`, `reparse_blocked=0`.
 - Accepted scoped gate **`phase_12_7_cache_byte_integrity=PASS_REAL_HOST`**, while the *separate* mandatory **`phase_12_7_offline_known_good_startup=PENDING_LIVE`** remains OPEN. The local manifest hash check does not establish cryptographic trust of the manifest itself, GSC/Geyser/Paper boot with internet disconnected, automatic fallback, or runtime E2E.
 - **No duplicate cache Build/Audit or hash check required.** Golden 4/4 remains protected, GSC Host 4.3.8 not touched, Java/Bedrock worlds not touched. Canonical `backend_ports_private=FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS`, 12.5 effective security OPEN, 12.11 live E2E and 12.12 soak OPEN, Stable/Maintenance BLOCKED.
+
+## 2026-10-10 — quick-first order supersedes soak-first suggestion
+
+The operator requested **shorter checks before the 8-hour soak**. Follow `DAY12-QUICK-FIRST-20261010.md`. Begin with non-disruptive GSCM Android+iOS status/reconnect and GSC console read-only `list`, then Java actual Lobby/routing/last-location checks. Keep 12.4 as no-action after zero cleanup candidates and preserve Golden backups. Do not create/launch an eight-hour monitor now, and do not repeat already accepted Bedrock pack/Velocity restarts. Day12.10 strict security and the broad 25-case E2E remain open.

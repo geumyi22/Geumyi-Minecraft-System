@@ -1,3 +1,11 @@
+### 2026-10-10 — Quick-first priority after user elected to defer 8-hour soak
+
+- **12.4 policy review (repository-side)**: `deploy/day12-lifecycle-policy.json` verified as proposed; protected/checkpoint/active transaction exemptions, Trash-only and no permanent-delete-automatic all enabled. Previous REAL on-host 12.4 dry-run had **0 backup/log cleanup candidates**. Safety disposition **REVIEWED_NO_ACTION_RECOMMENDED**; no Apply, file movement, deletion, Golden mutation or new user approval. Does **not** claim production retention policy fully applied.
+- Remaining quick, non-disruptive 12.11 steps sequenced: GSCM Android+iOS sessions/status → read-only GSC console `list` / WS observation → Java real-client 3 entrypoints/Lobby/routing/positions → selective individual Bedrock pack checks only if needed. Preserve 25-case canonical form and do not auto-pass unspecified cases.
+- **Later**, with separate safety preconditions: 12.7 genuine offline-source start, 12.10 native backend bind/owner or separately approved compensating policy; **last** 12.12 eight-hour soak. All Stable/Day12 completion gates unchanged.
+- Operator runbook: `DAY12-QUICK-FIRST-20261010.md`. No need to rerun prior Golden 4/4, entire Day12 Remaining OneClick, three Velocity scoped restarts or broad firewall TCP scans.
+
+
 ### 2026-10-10 — continuous Phase12.12 soak kit Windows CI PASS
 
 - **Tooling implemented, not host-executed:** `tools/day12/Day12_Phase12_Continuous_Soak_READ_ONLY.ps1` + `Start_Day12_8H_Soak_READ_ONLY.cmd`. New unique Desktop evidence directory, eight-hour monotonic stopwatch, five-minute Java/GSC process identity samples, GSC Java TCP/Bedrock RakNet application-level probes, failure/changed PID checks, no configuration/server/task/world/network mutation. Local PID/private process detail saved separately; only `DAY12-SOAK-SUMMARY-SHARE-ONLY-THIS.json` is suitable to share.

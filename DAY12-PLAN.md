@@ -113,6 +113,10 @@ Export JSON suitable for support/debugging without secrets.
 
 ## 12.4 — Storage, backup and log lifecycle
 
+**2026-10-10 fast-first decision:** prior live lifecycle dry-run identified **zero** eligible backup/log candidates. The proposed policy protects Golden/checkpoint/active-transaction backups, permits Trash-only movement and forbids automatic permanent delete. Therefore no Lifecycle Apply or repeated backup inventory is justified for closure. **Review recommendation: NO ACTION; deployment/policy approval not claimed**. See `DAY12-QUICK-FIRST-20261010.md`.
+
+
+
 Backup policy:
 - configurable recent/daily/weekly retention;
 - protected/pinned backup exemption;
