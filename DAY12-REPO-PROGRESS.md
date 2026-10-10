@@ -1,3 +1,11 @@
+## Day12.11 Bedrock pack Apply recovery — 2026-10-10 13:12 KST
+
+- **Actual operator forensics** `Day12-Bedrock-Fix-Forensics-20261010-131249.json`: journal absent; 0/12 originals installed; 12/12 absent; no unapproved or changed target files; all three genuine Geyser Velocity installs and pack directories present; all three `enable-custom-content: TRUE`. Initial Apply did **not** successfully stage any file.
+- **Likely V1 root cause**: old `IsCustomContentEnabled` PowerShell regex rejected the CRLF line ending in real Windows `config.yml` despite the setting being true. The old exception sanitization masked the internal blocker as generic. Windows PowerShell 5.1 regression isolated that precise CRLF parser fault and verified the replacement permits CRLF and LF, while rejecting false/absent/duplicate settings. CI: https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38023489636
+- **Operator-private v2 ZIP produced**: `Geumyi-Day12-Bedrock-Pack-Fix-V2-CRLF-REPAIRED.zip`. Contains exact original 3 .mcpack files and one 212-definition mapping; original SHA256 hashes verified, archives CRC-clean and ZIP confirmed with ten entries. Adds fail-closed one-click preview→apply, nonsecret per-proxy blocker codes, twelve-file postcopy SHA256 verification and transaction-only rollback. Binary content is not committed to public GitHub.
+- **No live v2 Apply or proxy reload has been executed by assistant**. Operator to run `00_Preview_Then_Apply_NO_RESTART.cmd` on server PC, return generated Apply/Preview JSON. Pause real Bedrock E2E, proxy restarts and Stable promotion until reports and safe no-player restart.
+
+
 
 ### 2026-10-10 12:01 KST — Day12.11 Bedrock first-login resource pack recovery
 
