@@ -1,6 +1,6 @@
 # Day 12 — Repository / Live Progress
 
-Updated: 2026-10-10 KST (09:59 real remaining-only review and Day11 CI artifact hash crosscheck)
+Updated: 2026-10-10 KST (11:43 strict final-closure eight-port evidence hardening; historical live findings preserved)
 
 This file separates **work that can be completed from GitHub/CI** from **work that requires the real server PC or real clients**. Source/CI completion never substitutes for live evidence.
 
@@ -20,6 +20,13 @@ This file separates **work that can be completed from GitHub/CI** from **work th
 | 12.11 Final E2E | ✅ exact report/checklist prepared | ⏳ reboot + Java + Bedrock + GSCM + operations |
 | 12.12 Soak | ✅ start/end collector prepared | ⏳ 8–12 h where practical + review |
 | 12.13 Final release | ✅ maintenance handoff + fail-closed closure workflow prepared | ⏳ signed Stable release after gates |
+
+
+## 2026-10-10 11:43 KST — final closure proof hardened (repository only)
+
+- Commit [`57ad7ae`](https://github.com/geumyi22/Geumyi-Minecraft-System/commit/57ad7ae27240c12cf9acb3d60a6c9666cc85de33): final Stable closure now requires the **redacted real health report to include all eight reserved private Java/RCON ports** (25570–25573, 25575–25577, 25579), with an actual native OWNER_PID listener-source row at a loopback address for each port. A second contradictory wildcard/nonloopback row vetoes closure even when another row appears safe. Mere report-level `backend_ports_private=PASS`, provider status, or a partial subset of listening servers cannot substitute.
+- Synthetic regression cases cover each missing protected port, non-native netstat-only evidence, wildcard/nonloopback address rows, contradictory extra rows and absent/invalid inventories. [Day12 Safety CI `38017872966`](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38017872966) **SUCCESS**; [Day12 Security SBOM CI `38017872969`](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38017872969) **SUCCESS**; [Operator Kit `38017872967`](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38017872967) **SUCCESS**.
+- This is an **independent final-closure ledger consistency veto, not a new Windows kernel test**. The actual serverPC's native listener owner/address evidence still fails/incomplete (12.10), other real gates remain open, and Stable / Maintenance approval is **unchanged BLOCKED**. Production GSC/Java/Velocity/Bedrock packs/worlds, firewall/ACL and protected Golden archives remain untouched. Do not ask the operator to repeat ineffective listener scans.
 
 ## 2026-10-09 04:19 KST — operator TCP diagnostic evidence
 
