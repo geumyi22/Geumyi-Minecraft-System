@@ -1,5 +1,7 @@
 # Geumyi Minecraft System
 
+> **프로젝트 종료 정리 (2026-10-11):** 일반 기능 개발과 반복 테스트는 소규모 서버 운영 기준으로 마감했습니다. GitHub/PC 정리 기록과 유지할 복구 자산은 [PROJECT-CLOSEOUT-2026-10-11.md](PROJECT-CLOSEOUT-2026-10-11.md)에 있습니다. 정식 Stable 릴리즈의 엄격한 보안 게이트는 아직 통과하지 않았습니다.
+
 최신 확정 기준의 소스·복구 근거·CI·리소스팩을 모은 저장소입니다. **원본 그대로 회수한 소스와 바이너리 기준으로 재구성한 소스를 구분해서 기록합니다.**
 
 | Component | Baseline | Path | Recovery status |
@@ -28,7 +30,7 @@
 | Day 1~9 | ✅ 완료 |
 | Day 10 | ✅ Java + Bedrock four-server/Lobby real-client E2E 완료 |
 | Day 11 | ✅ 완료 — GSC 4.3.8 / GSCM 1.1.5+117, Final READ-ONLY E2E + Java/Bedrock smoke + final GSCM checks PASS |
-| Day 12 | 🔄 진행 중 — repository CI PASS, 12.0A/12.0B Golden 및 12.7 cache Build 운영자 PASS 기록; 12.10 verifier live 1 FAIL, E2E/soak/Stable 대기 |
+| Day 12 | ✅ **소규모 운영 기준 마감** — 4/4 Golden, 84/84 cache, Java/Bedrock/GSC/GSCM 운영자 승인, Windows CI 복구 PASS. ⚠️ 정식 Stable 서명 배포·일부 실효 보안 검증은 **별도 차단 유지** |
 
 Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/마감을 수행한 milestone**입니다. Day 8과 Day 9는 모두 완료 상태이며, 각 E2E PASS는 완료의 근거입니다.
 
