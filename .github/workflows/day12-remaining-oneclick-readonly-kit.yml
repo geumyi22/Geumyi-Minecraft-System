@@ -47,6 +47,13 @@ jobs:
             'Phase4_Lifecycle_Apply','_Scoped_Graceful_Restart','Geumyi_Final_Verification.cmd')){
             if($src -match [regex]::Escape($bad)){throw ('Unsafe/repeated code reference: '+$bad)}
           }
+          # A command-line filename match is never equivalent to a
+          # trusted SHA256/release provenance or loaded class/JAR attestation.
+          if($src -notmatch 'active_agent_identity_is_proven=\$false' -or
+             $src -notmatch 'release_sha256_authenticity_verified=\$false' -or
+             $src -match 'active_agent_identity_is_proven=\s*\('){
+            throw 'Disallowed active Agent binary authenticity assertion'
+          }
           $cmd=Get-Content 'Geumyi_Day12_Remaining_OneClick_READ_ONLY.cmd' -Raw
           if($cmd -notmatch 'powershell.exe.*Day12_Remaining_OneClick_READ_ONLY.ps1' -or
              $cmd -match '(?i)-NonInteractive'){
