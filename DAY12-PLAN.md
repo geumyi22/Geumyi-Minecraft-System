@@ -1,6 +1,6 @@
 ## 2026-10-11 — Operator 12.12 stability acceptance (supersedes routine-run request)
 
-**12.12 operational soak: OPERATOR ACCEPTED / PASS in user-reported scope.** The server was left running continuously and the operator noticed no problems, then explicitly instructed that the eight-hour test be passed. Do not ask for another routine eight-hour monitoring run. Exact timed start/end and resource/process telemetry were not provided; this is **not** an instrumented eight-hour PASS. The protected formal soak gate remains `PENDING_LIVE`; signed Stable/Maintenance is still BLOCKED by separate safety gates. See `DAY12-PHASE12-OPERATOR-SOAK-ACCEPTANCE-20261011.md`.
+**12.12 operational soak: OPERATOR ACCEPTED / PASS in user-reported scope.** The server was left running continuously and the operator noticed no problems, then explicitly instructed that the eight-hour test be passed. Do not ask for another routine eight-hour monitoring run. Exact timed start/end and resource/process telemetry were not provided; this is **not** an instrumented eight-hour PASS. The protected formal soak gate remains `PENDING_LIVE`; signed Stable/Maintenance is still BLOCKED by separate safety gates. See `docs/day12/phases/phase-12/DAY12-PHASE12-OPERATOR-SOAK-ACCEPTANCE-20261011.md`.
 
 # Day 12 — Final Production Hardening & Closure
 
@@ -11,22 +11,22 @@ Day 12 is not a feature-dump. Its purpose is to leave Geumyi Minecraft System in
 
 ## Operator functional acceptance vs release verification — 2026-10-11
 
-The operator states all game/GSC/GSCM features appear normal, explicitly accepts the three detailed Bedrock content checks, and requests no further drip-fed routine function checks. See `DAY12-OPERATOR-FUNCTIONAL-ACCEPTANCE-20261011.md`. GSCM iOS patched-console behavior is operator-asserted, **not** separately proven with an updated iOS binary/device log. Historical successful Java/GSC/Android and Bedrock checks remain accepted in their exact scopes.
+The operator states all game/GSC/GSCM features appear normal, explicitly accepts the three detailed Bedrock content checks, and requests no further drip-fed routine function checks. See `docs/day12/operations/DAY12-OPERATOR-FUNCTIONAL-ACCEPTANCE-20261011.md`. GSCM iOS patched-console behavior is operator-asserted, **not** separately proven with an updated iOS binary/device log. Historical successful Java/GSC/Android and Bedrock checks remain accepted in their exact scopes.
 
 **Do not auto-pass unexecuted 25-case tests** from this broad statement. The strict 12.10 backend privacy gate remains FAIL; actual 12.7 offline start and 12.12 eight-hour soak are untested, so Stable/Maintenance remain blocked. Stop repeated routine test requests; prioritize safe source/CI work and only ask for indispensable, separately approved real host safety operations.
 
 ## 2026-10-11 — Requested immediate review sequence 12.4 → 12.9 → 12.2 → 12.6
 
-- **12.4:** previous real cleanup dry-run yielded zero eligible candidates; operator-approved **NO ACTION**, Golden 4/4 kept; retention policy not applied or scheduled. `DAY12-PHASE4-FINAL-NOOP-DECISION-20261011.md`.
-- **12.9:** desktop GSC + Android GSCM console 4s polling directly user-reported normal; iOS patched binary only operator-asserted normal. Operational UI scope accepted; iOS independent binary/device proof absent. `DAY12-PHASE9-UX-OPERATOR-CLOSURE-20261011.md`.
-- **12.2 (initial review, superseded below):** 11/11 non-Lobby historic installed JAR digests matched pinned release/CI bytes; at that point two Lobby aliases remained unproven. **The later 2026-10-11 resolution below establishes 13/13 exact historical provenance matches.** Runtime identity and final mandatory live gate remain separate. `DAY12-PHASE2-FINAL-PROVENANCE-REVIEW-20261011.md`.
-- **12.6:** fail-closed final release chain, real-byte SHA manifest generation, signature/Android release controls and negative fixtures verified by [CI run 38066005282](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38066005282) **PASS in repository scope**; actual signed Stable not published. `DAY12-PHASE6-RELEASE-CHAIN-REVIEW-20261011.md`.
+- **12.4:** previous real cleanup dry-run yielded zero eligible candidates; operator-approved **NO ACTION**, Golden 4/4 kept; retention policy not applied or scheduled. `docs/day12/phases/phase-04/DAY12-PHASE4-FINAL-NOOP-DECISION-20261011.md`.
+- **12.9:** desktop GSC + Android GSCM console 4s polling directly user-reported normal; iOS patched binary only operator-asserted normal. Operational UI scope accepted; iOS independent binary/device proof absent. `docs/day12/phases/phase-09/DAY12-PHASE9-UX-OPERATOR-CLOSURE-20261011.md`.
+- **12.2 (initial review, superseded below):** 11/11 non-Lobby historic installed JAR digests matched pinned release/CI bytes; at that point two Lobby aliases remained unproven. **The later 2026-10-11 resolution below establishes 13/13 exact historical provenance matches.** Runtime identity and final mandatory live gate remain separate. `docs/day12/phases/phase-02/DAY12-PHASE2-FINAL-PROVENANCE-REVIEW-20261011.md`.
+- **12.6:** fail-closed final release chain, real-byte SHA manifest generation, signature/Android release controls and negative fixtures verified by [CI run 38066005282](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38066005282) **PASS in repository scope**; actual signed Stable not published. `docs/day12/phases/phase-06/DAY12-PHASE6-RELEASE-CHAIN-REVIEW-20261011.md`.
 
 The protected final release manifest remains **BLOCKED**, especially 12.5 security, 12.7 real offline boot, 12.10 private socket native binding, 12.11 real staging recovery/rollout E2E, 12.12 long soak, and the then-unresolved Lobby provenance (since resolved below). See `deploy/day12-scoped-evidence-ledger.json` for review statuses separated from exact reserved closed-scope test IDs.
 
 ## 2026-10-11 — Lobby plugin provenance resolved; final Stable still blocked
 
-Identified original Day10 final cutover System CI run **37113499031** from `DAY10-E2E-REPORT.md`. Archived GST/GDS JAR content SHA256s match both historic installed Lobby aliases exactly; all **13/13** targeted installed plugin/agent copies are now traceable to pinned CI/release content. See `DAY12-PHASE2-LOBBY-PROVENANCE-RESOLVED-20261011.md`.
+Identified original Day10 final cutover System CI run **37113499031** from `DAY10-E2E-REPORT.md`. Archived GST/GDS JAR content SHA256s match both historic installed Lobby aliases exactly; all **13/13** targeted installed plugin/agent copies are now traceable to pinned CI/release content. See `docs/day12/phases/phase-02/DAY12-PHASE2-LOBBY-PROVENANCE-RESOLVED-20261011.md`.
 
 12.6 repository build/sign/manifest control CI **PASSED** in run **38066005282**, but **actual signed Stable release is a 12.13 action only**. 12.10 real native backend socket bind ownership is still `FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS`; other required offline, security, 12.11 real E2E, soak and release checks remain. No Stable signing, publish or host file replacement authorized.
 
@@ -138,7 +138,7 @@ Export JSON suitable for support/debugging without secrets.
 
 ## 12.4 — Storage, backup and log lifecycle
 
-**2026-10-10 fast-first decision:** prior live lifecycle dry-run identified **zero** eligible backup/log candidates. The proposed policy protects Golden/checkpoint/active-transaction backups, permits Trash-only movement and forbids automatic permanent delete. Therefore no Lifecycle Apply or repeated backup inventory is justified for closure. **Review recommendation: NO ACTION; deployment/policy approval not claimed**. See `DAY12-QUICK-FIRST-20261010.md`.
+**2026-10-10 fast-first decision:** prior live lifecycle dry-run identified **zero** eligible backup/log candidates. The proposed policy protects Golden/checkpoint/active-transaction backups, permits Trash-only movement and forbids automatic permanent delete. Therefore no Lifecycle Apply or repeated backup inventory is justified for closure. **Review recommendation: NO ACTION; deployment/policy approval not claimed**. See `docs/day12/operations/DAY12-QUICK-FIRST-20261010.md`.
 
 
 
