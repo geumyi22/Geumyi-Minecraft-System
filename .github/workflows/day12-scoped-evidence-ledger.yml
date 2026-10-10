@@ -1,0 +1,29 @@
+name: Day12 Scoped Evidence Ledger Fail Closed
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/day12-scoped-evidence-ledger.json'
+      - 'FINAL-RELEASE-GATES.json'
+      - 'tools/day12/validate_day12_scoped_evidence_ledger.py'
+      - 'tools/day12/test_validate_day12_scoped_evidence_ledger.py'
+      - '.github/workflows/day12-scoped-evidence-ledger.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scope-versus-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Check actual scoped proof separate from mandatory unresolved release gates
+        run: python tools/day12/test_validate_day12_scoped_evidence_ledger.py -v
+      - name: Verify current progress ledger and retain Stable block
+        run: python tools/day12/validate_day12_scoped_evidence_ledger.py .
