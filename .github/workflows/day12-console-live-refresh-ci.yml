@@ -1,0 +1,29 @@
+name: Day12 GSC and GSCM Console Live Refresh
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'GSC/ServerCenter/cmd/client/dashboard.html'
+      - 'GSCM/lib/screens/server_detail_screen.dart'
+      - 'tools/day12/test_console_live_refresh.js'
+      - '.github/workflows/day12-console-live-refresh-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  console-polling-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify inline GSC JavaScript and polling behavior
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          html=pathlib.Path('GSC/ServerCenter/cmd/client/dashboard.html').read_text('utf-8')
+          scripts=re.findall(r'<script\s*>(.*?)</script\s*>',html,flags=re.I|re.S)
+          if len(scripts)!=1: raise SystemExit('expected one inline dashboard script')
+          pathlib.Path('/tmp/geumyi-console-dashboard.js').write_text(scripts[0],encoding='utf-8')
+          PY
+          node --check /tmp/geumyi-console-dashboard.js
+          node tools/day12/test_console_live_refresh.js
