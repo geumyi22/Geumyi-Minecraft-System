@@ -1,4 +1,6 @@
-# GSCM 1.1.5+117
+# GSCM 1.5.0+150
+
+**2026-10-11 Stable release source.** Version-alignment and maintenance baseline derived from 1.1.5+117; no new mobile features are claimed. Builds must pass Flutter analysis, tests and platform packaging. Actual device installation remains separate.
 
 Geumyi Server Center Mobile Flutter source for Android and iOS.
 
