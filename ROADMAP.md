@@ -39,13 +39,13 @@ Day 4는 **신규 기능 구현 일차가 아닙니다.** 당시 “더 할 것�
 - GDS 1.1.1
 - 후속 비차단 항목 정리
 
-세부 근거: [DAY4-E2E-REPORT.md](DAY4-E2E-REPORT.md)
+세부 근거: [DAY4-E2E-REPORT.md](docs/history/day-04/DAY4-E2E-REPORT.md)
 
 ## Day 5 — Operations Stability
 
 사용자 실운영 기준으로 시작/정상 종료/재시작/강제 종료, 중복 명령/락, GSC·Agent 재연결, 네트워크 복구, Whole Shutdown, 고아 프로세스, Other 상태/알림을 확인했습니다.
 
-세부 근거: [DAY5-STABILITY-REPORT.md](DAY5-STABILITY-REPORT.md)
+세부 근거: [DAY5-STABILITY-REPORT.md](docs/history/day-05/DAY5-STABILITY-REPORT.md)
 
 ## Day 6 — GSCM Device Verification
 
@@ -55,7 +55,7 @@ Android/iOS에서 페어링, 인증 지속, 앱/기기 재시작, HTTP snapshot,
 
 GSC, StatusAgent, GST, GDS, Technology, Chemistry, ResourcePack, GSCM Android/iOS 자동 build/test/artifact 체계를 실제 GitHub Actions에서 통과시켰습니다.
 
-세부 근거: [DAY7-CI-REPORT.md](DAY7-CI-REPORT.md)
+세부 근거: [DAY7-CI-REPORT.md](docs/history/day-07/DAY7-CI-REPORT.md)
 
 ## Day 8 — Secure Release & Update Foundation — 완료
 
@@ -70,7 +70,7 @@ GSC, StatusAgent, GST, GDS, Technology, Chemistry, ResourcePack, GSCM Android/iO
 - Playground isolation
 - 서버 PC finalizer PASS
 
-세부 근거: [DAY8-RELEASE-REPORT.md](DAY8-RELEASE-REPORT.md), [DAY8-RUNBOOK.md](DAY8-RUNBOOK.md)
+세부 근거: [DAY8-RELEASE-REPORT.md](docs/history/day-08/DAY8-RELEASE-REPORT.md), [DAY8-RUNBOOK.md](DAY8-RUNBOOK.md)
 
 ## Day 9 — Transaction / Backup / Rollback — 완료
 
@@ -106,7 +106,7 @@ Bedrock:
 
 따라서 **Day 10 완료**로 닫습니다. 이 결과는 사용자 실기기 확인이며 assistant-side 직접 실행으로 기록하지 않습니다.
 
-세부 근거: [DAY10-PLAN.md](DAY10-PLAN.md), [DAY10-E2E-REPORT.md](DAY10-E2E-REPORT.md)
+세부 근거: [DAY10-PLAN.md](docs/history/day-10/DAY10-PLAN.md), [DAY10-E2E-REPORT.md](docs/history/day-10/DAY10-E2E-REPORT.md)
 
 ## Day 11 — Operations UX & Fleet Management
 

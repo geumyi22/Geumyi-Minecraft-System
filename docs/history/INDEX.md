@@ -1,0 +1,35 @@
+# Day 4–11 개발 및 검증 기록
+
+기존 보고서 원문은 변경하지 않고 일차별 폴더로 보관합니다.
+
+## Day 4
+
+- [DAY4-E2E-REPORT.md](day-04/DAY4-E2E-REPORT.md)
+
+## Day 5
+
+- [DAY5-STABILITY-REPORT.md](day-05/DAY5-STABILITY-REPORT.md)
+
+## Day 6
+
+- [DAY6-DEVICE-TEST.md](day-06/DAY6-DEVICE-TEST.md)
+
+## Day 7
+
+- [DAY7-CI-REPORT.md](day-07/DAY7-CI-REPORT.md)
+
+## Day 8
+
+- [DAY8-RELEASE-REPORT.md](day-08/DAY8-RELEASE-REPORT.md)
+
+## Day 10
+
+- [DAY10-E2E-REPORT.md](day-10/DAY10-E2E-REPORT.md)
+- [DAY10-PLAN.md](day-10/DAY10-PLAN.md)
+
+## Day 11
+
+- [DAY11-FINAL-REPORT.md](day-11/DAY11-FINAL-REPORT.md)
+- [DAY11-PHASE0-REPORT.md](day-11/DAY11-PHASE0-REPORT.md)
+- [DAY11-PHASE7-REPORT.md](day-11/DAY11-PHASE7-REPORT.md)
+- [DAY11-PLAN.md](day-11/DAY11-PLAN.md)

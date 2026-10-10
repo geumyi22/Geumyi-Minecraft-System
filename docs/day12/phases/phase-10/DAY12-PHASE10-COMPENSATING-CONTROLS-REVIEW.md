@@ -75,7 +75,7 @@ Do not proceed if previously unidentified broad Allow rules or IPv6/overlay path
 
 ## Source pointers
 
-- [Day12.5 operator-reported firewall/ACL scope](DAY12-PHASE5-SECURITY-REVIEW.md)
+- [Day12.5 operator-reported firewall/ACL scope](../phase-05/DAY12-PHASE5-SECURITY-REVIEW.md)
 - [Day12.10 bind discrepancy and preserved risk gate](DAY12-PHASE10-BIND-DECISION-REPORT.md)
 - [Canonical topology](FINAL-NETWORK-TOPOLOGY.json)
 - [Security decision packet](DAY12-PHASE10-SECURITY-DECISION-PACKET.md)

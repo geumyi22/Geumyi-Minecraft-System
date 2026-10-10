@@ -86,7 +86,7 @@ Day 11은 2026-10-07 기준 **완료**입니다.
 - Java + Bedrock post-update real-client smoke USER PASS
 - 마지막 GSCM 2개 실기기 확인 항목 USER PASS
 
-최종 근거: [DAY11-FINAL-REPORT.md](DAY11-FINAL-REPORT.md)
+최종 근거: [DAY11-FINAL-REPORT.md](docs/history/day-11/DAY11-FINAL-REPORT.md)
 
 ## Day 11 고정 목표
 

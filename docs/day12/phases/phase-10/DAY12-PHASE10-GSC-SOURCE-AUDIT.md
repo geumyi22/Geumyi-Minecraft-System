@@ -49,4 +49,4 @@
 
 This is repository analysis plus an optional scoped **read-only application-log** reporter. No server starts/stops, world writes, settings edits, Windows ACL/firewall changes, RCON credential access/export, backup deletion, or Stable promotion. A GitHub CI green result validates only the synthetic fixture, not the live host.
 
-Links: [Day 12.10 bind decision](DAY12-PHASE10-BIND-DECISION-REPORT.md), [Day 12 runbook](DAY12-LIVE-RUNBOOK.md), [Final release gates](FINAL-RELEASE-GATES.json).
+Links: [Day 12.10 bind decision](DAY12-PHASE10-BIND-DECISION-REPORT.md), [Day 12 runbook](../../../../DAY12-LIVE-RUNBOOK.md), [Final release gates](FINAL-RELEASE-GATES.json).

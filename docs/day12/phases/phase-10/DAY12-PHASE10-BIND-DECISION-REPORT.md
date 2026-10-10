@@ -86,9 +86,9 @@ This requires a **separate operator approval and maintenance window** for anythi
 
 ## Source documents
 
-- [Day 12 Live Runbook](DAY12-LIVE-RUNBOOK.md)
-- [Day 12 Repository Progress](DAY12-REPO-PROGRESS.md)
-- [Day 12 Phase 5 Security Review](DAY12-PHASE5-SECURITY-REVIEW.md)
+- [Day 12 Live Runbook](../../../../DAY12-LIVE-RUNBOOK.md)
+- [Day 12 Repository Progress](../../../../DAY12-REPO-PROGRESS.md)
+- [Day 12 Phase 5 Security Review](../phase-05/DAY12-PHASE5-SECURITY-REVIEW.md)
 - [Final release gates](FINAL-RELEASE-GATES.json)
 
 Operator JSON reports are sensitive host evidence and are not published as source-controlled attachments.

@@ -46,24 +46,24 @@ Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/
 - GST / Technology / Chemistry: 각 컴포넌트의 `README.md`와 `RECOVERY.md`에서 원본/재구성 범위를 구분합니다.
 - 리소스팩: [구성 및 패키징](ResourcePacks/README.md)
 - 전체 일차/상태 단일 기준: [DAY-TIMELINE.md](DAY-TIMELINE.md)
-- Day 4 실서버 검증/마감: [DAY4-E2E-REPORT.md](DAY4-E2E-REPORT.md)
-- GSC/GSCM 안정화 검증: [DAY5-STABILITY-REPORT.md](DAY5-STABILITY-REPORT.md)
-- 전체 컴포넌트 자동 빌드/CI 검증: [DAY7-CI-REPORT.md](DAY7-CI-REPORT.md)
-- Day 8 보안 Release/자동 업데이트 완료 보고: [DAY8-RELEASE-REPORT.md](DAY8-RELEASE-REPORT.md)
+- Day 4 실서버 검증/마감: [DAY4-E2E-REPORT.md](docs/history/day-04/DAY4-E2E-REPORT.md)
+- GSC/GSCM 안정화 검증: [DAY5-STABILITY-REPORT.md](docs/history/day-05/DAY5-STABILITY-REPORT.md)
+- 전체 컴포넌트 자동 빌드/CI 검증: [DAY7-CI-REPORT.md](docs/history/day-07/DAY7-CI-REPORT.md)
+- Day 8 보안 Release/자동 업데이트 완료 보고: [DAY8-RELEASE-REPORT.md](docs/history/day-08/DAY8-RELEASE-REPORT.md)
 - Day 9 transaction/backup/rollback 완료 상태: [ROADMAP.md](ROADMAP.md#day-9--transaction--backup--rollback--완료)
-- Day 10 Full E2E/Lobby 네트워크 고정 계획: [DAY10-PLAN.md](DAY10-PLAN.md)
-- Day 10 실제 서버 검증 결과: [DAY10-E2E-REPORT.md](DAY10-E2E-REPORT.md)
-- Day 11 Protection & Recovery 2.0 실서버 검증: [DAY11-PHASE7-REPORT.md](DAY11-PHASE7-REPORT.md)
-- Day 11 최종 마감 보고: [DAY11-FINAL-REPORT.md](DAY11-FINAL-REPORT.md)
+- Day 10 Full E2E/Lobby 네트워크 고정 계획: [DAY10-PLAN.md](docs/history/day-10/DAY10-PLAN.md)
+- Day 10 실제 서버 검증 결과: [DAY10-E2E-REPORT.md](docs/history/day-10/DAY10-E2E-REPORT.md)
+- Day 11 Protection & Recovery 2.0 실서버 검증: [DAY11-PHASE7-REPORT.md](docs/history/day-11/DAY11-PHASE7-REPORT.md)
+- Day 11 최종 마감 보고: [DAY11-FINAL-REPORT.md](docs/history/day-11/DAY11-FINAL-REPORT.md)
 - Day 12 repository/live 진행 분리: [DAY12-REPO-PROGRESS.md](DAY12-REPO-PROGRESS.md)
 - Day 12 나중에 실행할 순서: [DAY12-LIVE-RUNBOOK.md](DAY12-LIVE-RUNBOOK.md)
 - Day 12 Golden Baseline: [FINAL-BASELINE.json](FINAL-BASELINE.json), [FINAL-VERSION-MATRIX.md](FINAL-VERSION-MATRIX.md), [FINAL-NETWORK-TOPOLOGY.json](FINAL-NETWORK-TOPOLOGY.json)
 - 이후 작업 순서와 장기 계획: [ROADMAP.md](ROADMAP.md)
-- 자동 빌드/Release/서버 자동 업데이트/rollback 장기 설계: [DEPLOYMENT-ARCHITECTURE.md](DEPLOYMENT-ARCHITECTURE.md)
+- 자동 빌드/Release/서버 자동 업데이트/rollback 장기 설계: [DEPLOYMENT-ARCHITECTURE.md](docs/reference/DEPLOYMENT-ARCHITECTURE.md)
 
 완성 EXE/JAR/APK/IPA/ZIP은 [기존 Release](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/mc-2026.09.26-v3)에 유지합니다. 운영 토큰·RCON 비밀번호·키스토어·월드·개인 로그는 Git에 넣지 않습니다.
 
-저장소는 Public 상태이므로 현재 트리와 Git 히스토리의 개인정보/시크릿 점검 결과는 [SECURITY-NOTES.md](SECURITY-NOTES.md)에 별도로 기록합니다. 자세한 복구 근거는 [RECOVERY-REPORT.md](RECOVERY-REPORT.md), [VERSION-MATRIX.md](VERSION-MATRIX.md), [SOURCE-MANIFEST.json](SOURCE-MANIFEST.json)을 확인하세요.
+저장소는 Public 상태이므로 현재 트리와 Git 히스토리의 개인정보/시크릿 점검 결과는 [SECURITY-NOTES.md](docs/reference/SECURITY-NOTES.md)에 별도로 기록합니다. 자세한 복구 근거는 [RECOVERY-REPORT.md](docs/reference/RECOVERY-REPORT.md), [VERSION-MATRIX.md](VERSION-MATRIX.md), [SOURCE-MANIFEST.json](SOURCE-MANIFEST.json)을 확인하세요.
 
 
 ## 최신 Stable 빌드

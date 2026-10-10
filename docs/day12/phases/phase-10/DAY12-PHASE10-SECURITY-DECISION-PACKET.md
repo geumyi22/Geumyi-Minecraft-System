@@ -127,8 +127,8 @@
 
 - [Day 12.10 bind decision](DAY12-PHASE10-BIND-DECISION-REPORT.md)
 - [GSC source audit](DAY12-PHASE10-GSC-SOURCE-AUDIT.md)
-- [Day 12.5 security review](DAY12-PHASE5-SECURITY-REVIEW.md)
-- [Final live E2E checklist](FINAL-E2E-REPORT.md)
+- [Day 12.5 security review](../phase-05/DAY12-PHASE5-SECURITY-REVIEW.md)
+- [Final live E2E checklist](../../../../FINAL-E2E-REPORT.md)
 - [Final release gates](FINAL-RELEASE-GATES.json)
 
 Private per-host JSON and raw server logs are not checked into GitHub.
