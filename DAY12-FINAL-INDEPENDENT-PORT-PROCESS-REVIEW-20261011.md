@@ -1,0 +1,10 @@
+# Day 12.10/12.11 independent server-PC read-only evidence — 2026-10-11
+
+Operator-submitted `DAY12-INDEPENDENT-PORT-AND-PROCESS-SHARE-ONLY-THIS.json`, captured **2026-10-11 02:01:51 KST**, `synthetic=false`, `read_only=true`, `result=INCOMPLETE_INDEPENDENT_SOCKET_EVIDENCE`. The private report itself has **not** been committed.
+
+- **Provider collection:** netstat=CAPTURED, 9 LISTEN lines, zero unparseable; .NET=CAPTURED. **Public positive control UNPROVEN**, no public port seen in both sources. Eight private Java/RCON ports 25570–25573, 25575–25577, 25579: **zero rows in either source for every port**. Thus listener bind/owner evidence remains **INCONCLUSIVE**, not a proven loopback-only setup, exposed backend, or stopped server. RCON same-owner pairs=0, no reliable conclusions possible without rows. The four prior tested LAN/Tailscale remote-path negative/positive results remain separate historical evidence.
+- **Java role:** 10 Java processes, 10 command lines readable, one nonstandard-JAR process and one StatusAgent JAR process, no unknown Java candidate found owning a backend TCP port. This **suggests** the previously unclassified Java may be expected StatusAgent, but the aggregate counts do **not** establish they are exactly the same PID/process. Existing GSC Host 1, six Velocity candidates and three recognized Paper candidates remain as separately captured.
+- **Safe execution:** no service stop/restart, network changes, world/backup modifications, process commands/PIDs/IPs/tokens exported.
+- **Decision:** 12.10 canonical owner-bind gate remains `FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS`. Missing rows across both collectors **and public control** indicates the investigation is blocked at socket observation; do not blindly retry the same scans or alter live firewall. 12.11 process role classification is partial, not a full 4/4 Paper or real #12/#17 E2E PASS. 12.5 ACL/firewall effective permissions, 12.7 offline boot and signed staging rollback remain open. Stable promotion remains blocked.
+
+Prior user-accepted Java/Bedrock game features and uninstrumented 12.12 operations soak remain accepted without replay.
