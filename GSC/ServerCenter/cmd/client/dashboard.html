@@ -387,10 +387,11 @@ async function loadExternalUpdates(){
     }).join('');
     const errs=(x.errors||[]).map(v=>'<div class="warntext">• '+esc(v)+'</div>').join('');
     root.innerHTML='<div class="row spread"><div><div class="title">🌐 외부 프록시 / 호환 구성요소</div>'+
-      '<div class="small">Geyser/Floodgate/Via 공식 metadata를 조회합니다. Paper는 알림 + 수동 승인 정책입니다.</div></div>'+
+      '<div class="small">Geyser/Floodgate는 프록시 rolling 적용, ViaVersion/ViaBackwards는 Paper 서버 모두 종료 후 별도 적용. Paper는 수동 승인입니다.</div></div>'+
       '<div class="actions"><button onclick="loadExternalUpdates()">새로고침</button>'+
-      '<button class="primary" onclick="stageExternalUpdates()">검증 후 Staging</button></div></div>'+
-      '<div class="notice" style="margin-top:10px">Staging은 live JAR/config/Floodgate key를 변경하지 않습니다. 실제 교체는 백업·접속자 확인·maintenance 승인·health gate·rollback 경로가 준비된 뒤 별도로 수행합니다.</div>'+
+      '<button class="primary" onclick="stageExternalUpdates()">검증 후 Staging</button>'+ 
+      '<button class="warning" onclick="applyExternalViaOffline()">Via 오프라인 적용</button></div></div>'+
+      '<div class="notice" style="margin-top:10px">Staging은 해시 검증된 다운로드만 수행하고 실제 플러그인은 변경하지 않습니다. Via 2종은 4개 Paper 서버를 모두 정상 종료한 후 별도 [Via 오프라인 적용] 버튼을 눌러야 합니다. 변경 후 서버 시작과 실접속 테스트는 별도입니다. Geyser/Floodgate rolling 적용 기능과 구분합니다.</div>'+
       '<div class="table-wrap" style="margin-top:10px"><table class="table"><tr><th>구성요소</th><th>현재 설치</th><th>최신</th><th>상태</th><th>검증</th></tr>'+
       (rows||'<tr><td colspan="5">확인된 구성요소가 없습니다.</td></tr>')+'</table></div>'+errs;
   }catch(e){root.innerHTML='<div class="badtext">'+esc(koMessage(e.message))+'</div>'}
@@ -406,11 +407,24 @@ async function stageExternalUpdates(){
     alert('외부 구성요소 Staging 결과\n\n검증 후 staging: '+staged.length+'개\n차단: '+blocked.length+'개\n이미 최신: '+skipped.length+'개\n\nLive 파일 변경: 없음\n'+
       (staged.length?'\nStaged\n'+staged.map(v=>'• '+v.component+' '+v.version).join('\n'):'')+
       (blocked.length?'\n\nBlocked\n'+blocked.map(v=>'• '+v.component+': '+v.reason).join('\n'):'')+
-      (staged.some(v=>v.component==='geyser'||v.component==='floodgate')?'\n\n다음: 외부 프록시 적용 버튼을 사용하세요.':''));
+      (staged.some(v=>v.component==='geyser'||v.component==='floodgate')?'\n\nGeyser/Floodgate: 별도 rolling 적용 확인 필요.':'')+
+      (staged.some(v=>v.component==='viaversion'||v.component==='viabackwards')?'\n\nVia: 서버 4개를 정상 종료한 뒤 [Via 오프라인 적용]을 누르세요.':''));
     loadExternalUpdates();
     if(staged.some(v=>v.component==='geyser'||v.component==='floodgate'))setTimeout(()=>applyExternalProxyUpdate(lastExternalStageRoot),250);
 
   }catch(e){toast(koMessage(e.message),true)}
+}
+
+async function applyExternalViaOffline(){
+  if(!lastExternalStageRoot){alert('먼저 검증 후 Staging을 실행하세요. Staging은 실제 서버를 변경하지 않습니다.');return;}
+  if(!confirm('ViaVersion/ViaBackwards 오프라인 적용\n\n야생·놀이터·기타·로비 Paper 서버 모두 정상 종료 후에만 가능합니다. 현재 접속자와 업데이트 작업이 없어야 합니다. GSC는 서버를 자동으로 종료하지 않습니다.\n\n계속하시겠습니까?'))return;
+  if(!confirm('최종 승인: 준비된 Via JAR을 서버별 백업을 만든 뒤 설치합니다. 서버 자동 재시작 없이 파일만 교체하며, 서버를 다시 켠 후 상태 확인이 필요합니다.\n\n적용하시겠습니까?'))return;
+  try{
+    const result=await req('/api/v4/update/external/apply-via-offline',{method:'POST',body:JSON.stringify({root:lastExternalStageRoot,confirm:'APPLY_VIA_OFFLINE'})});
+    alert('Via 오프라인 JAR 교체 완료\n\n교체 JAR: '+(result.files||0)+'\n백업: '+(result.backup_root||'-')+'\n\n서버 재시작: 하지 않음\n동작 검증: 서버 시작 후 확인 필요');
+    lastExternalStageRoot='';
+    loadExternalUpdates();
+  }catch(e){alert('Via 오프라인 업데이트 차단/실패\n\n'+koMessage(e.message)+'\n\n문제 발생 시 기록과 백업을 확인하고 무작정 재적용하지 마세요.');}
 }
 
 async function applyExternalProxyUpdate(root){
