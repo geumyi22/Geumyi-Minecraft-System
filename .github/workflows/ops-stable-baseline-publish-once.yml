@@ -1,0 +1,30 @@
+name: Geumyi one-time operating Stable release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ops-stable-baseline-publish-once.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: geumyi-operator-stable-20261011
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Verify pinned released bytes and publish owner-accepted Stable snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Promote existing signed Day11 release bytes without changing formal Stable gates
+        shell: bash
+        run: bash tools/release/publish_operational_stable_once.sh
