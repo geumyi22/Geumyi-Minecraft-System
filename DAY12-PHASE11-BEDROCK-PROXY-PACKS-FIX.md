@@ -1,3 +1,16 @@
+## 2026-10-10 21:11 KST — Velocity process census V2 false-negative, V3 parser candidate
+
+Actual operator \`Day12-Bedrock-Proxy-Restart-Precheck-20261010-211103.json\`:
+- \`status=BLOCKED_OR_PARTIAL_RESTART_NEEDS_OPERATOR_REVIEW\`, \`code=VELOCITY_PROCESS_CENSUS_NOT_EXACTLY_THREE\`.
+- The 12 approved pack/mapping SHA-256 fingerprints were reverified. No proxy restart attempted; no backend/Paper/GSC/world/firewall changes.
+- The script executed the exact Task Scheduler action validation before the census, so those checks did not fail. The report did not include actual Java/Velocity process counts and cannot prove their number.
+
+**Concrete source bug:** In private Restart V2, \`Get-VelocityPids\` matches an optional one-segment path before \`velocity.jar\`, but Day10 \`Day10-FourStartProxy\` explicitly launches Java with a full absolute \`-jar C:\...\FourServer\wild\velocity.jar\` path. V2 can therefore undercount healthy live proxies. The next script uses a standalone V3 parser that supports exact multi-directory absolute paths and the Task Scheduler's relative \`-jar velocity.jar\` form. Unexpected jar locations are still blocked; scripts do **not** relax task identity, staged SHA-256, journal, or three application-layer Java/RakNet probe gates.
+
+The parser source at \`tools/day12/Day12_Velocity_Process_Parser_V3.ps1\` matches the helper embedded in the private \`Geumyi-Day12-Bedrock-Scoped-Proxy-Restart-V3-Census-Fixed.zip\` (no pack bytes in Git). A separate Windows PowerShell 5.1 CI suite tests 8 arguments/classification cases and includes a regression asserting the old V2 regex misses the Day10 absolute path.
+
+The **private V3 restart ZIP** adds sanitized process census category counts to failure JSON, no full Java command lines, credentials, or filesystem paths. Operator workflow: V3 READ-ONLY preview first, then only if \`READY_FOR_SCOPED_PROXY_RESTART\`, no players and explicit consent, restart the three existing named scheduled tasks; verify process transitions and application-level probes. Neither preview nor restart has been executed on the actual server as part of this commit. Stable remains blocked, client pack acceptance pending.
+
 ## 2026-10-10 20:58 KST — scoped proxy restart blocked by Windows listener provider
 
 Actual operator report `Day12-Bedrock-Proxy-Restart-Precheck-20261010-205816.json`:
