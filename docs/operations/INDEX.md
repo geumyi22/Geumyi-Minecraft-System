@@ -7,6 +7,7 @@
 - [Day 1~12 완료 현황](../../DAY-TIMELINE.md)
 - [Day 12 실운영·복구 절차](../../DAY12-LIVE-RUNBOOK.md)
 - [정식 서명 Stable 보안 게이트](../../FINAL-RELEASE-GATES.json)
+- [GSC 4.5.1 Ed25519 서명 Beta 업데이트](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-gsc451-signed-beta.1) — 기존 Beta 공개키 동일·수동 설치 승인
 - [PC 임시 파일 안전 청소](../../DAY1-12-PC-CLEANUP-GUIDE.md)
 - [4.5.1/1.5.1 실기기 설치·회귀 테스트](RELEASE-4.5.1-1.5.1-SMOKE-CHECKLIST.md)
 

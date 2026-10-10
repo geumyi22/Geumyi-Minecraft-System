@@ -22,3 +22,8 @@ The repository's `main` commit history has not been force-pushed or rewritten, a
 - [4.5.1/1.5.1+151 최신 릴리즈](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151)는 [후속 공개 CI](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38085210886)에서 정상 공개됐습니다.
 - 배포 전용 `release-gsc451-gscm151-once.yml`, `ops-publish-gsc451-gscm151-once.yml` 두 개를 같은 Git blob SHA로 `docs/archive/workflows/`에 `.yml.txt` 형태로 보관했습니다. 기존 릴리즈/태그/CI 이력은 삭제하지 않았습니다.
 - 이 정리 시점의 활성 `.yml` 워크플로는 **18개**, 아카이브 `.yml.txt`는 **43개**입니다. 이후 추가 작업에 따라 숫자가 달라질 수 있습니다.
+
+## 2026-10-11 — GSC 4.5.1 서명 Beta 1회 게시 워크플로 보관
+
+- [서명 Beta 공개 CI](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38089609727) SUCCESS 및 [릴리즈](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-gsc451-signed-beta.1) 공개·검증 후 `ops-publish-gsc451-signed-beta-once.yml`을 동일 Git blob으로 `.yml.txt` 보관했습니다.
+- Stable 보안 검증 승인, 서비스 자동 설치, 플러그인 업데이트, 운영 서버 상태 변경을 수행하지 않았습니다.
