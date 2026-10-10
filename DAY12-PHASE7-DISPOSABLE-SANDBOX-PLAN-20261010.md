@@ -39,3 +39,9 @@ It performs **no** feature enable, VM creation, guest launch, binary copy, API r
 After CI verification, the **operator will only be asked to run this one read-only check** on the real serverPC and upload `Day12-Sandbox-Capability-READ-ONLY.json`. If preflight passes, next engineering task is a standalone offline Sandbox guest run package with safe network-off preflight and teardown. The user will not have to repeat cache 84/84, Day12.7 Playground no-player precheck, Golden, LAN, Tailnet or GSC unauthenticated API tests.
 
 **Status:** The strict 12.7 requirement is still `ACTUAL_OFFLINE_GSC_PAPER_STARTUP=NOT_PROVEN`. Other Day12.5/12.10/12.11/12.12 gates and Stable/Maintenance remain BLOCKED.
+
+## Disposable capability probe and CI verification (2026-10-10)
+
+Before creating any guest script, confirm whether Windows Sandbox actually exists **on the user's serverPC**. The new one-click `Day12_Phase7_Disposable_Sandbox_Capability_READ_ONLY.cmd` does this without starting a VM, copying any files, turning off networking or modifying production settings. Focused [Windows CI 38016262512](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38016262512) **SUCCESS**. Artifact `day12-offline-sandbox-capability-readonly-kit`. The operator should upload only `Desktop/Geumyi-Day12-Sandbox-Capability-*/Day12-Sandbox-Capability-READ-ONLY.json`.
+
+If `SANDBOX_CAPABILITY_REVIEW_REQUIRED`, an unsupported Home edition, nonenabled Hyper-V virtualization or a missing conservatively named Paper JAR **must not trigger automatic installation/reconfiguration**. The conservative candidate check may miss an existing server JAR under a noncanonical name, so treat missing candidate as unknown until the actual server configuration is inspected. A connected SubPC does not automatically count as isolated: plan explicit network isolation and guest secrets avoidance rather than relying on a normal SubPC session.
