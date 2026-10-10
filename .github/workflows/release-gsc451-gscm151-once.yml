@@ -1,0 +1,176 @@
+name: Verified manual package Stable GSC 4.5.1 / GSCM 1.5.1 (one-time)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-gsc450-gscm151-stable.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stable-gsc450-gscm151
+  cancel-in-progress: false
+
+jobs:
+  system:
+    uses: ./.github/workflows/system-ci.yml
+
+  android:
+    uses: ./.github/workflows/android-build.yml
+    with:
+      require_release_signing: true
+    secrets:
+      ANDROID_RELEASE_KEYSTORE_B64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_B64 }}
+      ANDROID_RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+      ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+      ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+
+  ios:
+    uses: ./.github/workflows/ios-build.yml
+
+  publish:
+    needs: [system, android, ios]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: system-2026.10.11-stable-gsc450-gscm151
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify final version sources before publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'const appVersion = "4.5.1"' GSC/ServerCenter/cmd/host/main.go
+          grep -q 'const appVersion = "4.5.1"' GSC/ServerCenter/cmd/client/main.go
+          grep -q 'const version = "4.5.1"' GSC/ServerCenter/cmd/setup/main.go
+          grep -q '^version: 1.5.1+151$' GSCM/pubspec.yaml
+          python3 - <<'PY'
+          import json
+          c=json.load(open('deploy/components.json'))['components']
+          assert c['gsc']['version']=='4.5.1'
+          assert c['gscm_android']['version']=='1.5.1+151'
+          assert c['gscm_ios_unsigned']['version']=='1.5.1+151'
+          PY
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo 'Release tag already exists; refusing to overwrite.'
+            exit 1
+          fi
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" >/dev/null 2>&1; then
+            echo 'Git tag already exists; refusing to move it.'
+            exit 1
+          fi
+
+      - name: Retrieve exact verified artifacts from this workflow
+        uses: actions/download-artifact@v8
+        with:
+          name: gsc-4.5.1-ci
+          path: release-assets/GSC
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: GSCM-1.5.1-build151-Android
+          path: release-assets/GSCM-Android
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: GSCM-1.5.1-build151-iOS-unsigned
+          path: release-assets/GSCM-iOS
+
+      - name: Verify exact bytes, versioned filenames, checksum sidecars and create provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s release-assets/GSC/GeumyiServerCenter-v4.5.1-Setup.exe
+          test -s release-assets/GSC/GeumyiServerHost.exe
+          test -s release-assets/GSC/GeumyiServerCenter.exe
+          test -s release-assets/GSCM-Android/GSCM-v1.5.1+151-Android.apk
+          test -s release-assets/GSCM-iOS/GSCM-v1.5.1+151-unsigned.ipa
+          (cd release-assets/GSC && sha256sum -c SHA256SUMS.txt)
+          (cd release-assets/GSCM-Android && sha256sum -c 'GSCM-v1.5.1+151-Android.apk.sha256')
+          (cd release-assets/GSCM-iOS && shasum -a 256 -c 'GSCM-v1.5.1+151-unsigned.ipa.sha256')
+          python3 - <<'PY'
+          import json,hashlib,pathlib,os
+          folders=[pathlib.Path('release-assets/GSC'),pathlib.Path('release-assets/GSCM-Android'),pathlib.Path('release-assets/GSCM-iOS')]
+          output=pathlib.Path('release-assets/Geumyi-GSC450-GSCM151-RELEASE')
+          output.mkdir()
+          artifact_files=[]
+          for folder in folders:
+              for item in folder.iterdir():
+                  if not item.is_file():continue
+                  target=output/item.name
+                  if target.exists(): raise SystemExit('duplicate artifact '+item.name)
+                  target.write_bytes(item.read_bytes())
+                  artifact_files.append(target)
+          rows=[]
+          for item in sorted(artifact_files):
+              rows.append({'filename':item.name,'bytes':item.stat().st_size,
+                           'sha256':hashlib.sha256(item.read_bytes()).hexdigest()})
+          report={'schema':1,'release_channel':'stable',
+                  'gsc':'4.5.1','gscm':'1.5.1+151','gscm_build':151,
+                  'commit':os.environ['GITHUB_SHA'],
+                  'testing':'source CI and package hashes; live device/Host install is not implied',
+                  'android_signing':'persistent Android release keystore required by job',
+                  'ios_signing':'unsigned IPA, requires Apple provisioning',
+                  'auto_deployment_manifest':'not issued; manual download release',
+                  'assets':rows}
+          (output/'RELEASE-PROVENANCE.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          with (output/'SHA256SUMS-STABLE.txt').open('w') as fp:
+              for item in sorted(output.iterdir()):
+                  if item.name=='SHA256SUMS-STABLE.txt': continue
+                  fp.write(hashlib.sha256(item.read_bytes()).hexdigest()+'  '+item.name+'\n')
+          print('Built and checked',len(rows),'versioned source artifacts')
+          PY
+          (cd release-assets/Geumyi-GSC450-GSCM151-RELEASE && sha256sum -c SHA256SUMS-STABLE.txt)
+
+      - name: Publish manually installable Stable release after CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > release-notes.txt <<'EOF'
+          # Geumyi Minecraft System — Stable
+
+          Version: **GSC 4.5.1 / GSCM 1.5.1+151**
+
+          Maintenance update: GSC 4.5.1 clarifies signed-channel vs manual Stable package behavior and adds a confirmed OFFLINE-only ViaVersion/ViaBackwards staged apply command with separate backups and rollback. GSCM 1.5.1 adds opt-in startup release checks and manual version-check UI. This is not a live-deployment certification.
+
+          - Windows GSC Host, Client and Setup 4.5.1
+          - GSCM 1.5.1+151 Android APK with persistent release signing
+          - GSCM 1.5.1+151 iOS **unsigned IPA** (Apple signing/provisioning needed)
+          - SHA-256 checksums and release provenance
+          - This is a manual-install package Stable, not a signed auto-update Stable manifest. Via updates require all Minecraft backends offline and separate owner-approved action.
+          
+          **Manual release:** Existing servers and mobile devices have not been upgraded automatically. Installation and real-device smoke testing are separate from GitHub Actions builds. This snapshot has no new signed deployment-stable.json, so the auto-update service will not mistake it for an authorized remotely triggered rollout.
+
+          Java server plugins/Paper/Geyser remain at the prior compatible versions; the existing signed Day 11 release retains those reference assets.
+          EOF
+          # Explicitly create immutable tag BEFORE making a draft: draft releases
+          # without refs returned 404 to gh release upload on the earlier build.
+          gh api -X POST "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f ref="refs/tags/$RELEASE_TAG" -f sha="$GITHUB_SHA"
+          gh release create "$RELEASE_TAG" \
+            --verify-tag \
+            --draft \
+            --target "$GITHUB_SHA" \
+            --title "Stable — GSC 4.5.1 / GSCM 1.5.1" \
+            --notes-file release-notes.txt
+          gh release upload "$RELEASE_TAG" release-assets/Geumyi-GSC450-GSCM151-RELEASE/*
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > "$RUNNER_TEMP/release-staged.json"
+          python3 - "$RUNNER_TEMP/release-staged.json" <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          assert j['draft'] is True
+          names={a['name'] for a in j['assets']}
+          required={'GeumyiServerCenter-v4.5.1-Setup.exe','GeumyiServerHost.exe','GeumyiServerCenter.exe',
+            'GSCM-v1.5.1+151-Android.apk','GSCM-v1.5.1+151-unsigned.ipa','SHA256SUMS-STABLE.txt','RELEASE-PROVENANCE.json'}
+          assert required<=names, 'draft is missing required files'
+          assert len(names)==10, 'unexpected draft asset count'
+          PY
+          id="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" --jq '.id')"
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$id" -F draft=false -F prerelease=false -f make_latest=true --jq '{tag_name,draft,prerelease,html_url}'
