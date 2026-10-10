@@ -21,6 +21,9 @@ GSC 4.5.0 및 GSCM 1.5.0+150 Stable 빌드 대상의 소스·복구 근거·CI·
 | Lobby server | Paper 26.3 | Servers/Lobby | Day 10 central entry server; reboot/startup and Java routing verified on host |
 | Resource packs | Java 26.3 / bundled Bedrock | ResourcePacks | Recovered expanded assets and Wild Geyser mapping |
 
+
+**Day 12 상세 문서:** 사진처럼 루트에 흩어져 있던 보고서를 [단계별 문서 모음](docs/day12/INDEX.md)으로 통합했습니다. 기준 계획서와 실행 안내만 루트에 유지합니다.
+
 ## 프로젝트 일차 기준
 
 일차 번호/완료 상태는 [DAY-TIMELINE.md](DAY-TIMELINE.md)를 **단일 기준**으로 사용합니다.
