@@ -1,3 +1,10 @@
+### 2026-10-10 — GSCM Android/iOS user-reported short smoke normal
+
+- User explicitly replied **"둘다 정상"** after being instructed to open GSCM on **both Android and iOS**, inspect four server status displays and test refresh/reconnect without invoking start/stop. Classify: **operator-reported real-device smoke NORMAL** on Android **and** iOS, within the requested status/reconnection scope.
+- This is a conversational operator attestation, not an independently captured per-feature timestamped E2E form, signed device logs, or proof of actual server start/stop/console/backup/update, device revoke/delete/re-pair, platform push or all 25 Day12.11 cases. Keep canonical `GSCM_ANDROID_STATUS_AND_CONTROL` and `GSCM_IOS_STATUS_AND_CONTROL` case completion **open for the untested control components**; do not silently upgrade these tests to all-case PASS.
+- No server process, Java/Bedrock pack, Golden backup, firewall, world or policy changed. Operator can proceed immediately to the next short **GSC console read-only `list` (RCON)** and harmless GSC status refresh (WS/reconnect) test. Avoid repeating already-normal GSCM checks without regression.
+- Overall 12.11 integrated E2E, 12.10 security, 12.7 offline startup and 12.12 soak remain OPEN; Stable remains blocked.
+
 ### 2026-10-10 — Quick-first priority after user elected to defer 8-hour soak
 
 - **12.4 policy review (repository-side)**: `deploy/day12-lifecycle-policy.json` verified as proposed; protected/checkpoint/active transaction exemptions, Trash-only and no permanent-delete-automatic all enabled. Previous REAL on-host 12.4 dry-run had **0 backup/log cleanup candidates**. Safety disposition **REVIEWED_NO_ACTION_RECOMMENDED**; no Apply, file movement, deletion, Golden mutation or new user approval. Does **not** claim production retention policy fully applied.

@@ -1,3 +1,11 @@
+## 2026-10-10 — GSCM Android/iOS user-reported short smoke normal
+
+The operator's exact two-platform result is **"둘다 정상"** in response to an Android+iOS GSCM display/refresh/reconnect request. Mark both platforms' **status/reconnect smoke checks** as user-reported normal, with no changes to the running servers.
+
+**Not tested by this statement:** destructive start/stop actions, authenticated console or backup/update operation, device delete/revoke/re-pair and every detail in the 25-case Day12.11 form. Retain those gates as UNVERIFIED; no new device-side screenshots or run logs were provided.
+
+**Next fast check:** from the GSC console choose an online Wild or Playground server, issue **`list`** (read-only online player list) and observe its output. Then refresh the GSC status page and confirm it reconnects without false RCON/online warnings. Send a brief real-device result. Do not send passwords/tokens/RCON credentials, change permissions, stop or restart services.
+
 # Day 12 — QUICK-FIRST operator plan (2026-10-10 KST)
 
 **Decision:** do all short and safe work before the 8–12 hour soak. This is a prioritized sequence, **not** a claim that the live E2E items below were already executed.
@@ -32,7 +40,7 @@
 
 The authoritative `deploy/day12-final-live-e2e-checklist.json` contains exactly **25** cases. Non-disruptive operator checks can be conducted before the nine disruptive entries. The existing `tools/day12/validate_phase11_operator_e2e.py` explicitly rejects unsupported PASS entries, unapproved disruptive PASS or missing time/evidence fields. We will not auto-fill PASS based on GSC network probes, prior Day11 success or the broad `정상` reply.
 
-**Next operator action:** perform #2 GSCM Android+iOS session/status check and #3 read-only GSC console `list`, then report whether each was normal. These tests need the user's real devices and cannot be completed using GitHub CI.
+**GSCM Android+iOS status/refresh/reconnect smoke: USER REPORTED NORMAL (2026-10-10); do not repeat.** Next operator action: run #3 GSC read-only console `list` on an online Wild or Playground server and confirm harmless status refresh/WS reconnect, then report the result. The GSCM control sections of the canonical E2E remain unverified. These tests need the user's real devices and cannot be completed using GitHub CI.
 
 ## Phase 12.4 reviewed no-action rationale
 
