@@ -15,9 +15,9 @@ Source inspection found `cmd/host/v4_pairing.go:saveDevices` saved **hashed** GS
 
 ## CI proof
 
-- [Windows Host Test Package run 38076904639](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38076904639): **PENDING** at authoring time.
+- [Windows Host Test Package run 38076904639](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38076904639): **SUCCESS**; hosted Windows `go test ./...` passed, including isolated fixed-temp regression.
 - [System CI run 38076904666](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38076904666): **PENDING**.
-- [Security/SBOM run 38076904657](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38076904657): **PENDING**.
+- [Security/SBOM run 38076904657](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38076904657): **SUCCESS**.
 Never label these green until the exact runs complete.
 
 ## Live decision
