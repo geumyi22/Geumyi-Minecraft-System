@@ -23,3 +23,11 @@ The exit-code handling was fixed in source commit `387017ec74f91974e504911f2ef1c
 - **Release:** strict 12.5/12.7/12.10/12.11/12.12 instrumented Stable prerequisites remain unchanged. `FINAL-RELEASE-GATES.json` must continue to block signed Stable and maintenance promotion.
 
 The existing Playground/Bedrock/Java player-facing smoke acceptances are not invalidated and must not be repeated due only to test-runner issues.
+
+## 2026-10-11 follow-up — disposable Windows CI is now GREEN (supersedes earlier CI status)
+
+**PASS in isolated GitHub Windows runner scope:** [run 38075813601](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38075813601), commit `f5e8963967e40f58cb98942b9785b5cebbfdfe70`, job `disposable-paper-crash-and-watchdog` completed SUCCESS. The test log explicitly contains `Disposable result: DISPOSABLE_REAL_GSC_PAPER_CRASH_RECOVERY_PASS`; the workflow subsequently checked the redacted report's initial Paper ready/graceful stop, GSC start and update-source outage, pinned JAR hash, exact disposable Paper PID, forced termination **in runner only**, observed real GSC RECOVERING and a newly spawned Paper PID, and continued without error. Artifact: `day12-phase11-disposable-gsc-paper-crash-recovery-result` ID `11678299981`.
+
+**Engineering fix:** The CI harness now waits for the actual Paper `Done (...s)! For help, type "help"` log and six seconds of stable listening before the prewarm `stop` request. It allows one bounded second graceful stop request if needed, then checks zero exit code and a graceful shutdown log. This resolves the earlier race between port bind and world initialization; it does not alter GSC Host/Paper production code or weaken pass requirements.
+
+**Scope:** Physical test-only GSC/Paper processes in GitHub runner, not operator host. The operator's production server was **never** crash-injected, restarted or modified. Mark **12.11 #12 DISPOSABLE CI E2E PASS**, but **not** production real-host crash-recovery PASS and **not** global 12.11/12.13 closure. #17 signed Canary/rollback and other mandatory release gates remain open. The prior historical failure discussion above is retained for audit, but its `CI GATE NOT GREEN` wording is superseded by this newer successful run.
