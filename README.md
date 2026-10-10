@@ -22,7 +22,7 @@ GSC 4.5.0 및 GSCM 1.5.0+150 Stable 빌드 대상의 소스·복구 근거·CI·
 | Resource packs | Java 26.3 / bundled Bedrock | ResourcePacks | Recovered expanded assets and Wild Geyser mapping |
 
 
-**Day 12 상세 문서:** 사진처럼 루트에 흩어져 있던 보고서를 [단계별 문서 모음](docs/day12/INDEX.md)으로 통합했습니다. 기준 계획서와 실행 안내만 루트에 유지합니다.
+**전체 문서 찾아보기:** [통합 문서 목차](docs/README.md) · [Day 4~11 기록](docs/history/INDEX.md) · [Day 12 단계별 보고서](docs/day12/INDEX.md) · [아키텍처·복구·보안](docs/reference/INDEX.md). CI와 운영 도구가 직접 참조하는 핵심 파일만 최상위에 유지합니다.
 
 ## 프로젝트 일차 기준
 
