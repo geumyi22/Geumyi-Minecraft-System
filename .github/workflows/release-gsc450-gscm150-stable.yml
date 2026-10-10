@@ -164,7 +164,7 @@ jobs:
           required={'GeumyiServerCenter-v4.5.0-Setup.exe','GeumyiServerHost.exe','GeumyiServerCenter.exe',
             'GSCM-v1.5.0+150-Android.apk','GSCM-v1.5.0+150-unsigned.ipa','SHA256SUMS-STABLE.txt','RELEASE-PROVENANCE.json'}
           assert required<=names, 'draft is missing required files'
-          assert len(names)==9, 'unexpected draft asset count'
+          assert len(names)==10, 'unexpected draft asset count'
           PY
           id="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" --jq '.id')"
           gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$id" -F draft=false -F prerelease=false -f make_latest=true --jq '{tag_name,draft,prerelease,html_url}'
