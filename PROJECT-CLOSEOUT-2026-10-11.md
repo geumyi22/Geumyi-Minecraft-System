@@ -20,14 +20,27 @@
 
 - 원본 `main` 커밋 히스토리는 **rewrite/force-push 금지**. 오래된 개별 커밋을 없애려는 이유로 서명된 릴리즈/백업 근거를 깨지 않는다.
 - 정리 전 브랜치 헤드와 릴리즈 자산 메타데이터는 `docs/archive/2026-10-11-before-cleanup-inventory.json`에 저장했다. 메타데이터만으로 삭제된 Git 객체의 영구적 보존을 보장하지는 않는다.
-- GitHub Actions [Geumyi one-time repository closeout](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/workflows/geumyi-project-closeout-cleanup.yml) 는 증거 문서에서 참조하는 11자리 Workflow 실행 ID 및 최신 96시간 실행과 워크플로별 최근 3개 실행을 유지하며, 오래된 기록을 최대 1,850개 삭제하도록 설계됐다. 실제 결과는 해당 워크플로 결과/산출물 확인 필요.
-- 오래된 작업용 `day8-*/day9-*/day10-*/day11-*` 브랜치들은 `main`과 몇 개 보존 브랜치, 열린 PR 및 원본 SHA 비교를 제외하고 삭제 대상이다. 원격 브랜치 정리 결과는 실제 작업 로그 기준으로 확정한다.
-- 특정 오래된 베타 GSC 4.3.3~4.3.6과 **배포 금지된 4.3.9-rc.1 draft**만 릴리즈 삭제 후보. `mc-2026.09.26-v3`, `system-2026.10.07-day11-gsc438-beta`, `gsc437-beta` 등 핵심 배포·복구 파일은 유지. 삭제 대상 릴리즈의 Git 태그는 안전을 위해 유지한다. 실제 삭제 개수는 작업 로그 기준.
+- 안전한 핵심 릴리즈만 남겨 실제 CI 기록·브랜치·릴리즈 정리를 실행했고, 역사적 일회성 워크플로 소스는 `docs/archive/workflows/`에 보관했다. 실측 값과 각 GitHub Actions 실행 링크는 아래 최종 결과 표에서 확인한다.
 - 이 기록에 이미 링크된 CI 실행의 로그와 artifact를 삭제하면 해당 증거 접근이 소실되므로 자동 보존 집합을 이용한다. 이것도 100% 모든 종전 외부 참조를 검출한다는 보장은 없다.
+
+## 최종 GitHub 실제 정리 결과 (2026-10-11)
+
+| 항목 | 정리 전 | 최종 확인 | 의미 |
+|---|---:|---:|---|
+| GitHub Actions 실행 이력 | 2,332개 | **808개** | 초기 총수 대비 최소 1,524개 감소; 세 차례 안전 정리 워크플로 모두 SUCCESS |
+| 작업용 브랜치 | 48개 | **5개** | 43개 삭제, main 및 Day 8~11 참고 기준 브랜치 네 개 유지 |
+| 릴리즈 | 15개 | **10개** | 4.3.3~4.3.6 중간 베타 4개와 미배포 RC1 초안 1개 삭제, Git 태그 보존 |
+| 실행 워크플로 | 55개 | **18개** | 37개 일회성 정의를 `docs/archive/workflows/*.yml.txt`로 무손실 소스 보관 |
+
+- Actions 작업 [1차 #38079060935](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38079060935), [2차 #38079530638](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38079530638), [최종 #38079942304](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38079942304) 모두 **SUCCESS**. 삭제 상세 목록 및 기준은 각 실행의 `geumyi-closeout-audit` artifact에 보존. 마지막 일회성 청소 워크플로 자체도 `docs/archive/workflows/`로 옮겨 재실행되지 않도록 했다.
+- 남은 브랜치는 `main`, `day8-secure-release`, `day9-transaction-rollback`, `day10-four-server-live-cutover-final-ci`, `day11-protection-recovery-2`. 정확한 삭제 전 각 브랜치 HEAD SHA는 앞서 보존한 inventory를 참조한다.
+- 원래 열려 있던 오래된 Day9 PR [#12](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/12)는 최신 운영 버전 4.3.8 기준 불필요한 4.2.4 finalizer 후속 PR로 판정했다. 기존 CMD의 clone/pull errorlevel 보호 두 구간은 `main`에 별도 반영하고 **PR은 미병합 상태로 종료**한 뒤 작업용 브랜치를 삭제했다.
+- 브랜치·Actions 기록·릴리즈 항목 삭제는 각각 **돌이키기 어려울 수 있으며** 이후 원본 run 로그/자산을 복구할 수 있다고 보장하지 않는다. `main` commit history를 강제로 삭제하거나 억지로 squash/rebase/force-push하지는 않았다.
+- **삭제만으로 GitHub 저장소 물리 크기가 즉시 줄어든다고 보장하지 않는다.** GitHub의 Git object garbage collection 및 Actions 저장 용량 반영 시점은 별개다.
 
 ## PC 최종 청소
 
-별도 `Geumyi-FINAL-PC-Cleanup.zip`의 `Geumyi_FINAL_PC_CLEANUP.cmd` 실행: **메뉴 1 사전 확인, 메뉴 2 영구 삭제, 메뉴 3 자체 시험**. 현재 사용자 TEMP/TMP/LocalAppData Temp의 바로 하위에서 명확히 `Geumyi-Day1~12` 테스트 임시폴더만 대상으로 한다. 보호 파일/디렉터리, junction, 생성 후 최근 60분 내 변경, 1 GiB 초과 등은 자동 제외한다. Windows 휴지통을 거치지 않으며 삭제는 되돌릴 수 없다.
+별도 `Geumyi-FINAL-PC-Cleanup.zip` (SHA-256 `9e0a9d75c0073a96632612fc02e70d18dc93bf329ef4458ff62cd40acc62cfb6`)의 `Geumyi_FINAL_PC_CLEANUP.cmd` 실행: **메뉴 1 사전 확인, 메뉴 2 영구 삭제, 메뉴 3 자체 시험**. 현재 사용자 TEMP/TMP/LocalAppData Temp의 바로 하위에서 명확히 `Geumyi-Day1~12` 테스트 임시폴더만 대상으로 한다. 보호 파일/디렉터리, junction, 생성 후 최근 60분 내 변경, 1 GiB 초과 등은 자동 제외한다. Windows 휴지통을 거치지 않으며 삭제는 되돌릴 수 없다. 실제 삭제 메뉴는 사전 격리 안전성 자체 테스트 PASS 뒤 승인 문구를 입력해야 진행한다.
 
 **PC 명령은 여기서 사용자의 Windows PC에 직접 실행한 적이 없다.** 각 PC에서 사용자가 직접 실행해야 하고, 데스크톱/다운로드/실제 서버 데이터/Golden 백업/GSC 설정/설치 파일/리소스팩을 영구삭제 대상으로 삼지 않는다. 모든 사전 스캔/정리는 해당 PC만 처리한다.
 
