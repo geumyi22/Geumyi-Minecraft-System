@@ -342,3 +342,11 @@ Day12_Phase12_Soak_READ_ONLY.cmd에서 Start → 실제 사용/idle → End. 가
 - Maintenance Mode 전환
 
 그 전에는 Final Stable과 Maintenance Mode를 열지 않습니다.
+
+
+## 2026-10-10 — real SERVER-PC Day12.7 complete byte integrity (84/84) — NOT offline-start E2E
+
+- **Received private real operator** `Day12-Cache-Integrity-READ-ONLY.json` from focused Windows tool (CI [`38013828430`](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38013828430) success). Report `schema=1`, `phase=12.7-cached-bytes-integrity`, `synthetic=false`, `read_only=true`, `cache_modified=false`, `network_requests=0`, `manifest_valid=true`, `result=CACHED_BYTES_HASHES_MATCH`.
+- **All 84/84 cached files verified SHA-256 and size** against the existing local manifest. `missing=0`, `mismatched_sha256=0`, `mismatched_size=0`, `invalid_record=0`, `duplicate_names=0`, `reparse_blocked=0`.
+- Accepted scoped gate **`phase_12_7_cache_byte_integrity=PASS_REAL_HOST`**, while the *separate* mandatory **`phase_12_7_offline_known_good_startup=PENDING_LIVE`** remains OPEN. The local manifest hash check does not establish cryptographic trust of the manifest itself, GSC/Geyser/Paper boot with internet disconnected, automatic fallback, or runtime E2E.
+- **No duplicate cache Build/Audit or hash check required.** Golden 4/4 remains protected, GSC Host 4.3.8 not touched, Java/Bedrock worlds not touched. Canonical `backend_ports_private=FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS`, 12.5 effective security OPEN, 12.11 live E2E and 12.12 soak OPEN, Stable/Maintenance BLOCKED.
