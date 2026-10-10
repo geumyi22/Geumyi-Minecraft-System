@@ -68,7 +68,8 @@ Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/
 
 ## 최신 Stable 빌드
 
-- GitHub Stable tag: `system-2026.10.11-stable-gsc450-gscm150` (CI가 실제 바이너리/해시/서명 검증을 통과한 뒤 게시)
+- GitHub 패키지 Stable: [GSC 4.5.0 / GSCM 1.5.0+150](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150) — **2026-10-11 공개 완료**. 해당 태그의 CI 빌드·아티팩트 해시 검증 완료. 설치/운영 환경 실기기 재검증은 별개.
 - GSC 4.5.0 / GSCM 1.5.0+150: 버전 정리 및 기존 소스 개선 반영판이며 새 기능 개발을 뜻하지 않습니다.
+- **배포 범위 구분:** 이 릴리즈는 수동 다운로드용 패키지 Stable입니다. 서명된 `deployment-stable.json`은 발행하지 않았으며, `FINAL-RELEASE-GATES.json`의 운영 보안/자동 배포 승인 조건은 여전히 미충족입니다.
 - 현재 서버/휴대폰이 이 버전으로 설치됐다는 뜻은 아닙니다. 운영 중 데이터는 변경하지 않습니다.
 
