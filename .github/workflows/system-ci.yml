@@ -876,7 +876,7 @@ jobs:
           server.handle_request()
           '@ | Set-Content -LiteralPath $serverPy -Encoding UTF8
           $serverProc = Start-Process -FilePath $py -ArgumentList @($serverPy, [string]$port, $capture, $ready) -PassThru -WindowStyle Hidden
-          $deadline = (Get-Date).AddSeconds(10)
+          $deadline = (Get-Date).AddSeconds(30)
           while (-not (Test-Path -LiteralPath $ready)) {
             if ($serverProc.HasExited) { throw 'Loopback JSON receiver exited before readiness' }
             if ((Get-Date) -ge $deadline) { throw 'Loopback JSON receiver readiness timeout' }
