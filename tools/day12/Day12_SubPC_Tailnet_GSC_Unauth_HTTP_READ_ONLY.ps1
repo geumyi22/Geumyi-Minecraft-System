@@ -7,6 +7,7 @@ param(
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference="Stop"
+Add-Type -AssemblyName System.Net.Http
 # The selected GETs may create routine rejected-request audit entries on GSC.
 # No configuration, file, firewall, job, service or Minecraft world changes.
 # Never export IPs, bodies, headers, tokens, hostnames or identifiers.
@@ -130,7 +131,6 @@ foreach($addr in (@($ipv4,$ipv6)|Where-Object{$null -ne $_})){
     }
   }
 }
-Add-Type -AssemblyName System.Net.Http
 $handler=[Net.Http.HttpClientHandler]::new()
 $handler.UseProxy=$false
 $handler.AllowAutoRedirect=$false
