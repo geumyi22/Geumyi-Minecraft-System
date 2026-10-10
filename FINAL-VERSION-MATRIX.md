@@ -1,14 +1,14 @@
 # FINAL Version Matrix
 
-Status: **PENDING LIVE CAPTURE — Day 12 Phase 12.0A**
+Status: **12.0A live READY + 12.0B Golden 4/4 PASS (operator evidence, 2026-10-09); 12.2 binary provenance still PENDING; Stable BLOCKED**
 
-This file is the source/evidence side of the Golden Baseline. It does **not** mark Phase 12.0 complete until the real server-PC read-only capture is reviewed and a protected Golden Recovery Checkpoint is created in Phase 12.0B.
+This matrix preserves the frozen Day-11 component targets and documents Day-12 real operator progress. Phase 12.0A baseline READY was recorded at 02:45 KST and **four of four protected full Golden checkpoints** PASS at 03:23 KST on 2026-10-09. This does NOT make the separate 12.2 component binary hash provenance or 12.10 native socket-owner security gates pass.
 
 | Component | Frozen baseline | Evidence state |
 |---|---|---|
 | GSC | **4.3.8** | Day-11 Client/Host self-update + Final READ-ONLY E2E verified |
 | GSCM | **1.1.5+117** | final two requested device checks user-confirmed PASS |
-| GeumyiStatusAgent | **0.5.4** | recovered/CI baseline |
+| GeumyiStatusAgent | **0.5.4** | 2026-10-10 09:59 real server: canonical filename present; **1** Java process command references expected filename; official artifact SHA-256 / loaded JAR identity **UNVERIFIED** |
 | GST | **1.1.1 HOTFIX** | recovered HOTFIX baseline |
 | GDS | **1.1.1** | recovered/CI baseline |
 | GeumyiTechnology | **0.1.4** | Wild + Other managed target |
@@ -29,9 +29,9 @@ This file is the source/evidence side of the Golden Baseline. It does **not** ma
 - GSCM Android build117 CI: `37617292391`
 - GSCM iOS build117 CI: `37617292404`
 
-## Phase 12.0 completion boundary
+## Phase 12.0 live evidence and unresolved completion boundary
 
-12.0A must capture from the real server PC:
+The original 12.0A checklist required the real server PC to capture:
 
 - GSC Host binary/config fingerprints;
 - four server profiles and expected private ports;
@@ -43,6 +43,6 @@ This file is the source/evidence side of the Golden Baseline. It does **not** ma
 - disk headroom;
 - no active unsafe transaction.
 
-Then 12.0B must create and protect a dedicated Golden Recovery Checkpoint. Until both are done, this file remains **PENDING LIVE CAPTURE**.
+Operator evidence now records **12.0A READY** and **12.0B PASS with four protected Golden FULL archives**. Their actual archives remain on the Windows host and are not copied into GitHub. Any revalidation of the exact archives belongs to the operator, not CI. The frozen baseline evidence remains subject to **12.2 official artifact hashes**, **12.10 native socket ownership**, **12.11 real E2E**, **12.12 soak**, and separate signed Stable release gates. Do not recreate Golden archives or mark Stable PASS based on this document.
 
 Full local server paths, RCON passwords, API/device tokens, Floodgate private key contents and signing material are never committed to this public repository.
