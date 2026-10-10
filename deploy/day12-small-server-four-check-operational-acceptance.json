@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "generated_date": "2026-10-11",
+  "scope": "operator_small_server_approximately_five_to_six_concurrent_players",
+  "canonical_release_gates": "FINAL-RELEASE-GATES.json",
+  "canonical_gate_files_modified": false,
+  "policy": {
+    "other_server": "OPERATOR_WAIVED_REPEAT_FUNCTIONAL_AND_PORT_TEST_BY_EQUIVALENCE",
+    "other_treat_like_similar_servers_for_operational_work_tracker": true,
+    "other_actual_runtime_evidence_fabricated": false,
+    "other_offline_at_last_2026_10_11_native_capture": true,
+    "operational_acceptance_is_not_stable_security_e2e": true,
+    "do_not_repeat_unchanged_accepted_smokes": true
+  },
+  "checks": [
+    {
+      "order": 1,
+      "id": "private-backend-ports",
+      "operational_status": "OPERATOR_ACCEPTED_SCOPED_PASS_WITH_OTHER_WAIVER",
+      "scope": "Wild/Playground/Lobby six active Java/RCON ports only; four earlier LAN/Tailscale negative reachability paths",
+      "evidence": {
+        "native_state_0_loopback_paper_owner_signatures": 6,
+        "expected_online_ports": 6,
+        "other_live_port_rows": 0,
+        "other_waived_live_ports": 2,
+        "tested_remote_paths": 4,
+        "private_connects_on_each_tested_path": 0,
+        "gsc_unauthenticated_http_401_of_8": 8
+      },
+      "limitations": [
+        "state=0 listener-signature heuristic is not authoritative MIB_TCP_STATE_LISTEN=2",
+        "Other was OFFLINE and is waived operationally, not observed",
+        "Other networks and effective WFP policy remain unproven"
+      ],
+      "formal_gate_status": "FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS",
+      "next": "NO_REPEAT; recheck only if actual service/security configuration changes"
+    },
+    {
+      "order": 2,
+      "id": "firewall-public-allow-review",
+      "operational_status": "PENDING_FOCUSED_PUBLIC_RULE_OWNER_REVIEW",
+      "scope": "Existing 269 enabled inbound Allow rule inventory and 38 broad candidates; use existing local private CSV only",
+      "evidence": {
+        "enabled_inbound_allow_rules": 269,
+        "broad_allows": 38,
+        "public_overlap_rules": 15,
+        "active_network_profiles": [
+          "Private",
+          "Public"
+        ],
+        "three_firewall_profile_defaults": "Block"
+      },
+      "limitations": [
+        "All broad candidates examined have Action=Allow",
+        "EdgeTraversalPolicy=Block does not mean firewall Action=Block",
+        "Name-only Windows labels are not publisher proof",
+        "Effective WFP reachability not established"
+      ],
+      "next": "Review local private CSV for the 15 P1 candidate numbers; no bulk disable, rule export, or network rescan"
+    },
+    {
+      "order": 3,
+      "id": "gsc-service-file-acl",
+      "operational_status": "SOURCE_HARDENING_PASS_LIVE_ACL_EFFECTIVE_ACCESS_OPEN",
+      "scope": "GSC SYSTEM service, three inherited BUILTIN_USERS create-allow directory ACEs; source guard change not deployed",
+      "evidence": {
+        "system_service_running": true,
+        "affected_acl_directory_targets": 3,
+        "existing_sensitive_files_no_direct_broad_modify_ace_in_prior_review": 2,
+        "trusted_device_temp_file_unpredictable_exclusive_source_patch": true,
+        "windows_host_ci_run": 38076904639,
+        "system_ci_run": 38076904666,
+        "security_ci_run": 38076904657
+      },
+      "limitations": [
+        "Directory ACE is not actual non-admin effective token AccessCheck",
+        "Source change is not in installed GSC 4.3.8",
+        "Do not alter NTFS inheritance without effective right review and rollback"
+      ],
+      "next": "Prioritize focused actual token/effective ACL review before any privileged host update; no blanket ACL reset"
+    },
+    {
+      "order": 4,
+      "id": "golden-backup-cache-recovery-rollback",
+      "operational_status": "OPERATOR_ACCEPTED_PASS_EXISTING_BACKUP_AND_DISPOSABLE_CI_SCOPE",
+      "scope": "Golden backup and known-good cache from actual host; recoverability and rollback in isolated Windows CI",
+      "evidence": {
+        "protected_verified_full_backups": 4,
+        "expected_full_backups": 4,
+        "sha256_cache_matches": 84,
+        "expected_cached_entries": 84,
+        "paper_crash_recovery_ci_run": 38075813601,
+        "host_rc3_update_manual_restore_ci_run": 37996301163,
+        "host_rc4_auto_rollback_ci_run": 37997022476
+      },
+      "limitations": [
+        "Operator's production world destructive restore not performed",
+        "CI tests cannot guarantee subsequent backups without monitoring",
+        "Signed Canary live E2E separate"
+      ],
+      "next": "Maintain protected Golden 4/4; no repeat backup generation/restore drill just to close small-ops review"
+    }
+  ],
+  "scoped_operational_pass_items": [
+    1,
+    4
+  ],
+  "focused_security_reviews_open_items": [
+    2,
+    3
+  ],
+  "operator_actions_performed_this_turn": 0,
+  "production_changes_performed_this_turn": false,
+  "windows_firewall_rules_changed": 0,
+  "ntfs_acl_entries_changed": 0,
+  "minecraft_servers_restarted": 0,
+  "formal_release": {
+    "backend_ports_private": "FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS",
+    "stable_release_allowed": false,
+    "maintenance_allowed": false
+  },
+  "privacy": {
+    "private_firewall_names_committed": false,
+    "paths_ips_tokens_committed": false
+  }
+}
