@@ -22,7 +22,7 @@ Microsoft documents `MIB_TCP_STATE_LISTEN=2`; state `0` is **not a defined LISTE
 - Windows regression tests commit `29aec87aa8efb8abe022a036e4230b85c05dc804`.
 - [Day 11 Windows Host Test Package #38076599198](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38076599198): **SUCCESS**; `go test ./...`, Host and Client Windows builds passed. This confirms **normal hosted-Windows process table behavior and the negative client-local-port regression**, not the operator Insider build.
 - [Day 12 Security SBOM Reproducibility #38076599202](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38076599202): **SUCCESS**.
-- [System CI #38076599208](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38076599208): status should be checked before claiming complete System CI success (the separate Windows Host suite above is already green).
+- [System CI #38076599208](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38076599208): **SUCCESS**; all system-wide component CI jobs passed at the same source commit as the hardening patch. Source/CI only, **not a deployed GSC release**.
 
 ## Existing live evidence scope and safe next actions
 
