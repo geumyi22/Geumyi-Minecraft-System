@@ -6,7 +6,9 @@
     "Entries are disabled until source artifacts and hashes are verified.",
     "Bedrock/Geyser pack deployment remains inventory/preflight-only until the exact live pack directory is confirmed by Phase 12.1.",
     "Operator confirmed that Wild and Playground already have packs applied as of 2026-10-10; empty enabled management entries must NOT be used to infer that either server lacks installed packs.",
-    "Never overwrite, auto-install duplicates, delete or take over existing Wild/Playground packs based solely on this template. Adoption into GSC managed content requires separately checked sources, hashes, server paths and rollback plan."
+    "Never overwrite, auto-install duplicates, delete or take over existing Wild/Playground packs based solely on this template. Adoption into GSC managed content requires separately checked sources, hashes, server paths and rollback plan.",
+    "Existing Wild/Playground packs are already applied per operator; see deploy/day12-existing-pack-reference.json and DAY12-PHASE1-EXISTING-PACKS-20261010.md. Zero enabled entries covers OPTIONAL managed content only.",
+    "The Java pack files are stored in Dropbox and have 26.3 and 26.2 filename variants; do not select active download URLs from filenames or auto-distribute them."
   ],
   "resourcepacks": [
     {
