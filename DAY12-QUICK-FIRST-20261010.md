@@ -1,3 +1,9 @@
+## 2026-10-10 — GSC PC console 4-second auto-refresh user-confirmed normal
+
+Operator reports **"정상"** in direct response to the after-update on-screen GSC PC console `4초 자동 갱신` test. Mark this narrow **PC console polling user-observed PASS** and do not ask them to run it again. Do not infer patched Android/iOS console polling E2E or all GSC WebSocket reconnect and RCON health from this statement.
+
+**Next short live test:** launch the actual Java Minecraft client, ensure each public entry `25565 / 25566 / 25567` routes to Lobby, then test Lobby → Wild → Playground → Other and last position restoration. Do not change installed packs or restart any server merely for this test. Real client proof only, no automatic canonical E2E form promotion.
+
 ## 2026-10-10 — GSC Host test-update operator reports success; console live view E2E pending
 
 The operator reports **`업데이트 정상`**, indicating the GSC Host test update was accepted in their environment. This is **installation acceptance only**; the four-second console auto-refresh is not yet user-observed while the console stays open.

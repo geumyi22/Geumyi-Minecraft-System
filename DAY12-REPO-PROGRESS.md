@@ -1,3 +1,11 @@
+### 2026-10-10 — GSC PC console 4-second auto-refresh user-confirmed normal
+
+- After a scoped GSC Host test-package update, operator followed the specific acceptance instructions: leave **GSC PC Console** open with the new `4초 자동 갱신` option checked, generate/observe a new log line, confirm it appears without pressing Refresh or switching views. Operator answered **"정상"**. Classify **GSC PC console 4-second polling / live visible log update: PASS_USER_REPORTED_REAL_HOST**. This does **not** independently authenticate the installed binary SHA, exact GSC version or every GSC control case; installed Host test update was separately user-reported normal.
+- Relevant source update `57f45031188eab5467b8dc22c3c8a858fe8bcb81` and GSC JS behavior fixture `38057732807` PASS; no backend API changes. The real user report closes this focused PC log-refresh regression, not the full Day12.11 WebSocket/RCON reconnect suite.
+- **GSCM Android and iOS status/reconnection** were already user-reported normal before; **GSCM console automatic log scrolling/update has not yet been individually user-confirmed after installing the patched mobile build**. Do not mark it PASS by inference.
+- Next shortest outstanding **real-client** step is Java (public entries 25565/25566/25567 Lobby; Wild/Playground/Other routing and last position, current packs). These observations require the real Minecraft client. Preserve existing packs, worlds, Golden backups and live security; no restart requested.
+- 12.10 `backend_ports_private` strict FAIL, 12.7 live offline-start E2E OPEN, 12.12 soak deferred to last, 12.13 Stable blocked. No new fleet, world or configuration mutations in this GitHub record.
+
 ### 2026-10-10 — GSC Host test-update operator reports success; console live view E2E pending
 
 - Operator replied exactly **"업데이트 정상"** after following the scoped `day11-phase1-gsc-host-test` ZIP host test update instructions. Record as **operator-reported update applied successfully**. No host installation output, updated executable fingerprint, client version or fresh service status JSON was supplied; do not invent build/version numbers or report a full independent E2E.
