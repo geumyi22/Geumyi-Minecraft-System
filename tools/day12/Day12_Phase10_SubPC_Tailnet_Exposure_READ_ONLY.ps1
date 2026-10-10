@@ -49,10 +49,10 @@ function Classify-Family([object[]]$Rows,[string]$Family) {
   return [ordered]@{family=$Family;status=$status;public_control_connected=$control;private_connected=$private}
 }
 function Synthetic-Checks {
-  if(-not (Test-TailnetIPv4 ([Net.IPAddress]::Parse("100.84.252.113"))) -or
+  if(-not (Test-TailnetIPv4 ([Net.IPAddress]::Parse("100.64.0.10"))) -or
     (Test-TailnetIPv4 ([Net.IPAddress]::Parse("100.128.1.2"))) -or
     (Test-TailnetIPv4 ([Net.IPAddress]::Parse("192.168.0.2"))) -or
-    -not (Test-TailnetIPv6 ([Net.IPAddress]::Parse("fd7a:115c:a1e0::3401:fcbb"))) -or
+    -not (Test-TailnetIPv6 ([Net.IPAddress]::Parse("fd7a:115c:a1e0::1234"))) -or
     (Test-TailnetIPv6 ([Net.IPAddress]::Parse("fd12::1"))) -or
     (Test-TailnetIPv6 ([Net.IPAddress]::Parse("fe80::5")))){
     throw "TAILNET_ADDRESS_SCOPE_REGRESSION"
@@ -113,7 +113,7 @@ if($ServerTailnetIPv6){
   if(-not [Net.IPAddress]::TryParse($ServerTailnetIPv6,[ref]$ipv6) -or
      -not (Test-TailnetIPv6 $ipv6)){throw "INVALID_SERVER_TAILNET_IPV6"}
 }
-foreach($target in @($ipv4,$ipv6)|Where-Object{$null -ne $_}){
+foreach($target in (@($ipv4,$ipv6)|Where-Object{$null -ne $_})){
   $targetBytes=[Convert]::ToBase64String($target.GetAddressBytes())
   foreach($own in $ownAddresses){
     $local=$null
