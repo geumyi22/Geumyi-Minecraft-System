@@ -1,4 +1,4 @@
-# GSCM 1.5.0+150
+# GSCM 1.5.1+151
 
 **2026-10-11 수동 설치 Stable 공개.** [GSCM 1.5.0+150 Android APK/iOS unsigned IPA](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150)가 GitHub Latest에 등록됐습니다. 기존 1.1.5+117 기반 버전 정리판으로 신규 기능을 주장하지 않습니다. Flutter 분석·테스트·Android 서명 릴리즈 빌드·iOS 미서명 빌드가 CI에서 통과했으며, 실제 새 버전 설치는 별도입니다.
 
