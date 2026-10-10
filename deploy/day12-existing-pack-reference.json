@@ -1,0 +1,160 @@
+{
+  "schema": 1,
+  "status": "REFERENCE_ONLY_NO_DEPLOYMENT_AUTHORIZED",
+  "recorded_date": "2026-10-10",
+  "purpose": "Existing Wild/Playground Java and Bedrock pack reference inventory; not a GSC managed-content application manifest",
+  "operator_confirmed_existing_pack_application_servers": [
+    "wild",
+    "playground"
+  ],
+  "user_uploaded_bedrock": [
+    {
+      "ordinal": 1,
+      "server_id": "playground",
+      "role": "bedrock_resource_pack",
+      "name": "Geumyi_Server_Bedrock_26.50(1).mcpack",
+      "sha256": "e194217abe75545905c3fbd595eb3240745918364783008af91e0a8641fc50c8",
+      "bytes": 12960787,
+      "pack_name": "Geumyi Server Resource Pack - Bedrock 26.50",
+      "pack_version": [
+        1,
+        0,
+        2
+      ],
+      "min_engine_version": [
+        1,
+        21,
+        0
+      ],
+      "header_uuid": "1b2f6fbc-e538-4c8f-8687-2e80b538e091",
+      "archive_items": 50,
+      "sound_definitions": 33,
+      "ogg_files": 33,
+      "sound_asset_links_missing": 0
+    },
+    {
+      "ordinal": 2,
+      "server_id": "wild",
+      "role": "bedrock_bacap_korean_language_pack",
+      "name": "Geumyi_Wild_Bedrock_BACAP_Korean.mcpack",
+      "sha256": "ab3d7b34c8772da859f00d47c2453a40bad5aef2dfe8e7c32307c2da7833f2d0",
+      "bytes": 162648,
+      "pack_name": "BACAP Korean - Bedrock FINAL",
+      "pack_version": [
+        1,
+        0,
+        1
+      ],
+      "min_engine_version": [
+        1,
+        21,
+        0
+      ],
+      "header_uuid": "6f2ab6a2-224b-4a2c-aa6f-76ec99ccdb8f",
+      "archive_items": 6,
+      "korean_translation_file_lines": 3618,
+      "language_fallback_present": true,
+      "translation_visible_in_game_verified": false
+    },
+    {
+      "ordinal": 3,
+      "server_id": "wild",
+      "role": "bedrock_chemistry_technology_resources",
+      "name": "Geumyi_Wild_Bedrock_ChemTech.mcpack",
+      "sha256": "e5b87be9fbe142126158fcec35485565d48cb0a021596fd646dd406355c24db4",
+      "bytes": 208443,
+      "pack_name": "Geumyi Suite BE",
+      "pack_version": [
+        0,
+        4,
+        1
+      ],
+      "min_engine_version": [
+        1,
+        20,
+        0
+      ],
+      "header_uuid": "bf592f9d-3c95-57c6-8823-a5d9b53c156b",
+      "archive_items": 225,
+      "texture_atlas_item_ids": 222,
+      "atlas_texture_png_paths_missing": 0,
+      "manifest_description_outdated_component_versions_possible": true
+    }
+  ],
+  "user_uploaded_mappings": {
+    "ordinal": 4,
+    "server_id": "wild",
+    "role": "geyser_custom_item_mappings",
+    "name": "Geumyi_Wild_Geyser_CustomItem_Mappings.json",
+    "sha256": "0e22eb3e2a24ce2e8f461ac01176aa5a79795ff95b10379293402dc716ecba19",
+    "bytes": 70482,
+    "format_version": 2,
+    "java_item_source_keys": 48,
+    "mapped_bedrock_identifiers": 212,
+    "chemistry_mappings": 199,
+    "technology_mappings": 13,
+    "duplicate_bedrock_identifiers": 0,
+    "missing_icons_in_ordinal3_atlas": 0,
+    "atlas_extra_icons_not_mapped": 10,
+    "mapping_live_accepted_by_geyser": false
+  },
+  "java_dropbox_candidates": [
+    {
+      "server_role": "playground",
+      "name": "Geumyi_Server_Java_26.3.zip",
+      "bytes": 12961843,
+      "source": "Dropbox filename search",
+      "active_live_url_verified": false
+    },
+    {
+      "server_role": "wild",
+      "name": "Geumyi_Wild_Java_26.3_BACAP_ChemTech.zip",
+      "bytes": 3455608,
+      "source": "Dropbox filename search",
+      "active_live_url_verified": false
+    },
+    {
+      "server_role": "playground",
+      "name": "Geumyi_Server_Java_26.2.zip",
+      "bytes": 12978309,
+      "source": "Dropbox older filename search",
+      "active_live_url_verified": false,
+      "variant": "OLDER_CANDIDATE"
+    },
+    {
+      "server_role": "wild",
+      "name": "Geumyi_Wild_Java_26.2_BACAP_ChemTech.zip",
+      "bytes": 3455594,
+      "source": "Dropbox older filename search",
+      "active_live_url_verified": false,
+      "variant": "OLDER_CANDIDATE"
+    }
+  ],
+  "static_checks": {
+    "all_three_mcpack_zip_crc_clean": true,
+    "no_zip_path_traversal_entries": true,
+    "manifest_json_parse_ok": true,
+    "unique_pack_header_uuids": true,
+    "geyser_mapping_json_parse_ok": true,
+    "geyser_icon_atlas_cross_reference": "212_OF_212",
+    "runtime_client_e2e": "NOT_PERFORMED"
+  },
+  "restrictions": {
+    "never_commit_private_dropbox_share_urls": true,
+    "never_distribute_user_pack_binaries_from_public_repo_without_separate_permission": true,
+    "no_automatic_pack_download": true,
+    "no_auto_adopt_existing_packs": true,
+    "no_duplicate_install_or_replacement": true,
+    "no_server_or_world_change": true,
+    "no_golden_mutation": true,
+    "no_claim_current_runtime_byte_identity": true,
+    "gsc_managed_manifest_still_optional_and_disabled": true,
+    "currently_installed_or_received_by_clients_not_determined_from_upload_hashes": true
+  },
+  "cautions": [
+    "Pack 1 README references Geyser-Spigot installation; do not assume that is the current Velocity/Geyser live path.",
+    "BACAP Korean translated lang-file tokens may not be used by Geyser; actual advancement translation must be checked in a Bedrock client.",
+    "ChemTech pack's description mentions Chemistry 0.4.0 + Technology 0.1.0, older than currently planned plugin version labels 0.4.1/0.1.4; texture/map cross-reference passes but semantics unverified.",
+    "Java Dropbox files have 26.3 and 26.2 named variants. File listing alone does not prove which zip links are in active Java server.properties or reach clients."
+  ]
+}
