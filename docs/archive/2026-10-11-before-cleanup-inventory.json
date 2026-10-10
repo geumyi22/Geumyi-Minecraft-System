@@ -1,0 +1,1831 @@
+{
+  "schema": 1,
+  "captured_date_utc": "2026-10-11",
+  "repository": "geumyi22/Geumyi-Minecraft-System",
+  "default_branch": "main",
+  "main_sha": "42c608563e84146cc77ef3b6a188c4a06a5a38d6",
+  "precleanup": {
+    "branch_count": 48,
+    "release_count": 15,
+    "workflow_run_count": 2332
+  },
+  "branches": [
+    {
+      "name": "day8-cleanup",
+      "sha": "a215ba8c202def37680495b4303dafabca4206c0",
+      "protected": false
+    },
+    {
+      "name": "day8-closeout",
+      "sha": "96ae7433f800e82ac3a78971bdc00fce00654dd4",
+      "protected": false
+    },
+    {
+      "name": "day8-e2e-finalize",
+      "sha": "db9eb1eba28ea846a65f027ce1aecf263158c424",
+      "protected": false
+    },
+    {
+      "name": "day8-finalizer-auth-hotfix",
+      "sha": "7c737715da9c49331f230841d3789f2dcf548a38",
+      "protected": false
+    },
+    {
+      "name": "day8-finalizer-resume-hotfix",
+      "sha": "d921014f732fbb80a07b6298ebf913afe09cc8e4",
+      "protected": false
+    },
+    {
+      "name": "day8-finalizer-windows-hotfix",
+      "sha": "826b3524b1898499708b770941d783f91f084cb4",
+      "protected": false
+    },
+    {
+      "name": "day8-secure-release",
+      "sha": "0a8a9fcc0439ec017fc51ec6ae5a5b4aa09d53f7",
+      "protected": false
+    },
+    {
+      "name": "day9-finalizer-ci-fix",
+      "sha": "b11091e9fee4c6d9b7d14f94eaa4abe6f1af4bd5",
+      "protected": false
+    },
+    {
+      "name": "day9-finalizer-cmd-errorlevel-fix",
+      "sha": "c3833a1008ff65fdd8d115f4f8e47dcb66df6fb4",
+      "protected": false
+    },
+    {
+      "name": "day9-finalizer-direct-runid-fix",
+      "sha": "2656ec546904e039cf9f9b896652ddcc1fd783e3",
+      "protected": false
+    },
+    {
+      "name": "day9-finalizer-hostvar-fix",
+      "sha": "acf12419b927bc620614d932867282cdf0d7fdfc",
+      "protected": false
+    },
+    {
+      "name": "day9-finalizer-run-discovery-fix",
+      "sha": "02ca3e3b4f4d5072169f82811945bbe3d5c7224e",
+      "protected": false
+    },
+    {
+      "name": "day9-finalizer-state-restore",
+      "sha": "998155f74ab520d50525bbd6a76c7c98648b3efe",
+      "protected": false
+    },
+    {
+      "name": "day9-transaction-rollback",
+      "sha": "efa850da350b27c60045f8d21c219a8d1151fd33",
+      "protected": false
+    },
+    {
+      "name": "day10-cutover-readiness",
+      "sha": "e8e3d586408841468212ac85a43faa1458e375f0",
+      "protected": false
+    },
+    {
+      "name": "day10-cutover-retry-safety",
+      "sha": "85b0940035efcbfbf83e8b39e851f6e59c7596fa",
+      "protected": false
+    },
+    {
+      "name": "day10-finalizer",
+      "sha": "5a9e55364eb1139e66ef4319174fd8233187de99",
+      "protected": false
+    },
+    {
+      "name": "day10-fix-velocity-fill-v3-builds",
+      "sha": "30ed137219a8ef379bbc51b133a94fd1c59e0ea4",
+      "protected": false
+    },
+    {
+      "name": "day10-four-server-live-cutover",
+      "sha": "53f3f162044b9511bbed362968f4e968c7a52686",
+      "protected": false
+    },
+    {
+      "name": "day10-four-server-live-cutover-final-ci",
+      "sha": "53f3f162044b9511bbed362968f4e968c7a52686",
+      "protected": false
+    },
+    {
+      "name": "day10-four-server-network-foundation",
+      "sha": "a63246f4698693496280bd50d9869e0b92d07b04",
+      "protected": false
+    },
+    {
+      "name": "day10-four-server-phase1-safe-preflight",
+      "sha": "16233279dda8432fcc10ee1d041bfc98a755273f",
+      "protected": false
+    },
+    {
+      "name": "day10-four-server-port-transaction",
+      "sha": "ec92440bf2ca14a308cd61c9b0661cbad54f9363",
+      "protected": false
+    },
+    {
+      "name": "day10-gsc-desktop-update-controls",
+      "sha": "908da1bd61f9baad481ad29605d4c83d1078ed43",
+      "protected": false
+    },
+    {
+      "name": "day10-gsc-network-observability",
+      "sha": "1a553fc1a066066483dec4881063f368aa9e462c",
+      "protected": false
+    },
+    {
+      "name": "day10-live-oneclick-gsc-stage",
+      "sha": "46e07d9bd12961d4b3109d752c71f76bd84da8f0",
+      "protected": false
+    },
+    {
+      "name": "day10-lobby-network-plan",
+      "sha": "57adbeb76860e7621c835d61fbb9f698a2a27e63",
+      "protected": false
+    },
+    {
+      "name": "day10-lobby-other-and-cutover-guard",
+      "sha": "a2f1a7b93134d76d72be38e5cc88aaee521dd5d0",
+      "protected": false
+    },
+    {
+      "name": "day10-mobile-update-controls",
+      "sha": "0d7b11cca07c7ca8cda417c0368f8defdc2b3b22",
+      "protected": false
+    },
+    {
+      "name": "day10-phase1-e2e-harness",
+      "sha": "132b6ce2b7ed7f0f0a527253035ce2ad5bbf0070",
+      "protected": false
+    },
+    {
+      "name": "day10-phase2-server-catalog",
+      "sha": "ddf416f08423e1fa7afe4e4849473be2ce011226",
+      "protected": false
+    },
+    {
+      "name": "day10-phase3-proxy-foundation",
+      "sha": "dc779366bd7c9760844027ae44d43309f94c0f19",
+      "protected": false
+    },
+    {
+      "name": "day10-phase4-lobby",
+      "sha": "a5de29cc6276e8b7cb3d0702be219808dbd946d2",
+      "protected": false
+    },
+    {
+      "name": "day10-phase5-last-location",
+      "sha": "1105f536b457b99d8e248e4f4993d77a234cacd0",
+      "protected": false
+    },
+    {
+      "name": "day10-phase6-bedrock-foundation",
+      "sha": "14ad6f0f9eb58ed1b36963b0e842e38e14d75265",
+      "protected": false
+    },
+    {
+      "name": "day10-phase7-deploy-finalizer",
+      "sha": "2048b4dee1a5352d171cc18b557d30a9401f74d3",
+      "protected": false
+    },
+    {
+      "name": "day10-phase7-final-e2e",
+      "sha": "0413ae95bf838a7a96c0ea0414618696fb9b59fc",
+      "protected": false
+    },
+    {
+      "name": "day10-reconcile-existing-via-safe",
+      "sha": "0f26a6c51bbba77859b18adac516cdaf9ec7f75b",
+      "protected": false
+    },
+    {
+      "name": "day10-safe-stage-launcher",
+      "sha": "e113016d42e9fd8bd840b9468c8ad554bfee2ead",
+      "protected": false
+    },
+    {
+      "name": "day10-update-policy-choices",
+      "sha": "4145b8bfaac7c5fc706c838d90ec12e3e08471eb",
+      "protected": false
+    },
+    {
+      "name": "day11-host-test-package",
+      "sha": "e630db93ff5532e3ca99e54cc02fd72b0f22ac65",
+      "protected": false
+    },
+    {
+      "name": "day11-phase0-phase1",
+      "sha": "ecd1a4d69ca66850766e9c5b2876df92bcb7db94",
+      "protected": false
+    },
+    {
+      "name": "day11-phase2-update-center",
+      "sha": "5941b20c67ea537a32892cb24fb6b928f9b51239",
+      "protected": false
+    },
+    {
+      "name": "day11-protection-recovery",
+      "sha": "cf72102231ba0e9df71635a96f69dc927e2eb50d",
+      "protected": false
+    },
+    {
+      "name": "day11-protection-recovery-2",
+      "sha": "8baae93e15cd1236c315382925a30b3d509207fa",
+      "protected": false
+    },
+    {
+      "name": "day11-update-center-2",
+      "sha": "17ffa73cc68a888af64273cb2594eaceaedf2765",
+      "protected": false
+    },
+    {
+      "name": "gsc-client-version-lobby-ui-fix",
+      "sha": "25978b563bc6aa48bcacac200a7840d9780f6ca6",
+      "protected": false
+    },
+    {
+      "name": "main",
+      "sha": "42c608563e84146cc77ef3b6a188c4a06a5a38d6",
+      "protected": false
+    }
+  ],
+  "releases": [
+    {
+      "id": 408327158,
+      "tag": "system-2026.10.10-day12-gsc439-rc1-canary",
+      "target": "2e5bec5f4fa0275f6bef6266f7772de67e7a14b3",
+      "draft": true,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-canary.json",
+          "size": 696
+        },
+        {
+          "name": "deployment-canary.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.9-rc.1-Setup.exe",
+          "size": 21297664
+        },
+        {
+          "name": "README-NOT-FOR-INSTALL.txt",
+          "size": 688
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 377
+        }
+      ]
+    },
+    {
+      "id": 405786755,
+      "tag": "system-2026.10.07-day11-gsc438-beta",
+      "target": "a17975030ed3f9b71d8632a7897c1c206d9bfcdf",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-beta.json",
+          "size": 4539
+        },
+        {
+          "name": "deployment-beta.json.sha256",
+          "size": 87
+        },
+        {
+          "name": "deployment-beta.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.8-Setup.exe",
+          "size": 21279744
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6498304
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7790592
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+117-Android.apk",
+          "size": 70546852
+        },
+        {
+          "name": "GSCM-v1.1.5+117-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+117-unsigned.ipa",
+          "size": 7605570
+        },
+        {
+          "name": "GSCM-v1.1.5+117-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 405683150,
+      "tag": "system-2026.10.07-day11-gsc437-beta",
+      "target": "3f578988c2627fd3db1c05df394a527d9a619ad6",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-beta.json",
+          "size": 4539
+        },
+        {
+          "name": "deployment-beta.json.sha256",
+          "size": 87
+        },
+        {
+          "name": "deployment-beta.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.7-Setup.exe",
+          "size": 21259264
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6497792
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7770624
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk",
+          "size": 70546852
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa",
+          "size": 7604808
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 405113267,
+      "tag": "system-2026.10.07-day11-gsc436-beta",
+      "target": "02342b97ca1ba56bbc79e27caa0eb4dbc7ea90f9",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-beta.json",
+          "size": 4539
+        },
+        {
+          "name": "deployment-beta.json.sha256",
+          "size": 87
+        },
+        {
+          "name": "deployment-beta.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.6-Setup.exe",
+          "size": 21216768
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6457856
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7770624
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk",
+          "size": 70546852
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa",
+          "size": 7604808
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 405092102,
+      "tag": "system-2026.10.07-day11-gsc435-beta",
+      "target": "c5543d90791e65685e327322b9cf00b067dda7f6",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-beta.json",
+          "size": 4539
+        },
+        {
+          "name": "deployment-beta.json.sha256",
+          "size": 87
+        },
+        {
+          "name": "deployment-beta.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.5-Setup.exe",
+          "size": 21216256
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6457856
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7770112
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk",
+          "size": 70546852
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa",
+          "size": 7604808
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 405073154,
+      "tag": "system-2026.10.07-day11-gsc434-beta",
+      "target": "0a73868c30acc0a8e7c7cecb200b2d5a1ed91d71",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-beta.json",
+          "size": 4539
+        },
+        {
+          "name": "deployment-beta.json.sha256",
+          "size": 87
+        },
+        {
+          "name": "deployment-beta.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.4-Setup.exe",
+          "size": 21169152
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6451712
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7729152
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk",
+          "size": 70546852
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa",
+          "size": 7604808
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 405051936,
+      "tag": "system-2026.10.07-day11-gsc433-beta",
+      "target": "be616524b91d23894cfe3e5cb1a2ec57611b2681",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-beta.json",
+          "size": 4539
+        },
+        {
+          "name": "deployment-beta.json.sha256",
+          "size": 87
+        },
+        {
+          "name": "deployment-beta.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.3-Setup.exe",
+          "size": 21169152
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6451712
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7729152
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk",
+          "size": 70546852
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa",
+          "size": 7604808
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 405099881,
+      "tag": "system-2026.10.07-day11-116-canary.1",
+      "target": "e4b1e4c1e3f95763c9d50d712f8c23094dc90435",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-canary.json",
+          "size": 4550
+        },
+        {
+          "name": "deployment-canary.json.sha256",
+          "size": 89
+        },
+        {
+          "name": "deployment-canary.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.5-Setup.exe",
+          "size": 21216256
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6457856
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7770112
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk",
+          "size": 70546852
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa",
+          "size": 7604808
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 404039115,
+      "tag": "system-2026.10.06-day11-gscm116-beta",
+      "target": "0e1c17c649cddb52829346311f013ed967f48b9a",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-beta.json",
+          "size": 4548
+        },
+        {
+          "name": "deployment-beta.json.sha256",
+          "size": 87
+        },
+        {
+          "name": "deployment-beta.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.2-Setup.exe",
+          "size": 21162496
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6451712
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7722496
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk",
+          "size": 70546852
+        },
+        {
+          "name": "GSCM-v1.1.5+116-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa",
+          "size": 7604808
+        },
+        {
+          "name": "GSCM-v1.1.5+116-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 403946093,
+      "tag": "system-2026.10.06-day11-canary",
+      "target": "1ea0f722576e90d3c83966a97b907767f7672992",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-canary.json",
+          "size": 4496
+        },
+        {
+          "name": "deployment-canary.json.sha256",
+          "size": 89
+        },
+        {
+          "name": "deployment-canary.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.0-Setup.exe",
+          "size": 21145600
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6450688
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7716864
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+115-Android.apk",
+          "size": 70480112
+        },
+        {
+          "name": "GSCM-v1.1.5+115-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+115-unsigned.ipa",
+          "size": 7595151
+        },
+        {
+          "name": "GSCM-v1.1.5+115-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 404016130,
+      "tag": "system-2026.10.06-day11-432-beta",
+      "target": "369c58c39ec37c4e76fcf442de951c95f9b76005",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-beta.json",
+          "size": 4512
+        },
+        {
+          "name": "deployment-beta.json.sha256",
+          "size": 87
+        },
+        {
+          "name": "deployment-beta.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.2-Setup.exe",
+          "size": 21162496
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6451712
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7722496
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+115-Android.apk",
+          "size": 70480112
+        },
+        {
+          "name": "GSCM-v1.1.5+115-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+115-unsigned.ipa",
+          "size": 7595151
+        },
+        {
+          "name": "GSCM-v1.1.5+115-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 403961793,
+      "tag": "system-2026.10.06-day11-431-canary",
+      "target": "10d6bf45d46901423885cfdee5c7cbf09ef0f475",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-canary.json",
+          "size": 4532
+        },
+        {
+          "name": "deployment-canary.json.sha256",
+          "size": 89
+        },
+        {
+          "name": "deployment-canary.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.1-Setup.exe",
+          "size": 21146624
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6450688
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7717888
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+115-Android.apk",
+          "size": 70480112
+        },
+        {
+          "name": "GSCM-v1.1.5+115-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+115-unsigned.ipa",
+          "size": 7595151
+        },
+        {
+          "name": "GSCM-v1.1.5+115-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 403985301,
+      "tag": "system-2026.10.06-day11-431-beta",
+      "target": "0b62d6a77a8aaf077b26d64f5ad09b2eda4fa42d",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-beta.json",
+          "size": 4512
+        },
+        {
+          "name": "deployment-beta.json.sha256",
+          "size": 87
+        },
+        {
+          "name": "deployment-beta.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar",
+          "size": 15839
+        },
+        {
+          "name": "GeumyiLobby-0.1.0-Paper26.3.jar.sha256",
+          "size": 98
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar",
+          "size": 14206
+        },
+        {
+          "name": "GeumyiNetwork-0.1.0-Paper26.3.jar.sha256",
+          "size": 100
+        },
+        {
+          "name": "GeumyiServerCenter-v4.3.1-Setup.exe",
+          "size": 21151232
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6450688
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7722496
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.5+115-Android.apk",
+          "size": 70480112
+        },
+        {
+          "name": "GSCM-v1.1.5+115-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.5+115-unsigned.ipa",
+          "size": 7595151
+        },
+        {
+          "name": "GSCM-v1.1.5+115-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 399178124,
+      "tag": "system-2026.09.29-222513-canary",
+      "target": "c2a5ece657f6a44e86f668ce8fd3d6beaf96b3bc",
+      "draft": false,
+      "prerelease": true,
+      "assets": [
+        {
+          "name": "deployment-canary.json",
+          "size": 4204
+        },
+        {
+          "name": "deployment-canary.json.sha256",
+          "size": 89
+        },
+        {
+          "name": "deployment-canary.json.sig",
+          "size": 64
+        },
+        {
+          "name": "deployment-public.pem",
+          "size": 113
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 60375
+        },
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar.sha256",
+          "size": 102
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77662
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar.sha256",
+          "size": 112
+        },
+        {
+          "name": "GeumyiServerCenter-v4.2.3-Setup.exe",
+          "size": 20760064
+        },
+        {
+          "name": "GeumyiServerCenter.exe",
+          "size": 6427136
+        },
+        {
+          "name": "GeumyiServerHost.exe",
+          "size": 7384576
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 94488
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar.sha256",
+          "size": 125
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar",
+          "size": 58722
+        },
+        {
+          "name": "GeumyiStatusAgent-0.5.4.jar.sha256",
+          "size": 94
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar",
+          "size": 53212
+        },
+        {
+          "name": "GeumyiTechnology-0.1.4-Paper26.3.jar.sha256",
+          "size": 103
+        },
+        {
+          "name": "GSCM-v1.1.2+113-Android.apk",
+          "size": 70364952
+        },
+        {
+          "name": "GSCM-v1.1.2+113-Android.apk.sha256",
+          "size": 94
+        },
+        {
+          "name": "GSCM-v1.1.2+113-unsigned.ipa",
+          "size": 7573082
+        },
+        {
+          "name": "GSCM-v1.1.2+113-unsigned.ipa.sha256",
+          "size": 95
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 281
+        }
+      ]
+    },
+    {
+      "id": 397167111,
+      "tag": "mc-2026.09.26-v3",
+      "target": "main",
+      "draft": false,
+      "prerelease": false,
+      "assets": [
+        {
+          "name": "GeumyiChemistry-0.4.1-Paper26.3.jar",
+          "size": 55857
+        },
+        {
+          "name": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+          "size": 77650
+        },
+        {
+          "name": "GeumyiServerCenter-v4.2.3-Setup.exe",
+          "size": 20676096
+        },
+        {
+          "name": "GeumyiServerCenter_FINAL_v4.2.3.zip",
+          "size": 15731400
+        },
+        {
+          "name": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+          "size": 93988
+        },
+        {
+          "name": "GeumyiTechnology-0.1.3-Paper26.3.jar",
+          "size": 49025
+        },
+        {
+          "name": "Geumyi_Playground_Paper26.3_Current_2026-09-26.zip",
+          "size": 63890149
+        },
+        {
+          "name": "Geumyi_Playground_ResourcePacks_26.3_FINAL.zip",
+          "size": 25919055
+        },
+        {
+          "name": "Geumyi_Wild_Paper26.3_Current_2026-09-26.zip",
+          "size": 63995779
+        },
+        {
+          "name": "Geumyi_Wild_ResourcePacks_26.3_FINAL.zip",
+          "size": 3833336
+        },
+        {
+          "name": "GSCM-v1.1.2-Android.apk",
+          "size": 70364952
+        },
+        {
+          "name": "GSCM-v1.1.2-unsigned.ipa",
+          "size": 7573706
+        },
+        {
+          "name": "GSCM_v1.1.2_Android_Builder_CLEAN.zip",
+          "size": 39688044
+        },
+        {
+          "name": "MC_LATEST_2026-09-26_v3_FINAL.zip",
+          "size": 213342478
+        },
+        {
+          "name": "SHA256SUMS.txt",
+          "size": 1479
+        }
+      ]
+    }
+  ],
+  "safety_note": "Inventory is metadata only. Preserving a SHA in text does not preserve the git object indefinitely after refs are deleted. Preserve baseline release tags and signed assets; main history must never be rewritten.",
+  "delete_policy": {
+    "actions_keep_recent_hours": 96,
+    "actions_keep_latest_per_workflow": 3,
+    "actions_keep_numeric_run_references": true,
+    "branches_keep": [
+      "main",
+      "day8-secure-release",
+      "day9-transaction-rollback",
+      "day10-four-server-live-cutover-final-ci",
+      "day11-protection-recovery-2"
+    ],
+    "releases_candidate": [
+      "system-2026.10.10-day12-gsc439-rc1-canary",
+      "system-2026.10.07-day11-gsc433-beta",
+      "system-2026.10.07-day11-gsc434-beta",
+      "system-2026.10.07-day11-gsc435-beta",
+      "system-2026.10.07-day11-gsc436-beta"
+    ]
+  }
+}
