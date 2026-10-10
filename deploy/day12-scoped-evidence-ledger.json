@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "report_type": "DAY12_SCOPED_OPERATOR_EVIDENCE_LEDGER",
-  "updated_date": "2026-10-10",
+  "updated_date": "2026-10-11",
   "release_gate_source": "FINAL-RELEASE-GATES.json",
   "release_gate_status": "BLOCKED_UNTIL_ALL_MANDATORY_GATES_PASS",
   "release_allowed": false,
@@ -35,10 +35,10 @@
     {
       "code": "12.4",
       "title": "Lifecycle dry-run",
-      "status": "OPERATOR_REPORTED_PASS_IN_SCOPE",
-      "scope": "Previously zero backup/log eligible deletion candidates; no Apply",
-      "source": "DAY12-REPO-PROGRESS.md",
-      "not_proven": "Retention-policy final approval or real Apply"
+      "status": "OPERATOR_APPROVED_NO_ACTION_AFTER_REAL_DRY_RUN",
+      "scope": "2026-10-10 reported actual host lifecycle dry-run: zero eligible backup/log candidates; operator 2026-10-11 explicitly approved completing 12.4 review without Apply; Golden 4/4 and incident logs retained",
+      "source": "DAY12-PHASE4-FINAL-NOOP-DECISION-20261011.md",
+      "not_proven": "Default retention parameters are not deployed as a scheduled production retention policy, and no real Trash Apply was executed (not necessary for zero candidates)"
     },
     {
       "code": "12.7-cache",

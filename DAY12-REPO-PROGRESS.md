@@ -1,3 +1,8 @@
+### 2026-10-11 — 12.4 lifecycle CLOSED in real dry-run + NO-APPLY policy-review scope
+
+- Operator requested 12.4 first. Existing real server-PC dry-run had **zero** eligible backup/log cleanup candidates. **Reviewed decision: take NO action; protect existing Golden 4/4 and incident logs.** No Trash movement/deletion or scheduled retention setting deployed.
+- `DAY12-PHASE4-FINAL-NOOP-DECISION-20261011.md` records the operator-approved no-op decision. Proposed default values remain **reference only** in `deploy/day12-lifecycle-policy.json`. 12.4 scoped review is closed; it is not a new simulated/real Apply PASS and does not clear any security/Stable gates.
+
 ### 2026-10-11 00:42 KST — #2 Java process role discrepancy resolved, REAL HOST SCOPED PASS
 
 - Operator uploaded the **actual server-PC** read-only report `Day12-Unknown-Java-Role-READ-ONLY-20261011-004221.json`, `synthetic=false`, `read_only=true`, timestamp `2026-10-10T15:42:21.3125520Z`. Exact result `PASS_SCOPED_ROLE_RECONCILIATION` with reason `ALL_JAVA_LAUNCHERS_RECONCILED_WITH_GSC_ONLINE_COUNT`.
