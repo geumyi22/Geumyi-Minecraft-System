@@ -690,15 +690,25 @@ class _ConsoleSectionState extends State<_ConsoleSection> {
   String level = 'ALL';
   bool loading = true;
   bool launcher = false;
-  bool autoRefresh = false;
+  bool autoRefresh = true;
   int lines = 800;
   Timer? timer;
+  bool _logInFlight = false;
+  bool _logQueued = false;
   final command = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _load();
+    _startAutoRefresh();
+  }
+
+  void _startAutoRefresh() {
+    timer?.cancel();
+    if (autoRefresh) {
+      timer = Timer.periodic(const Duration(seconds: 4), (_) => _load(silent: true));
+    }
   }
 
   @override
@@ -709,29 +719,37 @@ class _ConsoleSectionState extends State<_ConsoleSection> {
   }
 
   void _setAutoRefresh(bool value) {
-    timer?.cancel();
-    timer = null;
     setState(() => autoRefresh = value);
-    if (value) {
-      timer = Timer.periodic(const Duration(seconds: 4), (_) => _load(silent: true));
-    }
+    _startAutoRefresh();
+    if (value) _load(silent: true);
   }
 
   Future<void> _load({bool silent = false}) async {
+    if (_logInFlight) {
+      if (!silent) _logQueued = true;
+      return;
+    }
+    _logInFlight = true;
+    final requestedKind = launcher ? 'launcher' : 'server';
     if (!silent && mounted) setState(() => loading = true);
     try {
       final next = await widget.api.console(
         widget.server.id,
-        kind: launcher ? 'launcher' : 'server',
+        kind: requestedKind,
         lines: lines,
       );
-      if (mounted) setState(() => text = next);
-    } catch (e) {
-      if (mounted && !silent) {
-        setState(() => text = e.toString());
+      if (mounted && requestedKind == (launcher ? 'launcher' : 'server') && next != text) {
+        setState(() => text = next);
       }
+    } catch (e) {
+      if (mounted && !silent) setState(() => text = e.toString());
     } finally {
+      _logInFlight = false;
       if (mounted && !silent) setState(() => loading = false);
+      if (mounted && _logQueued) {
+        _logQueued = false;
+        unawaited(_load(silent: true));
+      }
     }
   }
 
@@ -836,7 +854,7 @@ class _ConsoleSectionState extends State<_ConsoleSection> {
             IconButton(
               tooltip: autoRefresh ? '자동 갱신 끄기' : '4초 자동 갱신',
               onPressed: () => _setAutoRefresh(!autoRefresh),
-              icon: Icon(autoRefresh ? Icons.sync_rounded : Icons.sync_rounded),
+              icon: Icon(autoRefresh ? Icons.pause_circle_outline_rounded : Icons.play_circle_outline_rounded),
             ),
           ]),
         ]),
