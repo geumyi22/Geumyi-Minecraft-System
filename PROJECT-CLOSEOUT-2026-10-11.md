@@ -51,4 +51,4 @@
 3. Golden 백업/현재 월드/운영 설정/암호 및 토큰은 소프트웨어 정리 대상으로 간주하지 않는다.
 4. 필요할 때만 GitHub Action 및 릴리즈 재정리. 소규모 운영 수락과 강제 Stable 게이트 통과를 혼동하지 않는다.
 
-관련: [DAY-TIMELINE.md](DAY-TIMELINE.md) · [FINAL-RELEASE-GATES.json](FINAL-RELEASE-GATES.json) · [DAY12-SMALL-SERVER-4CHECK-OPERATIONS-20261011.md](DAY12-SMALL-SERVER-4CHECK-OPERATIONS-20261011.md).
+관련: [DAY-TIMELINE.md](DAY-TIMELINE.md) · [FINAL-RELEASE-GATES.json](FINAL-RELEASE-GATES.json) · [docs/day12/operations/DAY12-SMALL-SERVER-4CHECK-OPERATIONS-20261011.md](docs/day12/operations/DAY12-SMALL-SERVER-4CHECK-OPERATIONS-20261011.md).
