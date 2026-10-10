@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "phase": "12.2",
+  "as_of": "2026-10-11",
+  "result": "REPOSITORY_PROVENANCE_REVIEW_COMPLETED_WITH_TWO_LOBBY_EXCEPTIONS",
+  "full_release_grade_component_inventory_gate": "OPEN",
+  "trusted_reference_ledger": "deploy/day12-trusted-component-digests.json",
+  "historical_host_reference": "Day12-Integrity-Security-20261009-061224.json",
+  "last_host_capture": "2026-10-09 06:13 KST",
+  "pinned_component_count": 5,
+  "observed_matched_copy_count": 11,
+  "matched_copies_per_component": {
+    "statusagent": 1,
+    "technology": 2,
+    "gst": 3,
+    "gds": 3,
+    "chemistry": 2
+  },
+  "confirmed_public_release": "mc-2026.09.26-v3",
+  "rechecked_public_release_asset_ids": [
+    590320437,
+    590320391,
+    590320390
+  ],
+  "checked_candidate_system_ci_runs": [
+    36915111381,
+    37013810379
+  ],
+  "checked_candidates_matched_lobby": false,
+  "outstanding": [
+    "LOBBY_GST_SOURCE_BUILD_IDENTITY",
+    "LOBBY_GDS_SOURCE_BUILD_IDENTITY"
+  ],
+  "no_runtime_mutation": true,
+  "stable_release_allowed": false
+}

@@ -127,6 +127,14 @@
       "scope": "Desktop GSC and patched Android GSCM console four-second auto-polling observed normal by operator; earlier Android+iOS status/reconnect short smoke; updated iOS console feature accepted by operator declaration only",
       "source": "DAY12-PHASE9-UX-OPERATOR-CLOSURE-20261011.md",
       "not_proven": "Patched iOS IPA installation plus real iOS four-second console refresh; any unexecuted full 25-case E2E, platform signing/distribution, or WebSocket streaming protocol"
+    },
+    {
+      "code": "12.2-provenance-review",
+      "title": "Pinned public release provenance and exact Lobby exceptions",
+      "status": "REPOSITORY_REVIEW_COMPLETE_WITH_TWO_UNRESOLVED_LOBBY_ALIASES",
+      "scope": "Historic real host 2026-10-09 digest capture: StatusAgent 1/1, Technology 2/2, GST 3/3, GDS 3/3, Chemistry 2/2 match pinned public release/CI; 2 Lobby alias builds remain unidentified",
+      "source": "DAY12-PHASE2-FINAL-PROVENANCE-REVIEW-20261011.md",
+      "not_proven": "Original Day10 CI run and detached signatures for Lobby GST/GDS; fresh enabled runtime attestation; complete 12.2 final release gate"
     }
   ],
   "unresolved_release_requirements": [

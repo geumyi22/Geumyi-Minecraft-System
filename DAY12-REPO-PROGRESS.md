@@ -1,3 +1,9 @@
+### 2026-10-11 — 12.2 repo-side component provenance review completed with two explicit Lobby gaps
+
+- Existing real host Oct-09 SHA captured; five pinned public release/CI component refs matched **11/11 targeted copies** (1 StatusAgent, 2 Technology, 3 GST, 3 GDS, 2 Chemistry). Reconfirmed actual GitHub release v3 asset digests for 3 legacy components on Oct-11.
+- Checked actual ZIP-contained JAR SHA256s from historical System CI runs **36915111381** and **37013810379**: both have the exact Lobby JAR sizes, but **not** the identical historical Lobby SHA; do **not** claim identity/provenance from size alone.
+- **12.2 repository review complete with two OPEN provenance exceptions**: Lobby GST and Lobby GDS named aliases intentionally emitted by Day10 installer but original exact CI run unknown. Do not alter working Lobby plugins or mark release-grade 12.2 gate PASS. Evidence: `DAY12-PHASE2-FINAL-PROVENANCE-REVIEW-20261011.md` and `deploy/day12-phase2-provenance-review.json`.
+
 ### 2026-10-11 — 12.9 UX operational sign-off CLOSED; iOS binary evidence exception documented
 
 - Operator explicitly requested the phase second in `12.4 → 12.9 → 12.2 → 12.6`. Desktop GSC console 4s refresh and updated Android GSCM console 4s refresh already each **USER_REPORTED_REAL_UI_PASS**; JS regression CI `38057732807` PASS. iOS status/reconnect earlier user-reported normal, but **updated iOS IPA installation and patched console auto-refresh never independently observed**.
