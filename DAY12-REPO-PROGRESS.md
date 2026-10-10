@@ -1,3 +1,10 @@
+### 2026-10-10 20:58 KST — Bedrock scoped proxy restart precheck blocked (no restart)
+
+- Host report `Day12-Bedrock-Proxy-Restart-Precheck-20261010-205816.json`: all **12/12** approved pack hashes checked; blocked at `wild:PUBLIC_LISTENER_MISSING` due to Windows `Get-NetTCPConnection` or `Get-NetUDPEndpoint` missing row. **0** restarts requested and 0 verified. No mutation.
+- Replacement **operator-private** v2 ZIP changes only restart/precheck logic: strict Day10 scheduled task and Velocity process census plus actual local GSC Java/RakNet application probes replace unreliable OS port-row hard gating. Requires zero-player typed consent and fail-closed sequential task stop/start. **Static/ZIP tests only**, no Windows run and no live restart claim.
+- Next operator step V2 read-only precheck; only if PASS and zero players, restricted 3-proxy restart; Bedrock real-client E2E after successful restart. Day12.10 and Stable still blocked.
+
+
 ### 2026-10-10 13:19 KST — Day12.11 Bedrock pack staging PASS, proxy restart PENDING
 
 - Paired real host Preview/Apply JSON accepted: `READY_FOR_APPLY_NO_MUTATION` → `FILES_STAGED_NEEDS_PROXY_RESTART`; **9 approved packs + 3 custom mappings staged** in 3 Geyser-Velocity instances, no processes restarted, no world/Java pack/firewall mutation.

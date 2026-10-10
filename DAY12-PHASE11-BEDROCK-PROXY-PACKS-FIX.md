@@ -1,3 +1,24 @@
+## 2026-10-10 20:58 KST — scoped proxy restart blocked by Windows listener provider
+
+Actual operator report `Day12-Bedrock-Proxy-Restart-Precheck-20261010-205816.json`:
+- `status=BLOCKED_OR_PARTIAL_RESTART_NEEDS_OPERATOR_REVIEW`
+- `code=wild:PUBLIC_LISTENER_MISSING`
+- `approved_pack_hashes_checked=12`, preflight of all approved 9 packs + 3 custom mappings passed.
+- `proxy_restarts_attempted=false`, `proxies_verified_after_restart=0`, `steps=[]`; no backend Paper/GSC restart, Java pack/world/firewall modification.
+- Current real Java/Bedrock public health is **unknown from this report**; do not infer an offline wild proxy solely from a missing PowerShell `Get-NetTCPConnection` / `Get-NetUDPEndpoint` inventory row. The earlier host investigation observed inconsistencies among OS network providers, so do not weaken release gates for private backends either.
+
+Root script issue: the original private `Day12_Bedrock_Proxy_Restart.ps1` used `@(Get-NetTCPConnection ...).Count=0 OR @(Get-NetUDPEndpoint ...).Count=0` as a **hard** blocker for each public listener, even though other Day10 live validation already uses independent GSC application-level Java TCP and RakNet response probes.
+
+**Replacement candidate** private ZIP `Geumyi-Day12-Bedrock-Scoped-Proxy-Restart-V2-AppProbe.zip` (no user pack bytes, not committed to public GitHub):
+- Preserves all prior 12-file SHA-256 checks, V2 journal allowlist, 3 `enable-custom-content: true` checks.
+- Requires exactly 3 running scheduled tasks with the exact Day10 name, action, Java arguments and working dir; exactly three matching Velocity Java process command lines, unique PIDs.
+- Requires exact 3 GSC host-local `/api/v4/network/entry-status` endpoint entries for wild, playground, other with the expected public ports and **both** `java_responding=true` and `bedrock_raknet_pong=true`. This uses GSC's real application-layer TCP + UDP RakNet probes from `GSC/ServerCenter/cmd/host/network_local_api.go`, rather than treating OS provider inventories as authority.
+- **Does not assert true OS port/PID attribution.** Instead `Stop-ScheduledTask` targets only the known exact task, detects one and only one Velocity Java PID going away, and `Start-ScheduledTask` must yield exactly one new PID and all three GSC app probes healthy before proceeding to the next task.
+- Restart remains operator-only with zero-player check and explicit `NO PLAYERS` typed confirmation. Any process drift, mismatched task definition, missing GSC probe, or missing file hash fails closed. No force-kill, pack copy, backend/GSC restart, firewall/world/backup change.
+- Python static inspection verified ZIP CRC and command presence/scope, balanced PowerShell delimiters, but **Windows runtime validation of this V2 candidate has not occurred yet**. Run `00_Precheck_V2_READ_ONLY.cmd` on actual server and proceed with `01_Restart_THREE_PROXY_V2_ONLY.cmd` ONLY if precheck returns `READY_FOR_SCOPED_PROXY_RESTART` and no players.
+- Day12.11 pack delivery and client E2E still NOT verified; release gate stays blocked.
+
+
 ## 2026-10-10 13:19 KST — real operator approved pack staging succeeded
 
 Operator provided paired reports:
