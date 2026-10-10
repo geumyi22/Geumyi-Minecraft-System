@@ -17,3 +17,9 @@ The original `deploy/day12-scoped-evidence-ledger.json` CI enforces an exact set
 ## Later 2026-10-11 provenance update (supersedes prior Lobby exception)
 
 Both Lobby alias JARs were subsequently matched by full SHA-256 to archived original Day10 System CI run `37113499031`; the 13/13 historical installed component copies have pinned content origins. See `DAY12-PHASE2-LOBBY-PROVENANCE-RESOLVED-20261011.md`. This does **not** establish current loaded/plugin-enabled runtime identity or satisfy the still-blocked live release gates. **No signed Stable publication, host change or production rollout is authorized by this source-only audit.**
+
+## Additional 12.6 release-identity guard (2026-10-11)
+
+The final-release workflow now rejects **both** existing GitHub Releases and existing Git tags (even when the tag has no Release). The exact remote-tag lookup fails closed if the GitHub remote cannot be queried, before any signing, artifact publication, or tag creation. The repository source audit checks that the reject logic is present and precedes `gh release create`.
+
+**Platform-signing distinction:** the workflow requires a verified persistent signer for the Android APK and Ed25519 signing/verification of the deployment manifest; the referenced iOS workflow explicitly builds `--no-codesign` and produces an `-unsigned.ipa` intended for subsequent authorized signing/sideload use. A signed manifest **does not** make that IPA an Apple-signed, directly installable distribution build. The mandatory live gates are unchanged, and Stable remains BLOCKED.
