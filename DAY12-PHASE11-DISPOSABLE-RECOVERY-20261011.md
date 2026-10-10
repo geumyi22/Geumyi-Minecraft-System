@@ -22,4 +22,4 @@ The exit-code handling was fixed in source commit `387017ec74f91974e504911f2ef1c
 - **#17:** Canary policy and temporary JAR transaction rollback tests are already covered by disposable Go and separate GSC 4.3.9 RC staging source; a production signed Canary apply/rollback E2E has not been run.
 - **Release:** strict 12.5/12.7/12.10/12.11/12.12 instrumented Stable prerequisites remain unchanged. `FINAL-RELEASE-GATES.json` must continue to block signed Stable and maintenance promotion.
 
-The existing PlayStation/Bedrock/Java player-facing smoke acceptances are not invalidated and must not be repeated due only to test-runner issues.
+The existing Playground/Bedrock/Java player-facing smoke acceptances are not invalidated and must not be repeated due only to test-runner issues.
