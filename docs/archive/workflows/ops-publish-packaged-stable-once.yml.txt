@@ -1,0 +1,101 @@
+name: Finalize GSC 4.5.0 GSCM 1.5.0 packaged Stable draft (one-time)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ops-publish-packaged-stable-once.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: finalize-geumyi-manual-stable-20261011
+  cancel-in-progress: false
+
+jobs:
+  publish-prebuilt-draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_ID: "409174149"
+      RELEASE_TAG: "system-2026.10.11-stable-gsc450-gscm150"
+      BUILD_SHA: "c8e80d338865e4c40dbe06d81f1c7b3822088289"
+      SOURCE_RUN: "38081642958"
+    steps:
+      - name: Verify prebuilt draft, exact assets, and originating CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" > release.json
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN}/jobs?per_page=100" > ci-jobs.json
+          python3 - <<'PY'
+          import json,os,re
+          release=json.load(open('release.json'))
+          jobs=json.load(open('ci-jobs.json'))['jobs']
+          assert release['id']==int(os.environ['RELEASE_ID']), 'release ID mismatch'
+          assert release['tag_name']==os.environ['RELEASE_TAG'], 'release tag mismatch'
+          assert release['target_commitish']==os.environ['BUILD_SHA'], 'build SHA mismatch'
+          assert release['draft'] is True, 'not the expected unpublished draft'
+          assert release['prerelease'] is False, 'unexpected prerelease state'
+          expected={
+            'GeumyiServerCenter-v4.5.0-Setup.exe',
+            'GeumyiServerCenter.exe',
+            'GeumyiServerHost.exe',
+            'GSCM-v1.5.0+150-Android.apk',
+            'GSCM-v1.5.0+150-Android.apk.sha256',
+            'GSCM-v1.5.0+150-unsigned.ipa',
+            'GSCM-v1.5.0+150-unsigned.ipa.sha256',
+            'RELEASE-PROVENANCE.json',
+            'SHA256SUMS-STABLE.txt',
+            'SHA256SUMS.txt',
+          }
+          assets=release['assets']
+          assert {x['name'] for x in assets}==expected, 'draft assets differ from CI set'
+          assert all(x['state']=='uploaded' and x['size']>0 for x in assets), 'incomplete asset'
+          assert all(re.fullmatch(r'sha256:[0-9a-f]{64}',x.get('digest','')) for x in assets), 'missing checksum digest'
+          assert len(jobs)>=17, 'incomplete CI summary'
+          checks={x['name']:x['conclusion'] for x in jobs}
+          required={'android / build-android','ios / build-ios',
+                    'system / GSC 4.5.0 / Go test',
+                    'system / GSC 4.5.0 / assemble CI Setup',
+                    'system / Component CI + Day 8 foundation summary'}
+          assert required<=set(checks), 'missing core CI jobs'
+          assert all(checks[x]=='success' for x in required), 'core CI failure'
+          assert checks.get('publish')=='failure', 'original publisher result differs'
+          assert all(x['conclusion']=='success' for x in jobs if x['name']!='publish'), 'non-publish CI failure'
+          assert 'auto-update service will not mistake' in release['body'], 'manual-install boundary missing'
+          print('VERIFIED: 10 intact release assets, successful source CI, unpublished exact-SHA draft')
+          PY
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo 'Tag unexpectedly exists; refusing to overwrite.'
+            exit 1
+          fi
+
+      - name: Publish existing manual-install Stable draft without redeploying hosts
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api -X PATCH "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" \
+            -F draft=false -F prerelease=false -f make_latest=true \
+            --jq '{id,tag_name,draft,prerelease,published_at,html_url}'
+
+      - name: Verify public publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" > published.json
+          python3 - <<'PY'
+          import json,os
+          j=json.load(open('published.json'))
+          assert j['tag_name']==os.environ['RELEASE_TAG']
+          assert j['draft'] is False and j['prerelease'] is False
+          assert j['published_at'] is not None
+          assert len(j['assets'])==10
+          print('PUBLISHED:',j['html_url'])
+          PY
+          echo "Public manual-install Stable binaries are now available." >> "$GITHUB_STEP_SUMMARY"
+          echo "No signed deployment-stable.json has been generated; production live-security gates remain unchanged." >> "$GITHUB_STEP_SUMMARY"
