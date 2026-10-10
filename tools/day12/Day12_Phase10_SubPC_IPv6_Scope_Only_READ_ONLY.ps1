@@ -35,6 +35,23 @@ function Get-IPv6LinkInterfaces {
     ForEach-Object { [int]$_.InterfaceIndex } | Sort-Object -Unique)
   return @($addresses)
 }
+# The user may paste a server-side fe80::...%N address. The %N is local
+# to the originating computer and MUST NOT be trusted as a SubPC zone even
+# when the same numeric index happens to exist on both machines.
+# This pure resolver is covered by synthetic tests without any OS/network IO.
+function Resolve-SubPCLinkLocalScope([Net.IPAddress]$Target,[int[]]$LocalIndices,[int]$ChosenIndex=0) {
+  if(-not (Test-RemoteIPv6 $Target)){return [pscustomobject]@{status="INVALID_ADDRESS";scope=0}}
+  if(-not $Target.IsIPv6LinkLocal){return [pscustomobject]@{status="NOT_LINK_LOCAL";scope=0}}
+  $valid=@($LocalIndices|Where-Object{$_ -gt 0}|Sort-Object -Unique)
+  if($valid.Count -eq 0){return [pscustomobject]@{status="NO_LOCAL_INTERFACE";scope=0}}
+  if($valid.Count -eq 1){
+    return [pscustomobject]@{status="AUTO_LOCAL_INTERFACE";scope=[int]$valid[0]}
+  }
+  if($ChosenIndex -gt 0 -and $valid -contains $ChosenIndex){
+    return [pscustomobject]@{status="SELECTED_LOCAL_INTERFACE";scope=$ChosenIndex}
+  }
+  return [pscustomobject]@{status="MULTIPLE_LOCAL_INTERFACES";scope=0}
+}
 function Tcp-Probe([Net.IPAddress]$IP,[int]$Port) {
   $c=$null;$task=$null
   try {
@@ -82,6 +99,25 @@ function Synthetic-Checks {
      (Get-V6Class $linkScoped) -ne "LINK_LOCAL"){
     throw "IPv6_ADDRESS_SCOPE_SYNTHETIC_REGRESSION"
   }
+  # The server PC's explicit %15 must be ignored. For the same destination,
+  # the single active local SubPC interface %7 must be chosen.
+  $serverScoped=[Net.IPAddress]::Parse("fe80::55%15")
+  $one=Resolve-SubPCLinkLocalScope $serverScoped @(7)
+  $coincident=Resolve-SubPCLinkLocalScope $serverScoped @(15,7)
+  $multiple=Resolve-SubPCLinkLocalScope $serverScoped @(7,9)
+  $selected=Resolve-SubPCLinkLocalScope $serverScoped @(7,9) 9
+  $invalidChoice=Resolve-SubPCLinkLocalScope $serverScoped @(7,9) 15
+  $noInterface=Resolve-SubPCLinkLocalScope $serverScoped @()
+  $nonlink=Resolve-SubPCLinkLocalScope $normal @(7)
+  if($one.status -ne "AUTO_LOCAL_INTERFACE" -or $one.scope -ne 7 -or
+     $coincident.status -ne "MULTIPLE_LOCAL_INTERFACES" -or
+     $multiple.status -ne "MULTIPLE_LOCAL_INTERFACES" -or
+     $selected.status -ne "SELECTED_LOCAL_INTERFACE" -or $selected.scope -ne 9 -or
+     $invalidChoice.status -ne "MULTIPLE_LOCAL_INTERFACES" -or
+     $noInterface.status -ne "NO_LOCAL_INTERFACE" -or
+     $nonlink.status -ne "NOT_LINK_LOCAL"){
+    throw "SERVER_VS_SUBPC_SCOPE_CORRECTION_REGRESSION"
+  }
 }
 if(-not $OutputDir){$OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) "Geumyi-Day12-IPv6-Scope"}
 if($Synthetic) {
@@ -107,27 +143,44 @@ if(-not [Net.IPAddress]::TryParse($TargetIPv6,[ref]$ip) -or -not (Test-RemoteIPv
 }
 $scopeResolution="NOT_APPLICABLE"
 if($ip.IsIPv6LinkLocal) {
-  # The %scope is the SUBPC'S local adapter index, NOT the server PC index.
+  $inputHadScope=($ip.ScopeId -gt 0)
+  # The supplied %index may be the server PC index. Discard unconditionally
+  # and resolve solely from the SubPC's current attached IPv6 adapters.
   $choices=@(Get-IPv6LinkInterfaces)
-  if($choices.Count -eq 0){throw "NO_ACTIVE_SUBPC_LINK_LOCAL_IPV6_INTERFACE"}
-  if($ip.ScopeId -eq 0){
-    if($choices.Count -eq 1){
-      $ip.ScopeId=[long]$choices[0]
-      $scopeResolution="AUTOMATIC_SINGLE_LOCAL_INTERFACE"
-    }else{
-      Write-Host "Multiple SUBPC IPv6 link-local interfaces were found."
-      Write-Host ("Connected local interface indices: "+($choices -join ", "))
-      $chosen=0
-      $raw=(Read-Host "Choose the SUBPC's LAN interface index (NOT the server PC index)").Trim()
-      if(-not [int]::TryParse($raw,[ref]$chosen) -or $choices -notcontains $chosen){
-        throw "SUBPC_IPV6_SCOPE_UNRESOLVED"
-      }
-      $ip.ScopeId=[long]$chosen
-      $scopeResolution="OPERATOR_SELECTED_LOCAL_INTERFACE"
+  $resolved=Resolve-SubPCLinkLocalScope $ip $choices
+  if($resolved.status -eq "NO_LOCAL_INTERFACE"){
+    throw "NO_ACTIVE_SUBPC_LINK_LOCAL_IPV6_INTERFACE"
+  }
+  if($resolved.status -eq "MULTIPLE_LOCAL_INTERFACES"){
+    Write-Host "Multiple SUBPC IPv6 LAN interfaces found; the server's %index must not be reused."
+    foreach($idx in $choices){
+      $name="UNKNOWN"
+      try{
+        $adapter=Get-NetAdapter -InterfaceIndex ([int]$idx) -ErrorAction Stop
+        $name=[string]$adapter.Name
+      }catch{}
+      Write-Host ("  SUBPC interface {0} : {1}" -f $idx,$name)
     }
-  }elseif($choices -notcontains [int]$ip.ScopeId){
-    throw "INVALID_OR_DISCONNECTED_SUBPC_INTERFACE_SCOPE"
-  }else{$scopeResolution="EXPLICIT_VALID_LOCAL_INTERFACE"}
+    $chosen=0
+    $raw=(Read-Host "Choose the SUBPC's active Ethernet/Wi-Fi LAN interface number").Trim()
+    if(-not [int]::TryParse($raw,[ref]$chosen)){
+      throw "SUBPC_IPV6_SCOPE_SELECTION_INVALID"
+    }
+    $resolved=Resolve-SubPCLinkLocalScope $ip $choices $chosen
+    if($resolved.status -ne "SELECTED_LOCAL_INTERFACE"){
+      throw "SUBPC_IPV6_SCOPE_SELECTION_INVALID"
+    }
+  }
+  if($resolved.scope -le 0){throw "SUBPC_IPV6_SCOPE_UNRESOLVED"}
+  $ip.ScopeId=[long]$resolved.scope
+  $scopeResolution=if($inputHadScope){
+    "INPUT_SERVER_SCOPE_REPLACED_WITH_SUBPC_SCOPE"
+  }elseif($resolved.status -eq "AUTO_LOCAL_INTERFACE"){
+    "AUTOMATIC_SINGLE_SUBPC_INTERFACE"
+  }else{
+    "OPERATOR_SELECTED_SUBPC_INTERFACE"
+  }
+  Write-Host "IPv6 link-local interface scope resolved using SUBPC network adapter."
 }
 if((Classify-IPv6Scope $ip) -ne "SCOPE_FORMAT_VALID"){throw "TARGET_IPV6_SCOPE_INVALID"}
 # Refuse a target which equals a local SubPC address, ignoring %zone.
