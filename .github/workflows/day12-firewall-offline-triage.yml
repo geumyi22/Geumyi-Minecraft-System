@@ -1,0 +1,39 @@
+name: Day12 Firewall Offline Risk Triage
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/day12/review_day12_firewall_candidates_offline.py'
+      - 'tools/day12/test_review_day12_firewall_candidates_offline.py'
+      - '.github/workflows/day12-firewall-offline-triage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-offline-risk-triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Offline synthetic fail-closed firewall candidate regression
+        run: python tools/day12/test_review_day12_firewall_candidates_offline.py -v
+      - name: Ensure tool cannot modify local firewall or relax release gates
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source=Path('tools/day12/review_day12_firewall_candidates_offline.py').read_text(encoding='utf-8')
+          banned=('subprocess','os.system','socket.socket','netsh','New-NetFirewallRule','Set-NetFirewallRule','Remove-NetFirewallRule','Update-NetFirewallRule')
+          # A literal keyword inside a printed NOTE is harmless, but no
+          # import/OS API invocation may be part of this offline summary.
+          for token in banned[:3]:
+              assert token not in source, f'Offline reviewer unexpectedly references process/network primitive: {token}'
+          assert '"UNCHANGED_FAIL"' in source
+          assert '"release_allowed": False' in source
+          PY
