@@ -243,6 +243,10 @@ GSCM:
 
 ## 12.12 — Soak test
 
+**2026-10-10 engineering readiness:** `tools/day12/Day12_Phase12_Continuous_Soak_READ_ONLY.ps1` adds an optional **continuous, read-only, eight-hour** alternative to the existing start/end snapshot method. It samples Java/GSC process identity and GSC Java TCP/Bedrock RakNet application-layer responses every five minutes. [Windows PowerShell 5.1 synthetic/packaging CI PASS](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38055832685); artifact `Geumyi-Day12-8H-Soak-READ-ONLY`, private server-PC sample details not shared. The tool **has not run for eight hours on the user's server**. Only share the sanitized final summary JSON after a complete session; `result=REVIEW_REQUIRED` always until independently reviewed. It cannot prove real client gameplay, native socket binding or Stable readiness.
+
+
+
 Before closure:
 - active-use window;
 - extended idle window (target 8–12 h where practical).

@@ -1,3 +1,11 @@
+### 2026-10-10 — continuous Phase12.12 soak kit Windows CI PASS
+
+- **Tooling implemented, not host-executed:** `tools/day12/Day12_Phase12_Continuous_Soak_READ_ONLY.ps1` + `Start_Day12_8H_Soak_READ_ONLY.cmd`. New unique Desktop evidence directory, eight-hour monotonic stopwatch, five-minute Java/GSC process identity samples, GSC Java TCP/Bedrock RakNet application-level probes, failure/changed PID checks, no configuration/server/task/world/network mutation. Local PID/private process detail saved separately; only `DAY12-SOAK-SUMMARY-SHARE-ONLY-THIS.json` is suitable to share.
+- **Windows PowerShell 5.1 synthetic fail-closed & ZIP assembly PASS:** https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38055832685 ; artifact `Geumyi-Day12-8H-Soak-READ-ONLY` (ID `11671025775`). False green blocked: synthetic probe failures and process changes remain REVIEW_REQUIRED; summary always `stable_release_allowed=false`.
+- **Next real server-PC task:** run the one-click 8-hour monitor once at a convenient time without a planned restart, leave its window open, then submit the sanitized summary and separately describe Java/Bedrock/GSCM gameplay health. Avoid rerunning all Day12 host inventories or restarting previously fixed Velocity proxies.
+- **Still blocked:** 12.10 native private backend bind/owner proof (canonical FAIL), 12.7 deliberately offline start, broad 12.11 25-case final E2E, 12.12 actual live soak and 12.13 final release. Prior operator `정상` closes only the Bedrock Lobby switch pack incident, not all Day12.11 test cases. Golden 4/4 and 84-artifact cache unchanged.
+
+
 
 ### 2026-10-10 — Bedrock resource-pack switch issue user-confirmed normal
 
