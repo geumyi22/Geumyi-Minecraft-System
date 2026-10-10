@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "status": "EXPECTED_TOPOLOGY_PENDING_PHASE_12_0A_LIVE_CAPTURE",
+  "status": "EXPECTED_TOPOLOGY_12_0_CONFIG_CAPTURED__LIVE_KERNEL_BIND_UNVERIFIED",
   "entry_model": "three isolated Velocity/Geyser public aliases, all enter Lobby first",
   "public_entrypoints": [
     {
@@ -98,6 +98,18 @@
     "velocity_modern_forwarding": true,
     "forwarding_secret_committed": false,
     "floodgate_private_key_committed": false,
-    "paper_backends_private": true
+    "paper_backends_private": true,
+    "paper_backends_private_claim_scope": "DESIGN_AND_CONFIG_ONLY_NOT_CURRENT_NATIVE_OWNER_BIND_PROOF",
+    "backend_private_tcp_remote_tested_paths": {
+      "lan_ipv4": "0_OF_8_PRIVATE_CONNECTED_WITH_PUBLIC_POSITIVE_CONTROLS",
+      "lan_ipv6_link_local": "0_OF_8_PRIVATE_CONNECTED_WITH_PUBLIC_POSITIVE_CONTROLS",
+      "tailscale_ipv4": "0_OF_8_PRIVATE_CONNECTED_WITH_PUBLIC_POSITIVE_CONTROLS",
+      "tailscale_ipv6": "0_OF_8_PRIVATE_CONNECTED_WITH_PUBLIC_POSITIVE_CONTROLS",
+      "tested_at": "2026-10-10 KST",
+      "other_internet_and_peer_paths_unverified": true
+    },
+    "canonical_backend_ports_private": "FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS",
+    "real_tailnet_gsc_protected_http_unauth_401_count": 8,
+    "stable_release_allowed": false
   }
 }
