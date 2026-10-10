@@ -1,0 +1,92 @@
+name: Day12 Phase11 Disposable GSC Paper Crash Recovery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/day12/Test_Day12_GSC_Paper_Offline_Proxy_Disposable_CI.ps1'
+      - '.github/workflows/day12-phase11-disposable-gsc-paper-crash-recovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  disposable-paper-crash-and-watchdog:
+    runs-on: windows-latest
+    timeout-minutes: 26
+    env:
+      GEUMYI_DAY12_DISPOSABLE_ONLY: 'yes'
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: GSC/ServerCenter/go.mod
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Confirm source script parses; disallow external PC execution
+        shell: pwsh
+        run: |
+          $p='tools/day12/Test_Day12_GSC_Paper_Offline_Proxy_Disposable_CI.ps1'
+          $tok=$null;$errs=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tok,[ref]$errs)
+          if(@($errs).Count){$errs|ForEach-Object{Write-Host $_.ErrorId};throw 'Disposable CI PowerShell parse failure'}
+          $content=Get-Content $p -Raw -Encoding UTF8
+          if($content -notmatch 'REFUSE_NON_DISPOSABLE_RUNNER' -or
+            $content -notmatch 'GEUMYI_DAY12_DISPOSABLE_ONLY' -or
+            $content -notmatch 'GSC_CHILD_PROCESS_HTTPS_PROXY_REFUSES_UPDATE_SOURCE_ONLY'){
+            throw 'Disposable runner/false full-offline claim guard missing'
+          }
+      - name: Build GSC 4.3.8 from the current checked-out source (NOT production)
+        shell: pwsh
+        working-directory: GSC/ServerCenter
+        run: |
+          go build -o "$env:RUNNER_TEMP/Day12-Disposable-GSC-4.3.8.exe" ./cmd/host
+          if($LASTEXITCODE -ne 0){throw 'Disposable GSC host build failed'}
+          if(-not(Test-Path "$env:RUNNER_TEMP/Day12-Disposable-GSC-4.3.8.exe")){
+            throw 'Host binary missing'
+          }
+      - name: Download pinned public 2026-09-26 Paper release (no live user files)
+        shell: pwsh
+        run: |
+          $dir=Join-Path $env:RUNNER_TEMP 'phase7-paper-source'
+          New-Item -ItemType Directory -Path $dir -Force|Out-Null
+          gh release download mc-2026.09.26-v3 --repo geumyi22/Geumyi-Minecraft-System --pattern 'Geumyi_Playground_Paper26.3_Current_2026-09-26.zip' --dir $dir
+          if($LASTEXITCODE -ne 0){throw 'No pinned Paper zip'}
+          $zip=Join-Path $dir 'Geumyi_Playground_Paper26.3_Current_2026-09-26.zip'
+          if((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant() -ne
+            '6198ad133c37667a4a0a92567f204c4c24e5f265864f8dd19605407c6e3ced4b'){
+            throw 'Trusted public Paper release archive digest changed'
+          }
+      - name: Boot real Paper via GSC, simulate isolated crash and confirm RECOVERING and new Paper PID
+        shell: pwsh
+        run: |
+          $zip=Join-Path $env:RUNNER_TEMP 'phase7-paper-source/Geumyi_Playground_Paper26.3_Current_2026-09-26.zip'
+          $gsc=Join-Path $env:RUNNER_TEMP 'Day12-Disposable-GSC-4.3.8.exe'
+          & ./tools/day12/Test_Day12_GSC_Paper_Offline_Proxy_Disposable_CI.ps1 -PaperZip $zip -HostExe $gsc -ExerciseCrashRecovery
+          if($LASTEXITCODE -ne 0){throw 'Disposable real Paper+GSC outage E2E not proven; see sanitized artifact'}
+          $p=Join-Path $env:RUNNER_TEMP 'Day12-GSC-Paper-Disposable-Offline-Source.json'
+          $r=Get-Content $p -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'DISPOSABLE_REAL_GSC_PAPER_CRASH_RECOVERY_PASS' -or
+            !$r.real_paper_initial_online_boot -or !$r.initial_graceful_stop -or
+            !$r.real_disposable_gsc_host_started -or !$r.gsc_start_accepted -or
+            !$r.updater_network_failure_observed -or !$r.real_paper_restarted_despite_update_outage -or
+            !$r.original_paper_jar_unchanged -or !$r.crash_recovery_requested -or
+            !$r.disposable_paper_process_exactly_identified -or !$r.disposable_paper_unexpected_termination_executed -or
+            !$r.real_gsc_state_recovering_observed -or !$r.real_paper_watchdog_recovery_observed -or
+            !$r.recovered_disposable_paper_new_pid_observed -or $r.user_world_or_golden_changed -or
+            $r.offline_operator_server_boot_verified -or $r.stable_release_allowed -or
+            $r.backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Disposable actual GSC Paper crash recovery test failed or overclaimed operator host'
+          }
+      - name: Always upload redacted disposable result only
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: day12-phase11-disposable-gsc-paper-crash-recovery-result
+          path: ${{ runner.temp }}/Day12-GSC-Paper-Disposable-Offline-Source.json
+          if-no-files-found: warn
+          retention-days: 14
