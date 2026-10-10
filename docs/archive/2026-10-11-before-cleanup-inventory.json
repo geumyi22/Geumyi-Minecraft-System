@@ -1810,7 +1810,7 @@
   ],
   "safety_note": "Inventory is metadata only. Preserving a SHA in text does not preserve the git object indefinitely after refs are deleted. Preserve baseline release tags and signed assets; main history must never be rewritten.",
   "delete_policy": {
-    "actions_keep_recent_hours": 96,
+    "actions_keep_recent_hours": 24,
     "actions_keep_latest_per_workflow": 3,
     "actions_keep_numeric_run_references": true,
     "branches_keep": [
@@ -1826,6 +1826,7 @@
       "system-2026.10.07-day11-gsc434-beta",
       "system-2026.10.07-day11-gsc435-beta",
       "system-2026.10.07-day11-gsc436-beta"
-    ]
+    ],
+    "ci_prune_policy_note": "Follow-up pass retains 24h recent jobs, latest 3 runs per workflow, and all 11-digit IDs appearing in current repository evidence. This is an owner-requested historical run reduction. Original precleanup counts, SHAs and release inventories remain unchanged."
   }
 }
