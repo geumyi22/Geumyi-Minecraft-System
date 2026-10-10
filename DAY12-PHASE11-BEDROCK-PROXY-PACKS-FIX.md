@@ -1,3 +1,13 @@
+## 2026-10-10 21:19 KST — V3 correctly detects **six** Velocity candidates, restart still prohibited
+
+Operator report `Day12-Bedrock-Proxy-Restart-Precheck-20261010-211932.json`:
+- `code=VELOCITY_PROCESS_CENSUS_NOT_EXACTLY_THREE`; `java_process_count=10`, `velocity_candidate_count=6`, all **six** categorized `TASK_STYLE_RELATIVE_JAR`, not expected absolute paths.
+- `approved_pack_hashes_checked=12`; `proxy_restarts_attempted=false`, `proxies_verified_after_restart=0`. No GSC/Paper/firewall/world/Java pack mutation.
+- `application_layer_java_raknet_verified=false` means **not reached due to the earlier census blocker**; it is not proof that either protocol was unhealthy.
+- **Crucial:** six matching Velocity Java command lines are genuinely present in this process census, but their actual working directories/task associations are NOT established by `-jar velocity.jar`. Never automatically stop or kill three of them based only on the total; they might include test copies or orphan processes from prior bootstraps.
+
+A new operator-private, **READ-ONLY** ZIP `Geumyi-Day12-Velocity-6Process-Forensics-READ-ONLY.zip` was prepared to correlate six process PIDs/creation times/parent process names, the precise three Day10 ScheduledTask action states and recent TaskScheduler events, candidate ownership of public TCP/UDP ports (flagged advisory due to known Windows provider inconsistencies) and GSC loopback Java TCP/RakNet application probes. It exports no full command lines, paths, usernames, IPs or credentials; does not restart, kill, reload or change task settings. The package ZIP archive CRC and static no-mutation checks passed, **but Windows runtime execution not independently proven**. The operator must return its redacted `Day12-Velocity-6Process-Forensics-*.json` report before a safe remediation is designed. No forced restarts, no Stable release.
+
 ## 2026-10-10 21:11 KST — Velocity process census V2 false-negative, V3 parser candidate
 
 Actual operator \`Day12-Bedrock-Proxy-Restart-Precheck-20261010-211103.json\`:

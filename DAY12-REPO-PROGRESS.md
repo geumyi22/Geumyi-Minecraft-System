@@ -1,3 +1,9 @@
+### 2026-10-10 21:19 KST — V3 observed six Velocity candidates, preflight appropriately blocked
+
+- Operator JSON: java.exe total 10, `velocity.jar` candidates 6 (**all task-relative**), 12 staged pack hashes checked, 0 proxy restarts; no host changes. Cannot infer each candidate's installed directory from relative commandline.
+- New read-only six-process topology forensic ZIP created to inspect launched timestamps, parents, exact Day10 scheduled tasks, advisory port ownership, GSC app probes and TaskScheduler history without changing processes or files. Do not run prior V1/V2/V3 restart or rollback pending operator evidence.
+- Remains Day12.11 pack placement only; no Geyser pack load/client E2E, no Stable.
+
 ### 2026-10-10 21:11 KST — Day12.11 pack V3 restart census correction
 
 - Latest real user report `Day12-Bedrock-Proxy-Restart-Precheck-20261010-211103.json`: 12/12 approved Bedrock pack/mapping fingerprints validated, blocked `VELOCITY_PROCESS_CENSUS_NOT_EXACTLY_THREE`, **zero proxy restarts attempted**. No Paper/GSC/world/firewall/Java pack mutation.
