@@ -1,3 +1,9 @@
+### 2026-10-11 — Lobby GST/GDS exact SHA provenance FOUND; 12.2 13/13 target historical JAR matches
+
+- Previously missing original build is **Day10 final System CI `37113499031`** at source `0e1490bfe75975eb278526df0f89a430109e28d8`, explicitly referenced by `DAY10-E2E-REPORT.md`. Downloaded its archived GST artifact `11271350765` and GDS artifact `11270776846` and SHA256-hashed the **actual JAR contents**, not filenames or archive hashes.
+- Lobby GST actual CI digest `ca3c07d39574d3397568ab0f125489d2ca795196bf7684943cbbdf12be2568cc` (**94,488 B**), Lobby GDS actual CI digest `7213acedbaf73a72ad7b3816f06c274ec5699713940d8a133f3a21bc01d37ac4` (**77,662 B**), both **EXACT MATCH** against previously private captured installed Lobby file SHA256s. Source identity problem **resolved**, 13/13 relevant historic installed JAR copies backed by public CI/release digests.
+- `DAY12-PHASE2-LOBBY-PROVENANCE-RESOLVED-20261011.md` holds full public CI-reference details. No host jar replace/restart needed; no new on-host 2026-10-11 runtime attestation. **Actual signed Stable release is still blocked**, belongs to 12.13 after mandatory live gates.
+
 ### 2026-10-11 — 12.6 repo-only signed-release control audit CI PASS; preserve strict evidence ledger
 
 - [Phase6 Source Audit CI **38066005282 SUCCESS**](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38066005282): validates existing fail-closed final gate and independent health/security evidence, release build dependencies and signing policy, SHA256 sidecars and manifest signing/publish order. Synthetic gate-negative fixtures and actual manifest generator temp-byte tests PASS. **No real signed Stable was published or installed.**

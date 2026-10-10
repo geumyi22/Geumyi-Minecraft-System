@@ -2,19 +2,21 @@
   "schema": 1,
   "phase": "12.2",
   "as_of": "2026-10-11",
-  "result": "REPOSITORY_PROVENANCE_REVIEW_COMPLETED_WITH_TWO_LOBBY_EXCEPTIONS",
-  "full_release_grade_component_inventory_gate": "OPEN",
+  "result": "TARGETED_HISTORICAL_COMPONENT_PROVENANCE_13_OF_13_MATCH",
+  "full_release_grade_component_inventory_gate": "FINAL_LIVE_RECONCILIATION_REQUIRED; HISTORIC_LOBBY_SOURCE_BUILD_IDENTITY_RESOLVED",
   "trusted_reference_ledger": "deploy/day12-trusted-component-digests.json",
   "historical_host_reference": "Day12-Integrity-Security-20261009-061224.json",
   "last_host_capture": "2026-10-09 06:13 KST",
   "pinned_component_count": 5,
-  "observed_matched_copy_count": 11,
+  "observed_matched_copy_count": 13,
   "matched_copies_per_component": {
     "statusagent": 1,
     "technology": 2,
     "gst": 3,
     "gds": 3,
-    "chemistry": 2
+    "chemistry": 2,
+    "lobby-gst": 1,
+    "lobby-gds": 1
   },
   "confirmed_public_release": "mc-2026.09.26-v3",
   "rechecked_public_release_asset_ids": [
@@ -24,13 +26,33 @@
   ],
   "checked_candidate_system_ci_runs": [
     36915111381,
-    37013810379
+    37013810379,
+    37113499031
   ],
-  "checked_candidates_matched_lobby": false,
-  "outstanding": [
-    "LOBBY_GST_SOURCE_BUILD_IDENTITY",
-    "LOBBY_GDS_SOURCE_BUILD_IDENTITY"
-  ],
+  "checked_candidates_matched_lobby": true,
+  "outstanding": [],
   "no_runtime_mutation": true,
-  "stable_release_allowed": false
+  "stable_release_allowed": false,
+  "exact_lobby_source": {
+    "workflow_run_id": 37113499031,
+    "source_commit": "0e1490bfe75975eb278526df0f89a430109e28d8",
+    "artifacts": [
+      {
+        "id": 11271350765,
+        "component": "lobby-gst",
+        "sha256": "ca3c07d39574d3397568ab0f125489d2ca795196bf7684943cbbdf12be2568cc",
+        "size_bytes": 94488,
+        "installed_alias": "GeumyiServerTools-1.1.1.jar"
+      },
+      {
+        "id": 11270776846,
+        "component": "lobby-gds",
+        "sha256": "7213acedbaf73a72ad7b3816f06c274ec5699713940d8a133f3a21bc01d37ac4",
+        "size_bytes": 77662,
+        "installed_alias": "GeumyiDiscordStatus-1.1.1.jar"
+      }
+    ],
+    "historical_host_capture": "2026-10-09 06:13 KST",
+    "exact_sha_match": true
+  }
 }

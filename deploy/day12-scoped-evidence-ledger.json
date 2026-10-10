@@ -201,10 +201,10 @@
     {
       "code": "12.2-provenance-review",
       "title": "Pinned public release provenance and exact Lobby exceptions",
-      "status": "REPOSITORY_REVIEW_COMPLETE_WITH_TWO_UNRESOLVED_LOBBY_ALIASES",
-      "scope": "Historic real host 2026-10-09 digest capture: StatusAgent 1/1, Technology 2/2, GST 3/3, GDS 3/3, Chemistry 2/2 match pinned public release/CI; 2 Lobby alias builds remain unidentified",
+      "status": "PROVENANCE_13_OF_13_TARGETED_HISTORIC_FILE_HASHES_MATCH_PUBLIC_CI_RELEASE",
+      "scope": "11 previous + 2 exact Day10 CI Lobby alias JAR digests match historic server-PC 2026-10-09 SHA256; official final Day10 run 37113499031",
       "source": "DAY12-PHASE2-FINAL-PROVENANCE-REVIEW-20261011.md",
-      "not_proven": "Original Day10 CI run and detached signatures for Lobby GST/GDS; fresh enabled runtime attestation; complete 12.2 final release gate",
+      "not_proven": "Fresh loaded/in-use plugin bytes; all additional component update policy and signing requirements; Day12 Stable release approval",
       "ledger_scope": "PHASE_REVIEW_NOT_IN_CLOSED_SCOPED_RELEASE_GATES"
     },
     {

@@ -1,13 +1,12 @@
 {
   "schema": 1,
   "purpose": "PINNED_PUBLIC_REFERENCE_DIGESTS_FOR_DAY12_2_NOT_RUNTIME_ATTESTATION",
-  "recorded_at": "2026-10-10 KST",
+  "recorded_at": "2026-10-11 KST; real host file SHA capture 2026-10-09 06:13 KST",
   "runtime_last_observed": "2026-10-09 06:13 KST",
   "private_machine_sha256_values_committed": false,
   "all_hashes_are_public_project_release_or_ci_reference": true,
   "release_gate_authorized": false,
   "pending": [
-    "LOBBY_GST_GDS_SOURCE_BUILD_IDENTITY",
     "CURRENT_ENABLED_PLUGIN_RUNTIME_E2E",
     "NATIVE_BACKEND_SOCKET_OWNER_BIND",
     "ALL_OTHER_FINAL_GATES"
@@ -88,6 +87,40 @@
       "release_asset_id": 590320390,
       "observed_matched": 2,
       "observed_total": 2
+    },
+    {
+      "component": "lobby-gst",
+      "artifact_id": 11271350765,
+      "size_bytes": 94488,
+      "sha256": "ca3c07d39574d3397568ab0f125489d2ca795196bf7684943cbbdf12be2568cc",
+      "file": "GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar",
+      "installed_alias": "GeumyiServerTools-1.1.1.jar",
+      "version": "1.1.1",
+      "targets": [
+        "lobby"
+      ],
+      "source_type": "DAY10_SYSTEM_CI_ARCHIVED_JAR_CONTENT",
+      "workflow_run_id": 37113499031,
+      "source_commit": "0e1490bfe75975eb278526df0f89a430109e28d8",
+      "observed_matched": 1,
+      "observed_total": 1
+    },
+    {
+      "component": "lobby-gds",
+      "artifact_id": 11270776846,
+      "size_bytes": 77662,
+      "sha256": "7213acedbaf73a72ad7b3816f06c274ec5699713940d8a133f3a21bc01d37ac4",
+      "file": "GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar",
+      "installed_alias": "GeumyiDiscordStatus-1.1.1.jar",
+      "version": "1.1.1",
+      "targets": [
+        "lobby"
+      ],
+      "source_type": "DAY10_SYSTEM_CI_ARCHIVED_JAR_CONTENT",
+      "workflow_run_id": 37113499031,
+      "source_commit": "0e1490bfe75975eb278526df0f89a430109e28d8",
+      "observed_matched": 1,
+      "observed_total": 1
     }
   ],
   "notes": [
@@ -95,6 +128,7 @@
     "Observed hash equality is from private 2026-10-09 server-PC report; report itself is not committed.",
     "Lobby GST/GDS alias binaries are excluded from this reference until exact authoritative source is confirmed.",
     "No live service, world, backup, firewall or installed JAR was changed.",
-    "Changes to targets or plugin binaries require separate explicit approval and tested rollback."
+    "Changes to targets or plugin binaries require separate explicit approval and tested rollback.",
+    "Both Lobby aliases' historical real-host SHA256s exactly match genuine archived Day10 System CI 37113499031 JAR file bytes; see Day12-PHASE2-LOBBY-PROVENANCE-RESOLVED-20261011.md."
   ]
 }

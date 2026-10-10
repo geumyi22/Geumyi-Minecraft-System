@@ -20,6 +20,12 @@ The operator states all game/GSC/GSCM features appear normal, explicitly accepts
 
 The protected final release manifest remains **BLOCKED**, especially 12.5 security, 12.7 real offline boot, 12.10 private socket native binding, 12.11 real staging recovery/rollout E2E, 12.12 long soak, and unresolved Lobby provenance. See `deploy/day12-scoped-evidence-ledger.json` for review statuses separated from exact reserved closed-scope test IDs.
 
+## 2026-10-11 — Lobby plugin provenance resolved; final Stable still blocked
+
+Identified original Day10 final cutover System CI run **37113499031** from `DAY10-E2E-REPORT.md`. Archived GST/GDS JAR content SHA256s match both historic installed Lobby aliases exactly; all **13/13** targeted installed plugin/agent copies are now traceable to pinned CI/release content. See `DAY12-PHASE2-LOBBY-PROVENANCE-RESOLVED-20261011.md`.
+
+12.6 repository build/sign/manifest control CI **PASSED** in run **38066005282**, but **actual signed Stable release is a 12.13 action only**. 12.10 real native backend socket bind ownership is still `FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS`; other required offline, security, 12.11 real E2E, soak and release checks remain. No Stable signing, publish or host file replacement authorized.
+
 ## Repository-side verified evidence
 
 - Day 12 full synthetic/read-only Safety CI: **PASS** — run `37670902211`

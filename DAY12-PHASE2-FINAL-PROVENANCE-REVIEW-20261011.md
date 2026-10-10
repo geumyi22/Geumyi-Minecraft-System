@@ -32,3 +32,7 @@ The private on-host `Day12-Integrity-Security-20261009-061224.json` was captured
 4. Do not confuse binary file authenticity, runtime enabled plugin state, signed manifest chain, OS socket binding or 12.11 real-client E2E. They are distinct gates.
 
 **GitHub reference ledger:** `deploy/day12-trusted-component-digests.json`. **No full Stable gate changed.**
+
+## 2026-10-11 — RESOLVED by exact original Day10 archived CI JAR SHA256 match
+
+Previous unknown Lobby GST and GDS build sources are **now identified** as successful System CI 37113499031. Downloaded actual archived binary bytes match both historical installed Lobby alias SHA256s. The earlier candidate misses remain historical research, not current unresolved findings. See `DAY12-PHASE2-LOBBY-PROVENANCE-RESOLVED-20261011.md`.
