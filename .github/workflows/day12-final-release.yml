@@ -94,6 +94,10 @@ jobs:
           set -euo pipefail
           [[ -n "$DEPLOYMENT_PRIVATE_KEY_B64" ]] || { echo 'missing deployment signing key'; exit 1; }
           if gh release view "$TAG" >/dev/null 2>&1; then echo 'release already exists'; exit 1; fi
+          # An existing Git tag without a Release is also immutable: never reuse it.
+          # Standalone assignment under set -e fails closed on GitHub/network errors.
+          existing_tag="$(git ls-remote --tags --refs origin "refs/tags/${TAG}")"
+          if [[ -n "$existing_tag" ]]; then echo 'Git tag already exists'; exit 1; fi
       - name: Download all verified artifacts
         uses: actions/download-artifact@v8
         with:
