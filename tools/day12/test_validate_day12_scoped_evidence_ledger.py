@@ -43,6 +43,13 @@ class LedgerTests(unittest.TestCase):
         self.assertIn("MUST_NOT_AUTO_ACCEPT_FINAL_RELEASE_MANIFEST",errors)
         self.assertIn("FINAL_RELEASE_MANIFEST_NOT_BLOCKED",errors)
 
+    def test_corrupt_gate_sections_fail_closed(self):
+        for section in ("release", "live_gates"):
+            with self.subTest(section=section):
+                g = copy.deepcopy(GATES)
+                g[section] = None
+                self.assertNotEqual(validate(LEDGER, g), [])
+
     def test_missing_fourth_real_network_path_not_valid(self):
         d=copy.deepcopy(LEDGER)
         d["closed_scoped_checks"]=[
