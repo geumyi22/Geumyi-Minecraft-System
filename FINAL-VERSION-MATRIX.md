@@ -8,11 +8,11 @@ This matrix preserves the frozen Day-11 component targets and documents Day-12 r
 |---|---|---|
 | GSC | **4.3.8** | Day-11 Client/Host self-update + Final READ-ONLY E2E verified |
 | GSCM | **1.1.5+117** | final two requested device checks user-confirmed PASS |
-| GeumyiStatusAgent | **0.5.4** | 2026-10-10 09:59 real server: canonical filename present; **1** Java process command references expected filename; official artifact SHA-256 / loaded JAR identity **UNVERIFIED** |
-| GST | **1.1.1 HOTFIX** | recovered HOTFIX baseline |
-| GDS | **1.1.1** | recovered/CI baseline |
-| GeumyiTechnology | **0.1.4** | Wild + Other managed target |
-| GeumyiChemistry | **0.4.1** | Wild + Other managed target |
+| GeumyiStatusAgent | **0.5.4** | Installed canonical JAR SHA-256 exactly **MATCHES Day11 CI build** (2026-10-09 live hash snapshot); 2026-10-10 process command references expected filename; live loaded-class identity/function separately unverified |
+| GST | **1.1.1 HOTFIX** | Wild/Playground/Other 3/3 installed SHA-256 **MATCH** official 2026-09-26 v3 asset; Lobby alias's own build identity unverified |
+| GDS | **1.1.1** | Wild/Playground/Other 3/3 installed SHA-256 **MATCH** official 2026-09-26 v3 asset; Lobby alias differs, separate provenance pending |
+| GeumyiTechnology | **0.1.4** | Wild+Other 2/2 installed SHA-256 **MATCH** Day11 CI artifact |
+| GeumyiChemistry | **0.4.1** | Wild+Other 2/2 installed SHA-256 **MATCH** official 2026-09-26 v3 asset (newer Day11 CI artifact has a different digest despite same version label) |
 | GeumyiNetwork | **0.1.0** | Day-10/11 routing baseline |
 | GeumyiLobby | **0.1.0** | central Lobby baseline |
 | Paper | **26.3** | Wild / Playground / Other / Lobby |
@@ -46,3 +46,7 @@ The original 12.0A checklist required the real server PC to capture:
 Operator evidence now records **12.0A READY** and **12.0B PASS with four protected Golden FULL archives**. Their actual archives remain on the Windows host and are not copied into GitHub. Any revalidation of the exact archives belongs to the operator, not CI. The frozen baseline evidence remains subject to **12.2 official artifact hashes**, **12.10 native socket ownership**, **12.11 real E2E**, **12.12 soak**, and separate signed Stable release gates. Do not recreate Golden archives or mark Stable PASS based on this document.
 
 Full local server paths, RCON passwords, API/device tokens, Floodgate private key contents and signing material are never committed to this public repository.
+
+## Precise 12.2 artifact lineage note (2026-10-10)
+
+The earlier 2026-10-09 server-PC **file hashes** have been compared to **real Day11 GitHub Actions ZIP-contained JAR bytes** and to the historical [`mc-2026.09.26-v3` GitHub release's asset digest metadata](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/mc-2026.09.26-v3). The installed non-Lobby GST/GDS/Chemistry version labels can refer to older, valid v3 release **bytes**, while October CI generated different bytes under the same visible version labels. No automatic replacement, deleting, or signing claim is justified. This is **at-rest historic hash provenance**, not a fresh running-plugin code attestation. Details: `DAY12-PHASE2-CROSS-SERVER-FINGERPRINT-REVIEW-20261010.md`.
