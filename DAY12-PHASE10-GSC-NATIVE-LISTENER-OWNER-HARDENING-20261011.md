@@ -26,7 +26,7 @@ Microsoft primary sources:
 
 - Corrected implementation: `16911d1fafce2a3fa9ffdea7612f4c727a801729`.
 - Latest Windows tests: `f8ad22c2af2189c1566e0b3b03e65688f9c8f18d`.
-- Exact CI run links must be read for the **latest** source commit, not the earlier `29aec87` commit. Windows Host, System CI and Security/SBOM run status for the corrected implementation must be independently verified before announcing PASS.
+- Corrected Windows Host CI [run 38077143465](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38077143465) **SUCCESS**, including Go tests and Host/Client builds. Corrected Security/SBOM [run 38077143404](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38077143404) **SUCCESS**. Original full System CI for this commit was superseded by a new run after the scoped ledger update; the latest System CI result [run 38077207880](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38077207880) is **PENDING** until completion. Do not claim prior cancelled System CI was successful.
 - No operator server restart, forced kill, ACL/firewall/network change, backup/world mutation, Host install, auto-update, signed Canary publication or Stable promotion.
 
 ## 12.10 security evidence (unchanged)
