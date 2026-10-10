@@ -146,7 +146,7 @@
     {
       "code": "12.5",
       "status": "EFFECTIVE_FIREWALL_ACL_SECURITY_OPEN",
-      "next": "Independently review broad ActiveStore Allow and inherited Users create rights; no unapproved policy changes",
+      "next": "Read-only local identity triage 38/38 compiled 2026-10-11 03:23 KST: 15 Public-overlap, 21 Private-profile, 2 local-address-scoped; 22 Windows feature, 11 unclassified, 3 gaming, 2 VPN name hints. Human-confirmed necessity 0. Existing inherited Users create ACEs require effective-token/ACL review. GSC source now uses randomized exclusive trusted-device temp filename (Windows CI), but this does NOT change the live Host ACL or justify auto-disabling rules. See DAY12-PHASE5-TRUSTED-DEVICE-TEMP-HARDENING-20261011.md.",
       "requires_live_client": false,
       "requires_production_change": true
     },
@@ -160,7 +160,7 @@
     {
       "code": "12.10",
       "status": "NATIVE_IPV4_IPV6_BACKEND_BIND_OWNER_FAIL",
-      "next": "Collect independent actual Windows process/socket owning PID and local bind or approved compensating policy with residual risk acceptance",
+      "next": "Actual 2026-10-11 Windows 26220 native state-0 anomaly: own IPv4/v6 controlled loopback listeners corroborate raw-state-0 signature; 6/6 online Wild/Playground/Lobby Java+RCON PID+loopback signatures, Other offline 2/8 not observed. Microsoft LISTENER table class means GSC portPID must not require raw state==2; latest source preserves state-0 owner tracking and fails on PID conflicts. The mandatory all-eight native bind gate remains FAIL. Do not rerun equivalent socket scans or restart production for this hypothesis. See DAY12-PHASE10-GSC-NATIVE-LISTENER-OWNER-HARDENING-20261011.md.",
       "requires_live_client": false,
       "requires_production_change": true
     },
