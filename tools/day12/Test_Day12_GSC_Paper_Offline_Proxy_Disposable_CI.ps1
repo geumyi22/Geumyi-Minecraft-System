@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory=$true)][string]$PaperZip,[Parameter(Mandatory=$true)][string]$HostExe)
+param([Parameter(Mandatory=$true)][string]$PaperZip,[Parameter(Mandatory=$true)][string]$HostExe,[switch]$ExerciseCrashRecovery)
 Set-StrictMode -Version Latest
 $ErrorActionPreference="Stop"
 # Only executed by GitHub-hosted disposable Windows runner. Not user's PC.
@@ -23,6 +23,12 @@ $report=[ordered]@{
   original_paper_jar_unchanged=$false;user_world_or_golden_changed=$false
   user_host_firewall_or_adapter_changed=$false
   offline_operator_server_boot_verified=$false
+  crash_recovery_requested=([bool]$ExerciseCrashRecovery)
+  disposable_paper_process_exactly_identified=$false
+  disposable_paper_unexpected_termination_executed=$false
+  real_gsc_state_recovering_observed=$false
+  real_paper_watchdog_recovery_observed=$false
+  recovered_disposable_paper_new_pid_observed=$false
   backend_ports_private="UNCHANGED_FAIL";stable_release_allowed=$false
   result="NOT_RUN"
 }
@@ -110,7 +116,7 @@ try{
       id="stage-playground";name="Disposable Playground";role="playground"
       update_policy="managed";java_port=25789;rcon_port=25790
       bedrock_port=19188;gds_api_port=28788;path=$paperDir
-      start_command="start.bat";auto_start=$false;restart_on_crash=$false})
+      start_command="start.bat";auto_start=$false;restart_on_crash=([bool]$ExerciseCrashRecovery)})
   }
   $configFile=Join-Path $root "ci-only-config.json"
   $config|ConvertTo-Json -Depth 8|Set-Content -LiteralPath $configFile -Encoding UTF8
@@ -151,7 +157,60 @@ try{
   if(-not $report.updater_network_failure_observed){throw "UPDATE_NETWORK_FAILURE_UNPROVEN"}
   if(-not $report.real_paper_restarted_despite_update_outage){throw "PAPER_FAILED_TO_BOOT_AFTER_GSC_PROXY_OUTAGE"}
   if(-not $report.original_paper_jar_unchanged){throw "ORIGINAL_PAPER_CHANGED"}
-  $report.result="DISPOSABLE_REAL_GSC_PAPER_PROCESS_SCOPED_OFFLINE_SOURCE_PASS"
+  if($ExerciseCrashRecovery){
+    # Exact disposable Windows listener, owner process and Java 25 executable required.
+    $listener=@(Get-NetTCPConnection -LocalPort 25789 -State Listen -ErrorAction Stop | Where-Object{$_.LocalAddress -eq "127.0.0.1"})
+    $owners=@($listener | ForEach-Object{[int]$_.OwningProcess} | Sort-Object -Unique)
+    if($owners.Count -ne 1 -or $owners[0] -le 0){throw "DISPOSABLE_PAPER_OWNER_UNPROVEN"}
+    $pidToStop=[int]$owners[0]
+    $proc=Get-CimInstance Win32_Process -Filter "ProcessId = $pidToStop" -ErrorAction Stop
+    if($null -eq $proc -or [string]$proc.ExecutablePath -ne [string]$javaExe -or
+       [string]$proc.CommandLine -notmatch '(?i)-jar\s+paper\.jar(?:\s|$)'){
+      throw "DISPOSABLE_PAPER_PID_IDENTITY_UNVERIFIED"
+    }
+    $report.disposable_paper_process_exactly_identified=$true
+    Stop-Process -Id $pidToStop -Force -ErrorAction Stop
+    $report.disposable_paper_unexpected_termination_executed=$true
+    $downBy=(Get-Date).AddSeconds(30)
+    while((Get-Date) -lt $downBy){
+      if(-not(Connected 25789)){break}
+      Start-Sleep -Milliseconds 250
+    }
+    if(Connected 25789){throw "DISPOSABLE_PAPER_DID_NOT_DROP"}
+    $recoverDeadline=(Get-Date).AddSeconds(35)
+    while((Get-Date) -lt $recoverDeadline){
+      try{
+        $v=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:28987/api/v1/servers/stage-playground" -TimeoutSec 7 -NoProxy
+        if([string]$v.state -eq "RECOVERING"){$report.real_gsc_state_recovering_observed=$true;break}
+      }catch{}
+      if(Connected 25789){break}
+      Start-Sleep -Milliseconds 350
+    }
+    if(-not $report.real_gsc_state_recovering_observed){throw "GSC_RECOVERING_STATE_NOT_OBSERVED"}
+    $upBy=(Get-Date).AddSeconds(170)
+    while((Get-Date) -lt $upBy){
+      if($gsc.HasExited){throw "GSC_HOST_EXITED_DURING_RECOVERY"}
+      if(Connected 25789){
+        $listen2=@(Get-NetTCPConnection -LocalPort 25789 -State Listen -ErrorAction SilentlyContinue |
+          Where-Object{$_.LocalAddress -eq "127.0.0.1"})
+        $owners2=@($listen2|ForEach-Object{[int]$_.OwningProcess}|Sort-Object -Unique)
+        if($owners2.Count -eq 1 -and $owners2[0] -ne $pidToStop){
+          $p2=Get-CimInstance Win32_Process -Filter "ProcessId = $($owners2[0])" -ErrorAction SilentlyContinue
+          if($null -ne $p2 -and [string]$p2.ExecutablePath -eq [string]$javaExe -and
+             [string]$p2.CommandLine -match '(?i)-jar\s+paper\.jar(?:\s|$)'){
+            $report.recovered_disposable_paper_new_pid_observed=$true
+            $report.real_paper_watchdog_recovery_observed=$true
+            break
+          }
+        }
+      }
+      Start-Sleep -Milliseconds 750
+    }
+    if(-not $report.real_paper_watchdog_recovery_observed){throw "GSC_WATCHDOG_REAL_PAPER_RESTART_UNPROVEN"}
+    $report.result="DISPOSABLE_REAL_GSC_PAPER_CRASH_RECOVERY_PASS"
+  }else{
+    $report.result="DISPOSABLE_REAL_GSC_PAPER_PROCESS_SCOPED_OFFLINE_SOURCE_PASS"
+  }
 }catch{
   $report.result="DISPOSABLE_TEST_FAILED_OR_INCONCLUSIVE"
   $report.failure_reason_code=($_.Exception.Message -replace '[^A-Za-z0-9_-]','_')
