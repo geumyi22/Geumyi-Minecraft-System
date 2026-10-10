@@ -29,6 +29,7 @@ jobs:
         run: python3 tools/maintenance/organize_repo_docs.py --apply
       - name: Fail on malformed Git changes
         run: |
+          rm -rf tools/maintenance/__pycache__
           git add -A
           git diff --cached --check
           python3 - <<'PY'
