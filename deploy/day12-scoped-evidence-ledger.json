@@ -111,6 +111,14 @@
       "scope": "User reports Wild+Playground applied packs; three uploaded Bedrock pack archives valid; 212/212 mapped atlas icons, 33/33 sound refs",
       "source": "deploy/day12-existing-pack-reference.json",
       "not_proven": "Live Java/Bedrock receipt, localized BACAP and Geyser custom mapping"
+    },
+    {
+      "code": "12.7-disposable-actual-gsc-paper-offline-source",
+      "title": "Actual GSC 4.3.8 + Paper 26.3 disposable CI integration under unavailable update source",
+      "status": "DISPOSABLE_CI_REAL_PROCESSES_PASS_NOT_OPERATOR_OFFLINE",
+      "scope": "GitHub Actions Windows run 38017215282: official Paper archive SHA matched, real Paper online prewarm/graceful stop, real GSC Host 4.3.8 started, real GSC POST start 202, process-scoped invalid HTTPS proxy produced upstream updater error, real Paper backend loopback TCP online, Paper JAR unchanged",
+      "source": "DAY12-PHASE7-GSC-PAPER-DISPOSABLE-OFFLINE-SOURCE-RESULT-20261010.md; GitHub artifact 11656627512",
+      "not_proven": "Actual user's Windows offline boot or use of operator's locally cached known-good 84 files; full NIC disconnected state, Java/Bedrock game-client E2E, RCON ownership, Stable"
     }
   ],
   "unresolved_release_requirements": [
