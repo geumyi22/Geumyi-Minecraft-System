@@ -120,7 +120,7 @@ def run(apply):
  blocked=source_references(files,list(active))
  for old in blocked:active.pop(old,None)
  if any(new in before for new in active.values()):raise RuntimeError("destination already exists")
- generated=index_pages(active,blocked)
+ generated={name:body.rstrip('\n')+'\n' for name,body in index_pages(active,blocked).items()}
  after=(before-set(active))|set(active.values())|set(generated)
  byname=defaultdict(list)
  for name in sorted(after):
