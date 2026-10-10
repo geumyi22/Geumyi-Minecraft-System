@@ -97,12 +97,12 @@ if(-not $OutputDir){
 if($Synthetic){
   Assert-Synthetic
   New-Item -ItemType Directory -Force -Path $OutputDir|Out-Null
-  $synthetic=[ordered]@{schema=1;phase="12.7-cached-bytes-integrity"
+  $syntheticReport=[ordered]@{schema=1;phase="12.7-cached-bytes-integrity"
     synthetic=$true;result="SYNTHETIC_PASS";read_only=$true
     network_requests=0;cache_modified=$false
     offline_known_good_startup_proven=$false
     canonical_backend_ports_private="UNCHANGED_FAIL"}
-  $synthetic|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $OutputDir "Day12-Cache-Integrity-Synthetic.json") -Encoding UTF8
+  $syntheticReport|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $OutputDir "Day12-Cache-Integrity-Synthetic.json") -Encoding UTF8
   exit 0
 }
 if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){throw "SERVER_PC_WINDOWS_ONLY"}
