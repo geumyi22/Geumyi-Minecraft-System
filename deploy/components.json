@@ -68,27 +68,27 @@
       "requires_restart": true
     },
     "gsc": {
-      "version": "4.3.8",
+      "version": "4.5.0",
       "kind": "gsc",
-      "artifact_glob": "GeumyiServerCenter-v4.3.8-Setup.exe",
+      "artifact_glob": "GeumyiServerCenter-v4.5.0-Setup.exe",
       "targets": [
         "host"
       ],
       "requires_restart": true
     },
     "gscm_android": {
-      "version": "1.1.5+117",
+      "version": "1.5.0+150",
       "kind": "mobile",
-      "artifact_glob": "GSCM-v1.1.5+117-Android.apk",
+      "artifact_glob": "GSCM-v1.5.0+150-Android.apk",
       "targets": [
         "android"
       ],
       "requires_restart": false
     },
     "gscm_ios_unsigned": {
-      "version": "1.1.5+117",
+      "version": "1.5.0+150",
       "kind": "mobile",
-      "artifact_glob": "GSCM-v1.1.5+117-unsigned.ipa",
+      "artifact_glob": "GSCM-v1.5.0+150-unsigned.ipa",
       "targets": [
         "ios"
       ],
