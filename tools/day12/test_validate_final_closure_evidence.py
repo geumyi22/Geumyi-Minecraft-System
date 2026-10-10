@@ -10,6 +10,7 @@ from pathlib import Path
 
 from validate_final_closure_evidence import (
     OWNER_SOURCES,
+    PRIVATE_PORTS,
     review_closure_evidence,
 )
 
@@ -23,6 +24,11 @@ def synthetic_health():
         "native_provider_status": "CAPTURED",
         "native_providers": [{"source": s, "status": "CAPTURED"} for s in sorted(OWNER_SOURCES)],
         "listener_inventory_sources": ["GetExtendedTcpTable_OWNER_PID_IPv4"],
+        "listener_inventory": [
+            {"port": port, "address_scope": "LOOPBACK", "address": "127.0.0.1",
+             "source": "GetExtendedTcpTable_OWNER_PID_IPv4"}
+            for port in sorted(PRIVATE_PORTS)
+        ],
     }
 
 
@@ -65,6 +71,44 @@ class LiveClosureEvidenceFailClosedTests(unittest.TestCase):
                 h["native_providers"] = [
                     row for row in h["native_providers"] if row["source"] != source
                 ]
+                self.assertFalse(review_closure_evidence(h, self.security)[0])
+
+    def test_all_eight_real_native_port_rows_are_mandatory(self):
+        for port in sorted(PRIVATE_PORTS):
+            with self.subTest(missing_port=port):
+                h = copy.deepcopy(self.health)
+                h["listener_inventory"] = [
+                    row for row in h["listener_inventory"] if row["port"] != port
+                ]
+                allowed, reasons = review_closure_evidence(h, self.security)
+                self.assertFalse(allowed)
+                self.assertIn("PRIVATE_LISTENER_NATIVE_EIGHT_PORTS_INCOMPLETE", reasons)
+
+        for case in ("no_rows", "one_netstat_only", "wildcard", "redacted",
+                     "contradictory_secondary_row"):
+            with self.subTest(case=case):
+                h = copy.deepcopy(self.health)
+                if case == "no_rows":
+                    h["listener_inventory"] = []
+                elif case == "one_netstat_only":
+                    h["listener_inventory"][0]["source"] = "netstat"
+                elif case == "wildcard":
+                    h["listener_inventory"][0].update(
+                        address="0.0.0.0", address_scope="WILDCARD")
+                elif case == "redacted":
+                    h["listener_inventory"][0].update(
+                        address="REDACTED", address_scope="NON_LOOPBACK_REDACTED")
+                elif case == "contradictory_secondary_row":
+                    h["listener_inventory"].append({
+                        "port": 25570, "address_scope": "WILDCARD",
+                        "address": "::", "source": "GetExtendedTcpTable_OWNER_PID_IPv6"})
+                self.assertFalse(review_closure_evidence(h, self.security)[0])
+
+    def test_summary_cannot_replace_listener_inventory(self):
+        for value in (None, "CAPTURED", {}, [None]):
+            with self.subTest(value=value):
+                h = copy.deepcopy(self.health)
+                h["listener_inventory"] = value
                 self.assertFalse(review_closure_evidence(h, self.security)[0])
 
     def test_bind_gate_fail_and_missing_or_duplicate(self):

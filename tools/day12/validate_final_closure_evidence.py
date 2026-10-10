@@ -14,6 +14,11 @@ OWNER_SOURCES = {
     "GetExtendedTcpTable_OWNER_PID_IPv6",
 }
 
+# For Stable closure, ALL four internal Java/RCON pairs must be running and
+# independently observed. A subset of online servers is insufficient.
+PRIVATE_PORTS = frozenset((25570, 25571, 25572, 25573, 25575, 25576, 25577, 25579))
+LOOPBACK_ADDRESSES = frozenset(("127.0.0.1", "::1", "::ffff:127.0.0.1"))
+
 
 def review_closure_evidence(health, security):
     reasons = []
@@ -52,6 +57,34 @@ def review_closure_evidence(health, security):
             item for item in sources if isinstance(item, str)
         ):
             reasons.append("NO_NATIVE_OWNER_LISTENER_ROWS")
+
+        # Recheck the redacted per-port ledger, not merely its self-reported
+        # PASS flag. The live verifier owns PID/process checks in-memory; this
+        # independent closure check insists all eight protected listeners were
+        # actually captured with an OWNER_PID provider and loopback address.
+        listeners = health.get("listener_inventory")
+        if not isinstance(listeners, list):
+            reasons.append("PRIVATE_LISTENER_INVENTORY_MISSING")
+        else:
+            native_verified_ports = set()
+            for row in listeners:
+                if not isinstance(row, dict):
+                    reasons.append("PRIVATE_LISTENER_ROW_INVALID")
+                    continue
+                port = row.get("port")
+                if type(port) is not int or port not in PRIVATE_PORTS:
+                    continue
+                if row.get("address_scope") != "LOOPBACK" or (
+                    row.get("address") not in LOOPBACK_ADDRESSES
+                ):
+                    reasons.append("PRIVATE_LISTENER_NON_LOOPBACK_OR_UNVERIFIED")
+                if row.get("source") in OWNER_SOURCES and (
+                    row.get("address_scope") == "LOOPBACK"
+                    and row.get("address") in LOOPBACK_ADDRESSES
+                ):
+                    native_verified_ports.add(port)
+            if native_verified_ports != PRIVATE_PORTS:
+                reasons.append("PRIVATE_LISTENER_NATIVE_EIGHT_PORTS_INCOMPLETE")
 
     if not isinstance(security, dict) or security.get("schema") != 1:
         reasons.append("FINAL_SECURITY_SCHEMA_INVALID")
