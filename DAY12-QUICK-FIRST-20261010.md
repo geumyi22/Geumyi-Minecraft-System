@@ -1,8 +1,14 @@
+## 2026-10-10 — GSC Host test-update operator reports success; console live view E2E pending
+
+The operator reports **`업데이트 정상`**, indicating the GSC Host test update was accepted in their environment. This is **installation acceptance only**; the four-second console auto-refresh is not yet user-observed while the console stays open.
+
+**Next short acceptance:** check console screen has `4초 자동 갱신` enabled. Leave the view open while a new genuine log line is produced (for example, a normal player login/logout); confirm it appears by itself within a refresh cycle, without leaving the console or pressing Refresh. A separate `list` command returning text proves RCON command-response, **not** continuous log refreshing. Do not modify world, backups, service, or security settings.
+
 ## 2026-10-10 — console refresh improvement, CURRENTLY SOURCE ONLY
 
 User confirmed GSC console `list` prints a response, but console log display otherwise refreshes only upon navigation or manual reload. Source review shows GSC desktop log lacks polling entirely; GSCM console already supports 4-second polling but default is OFF.
 
-**Safe immediate use:** GSC desktop use Refresh; GSCM tap its 4-second refresh toggle once. **GitHub-only patch:** both consoles will auto-poll every 4 seconds when opened; GSC has checkbox to pause, avoids updating offscreen or hidden tabs and preserves scroll while reading. **Not WebSocket-push streaming.** The patched GSC/GSCM binaries are NOT YET deployed, so current runtime is unchanged. `list` response smoke supports GSC RCON command execution only; WS/reconnect behavior and full final E2E not proved. `DAY12-REPO-PROGRESS.md` records test links and boundaries.
+**Safe immediate use:** GSC desktop use Refresh; GSCM tap its 4-second refresh toggle once. **GitHub patch:** both consoles auto-poll every 4 seconds when opened; GSC has checkbox to pause, avoids updating offscreen or hidden tabs and preserves scroll while reading. **Not WebSocket-push streaming.** GSC Host test update has since been **reported successful** by the operator, but actual visible auto-refresh is still **awaiting in-console live verification**; do not infer GSCM Android+iOS deployment status from this host update. `list` response smoke supports GSC RCON command execution only; WS/reconnect behavior and full final E2E not proved. `DAY12-REPO-PROGRESS.md` records test links and boundaries.
 
 ## 2026-10-10 — GSCM Android/iOS user-reported short smoke normal
 
