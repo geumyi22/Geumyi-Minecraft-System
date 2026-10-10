@@ -1,0 +1,66 @@
+name: Day12 Phase7 Paper 26.3 Archive Inspect Disposable
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/day12-phase7-paper-release-inspect.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-public-paper-only:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - name: Get known-release zip and confirm sha256
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP 'day12-paper-zip-only'
+          New-Item -ItemType Directory -Force -Path $dir|Out-Null
+          gh release download mc-2026.09.26-v3 --repo geumyi22/Geumyi-Minecraft-System --pattern 'Geumyi_Playground_Paper26.3_Current_2026-09-26.zip' --dir $dir
+          if($LASTEXITCODE -ne 0){throw 'Public release archive unavailable'}
+          $zip=Join-Path $dir 'Geumyi_Playground_Paper26.3_Current_2026-09-26.zip'
+          $sha=(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if($sha -ne '6198ad133c37667a4a0a92567f204c4c24e5f265864f8dd19605407c6e3ced4b'){
+            throw 'Official release SHA mismatch — NEVER extract unverified zip'
+          }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive=[IO.Compression.ZipFile]::OpenRead($zip)
+          try{
+            $entries=@($archive.Entries|Where-Object{$_.Name}|ForEach-Object{
+              [ordered]@{
+                name=$_.FullName.Replace('\','/')
+                uncompressed_size=$_.Length
+              }
+            })
+          }finally{$archive.Dispose()}
+          $jars=@($entries|Where-Object{$_.name -match '(?i)(?:^|/)paper(?:-[^/]+)?\.jar$'})
+          [ordered]@{
+            source='official GitHub public release mc-2026.09.26-v3'
+            archive_digest_match=$true
+            entry_count=$entries.Count
+            jar_candidates=@($jars)
+            jar_candidates_count=$jars.Count
+            java_requirement='25 (from Servers/Playground/PAPER_26.3_INFO.json)'
+            user_live_world_accessed=$false
+            user_server_modified=$false
+            actual_paper_boot_executed=$false
+          }|ConvertTo-Json -Depth 7|Set-Content -LiteralPath (Join-Path $env:RUNNER_TEMP 'Day12-Phase7-Paper-Package-Candidates.json') -Encoding UTF8
+          Write-Host ('Verified official ZIP; Paper JAR candidates='+$jars.Count)
+          $jars|ForEach-Object{Write-Host ('JAR candidate suffix='+[IO.Path]::GetFileName($_.name)+' bytes='+$_.uncompressed_size)}
+          if($jars.Count -ne 1){throw 'Paper archive has no unique safe JAR; stage automatically blocked'}
+      - name: Upload sanitized CI-only package inspection
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: day12-phase7-official-paper-jar-candidates
+          path: ${{ runner.temp }}/Day12-Phase7-Paper-Package-Candidates.json
+          if-no-files-found: warn
+          retention-days: 14
