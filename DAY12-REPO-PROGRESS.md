@@ -1,3 +1,11 @@
+### 2026-10-11 00:29 KST — operator's real 2/12/17 one-click report reviewed
+
+- User submitted **`Day12-2-12-17-SHARE-SUMMARY-20261011-002947.json`**, `synthetic=false`, `read_only=true`, `generated_at=2026-10-10T15:29:47.2566812Z`. Original per-host file is *not committed*.
+- Host census `result=REVIEW_REQUIRED` solely because **3/4 Java server processes recognized as Paper by current strict `-jar paper*.jar` matcher**, with **one other Java** not categorized; note that this is **not proof of a missing/failed live server** nor identification of the fourth Java's role. **GSC Host 1 Running; Velocity 6 arranged in 3 parent/child pairs; Bedrock UDP 19132/19133/19134 owners each match the expected child; Java/process candidate PID identities unique; UDP inventory complete.** No duplicate/orphan *in those proven Velocity pairs*. Do NOT conflate `candidate_process_ids_unique` with proof of all executable roles uniquely configured.
+- `production_crash_performed=false`, `production_update_performed=false`, `production_process_modified=false`, `production_firewall_modified=false`. The uploaded host JSON labels #12 as `CI_DISPOSABLE_STATE_MACHINE_TEST_ONLY` and #17 as `CI_DISPOSABLE_TRANSACTION_TEST_ONLY`. Windows CI `38063619014` passed those limited source/temporary-file tests, not a real child process crash+recovery or signed real update apply+rollback.
+- Scoped dispositions: **#2 PARTIAL_PROOF_3_PAPER_1_UNCLASSIFIED_JAVA**, **#12 PASS_DISPOSABLE_GSC_STATE_LOGIC_ONLY**, **#17 PASS_DISPOSABLE_UPDATE_TRANSACTION_ONLY**. None of these three is automatically promoted to complete real E2E from this one upload. Backend `backend_ports_private=UNCHANGED_FAIL`, Day12 Stable blocked. No host changes occurred.
+- Avoid repeating broad process/port tests. Next optional step, only if necessary to close #2, is a narrowly scoped read-only process role classification of **the one unidentified Java executable**. Do not restart services, forcibly crash Paper or apply a Canary on the operator's fleet.
+
 ### 2026-10-11 — 12.11 #2/#12/#17 combined safe one-click kit CI PASS, host result pending
 
 - User requested a **single-session** verification for the three unwaived numbered 12.11 tests: **#2 no duplicate/orphan Java/GSC/Velocity; #12 unexpected loss→RECOVERING; #17 update Dry-run/Canary/Rollback**.

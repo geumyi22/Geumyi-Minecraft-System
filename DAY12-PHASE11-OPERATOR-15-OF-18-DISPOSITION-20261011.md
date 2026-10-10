@@ -52,3 +52,7 @@ This is **not** the canonical 25-case live E2E checklist, and it does **not** ch
 Operational safety: no reboot, world restore, forced crash, service termination, backup mutation, firewall/ACL change, or Stable promotion is authorized by this **record-only** instruction.
 
 Machine-readable companion: `deploy/day12-phase11-18-item-operator-disposition.json`. Both map numbers 1–18 to exact canonical test IDs to avoid confusing list number 1 with Day 12.1.
+
+## 2026-10-11 00:29 — actual combined CMD result reviewed
+
+The operator's one real ServerPC JSON reports **GSC 1 Running, Velocity 6 with 3/3 valid parent→child pairs and three owned UDP ports**, no duplicate PIDs among candidates, and **3 Paper-matching processes plus 1 other Java**. Because the lone JVM was not categorized by the strict Java `paper*.jar` matcher, **#2 is REVIEW_REQUIRED**; no broken server or orphan may be inferred from the count alone. The #12/#17 outcomes remain exact limited CI tests without a live crash/Canary. No server process was changed. The uploaded report is read-only and not committed. Full 25-case E2E, 12.10 backend bind evidence and Stable remain open.
