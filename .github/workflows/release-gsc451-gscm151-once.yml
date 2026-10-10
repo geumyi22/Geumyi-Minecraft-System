@@ -3,14 +3,14 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/release-gsc450-gscm151-stable.yml'
+      - '.github/workflows/release-gsc451-gscm151-once.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: stable-gsc450-gscm151
+  group: stable-gsc451-gscm151
   cancel-in-progress: false
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
       actions: read
     env:
       GH_TOKEN: ${{ github.token }}
-      RELEASE_TAG: system-2026.10.11-stable-gsc450-gscm151
+      RELEASE_TAG: system-2026.10.11-stable-gsc451-gscm151
     steps:
       - uses: actions/checkout@v4
 
@@ -98,7 +98,7 @@ jobs:
           python3 - <<'PY'
           import json,hashlib,pathlib,os
           folders=[pathlib.Path('release-assets/GSC'),pathlib.Path('release-assets/GSCM-Android'),pathlib.Path('release-assets/GSCM-iOS')]
-          output=pathlib.Path('release-assets/Geumyi-GSC450-GSCM151-RELEASE')
+          output=pathlib.Path('release-assets/Geumyi-GSC451-GSCM151-RELEASE')
           output.mkdir()
           artifact_files=[]
           for folder in folders:
@@ -127,7 +127,7 @@ jobs:
                   fp.write(hashlib.sha256(item.read_bytes()).hexdigest()+'  '+item.name+'\n')
           print('Built and checked',len(rows),'versioned source artifacts')
           PY
-          (cd release-assets/Geumyi-GSC450-GSCM151-RELEASE && sha256sum -c SHA256SUMS-STABLE.txt)
+          (cd release-assets/Geumyi-GSC451-GSCM151-RELEASE && sha256sum -c SHA256SUMS-STABLE.txt)
 
       - name: Publish manually installable Stable release after CI
         shell: bash
@@ -160,7 +160,7 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "Stable — GSC 4.5.1 / GSCM 1.5.1" \
             --notes-file release-notes.txt
-          gh release upload "$RELEASE_TAG" release-assets/Geumyi-GSC450-GSCM151-RELEASE/*
+          gh release upload "$RELEASE_TAG" release-assets/Geumyi-GSC451-GSCM151-RELEASE/*
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > "$RUNNER_TEMP/release-staged.json"
           python3 - "$RUNNER_TEMP/release-staged.json" <<'PY'
           import json,sys
