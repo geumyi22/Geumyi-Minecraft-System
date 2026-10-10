@@ -1,3 +1,11 @@
+### 2026-10-11 — 15 of 18 remaining Day12.11 items operator-PASS / repeat testing waived
+
+- User explicitly selected **1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 18** from the preceding numbered 18-item Day12.11 gap list (NOT phase numbers), directing PASS. Record all fifteen as **OPERATOR_ACCEPTED_PASS_TEST_WAIVED**, and do not request re-tests of those fifteen in future ordinary workflow.
+- The three not selected are **#2 orphan/duplicate GSC/Velocity/Java process identity**, **#12 controlled unexpected process loss → RECOVERING (disposable/staging only)**, and **#17 signed update dry-run/canary/rollback with restore proof**. These remain OPEN as specifically unwaived items.
+- Operator PASS is a work-tracker/user acceptance, **not a new real host/device action**. In particular no fresh Windows reboot, device revoke/delete, intentional service stop, scheduled operation, new backup, or staging restore has been performed by this chat; this message does not manufacture passing artifact-based E2E evidence.
+- Canonical 25-case E2E form and `FINAL-RELEASE-GATES.json` remain untouched; source-of-truth decision is `DAY12-PHASE11-OPERATOR-15-OF-18-DISPOSITION-20261011.md` plus `deploy/day12-phase11-18-item-operator-disposition.json`.
+- Independent 12.2/12.5 review, 12.7 real offline startup, 12.10 strict bind/owner FAIL, 12.12 8-hour soak and 12.13 Stable/Maintenance release gates are **NOT** silently passed. Repo docs only; no production mutation.
+
 ### 2026-10-11 — Operator accepts all functional behavior; Bedrock 3-pass and iOS assertion; waives repeated routine checks
 
 - Operator says **"ios도 된다 해 어짜피 똑같아 ... 베드락 3개 정상 실제로 기능은 다 돼 ... 앞으로 테스트 할꺼 다 되니까 그냥 다 정상처리해"**. Record all three **specific Bedrock visual pack cases** as **PASS_USER_REPORTED_REAL_BEDROCK_CLIENT**: Playground resource/audio effects; Wild BACAP Korean display; Wild ChemTech representative models/icons. The 212 custom mapping static pass and earlier broad pack-smoke are separate scope and are NOT a new per-ID runtime validation.

@@ -1,0 +1,194 @@
+{
+  "schema": 1,
+  "document_type": "OPERATOR_TEST_ACCEPTANCE_NOT_TECHNICAL_E2E",
+  "source": "Operator request in current conversation: '1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 18 패스 처리'",
+  "mapping_basis": "Assistant's immediately preceding numbered 18 remaining Phase 12.11 evidence-gap test list; 1-based numbering, not 12.x phase numbering",
+  "phase": "12.11",
+  "day12_final_live_e2e_complete": false,
+  "independent_live_e2e_evidence_complete": false,
+  "stable_release_allowed": false,
+  "backend_ports_private": "FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS",
+  "full_25_case_template_path": "deploy/day12-final-live-e2e-checklist.json",
+  "selected_count": 15,
+  "unselected_count": 3,
+  "selected_numbers": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    13,
+    14,
+    15,
+    16,
+    18
+  ],
+  "unselected_numbers": [
+    2,
+    12,
+    17
+  ],
+  "selected_disposition": "OPERATOR_ACCEPTED_PASS_AND_WAIVED_ADDITIONAL_TEST",
+  "technical_evidence_effect": "NO_NEW_REAL_TEST_EXECUTED_OR_PROVEN",
+  "unselected_disposition": "REMAINS_OPEN_FOR_FORMAL_VERIFICATION",
+  "cases": [
+    {
+      "list_number": 1,
+      "canonical_test_id": "HOST_REBOOT_AND_AUTOSTART",
+      "korean_label": "서버 PC 재부팅 → 자동 기동",
+      "disruptive": true,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 2,
+      "canonical_test_id": "HOST_NO_DUPLICATE_PROCESSES",
+      "korean_label": "중복·고아 프로세스 확인",
+      "disruptive": false,
+      "operator_status": "NOT_SELECTED_OPEN",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 3,
+      "canonical_test_id": "BEDROCK_ALL_PUBLIC_ENTRIES_TO_LOBBY",
+      "korean_label": "베드락 3개 공개 포트 로비 진입",
+      "disruptive": false,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 4,
+      "canonical_test_id": "BEDROCK_WILD_PLAYGROUND_OTHER_ROUTES",
+      "korean_label": "베드락 로비↔3개 서버 이동",
+      "disruptive": false,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 5,
+      "canonical_test_id": "BEDROCK_LAST_LOCATIONS_RESTORED",
+      "korean_label": "베드락 이전 위치 복원",
+      "disruptive": false,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 6,
+      "canonical_test_id": "BEDROCK_WILD_GEYSER_ITEM_MAPPING",
+      "korean_label": "베드락 Geyser 커스텀 아이템 매핑",
+      "disruptive": false,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 7,
+      "canonical_test_id": "GSCM_ANDROID_STATUS_AND_CONTROL",
+      "korean_label": "GSCM Android 전체 상태·재연결·제어",
+      "disruptive": false,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 8,
+      "canonical_test_id": "GSCM_IOS_STATUS_AND_CONTROL",
+      "korean_label": "GSCM iOS 전체 상태·재연결·제어",
+      "disruptive": false,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 9,
+      "canonical_test_id": "GSCM_DEVICE_REVOKE_DELETE_REPAIR",
+      "korean_label": "GSCM 기기 해제·삭제·재등록",
+      "disruptive": true,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 10,
+      "canonical_test_id": "GSC_CONTROLLED_START_STOP_RESTART",
+      "korean_label": "GSC 서버 시작·중지·재시작",
+      "disruptive": true,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 11,
+      "canonical_test_id": "GSC_INTENTIONAL_STOP_STAYS_OFFLINE",
+      "korean_label": "의도적 종료 → OFFLINE",
+      "disruptive": true,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 12,
+      "canonical_test_id": "GSC_UNEXPECTED_LOSS_RECOVERING",
+      "korean_label": "비정상 종료 → RECOVERING",
+      "disruptive": true,
+      "operator_status": "NOT_SELECTED_OPEN",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 13,
+      "canonical_test_id": "GSC_CONSOLE_RCON_CONTROL",
+      "korean_label": "GSC 콘솔·RCON 제어",
+      "disruptive": false,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 14,
+      "canonical_test_id": "GSC_SCHEDULE_EXECUTION",
+      "korean_label": "GSC 예약 작업 실행",
+      "disruptive": true,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 15,
+      "canonical_test_id": "GSC_NEW_BACKUP_AND_VERIFICATION",
+      "korean_label": "신규 백업 생성·검증",
+      "disruptive": true,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 16,
+      "canonical_test_id": "GSC_RESTORE_DISPOSABLE_ONLY",
+      "korean_label": "테스트 전용 서버 복원",
+      "disruptive": true,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 17,
+      "canonical_test_id": "GSC_UPDATE_DRYRUN_CANARY_ROLLBACK",
+      "korean_label": "업데이트 Dry-run·Canary·Rollback",
+      "disruptive": true,
+      "operator_status": "NOT_SELECTED_OPEN",
+      "independent_e2e_from_this_message": false
+    },
+    {
+      "list_number": 18,
+      "canonical_test_id": "GSC_WS_RCON_RECONNECT",
+      "korean_label": "WebSocket 재연결·RCON 오탐 검증",
+      "disruptive": false,
+      "operator_status": "OPERATOR_ACCEPTED_PASS_TEST_WAIVED",
+      "independent_e2e_from_this_message": false
+    }
+  ],
+  "gates_unchanged": [
+    "phase_12_7_offline_known_good_startup",
+    "phase_12_10_backend_ports_private",
+    "phase_12_11_final_live_e2e",
+    "phase_12_12_soak",
+    "phase_12_13_stable_release"
+  ],
+  "scope_note": "Prior individual real user-observed checks retain their earlier narrow evidence status. This operator pass request does not execute or prove reboot, device revocation, restore, schedule, actual RCON/WS failure simulation, backup or release rollback.",
+  "external_effects": "Documentation-only. No real servers, packs, worlds, host services, firewall, backups or production update changed."
+}

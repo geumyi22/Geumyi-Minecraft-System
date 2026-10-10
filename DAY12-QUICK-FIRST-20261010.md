@@ -1,3 +1,9 @@
+## 2026-10-11 — 15/18 operator-accepted PASS, 3 remain
+
+The operator selected the specific 18-item 12.11 remainder-list numbers `1,3,4,5,6,7,8,9,10,11,13,14,15,16,18` for **operator-accepted PASS**. Mark those 15 as **waived from repeated manual functional checks** (not independently executed real E2E). **Only 2, 12, 17 remain unselected** in that 18-item list: orphan/duplicate processes; isolated controlled unexpected-loss RECOVERING; scoped update dry-run/canary/rollback. Do not confuse these list numbers with Day12 phases.
+
+See `DAY12-PHASE11-OPERATOR-15-OF-18-DISPOSITION-20261011.md`. Do not override strict 12.10 backend privacy, 12.7 offline start, 12.12 soak, canonical 25-case form or Stable gate. No action on the live host was performed by this update.
+
 ## 2026-10-11 — User accepts functional behavior; stop repeat-by-repeat smoke checks
 
 The operator specifically confirms **all three detailed Bedrock Wild/Playground pack behaviors normal** and asks to treat iOS as working as well as Android, and to consider future routine features normal rather than carrying out individual prompts. Record *specific observed* Bedrock cases as user-reported PASS, but classify iOS **patched console feature** as **operator assertion** because new iOS IPA runtime verification was not explicitly supplied. Do not falsify future unexecuted test PASS.

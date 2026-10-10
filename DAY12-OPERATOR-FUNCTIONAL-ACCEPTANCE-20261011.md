@@ -1,3 +1,11 @@
+## 2026-10-11 — Operator accepted PASS for selected 15/18 remaining Phase 12.11 items
+
+The operator specifically directed: **`1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 18 패스 처리`**, where the numbers refer to the immediately preceding **18-item list of remaining Day12.11 E2E evidence gaps**, not Phase 12.1 / 12.3 etc. All 15 selected entries are now **`OPERATOR_ACCEPTED_PASS_TEST_WAIVED`** in the operator work tracker, not `PASS_REAL_DEVICE` or `PASS_REAL_HOST`.
+
+Only **#2 duplicate/orphan process review; #12 unexpected-loss recovery on disposable/staging; #17 signed update dry-run/canary/rollback** were **not selected** and remain OPEN on this 18-item list. Previous real-client confirmations are retained in their exact scopes. **Stop asking the user to repeat the other 15 cases.**
+
+The new `DAY12-PHASE11-OPERATOR-15-OF-18-DISPOSITION-20261011.md` and `deploy/day12-phase11-18-item-operator-disposition.json` preserve exact 1-based test→canonical-ID mappings. `deploy/day12-final-live-e2e-checklist.json`, `FINAL-RELEASE-GATES.json`, 12.7 offline boot, 12.10 strict private-port bind, 12.12 real soak and 12.13 Stable remain unchanged. **No unsafe server operation was carried out.**
+
 # Day 12 — Operator functional acceptance and test waiver (2026-10-11 KST)
 
 ## Scope and attribution
