@@ -1,0 +1,40 @@
+name: Day12 Unknown Java Role Readonly Followup
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/day12/Day12_Unknown_Java_Role_READ_ONLY.ps1'
+      - 'tools/day12/Start_Day12_Unknown_Java_READ_ONLY.cmd'
+      - '.github/workflows/day12-unknown-java-readonly.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-ps51:
+    runs-on: windows-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: PowerShell parser and full positive/negative fixtures
+        shell: powershell
+        run: |
+          $p='tools/day12/Day12_Unknown_Java_Role_READ_ONLY.ps1'
+          $tok=$null;$errors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tok,[ref]$errors)
+          if(@($errors).Count){throw 'Java role followup syntax failed'}
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $p -Synthetic
+          if($LASTEXITCODE -ne 0){throw 'Java role fixture failure'}
+      - name: Package read-only CMD and PowerShell into one ZIP
+        shell: powershell
+        run: |
+          $dir='Day12-Unknown-Java-READ-ONLY'
+          New-Item -ItemType Directory -Path $dir | Out-Null
+          Copy-Item 'tools/day12/Day12_Unknown_Java_Role_READ_ONLY.ps1' $dir
+          Copy-Item 'tools/day12/Start_Day12_Unknown_Java_READ_ONLY.cmd' $dir
+          Compress-Archive -Path "$dir/*" -DestinationPath 'Day12-Unknown-Java-READ-ONLY.zip' -Force
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Day12-Unknown-Java-READ-ONLY
+          path: Day12-Unknown-Java-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
