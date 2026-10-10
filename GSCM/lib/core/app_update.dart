@@ -64,60 +64,8 @@ GscmAppUpdate? findLatestGscmApp(
       final size = asset['size'];
       final digest = asset['digest'];
       if (size is! int || size <= 0 || digest is! String ||
-          !RegExp(r'^sha256:[0-9a-f]{64}
-      final remoteVersion = '${match.group(1)}.${match.group(2)}.${match.group(3)}';
-      final remoteBuild = int.parse(match.group(4)!);
-      final newer = compareGscmBuilds(remoteVersion, remoteBuild, installedVersion, installedBuild) > 0;
-      final candidate = GscmAppUpdate(
-        version: remoteVersion,
-        build: remoteBuild,
-        releaseUrl: 'https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/${Uri.encodeComponent(tag)}',
-        updateAvailable: newer,
-        installedVersion: installedVersion,
-        installedBuild: installedBuild,
-      );
-      if (best == null ||
-          compareGscmBuilds(candidate.version, candidate.build, best.version, best.build) > 0) {
-        best = candidate;
-      }
-    }
-  }
-  return best;
-}
-
-class GscmAppUpdateService {
-  const GscmAppUpdateService();
-
-  Future<GscmAppUpdate> checkLatest() async {
-    final installed = await PackageInfo.fromPlatform();
-    final currentBuild = int.tryParse(installed.buildNumber) ?? 0;
-    final client = HttpClient()..connectionTimeout = const Duration(seconds: 8);
-    try {
-      final request = await client.getUrl(Uri.parse(gscmReleasesApi))
-          .timeout(const Duration(seconds: 8));
-      request.headers.set(HttpHeaders.acceptHeader, 'application/vnd.github+json');
-      request.headers.set(HttpHeaders.userAgentHeader, 'GSCM-AppUpdateCheck');
-      final response = await request.close().timeout(const Duration(seconds: 8));
-      if (response.statusCode != HttpStatus.ok) {
-        throw HttpException('GitHub 릴리즈 확인 실패 (HTTP ${response.statusCode})');
-      }
-      final body = await response.transform(utf8.decoder).join()
-          .timeout(const Duration(seconds: 8));
-      final latest = findLatestGscmApp(
-        jsonDecode(body),
-        installedVersion: installed.version,
-        installedBuild: currentBuild,
-      );
-      if (latest == null) {
-        throw const FormatException('검증 가능한 공개 GSCM 릴리즈를 찾을 수 없습니다');
-      }
-      return latest;
-    } finally {
-      client.close(force: true);
-    }
-  }
-}
-).hasMatch(digest)) {
+          digest.length != 71 || !digest.startsWith('sha256:') ||
+          !RegExp(r'^[0-9a-f]+$').hasMatch(digest.substring(7))) {
         continue;
       }
       final remoteVersion = '${match.group(1)}.${match.group(2)}.${match.group(3)}';
