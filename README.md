@@ -2,13 +2,13 @@
 
 > **프로젝트 종료 정리 (2026-10-11):** 일반 기능 개발과 반복 테스트는 소규모 서버 운영 기준으로 마감했습니다. GitHub/PC 정리 기록과 유지할 복구 자산은 [PROJECT-CLOSEOUT-2026-10-11.md](PROJECT-CLOSEOUT-2026-10-11.md)에 있습니다. 정식 Stable 릴리즈의 엄격한 보안 게이트는 아직 통과하지 않았습니다.
 
-최신 확정 기준의 소스·복구 근거·CI·리소스팩을 모은 저장소입니다. **원본 그대로 회수한 소스와 바이너리 기준으로 재구성한 소스를 구분해서 기록합니다.**
+GSC 4.5.0 및 GSCM 1.5.0+150 Stable 빌드 대상의 소스·복구 근거·CI·리소스팩을 모은 저장소입니다. **원본 그대로 회수한 소스와 바이너리 기준으로 재구성한 소스를 구분해서 기록합니다.**
 
 | Component | Baseline | Path | Recovery status |
 |---|---|---|---|
-| GSC | 4.3.8 live | GSC/ServerCenter | Client/Host split, 4.3.7→4.3.8 Client/Host self-update, Protection & Recovery 2.0 and Day-11 Final E2E verified |
+| GSC | 4.5.0 build target / 4.3.8 last live-verified | GSC/ServerCenter | Client/Host split, 4.3.7→4.3.8 Client/Host self-update, Protection & Recovery 2.0 and Day-11 Final E2E verified |
 | GeumyiStatusAgent | 0.5.4 | GSC/StatusAgent | Full 9-file Java source reconstruction; JDK 21 clean build succeeds |
-| GSCM | 1.1.5+117 live verified | GSCM | Protection & Recovery 2.0 controls included; final two requested Day-11 GSCM device checks user-confirmed PASS |
+| GSCM | 1.5.0+150 build target / 1.1.5+117 last live-verified | GSCM | Protection & Recovery 2.0 controls included; final two requested Day-11 GSCM device checks user-confirmed PASS |
 | GST | 1.1.1 HOTFIX | Plugins/GeumyiServerTools | Exact HOTFIX/overlay delta recovered and matched against final deployed JAR; legacy 0.1.5 core remains binary-only |
 | GDS | 1.1.1 | Plugins/GeumyiDiscordStatus | Recovered full plugin source, stubs and tests |
 | GeumyiNetwork | 0.1.0 | Plugins/GeumyiNetwork | Day 10 four-server transfer/last-location routing plugin; Java host E2E verified |
@@ -61,3 +61,11 @@ Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/
 완성 EXE/JAR/APK/IPA/ZIP은 [기존 Release](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/mc-2026.09.26-v3)에 유지합니다. 운영 토큰·RCON 비밀번호·키스토어·월드·개인 로그는 Git에 넣지 않습니다.
 
 저장소는 Public 상태이므로 현재 트리와 Git 히스토리의 개인정보/시크릿 점검 결과는 [SECURITY-NOTES.md](SECURITY-NOTES.md)에 별도로 기록합니다. 자세한 복구 근거는 [RECOVERY-REPORT.md](RECOVERY-REPORT.md), [VERSION-MATRIX.md](VERSION-MATRIX.md), [SOURCE-MANIFEST.json](SOURCE-MANIFEST.json)을 확인하세요.
+
+
+## 최신 Stable 빌드
+
+- GitHub Stable tag: `system-2026.10.11-stable-gsc450-gscm150` (CI가 실제 바이너리/해시/서명 검증을 통과한 뒤 게시)
+- GSC 4.5.0 / GSCM 1.5.0+150: 버전 정리 및 기존 소스 개선 반영판이며 새 기능 개발을 뜻하지 않습니다.
+- 현재 서버/휴대폰이 이 버전으로 설치됐다는 뜻은 아닙니다. 운영 중 데이터는 변경하지 않습니다.
+
