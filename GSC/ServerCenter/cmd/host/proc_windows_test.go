@@ -100,3 +100,25 @@ func TestWindowsPortPIDRejectsOutOfRangePort(t *testing.T) {
 		}
 	}
 }
+
+func TestWindowsUniqueTCPListenerOwnerFailClosed(t *testing.T) {
+	cases := []struct {
+		name string
+		previous, candidate, want int
+		wantError bool
+	}{
+		{"new_owner", 0, 123, 123, false},
+		{"same_owner_ipv4_ipv6", 123, 123, 123, false},
+		{"zero_owner", 0, 0, 0, true},
+		{"negative_owner", 0, -1, 0, true},
+		{"conflicting_owners", 123, 456, 0, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := uniqueListenerOwner(tc.previous, tc.candidate)
+			if (err != nil) != tc.wantError || got != tc.want {
+				t.Fatalf("uniqueListenerOwner(%d,%d)=(%d,%v), want (%d,error=%v)", tc.previous, tc.candidate, got, err, tc.want, tc.wantError)
+			}
+		})
+	}
+}
