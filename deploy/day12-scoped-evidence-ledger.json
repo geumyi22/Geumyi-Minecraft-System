@@ -1,0 +1,183 @@
+{
+  "schema": 1,
+  "report_type": "DAY12_SCOPED_OPERATOR_EVIDENCE_LEDGER",
+  "updated_date": "2026-10-10",
+  "release_gate_source": "FINAL-RELEASE-GATES.json",
+  "release_gate_status": "BLOCKED_UNTIL_ALL_MANDATORY_GATES_PASS",
+  "release_allowed": false,
+  "maintenance_allowed": false,
+  "canonical_backend_ports_private": "FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS",
+  "closed_scoped_checks": [
+    {
+      "code": "12.0A",
+      "title": "Baseline preflight",
+      "status": "OPERATOR_REPORTED_READY",
+      "scope": "Actual server PC baseline capture 2026-10-09 02:45 KST",
+      "source": "DAY12-REPO-PROGRESS.md",
+      "not_proven": "Newly signed release/SBOM identity"
+    },
+    {
+      "code": "12.0B",
+      "title": "Golden full backups",
+      "status": "OPERATOR_REPORTED_PASS",
+      "scope": "Four-of-four protected verified full backups at 2026-10-09 03:23 KST",
+      "source": "FINAL-BASELINE.json",
+      "not_proven": "Periodic recovery restore drill"
+    },
+    {
+      "code": "12.3",
+      "title": "Whole-system health",
+      "status": "OPERATOR_REPORTED_PASS",
+      "scope": "Fifteen checks passed, zero warning/fail in historical 12.3 health capture",
+      "source": "DAY12-REPO-PROGRESS.md",
+      "not_proven": "Native protected eight-port OS listener bind"
+    },
+    {
+      "code": "12.4",
+      "title": "Lifecycle dry-run",
+      "status": "OPERATOR_REPORTED_PASS_IN_SCOPE",
+      "scope": "Previously zero backup/log eligible deletion candidates; no Apply",
+      "source": "DAY12-REPO-PROGRESS.md",
+      "not_proven": "Retention-policy final approval or real Apply"
+    },
+    {
+      "code": "12.7-cache",
+      "title": "Cached bytes SHA256",
+      "status": "REAL_HOST_PASS_IN_SCOPE",
+      "scope": "2026-10-10 current operator input: 84/84 cached bytes and sizes match local manifest; missing/mismatch/duplicates/reparse 0; read-only/no network",
+      "source": "Day12-Cache-Integrity-READ-ONLY.json operator-private; DAY12-PHASE7-KNOWNGOOD-ONECLICK-READONLY-20261010.md",
+      "not_proven": "Offline known-good startup during unavailable update network"
+    },
+    {
+      "code": "12.8",
+      "title": "Disaster recovery synthetic",
+      "status": "SYNTHETIC_CI_PASS_ONLY",
+      "scope": "Disposable DR drill and rollback logic CI",
+      "source": "DAY12-REPO-PROGRESS.md",
+      "not_proven": "Real production world restore"
+    },
+    {
+      "code": "12.10-lan4",
+      "title": "LAN IPv4 private nonreachability",
+      "status": "REAL_REMOTE_PATH_NEGATIVE_WITH_POSITIVE_CONTROL",
+      "scope": "Public Velocity TCP 3/3 connected, eight internal Java/RCON 0/8 connected from tested SubPC",
+      "source": "DAY12-PHASE10-SECURITY-DECISION-PACKET.md",
+      "not_proven": "Other networks or OS bind"
+    },
+    {
+      "code": "12.10-lan6",
+      "title": "LAN link-local IPv6 private nonreachability",
+      "status": "REAL_REMOTE_PATH_NEGATIVE_WITH_POSITIVE_CONTROL",
+      "scope": "Public Velocity TCP 3/3 connected, internal 0/8 on scoped Wi-Fi interface",
+      "source": "DAY12-PHASE10-SECURITY-DECISION-PACKET.md",
+      "not_proven": "Tailscale or OS bind"
+    },
+    {
+      "code": "12.10-tail4",
+      "title": "Tailscale IPv4 private nonreachability",
+      "status": "REAL_REMOTE_PATH_NEGATIVE_WITH_POSITIVE_CONTROL",
+      "scope": "Public/GSC TCP controls 4/4 connected, private 0/8",
+      "source": "DAY12-PHASE10-SECURITY-DECISION-PACKET.md",
+      "not_proven": "Other tailnet peers or OS bind"
+    },
+    {
+      "code": "12.10-tail6",
+      "title": "Tailscale IPv6 private nonreachability",
+      "status": "REAL_REMOTE_PATH_NEGATIVE_WITH_POSITIVE_CONTROL",
+      "scope": "Public/GSC TCP controls 4/4 connected, private 0/8",
+      "source": "DAY12-PHASE10-SECURITY-DECISION-PACKET.md",
+      "not_proven": "Other tailnet peers or OS bind"
+    },
+    {
+      "code": "12.10-gsc-auth",
+      "title": "Tailscale unauthenticated API GETs",
+      "status": "REAL_HTTP_401_PASS_IN_SCOPE",
+      "scope": "8 of 8 inspected protected GETs 401 Unauthorized, IPv4+IPv6",
+      "source": "DAY12-PHASE10-SECURITY-DECISION-PACKET.md",
+      "not_proven": "All GSC API routes and identity attack paths"
+    },
+    {
+      "code": "12.2-installed-provenance",
+      "title": "Main software artifact provenance",
+      "status": "HISTORIC_DIGEST_MATCH_PARTIAL",
+      "scope": "2026-10-09 StatusAgent/Technology match selected Day11 CI JARs; Wild,Playground,Other GST/GDS and Wild/Other Chemistry match Sep26 v3 official release digest",
+      "source": "deploy/day12-trusted-component-digests.json",
+      "not_proven": "Lobby alias build provenance and current loaded plugin identity"
+    },
+    {
+      "code": "12.1-pack-assets",
+      "title": "Existing applied resource pack static integrity",
+      "status": "STATIC_STRUCTURE_PASS_IN_SCOPE",
+      "scope": "User reports Wild+Playground applied packs; three uploaded Bedrock pack archives valid; 212/212 mapped atlas icons, 33/33 sound refs",
+      "source": "deploy/day12-existing-pack-reference.json",
+      "not_proven": "Live Java/Bedrock receipt, localized BACAP and Geyser custom mapping"
+    }
+  ],
+  "unresolved_release_requirements": [
+    {
+      "code": "12.1",
+      "status": "REAL_CLIENT_PACK_E2E_OPEN",
+      "next": "Observe active Java pack variant and Bedrock packs/translations/custom mapping in genuine clients",
+      "requires_live_client": true,
+      "requires_production_change": false
+    },
+    {
+      "code": "12.2",
+      "status": "LOBBY_ALIAS_AND_RUNTIME_PROVENANCE_OPEN",
+      "next": "Verify exact Lobby GST/GDS artifact source and live plugin enable/behavior; do not replace binaries based on label",
+      "requires_live_client": true,
+      "requires_production_change": false
+    },
+    {
+      "code": "12.4",
+      "status": "RETENTION_POLICY_APPROVAL_OPEN",
+      "next": "Review Golden/backup/log/Trash thresholds; do not apply deletions automatically",
+      "requires_live_client": false,
+      "requires_production_change": true
+    },
+    {
+      "code": "12.5",
+      "status": "EFFECTIVE_FIREWALL_ACL_SECURITY_OPEN",
+      "next": "Independently review broad ActiveStore Allow and inherited Users create rights; no unapproved policy changes",
+      "requires_live_client": false,
+      "requires_production_change": true
+    },
+    {
+      "code": "12.7",
+      "status": "REAL_OFFLINE_START_E2E_OPEN",
+      "next": "Perform separately preflighted offline-update-source startup/recovery with Golden backup and rollback boundary",
+      "requires_live_client": false,
+      "requires_production_change": true
+    },
+    {
+      "code": "12.10",
+      "status": "NATIVE_IPV4_IPV6_BACKEND_BIND_OWNER_FAIL",
+      "next": "Collect independent actual Windows process/socket owning PID and local bind or approved compensating policy with residual risk acceptance",
+      "requires_live_client": false,
+      "requires_production_change": true
+    },
+    {
+      "code": "12.11",
+      "status": "REAL_CLIENT_25_CASE_E2E_OPEN",
+      "next": "Operator tests all 25 mandatory real-client/ops cases; destructive tests only on disposable staging with explicit approval",
+      "requires_live_client": true,
+      "requires_production_change": true
+    },
+    {
+      "code": "12.12",
+      "status": "EIGHT_TO_TWELVE_HOUR_SOAK_OPEN",
+      "next": "Operator actual Start/End capture, 8–12 hours and review CPU, memory, logs, process continuity and gameplay",
+      "requires_live_client": false,
+      "requires_production_change": false
+    },
+    {
+      "code": "12.13",
+      "status": "FINAL_STABLE_MAINTENANCE_BLOCKED",
+      "next": "Only after independently verified all mandatory real-host gates; no automatic tagging or release",
+      "requires_live_client": false,
+      "requires_production_change": true
+    }
+  ],
+  "operator_next_step_strategy": "After safe GitHub preparation, request only genuinely new necessary real Windows run or client test. Do not rerun already verified bounded checks.",
+  "operator_private_reports_committed": false
+}
