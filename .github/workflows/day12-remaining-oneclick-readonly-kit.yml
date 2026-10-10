@@ -136,7 +136,7 @@ jobs:
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           $z=[IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip).Path)
           try{
-            $names=@($z.Entries|Where-Object{$_.Name -ne ''}|ForEach-Object{$_.FullName})
+            $names=@($z.Entries|Where-Object{$_.Name -ne ''}|ForEach-Object{$_.FullName.Replace('\','/')})
             if($names.Count -ne ($expected.Count+1)){
               throw 'ZIP file count mismatch'
             }
