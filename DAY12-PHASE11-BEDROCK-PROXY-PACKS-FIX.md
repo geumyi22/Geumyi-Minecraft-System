@@ -1,3 +1,20 @@
+## 2026-10-10 13:19 KST — real operator approved pack staging succeeded
+
+Operator provided paired reports:
+- `Day12-Bedrock-Fix-Preview-20261010-131910.json`: `READY_FOR_APPLY_NO_MUTATION`, zero blockers, all three proxy targets empty, custom content enabled on all three.
+- `Day12-Bedrock-Fix-Apply-20261010-131911.json`: `FILES_STAGED_NEEDS_PROXY_RESTART`, `APPLIED_APPROVED_SHA256_ONLY`, installed 9 approved .mcpack archives (three per proxy) and 3 approved mapping JSON files (one per proxy); reports no Paper/GSC restart, no firewall/world/Java pack changes.
+- **Conclusion**: Day12.11 Bedrock pack **file placement passed**, NOT that Geyser loaded them, that any Bedrock client accepted them, or that an in-game custom-item visual passed. Stable remains blocked.
+
+The official Geyser documentation requires restart or reload before local packs are delivered, while JSON custom item mapping instructions specifically say to restart the server. Sources: https://geysermc.org/wiki/geyser/packs/ and https://geysermc.org/wiki/geyser/custom-items/.
+
+To minimize scope, a **private**, non-GitHub operator ZIP `Geumyi-Day12-Bedrock-Scoped-Proxy-Restart-Kit.zip` was prepared (only scripts/readme, no private packs). It provides:
+1. `00_Precheck_READ_ONLY.cmd`: fail closed unless V2 12-entry journal allowlist/12 original SHA-256 hashes, three `enable-custom-content=true` settings, exactly three Task Scheduler tasks `Geumyi Day10 Velocity {wild,playground,other}` (matching working dirs/actions, Running status), and distinct owning Java process IDs for matching public TCP/UDP ports.
+2. `01_Restart_THREE_PROXY_ONLY.cmd`: revalidates preflight, requires human zero-player confirmation by typing `NO PLAYERS`, then Stop-ScheduledTask / Start-ScheduledTask for ONLY those three exact Velocity tasks. Polls for new verified process+TCP/UDP ownership after each; stops and reports on unexpected state. It never changes scheduled task definitions, Paper backends, worlds, GSC, Java resource-pack URLs, firewall, backups, or protected Golden content.
+3. A sanitized JSON report under `Desktop/Geumyi-Day12-Bedrock-Fix-Reports` and explicit manual review if any identity/port/partial restart discrepancy.
+   
+**Not executed on actual server**; the ZIP was structurally checked, but the PS1 was not independently runtime-tested on Windows. If preflight fails, do not force-kill Java or blindly restart. After successful proxy restart, actual Bedrock re-join on 19132/19133/19134 and client-side resource pack/custom-item/sound/BACAP checks are mandatory; no E2E success inferred from process listening state. Day12.10/12.7 and Stable release gates independently unchanged.
+
+
 ## 2026-10-10 13:12 KST forensic result and precise Apply parser fix
 
 The real read-only operator report `Day12-Bedrock-Fix-Forensics-20261010-131249.json` confirms the prior Apply did not stage anything:

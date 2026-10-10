@@ -1,3 +1,10 @@
+### 2026-10-10 13:19 KST — Day12.11 Bedrock pack staging PASS, proxy restart PENDING
+
+- Paired real host Preview/Apply JSON accepted: `READY_FOR_APPLY_NO_MUTATION` → `FILES_STAGED_NEEDS_PROXY_RESTART`; **9 approved packs + 3 custom mappings staged** in 3 Geyser-Velocity instances, no processes restarted, no world/Java pack/firewall mutation.
+- Source-guided scoped proxy restart read-only precheck and operator-only restart ZIP prepared; no user pack bytes placed in public GitHub. Restart requires no connected players and safe task+port identity confirmation; not yet executed.
+- Geyser pack loading, custom mapping runtime, Bedrock textures/BACAP/sounds, Java compatibility and Day12.11 E2E remain **UNVERIFIED**; Stable remains blocked.
+
+
 ## Day12.11 Bedrock pack Apply recovery — 2026-10-10 13:12 KST
 
 - **Actual operator forensics** `Day12-Bedrock-Fix-Forensics-20261010-131249.json`: journal absent; 0/12 originals installed; 12/12 absent; no unapproved or changed target files; all three genuine Geyser Velocity installs and pack directories present; all three `enable-custom-content: TRUE`. Initial Apply did **not** successfully stage any file.
