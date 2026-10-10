@@ -124,8 +124,8 @@
   "unresolved_release_requirements": [
     {
       "code": "12.1",
-      "status": "REAL_CLIENT_PACK_E2E_OPEN",
-      "next": "Observe active Java pack variant and Bedrock packs/translations/custom mapping in genuine clients",
+      "status": "EXISTING_JAVA_BEDROCK_PACKS_OPERATOR_ACCEPTED_MANAGED_DEPLOYMENT_OPTIONAL",
+      "next": "Existing Wild/Playground Java and all 3 Bedrock pack behavior user-confirmed. Do NOT request repeat smoke tests or auto-adopt working packs. GSC-managed-content new deployment intentionally disabled pending distinct opt-in and valid manifest.",
       "requires_live_client": true,
       "requires_production_change": false
     },
@@ -138,8 +138,8 @@
     },
     {
       "code": "12.4",
-      "status": "RETENTION_POLICY_APPROVAL_OPEN",
-      "next": "Review Golden/backup/log/Trash thresholds; do not apply deletions automatically",
+      "status": "OPERATOR_APPROVED_NOOP_RETENTION_DRYRUN_SCHEDULING_NOT_DEPLOYED",
+      "next": "Zero eligible entries in real dry run; operator accepted NO ACTION. Preserve Golden/Trash/log safeguards. A scheduled new production retention policy is intentionally not deployed, not an unfulfilled user request.",
       "requires_live_client": false,
       "requires_production_change": true
     },
@@ -166,8 +166,8 @@
     },
     {
       "code": "12.11",
-      "status": "REAL_CLIENT_25_CASE_E2E_OPEN",
-      "next": "Operator tests all 25 mandatory real-client/ops cases; destructive tests only on disposable staging with explicit approval",
+      "status": "OPERATOR_ACCEPTED_16_OF_18_LAST_TWO_STAGING_RECOVERY_ROLLBACK_OPEN",
+      "next": "16/18 operator-disposition items accepted in their bounded scopes, including #2 process census. #12 physical disposable crash recovery and #17 signed Canary/rollback real staging have only CI/source coverage until independently run. Do not repeat working Java/Bedrock/GSCM smoke tests.",
       "requires_live_client": true,
       "requires_production_change": true
     },
