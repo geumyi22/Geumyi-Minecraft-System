@@ -84,6 +84,7 @@ function Evaluate([object]$Snapshot,[object]$Fleet,[object]$Players,[object]$Bac
     explicit_block_start=([bool](Value $update "block_start" $false))
     # NEVER prove offline boot from GET API results alone.
     actually_disconnected_update_source=$false
+    offline_start_e2e_proven=$false
     actual_offline_restart_performed=$false
     real_game_client_test_performed=$false
     stable_release_allowed=$false
