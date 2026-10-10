@@ -11,3 +11,9 @@ This scoped follow-up reads only Windows Java/javaw process command lines in mem
 - Safely run on **server PC**, once, and upload only `Desktop\Geumyi-Day12-Three-Tests\Day12-Unknown-Java-Role-READ-ONLY-*.json`.
 
 No Stable release or security/soak gate changes.
+
+## Actual follow-up result — 2026-10-11 00:42 KST
+
+**PASS_SCOPED_ROLE_RECONCILIATION** from submitted real operator file `Day12-Unknown-Java-Role-READ-ONLY-20261011-004221.json`, generated `2026-10-10T15:42:21.3125520Z`. Process roles: Velocity 6, Paper 3, StatusAgent 1, unknown 0. GSC four distinct server IDs, 3 online/1 offline. **This resolves the earlier scoped #2 anomaly**. Previous source described StatusAgent as a hypothesis only; it is now confirmed **by process launch argument classification**, not binary cryptographic attestation.
+
+No changes were made to running services, worlds, network or backups. No new #12 real unexpected process loss or #17 real signed canary update/rollback was performed. Security's native TCP bind and Stable remain OPEN.

@@ -34,7 +34,7 @@
     17
   ],
   "selected_disposition": "OPERATOR_ACCEPTED_PASS_AND_WAIVED_ADDITIONAL_TEST",
-  "technical_evidence_effect": "NO_NEW_REAL_TEST_EXECUTED_OR_PROVEN",
+  "technical_evidence_effect": "NEW_REAL_HOST_SCOPED_PROOF_FOR_CASE_2_ONLY;_CASES_12_17_CI_ONLY",
   "unselected_disposition": "REMAINS_OPEN_FOR_FORMAL_VERIFICATION",
   "cases": [
     {
@@ -50,8 +50,10 @@
       "canonical_test_id": "HOST_NO_DUPLICATE_PROCESSES",
       "korean_label": "중복·고아 프로세스 확인",
       "disruptive": false,
-      "operator_status": "NOT_SELECTED_OPEN",
-      "independent_e2e_from_this_message": false
+      "operator_status": "PASS_REAL_HOST_SCOPED_ROLE_RECONCILIATION",
+      "independent_e2e_from_this_message": true,
+      "evidence_file": "Day12-Unknown-Java-Role-READ-ONLY-20261011-004221.json",
+      "result": "PASS_SCOPED_ROLE_RECONCILIATION"
     },
     {
       "list_number": 3,
@@ -190,5 +192,42 @@
     "phase_12_13_stable_release"
   ],
   "scope_note": "Prior individual real user-observed checks retain their earlier narrow evidence status. This operator pass request does not execute or prove reboot, device revocation, restore, schedule, actual RCON/WS failure simulation, backup or release rollback.",
-  "external_effects": "Documentation-only. No real servers, packs, worlds, host services, firewall, backups or production update changed."
+  "external_effects": "Documentation-only. No real servers, packs, worlds, host services, firewall, backups or production update changed.",
+  "latest_evidence": {
+    "schema": 1,
+    "observed_at_utc": "2026-10-10T15:42:21.3125520Z",
+    "case_id": "HOST_NO_DUPLICATE_PROCESSES",
+    "source_real_host_synthetic": false,
+    "result": "PASS_REAL_HOST_SCOPED_ROLE_RECONCILIATION",
+    "counts": {
+      "velocity": 6,
+      "paper": 3,
+      "status_agent": 1,
+      "unclassified_java": 0,
+      "gsc_online": 3,
+      "gsc_offline": 1
+    },
+    "prior_evidence_velocity_parent_child_udp": "Day12-2-12-17-SHARE-SUMMARY-20261011-002947.json",
+    "no_process_changes": true,
+    "unselected_initial_numbers": [
+      2,
+      12,
+      17
+    ],
+    "unclosed_live_e2e_cases": [
+      12,
+      17
+    ],
+    "deferred_ci_only_cases": [
+      12,
+      17
+    ]
+  },
+  "current_disposition_summary": {
+    "operator_accepted_pass_waived": 15,
+    "real_host_scoped_pass": 1,
+    "total_non_retest": 16,
+    "actual_fault_recovery_unverified": 1,
+    "actual_signed_canary_rollback_unverified": 1
+  }
 }

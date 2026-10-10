@@ -1,3 +1,8 @@
+## 2026-10-11 00:42 KST — #2 Java process role discrepancy resolved, REAL HOST SCOPED PASS
+
+The real `Day12-Unknown-Java-Role-READ-ONLY-20261011-004221.json` was uploaded and is **`PASS_SCOPED_ROLE_RECONCILIATION`**: six Velocity JVMs, three Paper JVMs, **one GeumyiStatusAgent**, zero unknown, and GSC snapshot exactly four known profiles with three ONLINE/one OFFLINE. Combined with the earlier six Velocity parent-child/three UDP owner evidence and GSC Host 1 Running, this **closes #2 within the scoped process census**. The old `REVIEW_REQUIRED` was caused by assuming all four profiles must have a running Paper process, and not recognizing StatusAgent. No process termination or server change.
+
+The 18-item remainder status is **15 operator-accepted PASS/waived, 1 scoped real host PASS (#2), and 2 (#12/#17) disposable CI only / live E2E still OPEN**. This does not change 12.10 native bind FAIL, final 25-case gate or Stable release.
 ## 2026-10-11 — Combined #2/#12/#17 Safe CI PASS; only #2 real host census pending
 
 [Workflow SUCCESS](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38063619014) with ZIP artifact `Geumyi-Day12-Three-Remaining-OneClick-READ-ONLY`. The Windows PowerShell synthetic parser/topology and GSC Go recovery-state/dry-run/canary-policy/temp-file rollback tests passed. **#2 actual server-PC process census** still requires the operator to run the bundled **read-only CMD** and share one sanitized JSON. **#12 actual staged crash/recovery** and **#17 actual staged signed release apply/canary** were **not** performed by this test, so broader E2E gates remain OPEN. No dangerous production mutation is authorized.
