@@ -1,0 +1,121 @@
+name: Geumyi one-time repository closeout
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/geumyi-project-closeout-cleanup.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: write
+  pull-requests: read
+concurrency:
+  group: geumyi-one-time-closeout
+  cancel-in-progress: false
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Inventory, protect evidence, prune old runs and obsolete refs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('fs'), path=require('path'), {owner,repo}=context.repo;
+            const inv=JSON.parse(fs.readFileSync('docs/archive/2026-10-11-before-cleanup-inventory.json','utf8'));
+            if(inv.repository!==owner+'/'+repo||inv.default_branch!=='main')throw Error('Inventory mismatch');
+            const state={begin:new Date().toISOString(),repository:inv.repository,
+              runs:{before:0,selected:0,deleted:0,skipped_pinned:0,errors:[]},
+              branches:{before:0,deleted:[],skipped:[],errors:[]},
+              releases:{before:0,deleted:[],skipped:[],errors:[]}};
+            const flush=()=>fs.writeFileSync('closeout-audit.json',JSON.stringify(state,null,2)+'\n');
+            const ids=new Set();
+            function readDir(dir){
+              if(!fs.existsSync(dir))return;
+              for(const x of fs.readdirSync(dir,{withFileTypes:true})){
+                if(x.name==='.git'||x.name==='node_modules')continue;
+                const p=path.join(dir,x.name);
+                if(x.isDirectory()){readDir(p);continue}
+                if(!x.isFile()||!/\.(md|json|yml|yaml|txt|ps1|py|go|cmd|sh)$/.test(x.name))continue;
+                if(fs.statSync(p).size>1500000)continue;
+                for(const m of fs.readFileSync(p,'utf8').matchAll(/\b\d{11}\b/g))ids.add(Number(m[0]));
+              }
+            }
+            for(const d of ['docs','GSC','GSCM','deploy','tools','.github'])readDir(d);
+            for(const x of fs.readdirSync('.',{withFileTypes:true})){
+              if(x.isFile()&&/\.(md|json|txt)$/.test(x.name)){
+                for(const m of fs.readFileSync(x.name,'utf8').matchAll(/\b\d{11}\b/g))ids.add(Number(m[0]));
+              }
+            }
+            const runs=await github.paginate(github.rest.actions.listWorkflowRunsForRepo,{owner,repo,per_page:100});
+            state.runs.before=runs.length;
+            const latest=new Map(), eligible=[];
+            const cutoff=Date.now()-96*3600000;
+            for(const run of [...runs].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))){
+              const seen=latest.get(run.workflow_id)||0;latest.set(run.workflow_id,seen+1);
+              if(ids.has(run.id))state.runs.skipped_pinned++;
+              if(run.id===context.runId||run.status!=='completed'||ids.has(run.id)||seen<3||new Date(run.created_at).getTime()>cutoff)continue;
+              eligible.push(run);
+            }
+            eligible.sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+            const chosen=eligible.slice(0,1850);
+            state.runs.selected=chosen.length;flush();
+            core.info('Actions run cleanup: '+chosen.length+' selected of '+runs.length+'; '+state.runs.skipped_pinned+' pinned references.');
+            for(const run of chosen){
+              try{await github.rest.actions.deleteWorkflowRun({owner,repo,run_id:run.id});state.runs.deleted++}
+              catch(e){state.runs.errors.push({id:run.id,status:e.status||null})}
+              if((state.runs.deleted+state.runs.errors.length)%100===0){flush();core.info('Runs removed: '+state.runs.deleted)}
+            }
+            flush();
+            const prs=await github.paginate(github.rest.pulls.list,{owner,repo,state:'open',per_page:100});
+            const prHeads=new Set(prs.filter(x=>x.head.repo&&x.head.repo.full_name===inv.repository).map(x=>x.head.ref));
+            const currentBranches=await github.paginate(github.rest.repos.listBranches,{owner,repo,per_page:100});
+            const originalBranches=new Map(inv.branches.map(b=>[b.name,b.sha]));
+            const protectedBranches=new Set(inv.delete_policy.branches_keep);
+            state.branches.before=currentBranches.length;
+            for(const b of currentBranches){
+              if(!(/^day(?:8|9|10|11)-/.test(b.name)||b.name==='gsc-client-version-lobby-ui-fix'))continue;
+              if(b.protected||prHeads.has(b.name)||protectedBranches.has(b.name)||originalBranches.get(b.name)!==b.commit.sha){
+                state.branches.skipped.push(b.name);continue;
+              }
+              try{await github.rest.git.deleteRef({owner,repo,ref:'heads/'+b.name});state.branches.deleted.push({name:b.name,sha:b.commit.sha})}
+              catch(e){state.branches.errors.push({name:b.name,status:e.status||null})}
+            }
+            flush();
+            const releases=await github.paginate(github.rest.repos.listReleases,{owner,repo,per_page:100});
+            state.releases.before=releases.length;
+            const originalReleases=new Map(inv.releases.map(x=>[x.tag,x]));
+            const candidates=new Set(inv.delete_policy.releases_candidate);
+            const essential=new Set(['mc-2026.09.26-v3','system-2026.10.07-day11-gsc438-beta','system-2026.10.07-day11-gsc437-beta']);
+            for(const rel of releases){
+              if(!candidates.has(rel.tag_name))continue;
+              const old=originalReleases.get(rel.tag_name);
+              if(!rel.prerelease||essential.has(rel.tag_name)||!old||old.id!==rel.id||old.target!==rel.target_commitish){
+                state.releases.skipped.push(rel.tag_name);continue;
+              }
+              try{await github.rest.repos.deleteRelease({owner,repo,release_id:rel.id});
+                state.releases.deleted.push({tag:rel.tag_name,assets:rel.assets.length,git_tag_preserved:true})}
+              catch(e){state.releases.errors.push({tag:rel.tag_name,status:e.status||null})}
+            }
+            state.end=new Date().toISOString();flush();
+            await core.summary.addHeading('Geumyi closeout cleanup').addTable([
+              [{data:'Category',header:true},{data:'Before',header:true},{data:'Removed',header:true}],
+              ['CI runs',String(state.runs.before),String(state.runs.deleted)],
+              ['Branches',String(state.branches.before),String(state.branches.deleted.length)],
+              ['Releases',String(state.releases.before),String(state.releases.deleted.length)]
+            ]).addRaw('Main branch, signed baseline releases and referenced evidence runs retained. Git tags and commit history were not rewritten.').write();
+            if(state.runs.errors.length+state.branches.errors.length+state.releases.errors.length)
+              core.setFailed('Some deletions failed; review closeout-audit.json.');
+      - name: Publish cleanup log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geumyi-closeout-audit
+          path: |
+            closeout-audit.json
+            docs/archive/2026-10-11-before-cleanup-inventory.json
+          if-no-files-found: warn
+          retention-days: 90
