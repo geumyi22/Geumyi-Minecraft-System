@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "phase": "12.0",
-  "status": "PENDING_LIVE_CAPTURE",
+  "status": "DAY12_0_GOLDEN_OPERATOR_VERIFIED_WITH_RELEASE_GATES_OPEN",
   "frozen_from": "Day 11 final closure",
   "repository_day11_closure_head": "c96e02a17b8f4f527e1f630c1f9d5159fb47dab5",
   "runtime_release": {
@@ -72,19 +72,30 @@
     "final_gscm_checks": "USER PASS"
   },
   "live_capture": {
-    "status": "PENDING",
+    "status": "OPERATOR_READY_2026_10_09_0245_KST",
     "tool": "tools/day12/Day12_Phase0_Golden_Baseline_READ_ONLY.cmd",
     "expected_report": "Geumyi-Day12-Phase0-GoldenBaseline-*.json",
-    "required_before_golden_checkpoint": true
+    "required_before_golden_checkpoint": true,
+    "evidence_scope": "Real server-PC Day12.0A ready; see DAY12-REPO-PROGRESS.md"
   },
   "golden_checkpoint": {
-    "status": "PENDING_12.0B",
+    "status": "OPERATOR_PASS_4_OF_4_2026_10_09_0323_KST",
     "must_be_protected": true,
-    "exempt_from_automatic_retention": true
+    "exempt_from_automatic_retention": true,
+    "verified_full_count": 4,
+    "protected_full_count": 4,
+    "operator_side_archive_hashes_not_public": true
   },
   "public_repository_redaction": {
     "full_local_paths_committed": false,
     "secrets_committed": false,
     "live_config_contents_committed": false
+  },
+  "verification_boundary": {
+    "phase12_0_golden_checkpoint": "OPERATOR_REPORTED_PASS_4_OF_4",
+    "phase12_2_actual_component_binary_sha256_provenance": "PENDING",
+    "phase12_10_native_java_rcon_owner_address": "FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS",
+    "stable_release_allowed": false,
+    "source": "DAY12-REPO-PROGRESS.md; DAY12-20261010-ONECLICK-REAL-REVIEW.md"
   }
 }
