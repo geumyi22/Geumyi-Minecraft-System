@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'tools/day12/Day12_Phase7_Cache_Manifest_Integrity_READ_ONLY.ps1'
+      - 'tools/day12/Day12_Phase7_Cache_Manifest_Integrity_READ_ONLY.cmd'
+      - 'DAY12-PHASE7-KNOWNGOOD-ONECLICK-READONLY-20261010.md'
       - '.github/workflows/day12-phase7-cache-integrity.yml'
   workflow_dispatch:
 
@@ -57,3 +59,38 @@ jobs:
           if(Test-Path (Join-Path $out 'Day12-Cache-Integrity-READ-ONLY.json')){
             throw 'Phase7 emitted forged server-PC evidence on GitHub runner'
           }
+      - name: Package standalone server-PC-only read-only cache checker
+        shell: powershell
+        run: |
+          $dir=Join-Path $env:RUNNER_TEMP 'Day12-Phase7-Cache-Integrity-READONLY'
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          Copy-Item 'tools/day12/Day12_Phase7_Cache_Manifest_Integrity_READ_ONLY.ps1' $dir
+          Copy-Item 'tools/day12/Day12_Phase7_Cache_Manifest_Integrity_READ_ONLY.cmd' $dir
+          Copy-Item 'DAY12-PHASE7-KNOWNGOOD-ONECLICK-READONLY-20261010.md' $dir
+          $files=@(Get-ChildItem $dir -File)
+          if($files.Count -ne 3){throw 'Missing focused cache validator files'}
+          $manifest=[ordered]@{schema=1;server_role='SERVER_PC_ONLY'
+            production_cache_mutations=$false;offline_start_verified=$false
+            files=@($files|Sort-Object Name|ForEach-Object{
+              [ordered]@{name=$_.Name;sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
+            })}
+          $manifest|ConvertTo-Json -Depth 6|Set-Content (Join-Path $dir 'SHA256-MANIFEST.json') -Encoding UTF8
+          $zip='Geumyi-Day12-Phase7-Cache-Integrity-READONLY.zip'
+          Compress-Archive -Path "$dir/*" -DestinationPath $zip -Force
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $z=[IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip).Path)
+          try{
+            $names=@($z.Entries|Where-Object{$_.Name}|ForEach-Object{$_.FullName.Replace('\','/')})
+            foreach($req in @('Day12_Phase7_Cache_Manifest_Integrity_READ_ONLY.ps1',
+              'Day12_Phase7_Cache_Manifest_Integrity_READ_ONLY.cmd',
+              'DAY12-PHASE7-KNOWNGOOD-ONECLICK-READONLY-20261010.md','SHA256-MANIFEST.json')){
+              if($names -notcontains $req){throw ("Focused ZIP missing $req")}
+            }
+            if($names.Count -ne 4){throw 'Unexpected files included in focused ZIP'}
+          }finally{$z.Dispose()}
+          Write-Host 'Focused cache one-click ZIP exact entries PASS'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-phase7-cache-integrity-readonly-kit
+          path: Geumyi-Day12-Phase7-Cache-Integrity-READONLY.zip
+          retention-days: 30
