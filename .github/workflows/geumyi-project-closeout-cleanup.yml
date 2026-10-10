@@ -53,7 +53,7 @@ jobs:
             const runs=await github.paginate(github.rest.actions.listWorkflowRunsForRepo,{owner,repo,per_page:100});
             state.runs.before=runs.length;
             const latest=new Map(), eligible=[];
-            const cutoff=Date.now()-96*3600000;
+            const cutoff=Date.now()-24*3600000;
             for(const run of [...runs].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))){
               const seen=latest.get(run.workflow_id)||0;latest.set(run.workflow_id,seen+1);
               if(ids.has(run.id))state.runs.skipped_pinned++;
