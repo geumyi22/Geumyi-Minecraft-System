@@ -1,3 +1,8 @@
+### 2026-10-11 — 12.9 UX operational sign-off CLOSED; iOS binary evidence exception documented
+
+- Operator explicitly requested the phase second in `12.4 → 12.9 → 12.2 → 12.6`. Desktop GSC console 4s refresh and updated Android GSCM console 4s refresh already each **USER_REPORTED_REAL_UI_PASS**; JS regression CI `38057732807` PASS. iOS status/reconnect earlier user-reported normal, but **updated iOS IPA installation and patched console auto-refresh never independently observed**.
+- User's broad iOS normal declaration is recorded as **OPERATOR_ACCEPTED**, not `PASS_REAL_UPDATED_IOS`. Finish **12.9 operational UX scope with that declared exception**; do not repeat previously passed PC/Android tests or claim signed iOS build/release. `DAY12-PHASE9-UX-OPERATOR-CLOSURE-20261011.md` is the acceptance record. 12.11 full E2E, 12.10 privacy and Stable remain blocked.
+
 ### 2026-10-11 — 12.4 lifecycle CLOSED in real dry-run + NO-APPLY policy-review scope
 
 - Operator requested 12.4 first. Existing real server-PC dry-run had **zero** eligible backup/log cleanup candidates. **Reviewed decision: take NO action; protect existing Golden 4/4 and incident logs.** No Trash movement/deletion or scheduled retention setting deployed.

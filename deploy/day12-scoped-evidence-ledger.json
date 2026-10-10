@@ -119,6 +119,14 @@
       "scope": "GitHub Actions Windows run 38017215282: official Paper archive SHA matched, real Paper online prewarm/graceful stop, real GSC Host 4.3.8 started, real GSC POST start 202, process-scoped invalid HTTPS proxy produced upstream updater error, real Paper backend loopback TCP online, Paper JAR unchanged",
       "source": "DAY12-PHASE7-GSC-PAPER-DISPOSABLE-OFFLINE-SOURCE-RESULT-20261010.md; GitHub artifact 11656627512",
       "not_proven": "Actual user's Windows offline boot or use of operator's locally cached known-good 84 files; full NIC disconnected state, Java/Bedrock game-client E2E, RCON ownership, Stable"
+    },
+    {
+      "code": "12.9",
+      "title": "GSC/GSCM console UX operational signoff",
+      "status": "OPERATOR_ACCEPTED_SCOPE_CLOSED_WITH_IOS_EXCEPTION",
+      "scope": "Desktop GSC and patched Android GSCM console four-second auto-polling observed normal by operator; earlier Android+iOS status/reconnect short smoke; updated iOS console feature accepted by operator declaration only",
+      "source": "DAY12-PHASE9-UX-OPERATOR-CLOSURE-20261011.md",
+      "not_proven": "Patched iOS IPA installation plus real iOS four-second console refresh; any unexecuted full 25-case E2E, platform signing/distribution, or WebSocket streaming protocol"
     }
   ],
   "unresolved_release_requirements": [
