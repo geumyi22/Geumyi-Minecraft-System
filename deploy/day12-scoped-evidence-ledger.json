@@ -167,7 +167,7 @@
     {
       "code": "12.11",
       "status": "OPERATOR_ACCEPTED_16_OF_18_LAST_TWO_STAGING_RECOVERY_ROLLBACK_OPEN",
-      "next": "16/18 operator-disposition items accepted in their bounded scopes, including #2 process census. #12 physical disposable crash recovery and #17 signed Canary/rollback real staging have only CI/source coverage until independently run. Do not repeat working Java/Bedrock/GSCM smoke tests.",
+      "next": "16/18 operator-disposition items remain accepted in bounded scopes. #12 now has SUCCESS of actual disposable Windows GSC 4.3.8 + real Paper 26.3 crash/restart recovery CI run 38075813601 (test runner only; pinned artifacts, verified different Java PID, GSC RECOVERING), but no operator production crash was performed. #17 still lacks a real signed staging Canary apply/rollback E2E. Do not repeat accepted Java/Bedrock/GSCM smoke tests. See DAY12-PHASE11-DISPOSABLE-RECOVERY-20261011.md.",
       "requires_live_client": true,
       "requires_production_change": true
     },
