@@ -1,3 +1,10 @@
+### 2026-10-10 22:12 KST — Day12.11 scoped proxy restart verified PASS on host
+
+- Operator `Day12-Bedrock-Proxy-Restart-Result-20261010-221241.json`: `SCOPED_RESTART_VERIFIED_CLIENT_E2E_PENDING`, `THREE_NEW_PROCESS_PAIRS_AND_JAVA_RAKNET_PASS`. All 3 named Velocity proxies successfully restarted sequentially with freshly verified parent/child JVM pairs and GSC Java TCP/Bedrock RakNet probes.
+- Repeated SHA-256 checks count **60** across the operation, not 60 different files (12 distinct 3 packs+1 mapping per proxy). No Paper/GSC/world/Java pack/firewall changes reported.
+- **Pack staging PASS + scoped proxy restart PASS.** Geyser runtime logs and actual Bedrock client resource acceptance, textures, sounds, 212 custom mappings and BACAP translations still **NOT VERIFIED**. No more restart tools unless an actual regression is reported. Next operator action is a real Bedrock client rejoin at each 19132/19133/19134 and Lobby→Wild→Playground→Other→Lobby gameplay checks. Stable remains blocked independently.
+
+
 ### 2026-10-10 22:07 KST — V4 scoped proxy restart precheck PASS; execution still pending
 
 - Operator host report `Day12-Bedrock-Proxy-Restart-Precheck-20261010-220713.json`: `status=READY_FOR_SCOPED_PROXY_RESTART`, `code=SIX_PROCESS_PARENT_CHILD_AND_GSC_PROBES_PASS`.

@@ -1,3 +1,18 @@
+## 2026-10-10 22:12 KST — OPERATOR HOST V4 THREE-PROXY RESTART PASS; Bedrock client still pending
+
+Real operator report `Day12-Bedrock-Proxy-Restart-Result-20261010-221241.json`:
+- `status=SCOPED_RESTART_VERIFIED_CLIENT_E2E_PENDING`
+- `code=THREE_NEW_PROCESS_PAIRS_AND_JAVA_RAKNET_PASS`
+- All of wild, playground, other `action=NEW_PARENT_CHILD_AND_GSC_PROBES_VERIFIED`; `proxy_restarts_attempted=true`, `proxies_verified_after_restart=3`.
+- `approved_pack_hashes_checked=60` means the same approved targets were rechecked repeatedly during the scoped sequence, **not 60 unique files**. Original installed inventory remains three .mcpack and one custom mapping per proxy (12 distinct files).
+- `backend_paper_restart_performed=false`, `gsc_restart_performed=false`, `worlds_or_java_resource_packs_changed=false`, `firewall_changed=false`. No force kill permitted.
+- `geyser_log_pack_acceptance_verified=false`, `bedrock_real_client_e2e_verified=false`, `stable_release_allowed=false`.
+
+**Safe scoped restart is now CLOSED as PASS.** Next task should NOT run more diagnostic/restart scripts unless failure appears. Required real Bedrock user test: fully leave the old Bedrock session, reconnect via the three separate configured public Bedrock UDP entrypoints 19132/19133/19134, note which approved packs are received (a prompt may not appear when Bedrock cached pack bytes exist), verify visible Playground pack content, Wild ChemTech custom item textures and Korean BACAP text in real game, and Lobby → Wild → Playground → Other → Lobby travel without pack unloading. Inspect logs only if test fails. Java resource pack flow should also be spot checked for regression. A mere successful login, RakNet reply, or presence of files does not prove Geyser accepted all three packs and 212 mappings; BACAP translation compatibility must be checked separately. The three packs are globally offered per proxy initial login, as Bedrock does not add/remove them on proxy backend transfer natively (official Geyser https://geysermc.org/wiki/geyser/packs/ ). Custom content still requires real runtime check (official Geyser https://geysermc.org/wiki/geyser/custom-items/).
+
+Independent Day12.7 offline host E2E, Day12.10 private-port security validation, overall Day12.11 original 25-case E2E and Day12.12 soak/Stable gates remain pending separately.
+
+
 ## 2026-10-10 21:27 KST — Six Velocity process attribution clarified
 
 Actual operator `Day12-Velocity-6Process-Forensics-20261010-212757.json`: Java total 10; six Velocity candidates form **three 1-parent/1-child pairs** that start about 3 seconds apart after the exact three Day10 scheduled tasks. UDP owners:
