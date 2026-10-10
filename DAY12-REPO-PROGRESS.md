@@ -1,3 +1,11 @@
+### 2026-10-10 21:11 KST — Day12.11 pack V3 restart census correction
+
+- Latest real user report `Day12-Bedrock-Proxy-Restart-Precheck-20261010-211103.json`: 12/12 approved Bedrock pack/mapping fingerprints validated, blocked `VELOCITY_PROCESS_CENSUS_NOT_EXACTLY_THREE`, **zero proxy restarts attempted**. No Paper/GSC/world/firewall/Java pack mutation.
+- Source review found V2 process scanner regex did not match Day10's `-jar C:\...\FourServer\wild\velocity.jar` absolute nested path; therefore previous report alone cannot establish actual process count. V3 parser recognizes Day10's absolute and task-relative jar styles, disallows unexpected folders and includes anonymous process-kind counts if blocked again.
+- V3 source helper committed in `tools/day12/Day12_Velocity_Process_Parser_V3.ps1`; exact parser Windows PowerShell 5.1 CI **PASS** https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38051404571 . Private ZIP provided to operator `Geumyi-Day12-Bedrock-Scoped-Proxy-Restart-V3-Census-Fixed.zip` preserves all earlier SHA256/journal/task/process/GSC app-probe guards. ZIP CRC clean; **full V3 real Windows execution unverified**.
+- Next real host: V3 READ-ONLY precheck; only if READY and zero Java/Bedrock players, explicit scoped sequential 3-task restart; then real Bedrock 3-pack login and Lobby/servers E2E. Never infer Stable release or native private-port safety PASS from this fix.
+
+
 ### 2026-10-10 20:58 KST — Bedrock scoped proxy restart precheck blocked (no restart)
 
 - Host report `Day12-Bedrock-Proxy-Restart-Precheck-20261010-205816.json`: all **12/12** approved pack hashes checked; blocked at `wild:PUBLIC_LISTENER_MISSING` due to Windows `Get-NetTCPConnection` or `Get-NetUDPEndpoint` missing row. **0** restarts requested and 0 verified. No mutation.
