@@ -87,7 +87,7 @@ function Assert-Synthetic {
     if($dup.result -eq "CACHED_BYTES_HASHES_MATCH" -or
        $dup.duplicate_names -ne 1){throw "CACHE_DUPLICATE_FALSE_PASS"}
   }finally{
-    Remove-Item -LiteralPath $fixture -Recurse -Force -ErrorAction SilentlyContinue
+    if([IO.Directory]::Exists($fixture)){[IO.Directory]::Delete($fixture,$true)}
   }
 }
 if(-not $OutputDir){
