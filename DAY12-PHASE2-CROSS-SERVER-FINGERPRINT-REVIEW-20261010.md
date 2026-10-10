@@ -64,3 +64,8 @@ Alongside actual `37627140918` release artifacts:
 - **Known Lobby GST/GDS aliases are separate:** their names, sizes and SHA values are not identical to the non-Lobby v3 copies, and none of the enumerated release assets uses these alias filenames. Their *exact* source build still requires provenance review. The observed alias difference is not proof of a game failure; only a specific unverified build identity.
 
 **Release-grade caveats:** The GitHub Asset `digest` comparison is a strong matching-content reference tied to that public GitHub release record, **not a personally revalidated detached code-signature on each installed JAR**, and the sampled operator hashes were taken at 2026-10-09 06:13, not a fresh runtime measurement today. Actual server plugin enable/version and Java/Bedrock routing still require Phase 12.11 E2E. No production binary, backup, firewall, ACL or service has been modified.
+
+
+## Public digest reference ledger
+
+Created `deploy/day12-trusted-component-digests.json` as an **immutable-for-this-review reference list** of the five matched component IDs, expected server roles, pinned full 64-character release/CI JAR SHA256 values, and exact GitHub release asset IDs or Actions artifact IDs. This contains **only public release/CI digests**, never hashes collected directly from the user's private report or host paths. The historical 2026-10-09 server-PC comparison was performed privately before writing the reference ledger. These reference hashes are useful for a later **separately executed** real-host integrity check, but the ledger alone does not attest live load, process ownership, binary signing, or Stable release eligibility. No operator rerun of the existing one-click summary is needed just to publish this ledger.
