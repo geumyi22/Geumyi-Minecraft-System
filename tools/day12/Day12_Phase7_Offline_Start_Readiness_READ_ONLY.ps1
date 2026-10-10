@@ -26,7 +26,7 @@ function Is-ProtectedFullBackup([object]$b) {
   return (([bool](Value $b "protected" $false)) -and
     ([bool](Value $b "verified" $false)) -and
     ([string](Value $b "scope" "") -eq "full") -and
-    (-not [bool](Value $b "trashed" $true)))
+    (-not [bool](Value $b "trashed" $false)))
 }
 function Evaluate([object]$Snapshot,[object]$Fleet,[object]$Players,[object]$Backups,[bool]$HostRunning){
   $issues=New-Object System.Collections.ArrayList
@@ -140,6 +140,17 @@ if($Synthetic){
   }
   if((Evaluate $snap $fleet ([pscustomobject]@{online=$true;count=1}) $backup $true).result -ne "BLOCKED_NEEDS_SAFETY_REVIEW"){
     throw "SYNTHETIC_PLAYER_FALSE_READY"
+  }
+  # GSC Go BackupInfo.Trashed uses omitempty: absent means false.
+  $omittedTrashed=[pscustomobject]@{backups=@([pscustomobject]@{
+    protected=$true;verified=$true;scope="full"})}
+  if((Evaluate $snap $fleet $players $omittedTrashed $true).result -ne "PRECHECK_GUARDS_MET_NO_TEST_PERFORMED"){
+    throw "SYNTHETIC_BACKUP_OMITEMPTY_FALSE_POSITIVE"
+  }
+  $trulyTrashed=[pscustomobject]@{backups=@([pscustomobject]@{
+    protected=$true;verified=$true;scope="full";trashed=$true})}
+  if((Evaluate $snap $fleet $players $trulyTrashed $true).result -ne "BLOCKED_NEEDS_SAFETY_REVIEW"){
+    throw "SYNTHETIC_TRASHED_BACKUP_FALSE_READY"
   }
   if((Evaluate $snap $fleet $players ([pscustomobject]@{backups=@()}) $true).result -ne "BLOCKED_NEEDS_SAFETY_REVIEW"){
     throw "SYNTHETIC_BACKUP_FALSE_READY"
