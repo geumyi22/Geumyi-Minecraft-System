@@ -60,7 +60,7 @@ function WaitPaperWorldReady([object]$Process,[string]$LogPath,[int]$Secs) {
     if(Test-Path -LiteralPath $LogPath -PathType Leaf) {
       try {
         $tail=(Get-Content -LiteralPath $LogPath -Tail 50 -ErrorAction Stop) -join "`n"
-        if($tail -match 'Done \\([0-9.]+s\\)! For help, type "help"') {
+        if($tail -match 'Done \([0-9.]+s\)! For help, type "help"') {
           if($null -eq $doneSeen){$doneSeen=Get-Date}
           if(((Get-Date)-$doneSeen).TotalSeconds -ge 6 -and (Connected 25789)) {return $true}
         }
