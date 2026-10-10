@@ -1,3 +1,12 @@
+### 2026-10-10 22:07 KST — V4 scoped proxy restart precheck PASS; execution still pending
+
+- Operator host report `Day12-Bedrock-Proxy-Restart-Precheck-20261010-220713.json`: `status=READY_FOR_SCOPED_PROXY_RESTART`, `code=SIX_PROCESS_PARENT_CHILD_AND_GSC_PROBES_PASS`.
+- **12** approved Bedrock archive/custom-mapping SHA-256 hashes checked; six Velocity process candidates resolve to **three parent/child pairs**; GSC Java TCP and Bedrock RakNet application probes passed the V4 safety gate.
+- Three scheduled tasks in `steps` each `action=NOT_RUN`; `proxy_restarts_attempted=false`; `proxies_verified_after_restart=0`; no GSC/Paper/firewall/world/Java pack mutation.
+- Fail-closed scoped scheduler stop/start only; force kill prohibited. Next operator task is confirm no Java/Bedrock players, run **V4 only** `01_Restart_THREE_PROXY_V4_ONLY.cmd` with explicit `NO PLAYERS` consent and return actual Restart Result JSON. If partial, stop and investigate; no automatic retry or forced process kill.
+- Bedrock real-client first-login pack acceptance and Lobby↔Wild↔Playground↔Other in-game E2E still NOT verified; Stable release remains blocked, including independent Day12.10 socket owner concerns.
+
+
 ### 2026-10-10 21:27 KST — Day12.11 Velocity 6-process relationship explained; V4 guarded restart prepared
 
 - Real host forensics `Day12-Velocity-6Process-Forensics-20261010-212757.json`: 6 Velocity Java process candidates are **3 roots + 3 child processes**, not proven six independent server endpoints. Exact links by Bedrock UDP owner and parent PID: wild parent 4156 → child 10408 (UDP 19132), playground 4172 → child 10400 (UDP 19133), other 4192 → child 10416 (UDP 19134). Three Day10 task actions match and are Running; GSC Java TCP/RakNet replies PASS on 25565–67/19132–34. PowerShell TCP provider rows still unavailable; use GSC application-level health as evidence, not OS TCP row inventory.
