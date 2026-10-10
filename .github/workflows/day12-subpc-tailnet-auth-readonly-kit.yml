@@ -1,0 +1,95 @@
+name: Day12 SubPC Tailnet GSC Unauth API Kit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/day12/Day12_SubPC_Tailnet_GSC_Unauth_HTTP_READ_ONLY.ps1'
+      - 'tools/day12/Day12_SubPC_Tailnet_GSC_Unauth_HTTP_READ_ONLY.cmd'
+      - 'DAY12-TAILNET-GSC-REMOTE-AUTH-20261010.md'
+      - '.github/workflows/day12-subpc-tailnet-auth-readonly-kit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fixture-and-package:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - name: Parse source and confirm no credential or mutating request workflow
+        shell: powershell
+        run: |
+          $path='tools/day12/Day12_SubPC_Tailnet_GSC_Unauth_HTTP_READ_ONLY.ps1'
+          $tok=$null;$err=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path),[ref]$tok,[ref]$err)
+          if(@($err).Count){
+            $err|ForEach-Object{Write-Host $_.ErrorId}
+            throw 'SubPC Tailnet auth PowerShell parser failure'
+          }
+          $c=Get-Content $path -Raw
+          foreach($bad in @('New-NetFirewallRule','Set-NetFirewallRule','Remove-NetFirewallRule',
+              'Stop-Service','Restart-Service','Start-Service','Stop-Process',
+              'Authorization','X-GSC-Token','HttpMethod]::Post','HttpMethod]::Put','HttpMethod]::Delete')){
+            if($c -match [regex]::Escape($bad)){
+              # "Authorization" may appear in a comment describing a deny;
+              # it must not appear as a header assignment or request credential.
+              if($bad -eq 'Authorization' -and $c -notmatch '(?i)(Set\(|Add\(|Headers\.)\s*["'']?Authorization'){continue}
+              throw ('Prohibited instruction '+$bad)
+            }
+          }
+          $cmd=Get-Content 'tools/day12/Day12_SubPC_Tailnet_GSC_Unauth_HTTP_READ_ONLY.cmd' -Raw
+          if($cmd -notmatch 'powershell.exe.*Day12_SubPC_Tailnet_GSC_Unauth_HTTP_READ_ONLY.ps1' -or
+             $cmd -match '(?i)-NonInteractive'){throw 'SubPC interactive launcher contract broken'}
+      - name: Test no-network synthetic route denied classification
+        shell: powershell
+        run: |
+          $p='tools/day12/Day12_SubPC_Tailnet_GSC_Unauth_HTTP_READ_ONLY.ps1'
+          $o=Join-Path $env:RUNNER_TEMP 'unauth-fixture'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $p -Synthetic -OutputDir $o
+          if($LASTEXITCODE -ne 0){throw 'No-network synthetic GSC remote unauthorized classifier failed'}
+          $r=Get-Content (Join-Path $o 'Day12-Tailnet-Auth-Synthetic.json') -Raw -Encoding UTF8|ConvertFrom-Json
+          if($r.result -ne 'SYNTHETIC_PASS' -or !$r.synthetic -or !$r.read_only_client -or
+             $r.network_requests -ne 0 -or $r.unauthorized_audit_entries_produced -or
+             $r.backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'GSC remote API synthetic fixture contract invalid'
+          }
+          Write-Host 'Offline unauth remote API safety classifier PASS'
+      - name: Package focused Windows SubPC artifact with SHA256
+        shell: powershell
+        run: |
+          $folder=Join-Path $env:RUNNER_TEMP 'Geumyi-Day12-SubPC-Tailnet-GSC-Auth-READONLY'
+          New-Item -ItemType Directory -Force -Path $folder|Out-Null
+          Copy-Item 'tools/day12/Day12_SubPC_Tailnet_GSC_Unauth_HTTP_READ_ONLY.ps1' $folder
+          Copy-Item 'tools/day12/Day12_SubPC_Tailnet_GSC_Unauth_HTTP_READ_ONLY.cmd' $folder
+          Copy-Item 'DAY12-TAILNET-GSC-REMOTE-AUTH-20261010.md' $folder
+          [ordered]@{
+            schema=1;scope='TAILNET_GSC_HTTP_NO_AUTH';mutable_host_settings=$false
+            routine_unauthorized_audit_log_entries_possible=$true
+            backend_ports_private='UNCHANGED_FAIL'
+            files=@(Get-ChildItem $folder -File|Sort-Object Name|ForEach-Object{
+              [ordered]@{name=$_.Name;sha256=(Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
+            })
+          }|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $folder 'SHA256-MANIFEST.json') -Encoding UTF8
+          $zip='Geumyi-Day12-SubPC-Tailnet-GSC-Auth-READONLY.zip'
+          Compress-Archive -Path (Join-Path $folder '*') -DestinationPath $zip -Force
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $z=[IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip).Path)
+          try{
+            $names=@($z.Entries|ForEach-Object{$_.FullName})
+            if($names.Count -ne 4 -or
+               $names -notcontains 'Day12_SubPC_Tailnet_GSC_Unauth_HTTP_READ_ONLY.ps1' -or
+               $names -notcontains 'Day12_SubPC_Tailnet_GSC_Unauth_HTTP_READ_ONLY.cmd' -or
+               $names -notcontains 'DAY12-TAILNET-GSC-REMOTE-AUTH-20261010.md' -or
+               $names -notcontains 'SHA256-MANIFEST.json'){
+              throw 'Focused ZIP content integrity invalid'
+            }
+          }finally{$z.Dispose()}
+          Write-Host 'Verified focused remote unauth GSC kit artifact'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-subpc-tailnet-gsc-auth-readonly-kit
+          path: Geumyi-Day12-SubPC-Tailnet-GSC-Auth-READONLY.zip
+          retention-days: 30
