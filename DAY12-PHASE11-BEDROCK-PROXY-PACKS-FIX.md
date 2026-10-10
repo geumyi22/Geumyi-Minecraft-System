@@ -12,6 +12,22 @@ If `root_present=false` again, the actual deployment has likely moved, and shoul
 
 
 
+
+## 2026-10-10 12:01 KST — live Geyser pack directory diagnosis
+
+The operator uploaded `Day12-Bedrock-Pack-Inventory-20261010-120128.json`.
+The corrected Day10 proxy root check now returns `root_present=true`.
+For **wild/19132**, **playground/19133** and **other/19134**, the report confirms:
+- Velocity proxy directory, Geyser-Velocity.jar, Geyser runtime directory, config.yml, and packs directory: **present**;
+- each Geyser `packs` directory has **zero** `.zip` or `.mcpack` archives;
+- no matching 48-group/212-definition Geumyi custom item mapping was found;
+- no actual pack delivery or Bedrock-in-game E2E has been performed.
+
+This now provides direct evidence of a missing **Geyser-side pack delivery installation** (not a Java pack regression), consistent with the Bedrock first-login-only limitation in official Geyser docs. The report does not prove that every custom_mappings folder contains no other JSON files, or what `gameplay.enable-custom-content` is currently set to.
+
+The assistant recovered the operator's **four original** archive/mapping bytes from their private Library. Their SHA-256 hashes match `deploy/day12-existing-pack-reference.json` exactly, and each .mcpack ZIP CRC/manifest passed offline reinspection. The operator was provided a **private, non-GitHub** ZIP bundle named `Geumyi-Day12-Bedrock-Pack-Fix-ORIGINALS.zip` with original 3 .mcpack binaries, original 212-item mapping and **Preview / Apply-without-restart / hash-guarded Rollback** commands. The scripts never change live worlds, GSC, Java resource-pack URLs, firewall or scheduled tasks; `Apply` is fail-closed on any pre-existing .zip/.mcpack in the three target pack folders, pre-existing other JSON mappings, disabled/unknown custom-content config, absent Geyser runtime files, or source SHA-256 mismatches. A local journal permits transaction-only rollback. These Windows commands have **not yet been executed on the server PC** and the private bundle is **not hosted in GitHub**. The next user/operator action is Preview on server PC, send its redacted JSON if blocked; if `READY_FOR_APPLY_NO_MUTATION`, Apply and send the resulting JSON. Proxy reload/restart and Bedrock client E2E remain separate operator gates.
+
+
 ## Root cause (Geyser official documentation)
 
 Bedrock accepts new/removed server resource packs at initial login. A normal Velocity backend transfer does **not** trigger another resource-pack negotiation, unlike Java's per-backend resource-pack request. Geyser's official docs explicitly say per-backend resource packs are unavailable natively on proxies, although a third-party transfer/reconnect plugin can simulate them: https://geysermc.org/wiki/geyser/packs/

@@ -1,3 +1,10 @@
+
+### 2026-10-10 12:01 KST — Day12.11 Bedrock first-login resource pack recovery
+
+- Real corrected inventory `Day12-Bedrock-Pack-Inventory-20261010-120128.json`: actual Day10 `FourServer` proxy root exists; Geyser Velocity/config/packs folders all exist across three proxies; **0/3 required packs installed in each**. 212-item custom mapping not detected on any of the 3. No packs installed yet; no server/world/settings change.
+- Offline SHA-256 rechecked four original user-uploaded bytes against `deploy/day12-existing-pack-reference.json`; all match, all 3 .mcpack archives passed CRC. Private operator ZIP with 3 original packs, original custom mapping, Preview, Apply-no-restart, rollback was created and delivered to operator; private files **not published to GitHub**.
+- Next: real server-PC Preview → hash-gated Apply → controlled proxy reload after player-safe preflight → Bedrock E2E across Lobby/Wild/Playground/Other; do **not** report 12.11 complete or Stable eligible until tests.
+
 # Day 12 — Repository / Live Progress
 
 Updated: 2026-10-10 KST (11:43 strict final-closure eight-port evidence hardening; historical live findings preserved)
