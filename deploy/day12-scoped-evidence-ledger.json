@@ -119,30 +119,6 @@
       "scope": "GitHub Actions Windows run 38017215282: official Paper archive SHA matched, real Paper online prewarm/graceful stop, real GSC Host 4.3.8 started, real GSC POST start 202, process-scoped invalid HTTPS proxy produced upstream updater error, real Paper backend loopback TCP online, Paper JAR unchanged",
       "source": "DAY12-PHASE7-GSC-PAPER-DISPOSABLE-OFFLINE-SOURCE-RESULT-20261010.md; GitHub artifact 11656627512",
       "not_proven": "Actual user's Windows offline boot or use of operator's locally cached known-good 84 files; full NIC disconnected state, Java/Bedrock game-client E2E, RCON ownership, Stable"
-    },
-    {
-      "code": "12.9",
-      "title": "GSC/GSCM console UX operational signoff",
-      "status": "OPERATOR_ACCEPTED_SCOPE_CLOSED_WITH_IOS_EXCEPTION",
-      "scope": "Desktop GSC and patched Android GSCM console four-second auto-polling observed normal by operator; earlier Android+iOS status/reconnect short smoke; updated iOS console feature accepted by operator declaration only",
-      "source": "DAY12-PHASE9-UX-OPERATOR-CLOSURE-20261011.md",
-      "not_proven": "Patched iOS IPA installation plus real iOS four-second console refresh; any unexecuted full 25-case E2E, platform signing/distribution, or WebSocket streaming protocol"
-    },
-    {
-      "code": "12.2-provenance-review",
-      "title": "Pinned public release provenance and exact Lobby exceptions",
-      "status": "REPOSITORY_REVIEW_COMPLETE_WITH_TWO_UNRESOLVED_LOBBY_ALIASES",
-      "scope": "Historic real host 2026-10-09 digest capture: StatusAgent 1/1, Technology 2/2, GST 3/3, GDS 3/3, Chemistry 2/2 match pinned public release/CI; 2 Lobby alias builds remain unidentified",
-      "source": "DAY12-PHASE2-FINAL-PROVENANCE-REVIEW-20261011.md",
-      "not_proven": "Original Day10 CI run and detached signatures for Lobby GST/GDS; fresh enabled runtime attestation; complete 12.2 final release gate"
-    },
-    {
-      "code": "12.6",
-      "title": "Release chain source and fail-closed gate review",
-      "status": "REPOSITORY_AUDIT_CI_PENDING",
-      "scope": "Real final-release source, mandatory gates, SHA256 manifest fixture; no live signing",
-      "source": "DAY12-PHASE6-RELEASE-CHAIN-REVIEW-20261011.md",
-      "not_proven": "Signed final release and full live host/cloud/mobile deployment"
     }
   ],
   "unresolved_release_requirements": [
@@ -211,5 +187,34 @@
     }
   ],
   "operator_next_step_strategy": "After safe GitHub preparation, request only genuinely new necessary real Windows run or client test. Do not rerun already verified bounded checks.",
-  "operator_private_reports_committed": false
+  "operator_private_reports_committed": false,
+  "phase_review_decisions": [
+    {
+      "code": "12.9",
+      "title": "GSC/GSCM console UX operational signoff",
+      "status": "OPERATOR_ACCEPTED_SCOPE_CLOSED_WITH_IOS_EXCEPTION",
+      "scope": "Desktop GSC and patched Android GSCM console four-second auto-polling observed normal by operator; earlier Android+iOS status/reconnect short smoke; updated iOS console feature accepted by operator declaration only",
+      "source": "DAY12-PHASE9-UX-OPERATOR-CLOSURE-20261011.md",
+      "not_proven": "Patched iOS IPA installation plus real iOS four-second console refresh; any unexecuted full 25-case E2E, platform signing/distribution, or WebSocket streaming protocol",
+      "ledger_scope": "PHASE_REVIEW_NOT_IN_CLOSED_SCOPED_RELEASE_GATES"
+    },
+    {
+      "code": "12.2-provenance-review",
+      "title": "Pinned public release provenance and exact Lobby exceptions",
+      "status": "REPOSITORY_REVIEW_COMPLETE_WITH_TWO_UNRESOLVED_LOBBY_ALIASES",
+      "scope": "Historic real host 2026-10-09 digest capture: StatusAgent 1/1, Technology 2/2, GST 3/3, GDS 3/3, Chemistry 2/2 match pinned public release/CI; 2 Lobby alias builds remain unidentified",
+      "source": "DAY12-PHASE2-FINAL-PROVENANCE-REVIEW-20261011.md",
+      "not_proven": "Original Day10 CI run and detached signatures for Lobby GST/GDS; fresh enabled runtime attestation; complete 12.2 final release gate",
+      "ledger_scope": "PHASE_REVIEW_NOT_IN_CLOSED_SCOPED_RELEASE_GATES"
+    },
+    {
+      "code": "12.6",
+      "title": "Release chain source and fail-closed gate review",
+      "status": "REPOSITORY_CI_PASS_NO_PRODUCTION_SIGNED_STABLE",
+      "scope": "Real final-release source, mandatory gates, SHA256 manifest fixture; no live signing",
+      "source": "DAY12-PHASE6-RELEASE-CHAIN-REVIEW-20261011.md",
+      "not_proven": "Signed final release and full live host/cloud/mobile deployment",
+      "ledger_scope": "PHASE_REVIEW_NOT_IN_CLOSED_SCOPED_RELEASE_GATES"
+    }
+  ]
 }

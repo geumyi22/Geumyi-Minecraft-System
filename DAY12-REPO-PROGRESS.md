@@ -1,3 +1,9 @@
+### 2026-10-11 — 12.6 repo-only signed-release control audit CI PASS; preserve strict evidence ledger
+
+- [Phase6 Source Audit CI **38066005282 SUCCESS**](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38066005282): validates existing fail-closed final gate and independent health/security evidence, release build dependencies and signing policy, SHA256 sidecars and manifest signing/publish order. Synthetic gate-negative fixtures and actual manifest generator temp-byte tests PASS. **No real signed Stable was published or installed.**
+- The separate scoped evidence-ledger CI found `CLOSED_SCOPED_EVIDENCE_KEYS_WRONG` after assistant added new phase review entries into the exact protected 14-ID `closed_scoped_checks` set. Restored the original exact set and moved the three optional review records to `phase_review_decisions`. No validator weakening; no release gate change. CI recheck required after this commit.
+- Overall user-requested order **12.4 no-action review complete → 12.9 operator UX acceptance complete with iOS exception → 12.2 repo provenance review complete with two Lobby alias unknown builds → 12.6 repository release-chain source audit PASS**, with full Stable still BLOCKED.
+
 ### 2026-10-11 — 12.6 repository release-chain audit source and GitHub CI prepared
 
 - Added source-only regression audit and workflow for required release dependencies, private-backend and health/security fail-closed predicates, sign/verify ordering, SHA256 manifest actual-byte hashing, and synthetic negative checks. No Stable release or real operator host action. CI result not yet known in this commit.

@@ -11,6 +11,15 @@ The operator states all game/GSC/GSCM features appear normal, explicitly accepts
 
 **Do not auto-pass unexecuted 25-case tests** from this broad statement. The strict 12.10 backend privacy gate remains FAIL; actual 12.7 offline start and 12.12 eight-hour soak are untested, so Stable/Maintenance remain blocked. Stop repeated routine test requests; prioritize safe source/CI work and only ask for indispensable, separately approved real host safety operations.
 
+## 2026-10-11 — Requested immediate review sequence 12.4 → 12.9 → 12.2 → 12.6
+
+- **12.4:** previous real cleanup dry-run yielded zero eligible candidates; operator-approved **NO ACTION**, Golden 4/4 kept; retention policy not applied or scheduled. `DAY12-PHASE4-FINAL-NOOP-DECISION-20261011.md`.
+- **12.9:** desktop GSC + Android GSCM console 4s polling directly user-reported normal; iOS patched binary only operator-asserted normal. Operational UI scope accepted; iOS independent binary/device proof absent. `DAY12-PHASE9-UX-OPERATOR-CLOSURE-20261011.md`.
+- **12.2:** 11/11 targeted historical installed JAR copies (non-Lobby five component groups) byte-match selected pinned official release/CI references; Lobby GST and GDS exact source build remain **UNPROVEN**. Review done, mandatory provenance gate remains open. `DAY12-PHASE2-FINAL-PROVENANCE-REVIEW-20261011.md`.
+- **12.6:** fail-closed final release chain, real-byte SHA manifest generation, signature/Android release controls and negative fixtures verified by [CI run 38066005282](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38066005282) **PASS in repository scope**; actual signed Stable not published. `DAY12-PHASE6-RELEASE-CHAIN-REVIEW-20261011.md`.
+
+The protected final release manifest remains **BLOCKED**, especially 12.5 security, 12.7 real offline boot, 12.10 private socket native binding, 12.11 real staging recovery/rollout E2E, 12.12 long soak, and unresolved Lobby provenance. See `deploy/day12-scoped-evidence-ledger.json` for review statuses separated from exact reserved closed-scope test IDs.
+
 ## Repository-side verified evidence
 
 - Day 12 full synthetic/read-only Safety CI: **PASS** — run `37670902211`
