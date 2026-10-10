@@ -1,0 +1,112 @@
+name: Day12 Phase7 Offline Startup Readiness Kit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.ps1'
+      - 'tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.cmd'
+      - 'DAY12-PHASE7-OFFLINE-START-RUNBOOK-20261010.md'
+      - '.github/workflows/day12-phase7-offline-readiness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-readonly-preflight:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - name: Parse PowerShell and prove no mutating request or network operation
+        shell: powershell
+        run: |
+          $p='tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.ps1'
+          $tokens=$null;$errors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count){
+            $errors|ForEach-Object{Write-Host $_.ErrorId}
+            throw 'PowerShell preflight parse failed'
+          }
+          $source=Get-Content $p -Raw -Encoding UTF8
+          foreach($bad in @('Invoke-WebRequest','New-NetFirewallRule','Set-NetFirewallRule',
+            'Remove-NetFirewallRule','Restart-Service','Stop-Service','Start-Service',
+            'Stop-Process','Disable-NetAdapter','Set-DnsClientServerAddress',
+            'Set-NetIPAddress','Netsh','Invoke-Command','Invoke-Expression')){
+            if($source -match '(?im)^\s*(?:\&\s*)?'+[regex]::Escape($bad)+'\s'){
+              throw ('Forbidden real command: '+$bad)
+            }
+          }
+          if($source -match '(?i)-Method\s+(?!GET)\w+'){
+            throw 'Unauthorized HTTP mutation is forbidden'
+          }
+          $cmd=Get-Content 'tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.cmd' -Raw -Encoding UTF8
+          if($cmd -notmatch 'powershell.exe.*Day12_Phase7_Offline_Start_Readiness_READ_ONLY.ps1'){
+            throw 'Read-only launcher reference broken'
+          }
+      - name: Run synthetic safe/blocked branches without a host, network or outage
+        shell: powershell
+        run: |
+          $p='tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.ps1'
+          $out=Join-Path $env:RUNNER_TEMP 'phase7-offline-readiness-synthetic'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $p -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Offline preflight synthetic test failed'}
+          $r=Get-Content (Join-Path $out 'Day12-Offline-Readiness-READ-ONLY.json') -Raw -Encoding UTF8|ConvertFrom-Json
+          if(-not $r.synthetic -or -not $r.read_only -or
+             $r.result -ne 'PRECHECK_GUARDS_MET_NO_TEST_PERFORMED' -or
+             -not $r.checks.target_player_count_confirmed_zero -or
+             $r.network_outage_initiated -or $r.service_restart_performed -or
+             $r.offline_start_e2e_proven -or $r.stable_release_allowed -or
+             $r.canonical_backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Offline preflight summary claimed mutation, outage or a false live PASS'
+          }
+      - name: Guard against synthetic report impersonating real Server PC
+        shell: powershell
+        run: |
+          $p='tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.ps1'
+          $out=Join-Path $env:RUNNER_TEMP 'phase7-offline-refuse'
+          $err=Join-Path $env:RUNNER_TEMP 'phase7-refuse-error.txt'
+          $run=Start-Process powershell.exe -NoNewWindow -Wait -PassThru -RedirectStandardError $err -ArgumentList @(
+            '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$p,'-OutputDir',$out)
+          if($run.ExitCode -eq 0){throw 'Accepted disposable non-Host Windows runner'}
+          if(Test-Path (Join-Path $out 'Day12-Offline-Readiness-READ-ONLY.json')){
+            throw 'Created false real-host report in CI'
+          }
+      - name: Create exact portable ZIP and SHA256 manifest
+        shell: powershell
+        run: |
+          $folder=Join-Path $env:RUNNER_TEMP 'Geumyi-Day12-Phase7-Offline-Readiness'
+          New-Item -ItemType Directory -Path $folder -Force|Out-Null
+          Copy-Item 'tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.ps1' $folder
+          Copy-Item 'tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.cmd' $folder
+          Copy-Item 'DAY12-PHASE7-OFFLINE-START-RUNBOOK-20261010.md' $folder
+          $source=@(Get-ChildItem $folder -File)
+          if($source.Count -ne 3){throw 'Unexpected source file count'}
+          [ordered]@{
+            schema=1;role='SERVER_PC_ONLY';mode='PRECHECK_ONLY'
+            network_disconnection_permitted=$false;service_restart_permitted=$false
+            release_allowed=$false
+            files=@($source|Sort-Object Name|ForEach-Object{
+              [ordered]@{name=$_.Name;sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
+            })
+          }|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $folder 'SHA256-MANIFEST.json') -Encoding UTF8
+          $zip='Geumyi-Day12-Phase7-Offline-Readiness-READONLY.zip'
+          Compress-Archive -Path "$folder/*" -DestinationPath $zip -Force
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive=[IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip).Path)
+          try{
+            $names=@($archive.Entries|Where-Object{$_.Name}|ForEach-Object{$_.FullName.Replace('\','/')})
+            if($names.Count -ne 4){throw 'Incorrect ZIP member count'}
+            foreach($name in @('Day12_Phase7_Offline_Start_Readiness_READ_ONLY.ps1',
+              'Day12_Phase7_Offline_Start_Readiness_READ_ONLY.cmd',
+              'DAY12-PHASE7-OFFLINE-START-RUNBOOK-20261010.md','SHA256-MANIFEST.json')){
+              if($names -notcontains $name){throw ('ZIP missing '+$name)}
+            }
+          }finally{$archive.Dispose()}
+          Write-Host 'Focused read-only preflight ZIP layout and hashes verified'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-phase7-offline-readiness-kit
+          path: Geumyi-Day12-Phase7-Offline-Readiness-READONLY.zip
+          retention-days: 30
