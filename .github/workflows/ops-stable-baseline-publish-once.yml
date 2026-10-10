@@ -1,4 +1,5 @@
 name: Geumyi one-time operating Stable release
+# Retry after original asset verification passed but GitHub refused implicit tag creation.
 
 on:
   push:
