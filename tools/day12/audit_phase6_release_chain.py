@@ -29,6 +29,9 @@ for src in (release,closure):
     need("validate_final_closure_evidence.py ." in src,"missing health/security veto")
 for term in ("needs: [gate, safety, security, system, android, ios]","require_release_signing: true","DEPLOYMENT_ED25519_PRIVATE_KEY_B64","openssl pkeyutl -verify","sha256sum -c",'gh release create "$TAG"',"gh release view"):
     need(term in release,"missing release contract: "+term)
+need('existing_tag="$(git ls-remote --tags --refs origin "refs/tags/${TAG}")"' in release,"missing exact remote Git-tag collision check")
+need('if [[ -n "$existing_tag" ]]; then echo \'Git tag already exists\'; exit 1; fi' in release,"missing tag reuse fail-closed path")
+need(release.index('git ls-remote --tags --refs origin') < release.index('gh release create "$TAG"'),"tag collision check ordered after publication")
 terms=("Verify checksum sidecars","Generate Stable deployment manifest","Sign and verify deployment manifest","Add final evidence to release assets","Publish final immutable Stable release")
 positions=[release.find(x) for x in terms]
 need(all(x>=0 for x in positions) and positions==sorted(positions),"release order")
