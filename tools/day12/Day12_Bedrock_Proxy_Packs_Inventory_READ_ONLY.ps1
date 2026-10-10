@@ -27,7 +27,7 @@ function Get-SafePackInfo([string]$FilePath){
     if($entry.Count -ne 1){throw "ROOT_MANIFEST_MISSING_OR_DUPLICATED"}
     if($entry[0].Length -gt 262144){throw "MANIFEST_TOO_LARGE"}
     $stream=$entry[0].Open()
-    $reader=New-Object System.IO.StreamReader($stream,[Text.Encoding]::UTF8)
+    $reader=[System.IO.StreamReader]::new($stream,[Text.Encoding]::UTF8)
     $manifest=($reader.ReadToEnd()|ConvertFrom-Json)
     if($null -eq $manifest.header -or $null -eq $manifest.header.uuid -or
        $null -eq $manifest.header.version){throw "MANIFEST_FIELDS_MISSING"}

@@ -34,3 +34,50 @@ jobs:
              $j.stable_release_allowed -or $j.bedrock_login_and_server_switch_e2e_verified -or
              @($j.instances).Count -ne 3){throw 'Empty-runner falsely claimed production packs'}
           Write-Host 'Disposable read-only empty-root negative case PASS'
+      - name: Real pack manifests and mappings in disposable three-proxy layout
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.IO.Compression
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $root=Join-Path $env:RUNNER_TEMP 'fake-geumyi-velocity'
+          $output=Join-Path $env:RUNNER_TEMP 'populated-report'
+          $sources=@(
+            @{path='ResourcePacks/Playground/Bedrock/manifest.json';name='playground.mcpack'},
+            @{path='ResourcePacks/Wild/Bedrock-BACAP/manifest.json';name='wild-bacap.mcpack'},
+            @{path='ResourcePacks/Wild/Bedrock-ChemTech/manifest.json';name='wild-chemtech.mcpack'}
+          )
+          foreach($id in @('wild','playground','other')){
+            $folder=Join-Path $root ($id+'/plugins/Geyser-Velocity')
+            $packs=Join-Path $folder 'packs'
+            $mapping=Join-Path $folder 'custom_mappings'
+            New-Item -ItemType Directory -Path $packs,$mapping -Force|Out-Null
+            Set-Content -LiteralPath (Join-Path $folder 'config.yml') -Value "gameplay:`n  enable-custom-content: true"
+            Copy-Item -LiteralPath 'ResourcePacks/Wild/Geumyi_Wild_Geyser_CustomItem_Mappings.json' -Destination (Join-Path $mapping 'Geumyi_Wild_Geyser_CustomItem_Mappings.json')
+            foreach($source in $sources){
+              $archive=[System.IO.Compression.ZipFile]::Open(
+                (Join-Path $packs $source.name),[System.IO.Compression.ZipArchiveMode]::Create)
+              try{
+                [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+                  $archive,(Resolve-Path $source.path).Path,'manifest.json')
+              }finally{$archive.Dispose()}
+            }
+          }
+          $global:LASTEXITCODE=0
+          & ./tools/day12/Day12_Bedrock_Proxy_Packs_Inventory_READ_ONLY.ps1 -ProxyRoot $root -OutputDir $output
+          if(-not $? -or $LASTEXITCODE -ne 0){throw 'Populated fixture inventory failed'}
+          $f=Get-ChildItem -LiteralPath $output -Filter 'Day12-Bedrock-Pack-Inventory-*.json'|Select-Object -First 1
+          $j=Get-Content -LiteralPath $f.FullName -Raw|ConvertFrom-Json
+          if($j.result -ne 'STRUCTURAL_REFERENCE_READY_UNVERIFIED' -or
+             @($j.instances).Count -ne 3 -or $j.stable_release_allowed -or
+             $j.bedrock_login_and_server_switch_e2e_verified){
+            throw 'Populated fixture claim or scope mismatch'
+          }
+          foreach($entry in $j.instances){
+            if(@($entry.packs).Count -ne 3 -or
+               @($entry.expected_packs_missing).Count -ne 0 -or
+               -not $entry.wild_custom_item_mapping.verified_structure_found -or
+               -not $entry.structurally_ready_for_review){
+              throw ('Unexpected layout result for '+$entry.instance)
+            }
+          }
+          Write-Host 'Disposable real manifest+mapping 3-proxy layout PASS; no live load claims'
