@@ -5,8 +5,9 @@
 ## 찾아보기
 
 - [현재 프로젝트 안내](../README.md)
-- [최신 4.5.0/1.5.0+150 수동 설치 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150)
+- [최신 4.5.1/1.5.1+151 수동 설치 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151)
 - [실운영 기준 및 관리 자료](operations/INDEX.md)
+- [4.5.1/1.5.1 실기기 검증 체크리스트](operations/RELEASE-4.5.1-1.5.1-SMOKE-CHECKLIST.md)
 - [프로젝트 종료 보고서](../PROJECT-CLOSEOUT-2026-10-11.md)
 - [Day 1~12 전체 일차 상태](../DAY-TIMELINE.md)
 - [Day 4~11 이력](history/INDEX.md)

@@ -16,7 +16,15 @@
 
 중요한 새 보안 문제, 백업 오류, 데이터 손상, 버전 호환성 문제가 실제로 생기는 경우에만 새로운 검증·패치를 시작한다. 사용자 승인으로 이미 완료된 기능 테스트는 반복하지 않는다.
 
-## 종료 후 수동 설치 Stable 공개 (2026-10-11)
+## 후속 4.5.1 / 1.5.1+151 마무리 (2026-10-11)
+
+- [최신 GitHub Latest Stable 패키지](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151)에 Windows GSC 4.5.1, Android GSCM 1.5.1+151 서명 APK, iOS unsigned IPA와 해시 증빙 총 10개 파일이 게시됐습니다.
+- [빌드 CI](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38084637534)의 빌드·서명·체크섬 검증 성공 및 원본 게시 단계 실패, [후속 실제 공개 CI](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38085210886) SUCCESS를 분리해 기록했습니다.
+- GSC는 ViaVersion/ViaBackwards의 오프라인 JAR 교체 경로를, GSCM은 새 버전 자동 **확인** 및 수동 확인 UI를 추가했습니다. 기존 서버·기기의 마지막 실기기 검증 버전은 4.3.8/1.1.5+117이며 새 4.5.1/1.5.1 패키지의 실기기 설치/E2E는 아직 별개입니다.
+- 이전 릴리즈/운영 월드/Golden 백업/서명 자료를 삭제·변경하지 않았습니다. 자동 Stable 배포 서명 manifest와 `FINAL-RELEASE-GATES.json`의 정식 운영 승인도 그대로 차단합니다.
+- [운영자 실기기 체크리스트](docs/operations/RELEASE-4.5.1-1.5.1-SMOKE-CHECKLIST.md)를 추가하고, 릴리즈 완료 후 불필요해진 일회성 워크플로 2개는 내용을 보존하며 아카이브했습니다.
+
+## 이전 4.5.0 / 1.5.0+150 수동 설치 Stable 공개 기록 (2026-10-11)
 
 - [GSC 4.5.0 / GSCM 1.5.0+150 통합 릴리즈](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150)를 공개하고 Latest로 지정했습니다. Windows EXE, Android APK, iOS **미서명** IPA 및 무결성 증빙 포함 **10개 자산**이 등록됐습니다.
 - [원본 CI](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38081642958)의 컴포넌트 빌드·테스트·체크섬 검사는 통과했으나 원본 게시 단계가 404 오류로 실패했습니다. 기존 검증 자산을 그대로 사용하는 [후속 게시 워크플로](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38082558818)가 SUCCESS로 끝났습니다.

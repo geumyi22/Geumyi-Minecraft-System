@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-11 — GSC 4.5.1 / GSCM 1.5.1+151 Latest Stable (수동 설치판)
+
+- [최신 Stable 패키지](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) 공개: Windows Setup/Host/Client, Android 영구 릴리즈 서명 APK, iOS 미서명 IPA, SHA-256·provenance 총 10개 파일.
+- GSC에서 ViaVersion/ViaBackwards의 SHA-256 Staging과 **별도 오프라인 적용**을 구분하고 등록된 backend 정지 확인, 백업·교체 중 오류 복원 절차를 추가. 서버 재기동 후 health/E2E 검증은 별도.
+- GSCM 설정의 앱 실행 시 업데이트 버전 확인(해제 가능), 수동 확인, GitHub 릴리즈 링크 추가. Android 자동 설치 및 iOS 미서명 IPA 설치는 지원하지 않음.
+- [원본 빌드 CI](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38084637534)의 구성요소 검사와 해시 검증은 통과했으나 GitHub 초안 태그 조회 404로 최초 publish 실패; [ID 기반 공개 CI](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38085210886)는 SUCCESS.
+- 서명된 `deployment-stable.json`과 정식 보안 게이트는 그대로 유지(자동배포 승인 미완료). 운영 PC/월드/Golden 백업 변경 없음. 마지막 운영 실기기 확인 버전: 4.3.8/1.1.5+117.
+
 ## 2026-10-11 — GSC 4.5.0 / GSCM 1.5.0+150 수동 설치 Stable 공개
 - [최신 패키지 릴리즈](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150): Windows GSC Setup/Host/Client, Android 서명 APK, iOS 미서명 IPA 및 체크섬·출처 기록 등 10개 등록.
 - [원본 빌드](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38081642958)의 테스트/해시 검증은 통과. 게시 단계의 오류는 [후속 게시 검증](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38082558818) SUCCESS로 마무리.

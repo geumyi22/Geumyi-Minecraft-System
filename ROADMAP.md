@@ -157,7 +157,7 @@ Day 11 안정화 버그:
 
 ## Day 12 — Final Production Hardening & Closure
 
-> **종료 상태 (2026-10-11):** Day 12는 사용자 승인에 따라 소규모 운영 기준으로 마감됐습니다. 아래 목록은 역사적 개발 목표이며 정식 릴리즈 보안 게이트가 전부 통과했다는 뜻이 아닙니다. [4.5.0/1.5.0+150 수동 설치 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150)은 공개됐지만 서명 자동 업데이트 및 Maintenance Mode 승인은 계속 차단됩니다. [최종 종료 보고](PROJECT-CLOSEOUT-2026-10-11.md) · [게이트](FINAL-RELEASE-GATES.json)
+> **종료 상태 (2026-10-11):** Day 12는 사용자 승인에 따라 소규모 운영 기준으로 마감됐습니다. 아래 목록은 역사적 개발 목표이며 정식 릴리즈 보안 게이트가 전부 통과했다는 뜻이 아닙니다. [4.5.1/1.5.1+151 수동 설치 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151)은 공개됐지만 서명 자동 업데이트 및 Maintenance Mode 승인은 계속 차단됩니다. [최종 종료 보고](PROJECT-CLOSEOUT-2026-10-11.md) · [게이트](FINAL-RELEASE-GATES.json)
 
 Day 12는 신규 기능을 계속 늘리는 단계가 아니라 **장기 무인/저관리 운영이 가능한 최종 제품 상태**를 만드는 마지막 milestone입니다.
 
