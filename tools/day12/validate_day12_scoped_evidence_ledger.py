@@ -56,7 +56,7 @@ def validate(ledger, gates):
                   r.get("code") == "12.7-disposable-actual-gsc-paper-offline-source"]
     if len(disposable) != 1 or disposable[0].get("status") != (
         "DISPOSABLE_CI_REAL_PROCESSES_PASS_NOT_OPERATOR_OFFLINE"
-    ) or "not" not in disposable[0].get("not_proven", "").lower():
+    ) or "operator" not in disposable[0].get("not_proven", "").lower():
         errors.append("DISPOSABLE_CI_NOT_OPERATOR_OFFLINE_SCOPE_MISSING")
     offline_rows = [r for r in opened if isinstance(r, dict) and r.get("code") == "12.7"]
     if len(offline_rows) != 1 or "OPEN" not in offline_rows[0].get("status", ""):
