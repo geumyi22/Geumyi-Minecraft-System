@@ -1,0 +1,59 @@
+name: Day12 Phase7 Known-Good Cached Bytes Offline Integrity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/day12/Day12_Phase7_Cache_Manifest_Integrity_READ_ONLY.ps1'
+      - '.github/workflows/day12-phase7-cache-integrity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-no-network-cache-check:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Parse and deny production cache mutations
+        shell: powershell
+        run: |
+          $p='tools/day12/Day12_Phase7_Cache_Manifest_Integrity_READ_ONLY.ps1'
+          $tok=$null;$err=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p),[ref]$tok,[ref]$err)
+          if(@($err).Count){$err|ForEach-Object{Write-Host $_.ErrorId};throw 'Phase7 cache source does not parse'}
+          $src=Get-Content $p -Raw -Encoding UTF8
+          foreach($term in @('Restart-Service','Stop-Service','Set-NetFirewallRule',
+            'Remove-NetFirewallRule','New-NetFirewallRule','Invoke-WebRequest',
+            'Invoke-RestMethod','GeumyiServerHost.exe')){
+            if($src -match [regex]::Escape($term)){throw ('Forbidden cache verification operation '+$term)}
+          }
+      - name: Validate cache byte-tamper, duplicate and traversal synthetic
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'day12-cache-integrity-synth'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File 'tools/day12/Day12_Phase7_Cache_Manifest_Integrity_READ_ONLY.ps1' -Synthetic -OutputDir $out
+          if($LASTEXITCODE -ne 0){throw 'Phase7 synthetic cache hash checking failed'}
+          $d=Get-Content (Join-Path $out 'Day12-Cache-Integrity-Synthetic.json') -Raw -Encoding UTF8|ConvertFrom-Json
+          if($d.result -ne 'SYNTHETIC_PASS' -or !$d.synthetic -or !$d.read_only -or
+             $d.network_requests -ne 0 -or $d.cache_modified -or
+             $d.offline_known_good_startup_proven -or
+             $d.canonical_backend_ports_private -ne 'UNCHANGED_FAIL'){
+            throw 'Phase7 contract incorrectly implies a live offline restart or modification'
+          }
+          Write-Host 'Phase7 read-only cache hashing fixture PASS (not real offline startup)'
+      - name: Confirm real mode refuses disposable non-GSC Windows machine
+        shell: powershell
+        run: |
+          $out=Join-Path $env:RUNNER_TEMP 'day12-cache-must-refuse'
+          $err=Join-Path $env:RUNNER_TEMP 'day12-cache-refused-stderr.txt'
+          $ps=Start-Process powershell.exe -PassThru -Wait -NoNewWindow -RedirectStandardError $err -ArgumentList @(
+            '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',
+            'tools/day12/Day12_Phase7_Cache_Manifest_Integrity_READ_ONLY.ps1',
+            '-OutputDir',$out)
+          if($ps.ExitCode -eq 0){throw 'Phase7 accepted non-GSC Windows machine'}
+          if(Test-Path (Join-Path $out 'Day12-Cache-Integrity-READ-ONLY.json')){
+            throw 'Phase7 emitted forged server-PC evidence on GitHub runner'
+          }
