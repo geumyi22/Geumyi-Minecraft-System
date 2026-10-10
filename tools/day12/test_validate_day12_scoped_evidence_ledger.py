@@ -26,6 +26,17 @@ class LedgerTests(unittest.TestCase):
         self.assertIn("OPEN_WORKSTREAM_FALSE_COMPLETION",errors)
         self.assertIn("OFFLINE_START_WAS_INCORRECTLY_CLOSED",errors)
 
+    def test_disposable_ci_paper_does_not_close_operator_offline_gate(self):
+        d=copy.deepcopy(LEDGER)
+        r=next(x for x in d["closed_scoped_checks"] if
+               x["code"]=="12.7-disposable-actual-gsc-paper-offline-source")
+        r["status"]="REAL_OPERATOR_OFFLINE_PASS"
+        self.assertIn("DISPOSABLE_CI_NOT_OPERATOR_OFFLINE_SCOPE_MISSING",validate(d,GATES))
+        d=copy.deepcopy(LEDGER)
+        x=next(x for x in d["unresolved_release_requirements"] if x["code"]=="12.7")
+        x["status"]="PASS"
+        self.assertIn("OFFLINE_START_WAS_INCORRECTLY_CLOSED",validate(d,GATES))
+
     def test_fail_if_e2e_soak_or_native_owner_open_workstream_deleted(self):
         for key in ("12.10","12.11","12.12"):
             with self.subTest(key=key):
