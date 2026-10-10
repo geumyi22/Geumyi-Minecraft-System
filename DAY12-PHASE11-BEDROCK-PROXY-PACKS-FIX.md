@@ -1,3 +1,19 @@
+## 2026-10-10 13:12 KST forensic result and precise Apply parser fix
+
+The real read-only operator report `Day12-Bedrock-Fix-Forensics-20261010-131249.json` confirms the prior Apply did not stage anything:
+- `journal.present=false`, state `ABSENT`; `verified_approved_target_count=0`; `missing_target_count=12`; `changed_or_unapproved_target_count=0`.
+- All three expected real Geyser-Velocity proxy installations present; `packs` directories each have **zero** archives; `custom_mappings` each have zero JSON files.
+- Actual `enable-custom-content` scan reported `TRUE` for all 3 when the regex explicitly supports Windows CRLF.
+
+**Identified likely trigger of original masked error:** the v1 Apply's `IsCustomContentEnabled` regex used `(?m)...$ ` without `\\r?`, so `enable-custom-content: true\\r\\n` was rejected. The independent forensics regex explicitly permits `\\r?` and reported `TRUE`. This is a source-level explanation, NOT runtime-traced proof of which exact exception was caught, since the original catch code replaced the error with `UNEXPECTED_ERROR_CHECK_LOCAL_CONSOLE`. A Windows PowerShell 5.1 synthetic regression test reproduces the old/new regex difference.
+
+**Corrected v2 private bundle:** preserved original 4 operator-owned files unchanged with exact SHA-256; patched CRLF/LF parsing, fail-closed missing/duplicate/false cases; report human-readable per-proxy blockers instead of masking them; add SHA-256 checks of all twelve installed paths before reporting success. New v2 bundle has separate Preview / one-step Apply / hash-constrained transaction-only rollback. It does not restart proxies or modify worlds/backups/firewall/GSC/Java packs. No user pack bytes are committed to GitHub.
+
+Given the forensic report proves no changes and prerequisites all three true, the next operator step is the **v2 one-step Preview-then-Apply script** under the real server PC. Await generated v2 JSON before proxy reload and Bedrock client E2E. `stable_release_allowed=false`.
+
+References: https://geysermc.org/wiki/geyser/packs/ and https://geysermc.org/wiki/geyser/custom-items/ .
+
+
 # Day 12.11 — Bedrock resource packs on a 3× Geyser-Velocity proxy
 
 **Status: root-discovery correction after actual operator report 2026-10-10 11:55:08 KST. No proxy changes or in-game pack delivery proven.**

@@ -1,0 +1,38 @@
+name: Day12 Bedrock Geyser CRLF Config Gate Test
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/day12-bedrock-crlf-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  custom-content-crlf:
+    runs-on: windows-latest
+    timeout-minutes: 4
+    steps:
+      - name: Windows PowerShell 5.1 CRLF/LF and fail-closed parser cases
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $pattern='(?mi)^[ \t]*enable-custom-content:[ \t]*(true|false)[ \t]*(?:#[^\r\n]*)?\r?$'
+          $old='(?m)^[ \t]*enable-custom-content:[ \t]*(true|false)[ \t]*(?:\#.*)?$'
+          $crlf="gameplay:`r`n  enable-custom-content: true`r`n"
+          $lf="gameplay:`n  enable-custom-content: true`n"
+          $falseYaml="gameplay:`r`n  enable-custom-content: false`r`n"
+          $doubleYaml=$crlf+"enable-custom-content: true`r`n"
+          $comment="gameplay:`r`n  enable-custom-content: true # allow custom items`r`n"
+          function IsEnabled([string]$text){
+            $x=[regex]::Matches($text,$pattern)
+            if($x.Count -ne 1){return $false}
+            return ($x[0].Groups[1].Value.ToLowerInvariant() -ceq 'true')
+          }
+          if(([regex]::Matches($crlf,$old)).Count -ne 0){throw 'Expected old regex CRLF failure did not reproduce'}
+          if(-not (IsEnabled $crlf)){throw 'CRLF true failed'}
+          if(-not (IsEnabled $lf)){throw 'LF true failed'}
+          if(-not (IsEnabled $comment)){throw 'Comment true failed'}
+          if(IsEnabled $falseYaml){throw 'False accepted'}
+          if(IsEnabled $doubleYaml){throw 'Duplicate accepted'}
+          if(IsEnabled "gameplay:`r`n"){throw 'Absent accepted'}
+          Write-Host 'PowerShell 5.1 CRLF parser regression + negative fail-closed cases PASS'
