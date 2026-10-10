@@ -39,7 +39,7 @@ echo ============================================================
 echo.
 echo [1/3] Cloning latest main...
 gh repo clone geumyi22/Geumyi-Minecraft-System "%WORK%"
-if not "%errorlevel%"=="0" (
+if errorlevel 1 (
   echo [FAIL] Repository clone failed.
   pause
   exit /b 12
@@ -48,7 +48,7 @@ if not "%errorlevel%"=="0" (
 cd /d "%WORK%"
 git checkout main >nul 2>&1
 git pull --ff-only
-if not "%errorlevel%"=="0" (
+if errorlevel 1 (
   echo [FAIL] Updating main failed.
   pause
   exit /b 13
