@@ -1,0 +1,81 @@
+name: Publish verified GSC 4.5.1 GSCM 1.5.1 draft (one-time)
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/ops-publish-gsc451-gscm151-once.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: geumyi-gsc451-gscm151-draft-finalize
+  cancel-in-progress: false
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_ID: '409196834'
+      RELEASE_TAG: system-2026.10.11-stable-gsc451-gscm151
+      TARGET_SHA: 06bfbe53c53d966331834ecd8301f4764df60679
+      BUILD_RUN: '38084637534'
+    steps:
+      - name: Verify exact source, assets, CI and prior SHA256 results
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" > release.json
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BUILD_RUN/jobs?per_page=100" > jobs.json
+          gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" > tag.json
+          python3 - <<'PY'
+          import json,os,re
+          r=json.load(open('release.json'))
+          t=json.load(open('tag.json'))
+          jobs=json.load(open('jobs.json'))['jobs']
+          assert r['id']==int(os.environ['RELEASE_ID'])
+          assert r['tag_name']==os.environ['RELEASE_TAG']
+          assert r['target_commitish']==os.environ['TARGET_SHA']
+          assert t['object']['sha']==os.environ['TARGET_SHA']
+          assert r['draft'] is True and r['prerelease'] is False
+          expected={
+            'GeumyiServerCenter-v4.5.1-Setup.exe',
+            'GeumyiServerCenter.exe','GeumyiServerHost.exe',
+            'GSCM-v1.5.1+151-Android.apk','GSCM-v1.5.1+151-Android.apk.sha256',
+            'GSCM-v1.5.1+151-unsigned.ipa','GSCM-v1.5.1+151-unsigned.ipa.sha256',
+            'RELEASE-PROVENANCE.json','SHA256SUMS-STABLE.txt','SHA256SUMS.txt',
+          }
+          a=r['assets']
+          assert {x['name'] for x in a}==expected,'draft assets differ'
+          assert all(x['size']>0 and x['state']=='uploaded' and re.fullmatch(r'sha256:[0-9a-f]{64}',x.get('digest','')) for x in a)
+          checks={x['name']:x['conclusion'] for x in jobs}
+          assert len(jobs)>=17 and checks.get('publish')=='failure'
+          assert all(x['conclusion']=='success' for x in jobs if x['name']!='publish')
+          assert any('GSC 4.5.1' in x for x in checks)
+          assert checks.get('android / build-android')=='success'
+          assert checks.get('ios / build-ios')=='success'
+          assert 'no new signed deployment-stable.json' in r['body']
+          print('Validated exact immutable build SHA, 10 uploaded SHA256 assets and all 16 build jobs.')
+          PY
+      - name: Publish existing manual-install Stable using numeric release ID
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" -F draft=false -F prerelease=false -f make_latest=true --jq '{id,tag_name,draft,prerelease,published_at,html_url}'
+      - name: Verify public release and Latest designation
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" > public.json
+          gh api "repos/$GITHUB_REPOSITORY/releases/latest" > latest.json
+          python3 - <<'PY'
+          import json,os
+          r=json.load(open('public.json'))
+          l=json.load(open('latest.json'))
+          assert r['id']==int(os.environ['RELEASE_ID']) and r['tag_name']==os.environ['RELEASE_TAG']
+          assert r['draft'] is False and r['prerelease'] is False and r['published_at']
+          assert l['id']==r['id'] and l['tag_name']==r['tag_name']
+          assert len(r['assets'])==10
+          print('Published and latest:',r['html_url'])
+          PY
+          echo 'One-time manual-install package Stable published without enabling unsigned automatic deployment.' >> "$GITHUB_STEP_SUMMARY"
