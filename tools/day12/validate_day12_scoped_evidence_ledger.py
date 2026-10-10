@@ -22,10 +22,12 @@ def validate(ledger, gates):
         errors.append("LEDGER_RELEASE_MUST_REMAIN_BLOCKED")
     if gates.get("status") != "BLOCKED_UNTIL_ALL_MANDATORY_GATES_PASS":
         errors.append("MUST_NOT_AUTO_ACCEPT_FINAL_RELEASE_MANIFEST")
-    if gates.get("release", {}).get("stable_release_allowed") is not False:
+    release = gates.get("release") if isinstance(gates.get("release"), dict) else {}
+    live_gates = gates.get("live_gates") if isinstance(gates.get("live_gates"), dict) else {}
+    if release.get("stable_release_allowed") is not False:
         errors.append("FINAL_RELEASE_MANIFEST_NOT_BLOCKED")
     if ledger.get("canonical_backend_ports_private") != (
-        gates.get("live_gates", {}).get("phase_12_10_backend_ports_private")
+        live_gates.get("phase_12_10_backend_ports_private")
     ):
         errors.append("CANONICAL_SOCKET_OWNER_FAIL_MUST_MATCH")
     closed = ledger.get("closed_scoped_checks", [])
