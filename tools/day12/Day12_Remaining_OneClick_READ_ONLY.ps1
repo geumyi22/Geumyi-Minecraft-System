@@ -146,9 +146,38 @@ if($Synthetic){
   }
   $content=Run-ReadOnlyChild "12.1-content" "Day12_Phase1_Content_Preflight_READ_ONLY.ps1" @(
     "-ManifestPath",(Join-Path $sourceRoot "deploy\day12-managed-content.json")) "12.1"
-  Row "12.1" "Managed Content" $(if(-not $content.captured){"PREFLIGHT_CAPTURE_INCOMPLETE"}elseif($enabled -eq 0){"NOT_CONFIGURED"}else{"LIVE_APPLY_E2E_REQUIRED"}) "Requires explicit content manifest, safe apply and real Java/Bedrock proof" ([ordered]@{
+  # The managed deployment manifest only describes content maintained by
+  # GSC. It is NOT the inventory of packs already loaded by Minecraft.
+  # A disabled/empty management manifest must never mean "no packs installed".
+  $observedServers=@();$observedPackSignals=0
+  if($content.captured -and $null -ne $content.data){
+    foreach($server in @(Field $content.data "servers" @())){
+      $resource=Field $server "resource_pack" $null
+      $resourceEntry=Field $resource "resource-pack" $null
+      $javaResourceConfigured=[bool](Field $resourceEntry "configured" $false)
+      $localDp=@(Field $server "datapacks_local" @())
+      $hasLocalDatapack=($localDp.Count -gt 0)
+      if($javaResourceConfigured -or $hasLocalDatapack){$observedPackSignals++}
+      $observedServers+= [ordered]@{
+        id=[string](Field $server "id" "UNKNOWN")
+        resource_pack_url_configured=$javaResourceConfigured
+        datapack_local_file_count=$localDp.Count
+        custom_content_present_signal=($javaResourceConfigured -or $hasLocalDatapack)
+        in_game_pack_application_verified=$false
+      }
+    }
+  }
+  $contentStatus=if(-not $content.captured){"PREFLIGHT_CAPTURE_INCOMPLETE"}
+    elseif($enabled -gt 0){"MANAGED_CONTENT_CONFIGURED_E2E_REQUIRED"}
+    elseif($observedPackSignals -gt 0){"EXISTING_PACK_SIGNALS_UNMANAGED"}
+    else{"NO_MANAGED_ENTRIES_EXISTING_PACKS_NOT_DISPROVEN"}
+  Row "12.1" "Managed Content" $contentStatus "Preserve currently installed Wild/Playground packs; decide only whether GSC should manage them, then verify actual application with real clients" ([ordered]@{
     preflight_collected=$content.captured;preflight_reason=$content.reason
     enabled_managed_entries=$enabled;manifest_available=($null -ne $manifest)
+    observed_config_or_file_signals=$observedPackSignals
+    server_pack_signals=@($observedServers)
+    zero_manifest_entries_means_no_installed_packs=$false
+    user_reported_wild_playground_pack_presence_not_live_attested_by_this_tool=$true
     bedrock_apply_proven=$false
   })
   $inventory=Run-ReadOnlyChild "12.2-inventory" "Day12_Phase2_Component_Inventory_READ_ONLY.ps1" @() "12.2"
