@@ -37,3 +37,14 @@ Read-only Dropbox filename search found these distinct files, whose byte content
 `deploy/day12-existing-pack-reference.json` records non-secret local attachment SHA-256 values, header UUIDs/versions, expected server roles, texture-to-mapping reference checks, Java Dropbox filenames and explicit `no_automatic_pack_download` / `no_auto_adopt_existing_packs` safety policies. **The actual uploaded .mcpack binary files and mapping JSON are not pushed to GitHub**; if retention or sharing is desired, the operator must explicitly authorize it.
 
 **12.1 outcome:** `REFERENCE_FILES_STRUCTURALLY_CHECKED + PREEXISTING_LIVE_PACKS_OPERATOR_CONFIRMED`; not `NO_PACKS`, not `PACK_APPLICATION_E2E_PASS`, and not `GSC_MANAGED_CONTENT_CONFIGURED`. Actual client pack receipt/mapping functionality, which specific variant is in use, and safe optional managed-content adoption remain open for Day12.11 or separately approved work. The four Golden protected backups and running worlds remain untouched.
+
+
+## Existing Dropbox sharing (read-only check; links deliberately private)
+
+After the operator pointed out that the **Java resource-pack links reside in Dropbox**, inspected the existing `list_shared_links` metadata **without creating or changing any share**:
+- Playground `Geumyi_Server_Java_26.3.zip`: one existing public view link, downloads allowed.
+- Wild `Geumyi_Wild_Java_26.3_BACAP_ChemTech.zip`: one existing public view link, downloads allowed.
+- Playground older `Geumyi_Server_Java_26.2.zip`: one existing public view link, downloads allowed.
+- Wild older `Geumyi_Wild_Java_26.2_BACAP_ChemTech.zip`: **no direct owned share link found** (could have other access arrangements; do not claim unreachable).
+
+**No share URL or token is committed**. An existing Dropbox link proves a share exists on that account, **not** which exact URL is in the live `server.properties`, whether Minecraft downloads the pack today, or whether clients accepted it. Do not change any link or force-update existing applied packs. This closes the narrow "does Dropbox hold existing Java pack links?" question but preserves actual Java/Bedrock client 12.11 E2E.
