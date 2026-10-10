@@ -37,6 +37,7 @@ def tracked():
 def source_references(files,candidates):
  found=defaultdict(list)
  for p in files:
+  if p == 'tools/maintenance/organize_repo_docs.py':continue
   if not (p.startswith((".github/","tools/","GSC/","GSCM/","Plugins/")) and p.endswith((".yml",".yaml",".py",".ps1",".cmd",".sh",".go",".js",".gradle",".toml"))):
    continue
   f=ROOT/p
