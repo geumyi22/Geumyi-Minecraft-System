@@ -1,3 +1,7 @@
+## 2026-10-11 — Operator 12.12 stability acceptance (supersedes routine-run request)
+
+**12.12 operational soak: OPERATOR ACCEPTED / PASS in user-reported scope.** The server was left running continuously and the operator noticed no problems, then explicitly instructed that the eight-hour test be passed. Do not ask for another routine eight-hour monitoring run. Exact timed start/end and resource/process telemetry were not provided; this is **not** an instrumented eight-hour PASS. The protected formal soak gate remains `PENDING_LIVE`; signed Stable/Maintenance is still BLOCKED by separate safety gates. See `DAY12-PHASE12-OPERATOR-SOAK-ACCEPTANCE-20261011.md`.
+
 # Day 12 — Final Production Hardening & Closure
 
 Status: **IN PROGRESS — repository/CI hardening toolchain verified; real server-PC/client closure gates pending**
