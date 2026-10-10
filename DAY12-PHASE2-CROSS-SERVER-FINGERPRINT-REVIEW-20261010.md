@@ -43,3 +43,24 @@ For each Secure Release artifact ZIP the contained `.jar.sha256` sidecar agrees 
 **Decision:** Two components now have **real CI-artifact byte-match evidence** (StatusAgent 0.5.4 and Technology 0.1.4) and this resolves *their* previously open official-build-digest question, as far as the selected CI build identity and historical capture go. **GST, GDS and Chemistry remain DIVERGENT_FROM_TWO_SELECTED_DAY11_CI_BUILDS, not automatically compromised or broken.** Version strings alone do not show which exact build was intentionally deployed; unknown older or custom build provenance requires locating the actual deployment manifest/CI run or a separately approved update plan. Even the two digest matches don't demonstrate plugin enabled/live function on all clients; E2E gates remain separate.
 
 **Do not** hot-swap GST/GDS/Chemistry, delete original/legacy JARs or mark 12.2 entirely PASS based on these comparisons. The existing 12.0 Golden 4/4 is the rollback boundary if an eventual change is approved. This note carries only redacted equality/size facts, not full original operator hashes or machine paths.
+
+
+## Resolution after checking the *earlier* official release: 2026-09-26 v3
+
+The observed differences from the **selected Day-11** builds are now traced to release chronology rather than treated as unexplained JAR identity. We fetched the official GitHub release metadata for [`mc-2026.09.26-v3`](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/mc-2026.09.26-v3) and compared the **full GitHub asset `digest=sha256:...`** with every matching private server-PC captured JAR SHA from 2026-10-09. Exact results:
+
+| Official v3 release asset | Installed server roles | Full SHA-256 comparisons | Outcome |
+|---|---|---:|---|
+| `GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar`, 93,988 B | Wild, Playground, Other | **3/3 MATCH** | **REFERENCE IDENTIFIED: 2026-09-26 v3** |
+| `GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar`, 77,650 B | Wild, Playground, Other | **3/3 MATCH** | **REFERENCE IDENTIFIED: 2026-09-26 v3** |
+| `GeumyiChemistry-0.4.1-Paper26.3.jar`, 55,857 B | Wild, Other | **2/2 MATCH** | **REFERENCE IDENTIFIED: 2026-09-26 v3** |
+
+The **later** October Day-11 CI binaries had changed sizes/digests without changing the advertised GST/GDS/Chemistry version labels. The earlier installed JARs **exactly match their recorded official v3 release asset digests**. Thus **do not report those 8 JAR copies as unexplained or tampered**, and **do not replace** them merely because the later CI output has a different hash.
+
+Alongside actual `37627140918` release artifacts:
+- StatusAgent **0.5.4** canonical installed JAR: 1/1 byte-for-byte match to selected Day-11 CI artifact.
+- Technology **0.1.4** Wild+Other: 2/2 byte-for-byte matches to Day-11 CI artifact.
+- GST/GDS/Chemistry: 8/8 target copies match the **older** official 2026-09-26 v3 release asset records.
+- **Known Lobby GST/GDS aliases are separate:** their names, sizes and SHA values are not identical to the non-Lobby v3 copies, and none of the enumerated release assets uses these alias filenames. Their *exact* source build still requires provenance review. The observed alias difference is not proof of a game failure; only a specific unverified build identity.
+
+**Release-grade caveats:** The GitHub Asset `digest` comparison is a strong matching-content reference tied to that public GitHub release record, **not a personally revalidated detached code-signature on each installed JAR**, and the sampled operator hashes were taken at 2026-10-09 06:13, not a fresh runtime measurement today. Actual server plugin enable/version and Java/Bedrock routing still require Phase 12.11 E2E. No production binary, backup, firewall, ACL or service has been modified.
