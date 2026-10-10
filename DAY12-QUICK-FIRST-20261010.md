@@ -1,3 +1,9 @@
+## 2026-10-10 — Java public Lobby entry, three routes and previous position operator-confirmed normal
+
+Operator replied **`전부 정상`** to the real Java-client request for three public TCP entrypoints → Lobby, Lobby↔Wild/Playground/Other traversal and prior-location restoration. **Mark all three narrowly user-confirmed functional outcomes PASS**, without pretending a machine-readable 25-case E2E form or independent instrumentation was produced. Do **not** ask the operator to rerun those travel checks in the absence of a regression.
+
+**Next shortest live acceptance:** on Java edition Wild and Playground, verify the **already-installed** resource packs visually render as intended. Record `JAVA_WILD_PLAYGROUND_EXISTING_PACKS` as operator-reported only if both are visibly working. No packs, data or service should be redeployed/restarted simply to test this.
+
 ## 2026-10-10 — GSC PC console 4-second auto-refresh user-confirmed normal
 
 Operator reports **"정상"** in direct response to the after-update on-screen GSC PC console `4초 자동 갱신` test. Mark this narrow **PC console polling user-observed PASS** and do not ask them to run it again. Do not infer patched Android/iOS console polling E2E or all GSC WebSocket reconnect and RCON health from this statement.
