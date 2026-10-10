@@ -54,12 +54,33 @@ func saveDevices(d []TrustedDevice) error {
 	if e != nil {
 		return e
 	}
-	tmp := devicesPath() + ".tmp"
-	if e = os.WriteFile(tmp, b, 0600); e != nil {
+	// Never reuse a predictable temp filename inside ProgramData. Depending
+	// on inherited Windows directory ACLs, a different local user may be able
+	// to pre-create that filename. CreateTemp uses O_EXCL and a fresh name.
+	dst := devicesPath()
+	tmpFile, e := os.CreateTemp(filepath.Dir(dst), ".trusted-devices-*.tmp")
+	if e != nil {
 		return e
 	}
-	_ = os.Remove(devicesPath())
-	return os.Rename(tmp, devicesPath())
+	tmp := tmpFile.Name()
+	defer os.Remove(tmp)
+	if e = tmpFile.Chmod(0600); e != nil {
+		_ = tmpFile.Close()
+		return e
+	}
+	if _, e = tmpFile.Write(b); e != nil {
+		_ = tmpFile.Close()
+		return e
+	}
+	if e = tmpFile.Sync(); e != nil {
+		_ = tmpFile.Close()
+		return e
+	}
+	if e = tmpFile.Close(); e != nil {
+		return e
+	}
+	_ = os.Remove(dst)
+	return os.Rename(tmp, dst)
 }
 func trustedDeviceForToken(tok string) (TrustedDevice, bool) {
 	if strings.TrimSpace(tok) == "" {
