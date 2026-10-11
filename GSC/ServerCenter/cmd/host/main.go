@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"geumyi/servercenter/internal/atomicfile"
 	"geumyi/servercenter/internal/javaruntime"
 	"geumyi/servercenter/internal/securestore"
 	"io"
@@ -521,18 +522,24 @@ func saveHostConfig(next Config) error {
 	if err != nil {
 		return err
 	}
-	if err = os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
-		return err
-	}
-	tmp := configPath + ".tmp"
-	if err = os.WriteFile(tmp, b, 0600); err != nil {
-		return err
-	}
-	if err = os.Rename(tmp, configPath); err != nil {
+	if err = writeHostConfigSafely(configPath, b); err != nil {
 		return err
 	}
 	cfg = next
 	return nil
+}
+
+
+// writeHostConfigSafely uses an unpredictable, exclusively created temporary
+// file in the destination directory. Never open a predictable server.json.tmp:
+// a less-privileged local user could otherwise pre-create it if directory
+// inheritance permits file creation. The destination is not removed on error.
+func writeHostConfigSafely(path string, data []byte) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	return atomicfile.WriteFile(path, data, 0600)
 }
 
 func apiAgentAction(w http.ResponseWriter, r *http.Request) {

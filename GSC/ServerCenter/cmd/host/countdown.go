@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 const (
@@ -113,11 +115,7 @@ func saveLifecycleSchedulesLocked() error {
 	if err = os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
 	}
-	tmp := path + ".tmp"
-	if err = os.WriteFile(tmp, b, 0600); err != nil {
-		return err
-	}
-	return os.Rename(tmp, path)
+	return atomicfile.WriteFile(path, b, 0600)
 }
 
 func restoreLifecycleSchedules() {

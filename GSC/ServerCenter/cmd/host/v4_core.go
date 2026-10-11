@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"geumyi/servercenter/internal/atomicfile"
 	"geumyi/servercenter/internal/javaruntime"
 	"io"
 	"net/http"
@@ -794,22 +795,10 @@ func copyFileV4(src, dst string) error {
 	if e = os.MkdirAll(filepath.Dir(dst), 0755); e != nil {
 		return e
 	}
-	tmp := dst + ".tmp"
-	out, e := os.Create(tmp)
-	if e != nil {
-		return e
-	}
-	_, e = io.Copy(out, in)
-	ce := out.Close()
-	if e == nil {
-		e = ce
-	}
-	if e != nil {
-		_ = os.Remove(tmp)
-		return e
-	}
-	_ = os.Remove(dst)
-	return os.Rename(tmp, dst)
+	return atomicfile.WriteFrom(dst, 0644, func(w io.Writer) error {
+		_, err := io.Copy(w, in)
+		return err
+	})
 }
 
 func apiV4System(w http.ResponseWriter, r *http.Request) {
