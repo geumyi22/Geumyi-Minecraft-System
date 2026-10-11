@@ -204,6 +204,14 @@ jobs:
             $parentAfter=(Get-Acl -LiteralPath $fixture).GetSecurityDescriptorSddlForm(
                [System.Security.AccessControl.AccessControlSections]::Access)
             if($restored -ne $rootDaclBefore -or $parentAfter -ne $parentDaclBefore){
+              $racl=Get-Acl -LiteralPath $gsc
+              Write-Host ('RESTORE-DIAGNOSTIC: root_dacl_equal='+($restored -eq $rootDaclBefore)+
+                          '; parent_dacl_equal='+($parentAfter -eq $parentDaclBefore)+
+                          '; root_inheritance_protected='+$racl.AreAccessRulesProtected)
+              $ba=Get-Acl -LiteralPath $gsc
+              Write-Host ('RESTORE-DIAGNOSTIC: root_ace_count='+@($ba.Access).Count+
+                          '; expected_dacl_length='+$rootDaclBefore.Length+
+                          '; restored_dacl_length='+$restored.Length)
               throw 'ACL archive restore altered parent or failed exact DACL comparison'
             }
             Write-Host 'GSC ACL BACKUP 10/10 + isolated rollback /restore PASS'
