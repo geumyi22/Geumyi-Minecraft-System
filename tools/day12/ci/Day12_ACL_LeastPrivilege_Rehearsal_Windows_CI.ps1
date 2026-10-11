@@ -120,9 +120,8 @@ try {
     if ($eligible.Count -ne 1) { throw 'UNEXPECTED_USERS_RIGHTS_SHAPE' }
     $oldRule=$eligible[0]
     $newMask = ([int]$oldRule.FileSystemRights -band (-bnot [int]$create))
-    if (-not $a.RemoveAccessRuleSpecific($oldRule)) {
-        throw 'FAILED_TO_REMOVE_STAGED_USERS_CREATE_ACE'
-    }
+    # RemoveAccessRuleSpecific returns void; validate the post-change ACL below.
+    $a.RemoveAccessRuleSpecific($oldRule)
     if ($newMask -ne 0) {
         $replacement = [System.Security.AccessControl.FileSystemAccessRule]::new(
             $oldRule.IdentityReference,
