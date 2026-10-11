@@ -146,94 +146,27 @@ if ($SelfTest) {
         if (-not $cap.truncated) { throw 'WALK_CAP_SELFTEST_FAILED' }
         Write-Host ('INVENTORY_SELFTEST_PASS (owner/name classes, walker, reparse not followed=' + $linked + ', cap)')
     } finally {
-        # Self-test ONLY cleanup. Scope is restricted to two fresh GUID-named
-        # temporary directories and never reaches the production GSC tree.
-        $tempPrefix = [System.IO.Path]::GetFullPath(
-            [System.IO.Path]::GetTempPath()).TrimEnd('\\','/') +
-            [System.IO.Path]::DirectorySeparatorChar
+        # Cleanup is limited to two GUID-named disposable test directories.
+        # This block is reached ONLY from -SelfTest, not production inventory.
+        $tmpRoot = [System.IO.Path]::GetFullPath(
+            [System.IO.Path]::GetTempPath()).TrimEnd([char]92,[char]47)
         foreach ($candidate in @($t,$outside)) {
             $full = [System.IO.Path]::GetFullPath($candidate)
+            $parent = [System.IO.Path]::GetDirectoryName($full).TrimEnd([char]92,[char]47)
             $leaf = [System.IO.Path]::GetFileName($full)
-            if (-not $full.StartsWith($tempPrefix,[StringComparison]::OrdinalIgnoreCase) -or
-                $leaf -notmatch '^gsc-inv-selftest-[0-9a-f]{32}(-outside)?
-    exit 0
-}
-
-if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) { throw 'WINDOWS_ONLY' }
-if ([string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) { throw 'LOCALAPPDATA_MISSING' }
-if ($CIFixture) {
-    if ($env:GITHUB_ACTIONS -ne 'true' -or [string]::IsNullOrWhiteSpace($env:RUNNER_TEMP) -or [string]::IsNullOrWhiteSpace($CIFixtureRoot)) {
-        throw 'CI_FIXTURE_MODE_NOT_AUTHORIZED'
-    }
-    $runner = [System.IO.Path]::GetFullPath($env:RUNNER_TEMP).TrimEnd('\') + '\'
-    if (-not ([System.IO.Path]::GetFullPath($CIFixtureRoot)).StartsWith($runner, [StringComparison]::OrdinalIgnoreCase)) { throw 'CI_FIXTURE_OUT_OF_SCOPE' }
-    $root = [System.IO.Path]::GetFullPath($CIFixtureRoot).TrimEnd('\')
-} else {
-    if (-not [string]::IsNullOrWhiteSpace($CIFixtureRoot)) { throw 'FIXTURE_ROOT_NOT_ALLOWED_FOR_REAL_CAPTURE' }
-    $pd = $env:ProgramData
-    if ([string]::IsNullOrWhiteSpace($pd) -or -not [string]::Equals([System.IO.Path]::GetFullPath($pd).TrimEnd('\'),
-        [System.IO.Path]::GetFullPath((Join-Path $env:SystemDrive 'ProgramData')).TrimEnd('\'), [StringComparison]::OrdinalIgnoreCase)) {
-        throw 'NONSTANDARD_PROGRAMDATA_REVIEW_REQUIRED'
-    }
-    $root = Join-Path $pd 'GeumyiServerCenter'
-}
-$rootItem = Get-Item -LiteralPath $root -Force -ErrorAction Stop
-if (($rootItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'GSC_ROOT_IS_REPARSE_POINT_REVIEW_REQUIRED' }
-
-$me = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-$elevated = ([System.Security.Principal.WindowsPrincipal]$me).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
-$started = Get-Date
-$agg = Invoke-Walk $root $windowsAclProvider $me.User.Value $MaxObjects
-$rootOwner = Get-OwnerClass ((& $windowsAclProvider $rootItem).owner_sid) $me.User.Value
-
-$share = [ordered]@{
-    schema = 1
-    phase = '12.5-gsc-subtree-owner-reparse-inventory'
-    tool = 'DAY12_GSC_SUBTREE_OWNER_INVENTORY_READ_ONLY'
-    captured_at = (Get-Date).ToString('o')
-    synthetic = [bool]$CIFixture
-    elevated = [bool]$elevated
-    duration_seconds = [int]((Get-Date) - $started).TotalSeconds
-    root_owner_class = $rootOwner
-    objects = $agg.objects; directories = $agg.directories; files = $agg.files
-    truncated_at_cap = [bool]$agg.truncated; unreadable_directories = $agg.unreadable
-    owner_class_counts = $agg.owner
-    non_admin_or_unreadable_owner_by_top_bucket = $agg.non_admin_owned_by_bucket
-    reparse_points = $agg.reparse_points; reparse_points_by_top_bucket = $agg.reparse_by_bucket
-    legacy_predictable_temp_by_owner_class = $agg.legacy_temp
-    new_random_temp_files = $agg.new_random_temp
-    objects_with_explicit_ace_or_protected_dacl = $agg.explicit_or_protected
-    production_acl_modified = $false
-    reparse_points_followed = $false
-    names_paths_sids_shared = $false
-    strict_security_gate = 'NOT_PASSED'
-    note = 'Counts only. Any OTHER_ACCOUNT/CURRENT_OPERATOR_ACCOUNT owner, reparse point or legacy temp inside the GSC tree must be reviewed privately before narrowing ACLs; do not delete automatically.'
-}
-$outBase = Join-Path $env:LOCALAPPDATA 'Geumyi-Day12-ACL-Inventory'
-if (Test-Path -LiteralPath $outBase) {
-    if (((Get-Item -LiteralPath $outBase -Force).Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'OUTPUT_BASE_REPARSE_POINT_REFUSED' }
-} else { [void](New-Item -ItemType Directory -Path $outBase) }
-$out = Join-Path $outBase ('DAY12-GSC-SUBTREE-INVENTORY-SHARE-ONLY-THIS-' + [guid]::NewGuid().ToString('N') + '.json')
-$bytes = [System.Text.UTF8Encoding]::new($false).GetBytes(($share | ConvertTo-Json -Depth 6))
-$fs = [System.IO.FileStream]::new($out, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
-try { $fs.Write($bytes, 0, $bytes.Length) } finally { $fs.Dispose() }
-Write-Host ('INVENTORY: objects=' + $agg.objects + ' reparse=' + $agg.reparse_points + ' legacy_temp=' + (@($agg.legacy_temp.Values | Measure-Object -Sum).Sum) + ' truncated=' + $agg.truncated)
-Write-Host ('SHARE ONLY: ' + $out)
- -or
-                -not [string]::Equals([System.IO.Path]::GetDirectoryName($full).TrimEnd('\\'),
-                                      $tempPrefix.TrimEnd('\\'),
-                                      [StringComparison]::OrdinalIgnoreCase)) {
+            if (-not [string]::Equals($parent,$tmpRoot,[StringComparison]::OrdinalIgnoreCase) -or
+                $leaf -notmatch '^gsc-inv-selftest-[0-9a-f]{32}(-outside)?$') {
                 throw 'SELFTEST_CLEANUP_OUTSIDE_DISPOSABLE_TEMP_BLOCKED'
             }
         }
-        $linkPath = Join-Path $t 'Staging'
-        if ($linked -and [System.IO.Directory]::Exists($linkPath)) {
-            $attrs = [System.IO.File]::GetAttributes($linkPath)
+        $link = Join-Path $t 'Staging'
+        if ($linked -and [System.IO.Directory]::Exists($link)) {
+            $attrs = [System.IO.File]::GetAttributes($link)
             if (($attrs -band [System.IO.FileAttributes]::ReparsePoint) -eq 0) {
-                throw 'SELFTEST_EXPECTED_REPARSE_LINK_MISSING'
+                throw 'SELFTEST_REPARSE_SCOPE_MISMATCH'
             }
-            # Delete just the junction/symlink, never the linked directory.
-            [System.IO.Directory]::Delete($linkPath,$false)
+            # Remove just the junction/symlink, never recurse into the target.
+            [System.IO.Directory]::Delete($link,$false)
         }
         if ([System.IO.Directory]::Exists($t)) {
             [System.IO.Directory]::Delete($t,$true)
