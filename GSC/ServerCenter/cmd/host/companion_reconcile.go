@@ -27,6 +27,10 @@ func reconcileLocalCompanionConfigs() ([]string, bool) {
 		return nil, false
 	}
 	props := filepath.Join(c.Agent.WorkingDir, "agent.properties")
+	tokenChanged, tokenErr := ensureAgentGSCToken(props)
+	if tokenErr != nil {
+		appendV4Event("warn", "bridge", "", "Agent GSC 토큰 동기화 실패", tokenErr.Error())
+	}
 	catalogChanged, catalogErr := syncAgentServerCatalog(props, c.Servers)
 	if catalogErr != nil {
 		appendV4Event("warn", "bridge", "", "Agent 서버 목록 자동 조정 실패", catalogErr.Error())
@@ -36,9 +40,12 @@ func reconcileLocalCompanionConfigs() ([]string, bool) {
 		if err != nil {
 			appendV4Event("warn", "bridge", "", "Agent/GDS 자동 조정 실패", err.Error())
 		}
-		return nil, catalogChanged
+		return nil, catalogChanged || tokenChanged
 	}
-	agentChanged := catalogChanged || secretChanged
+	agentChanged := catalogChanged || secretChanged || tokenChanged
+	if tokenChanged {
+		appendV4Event("info", "bridge", "", "Agent GSC 전용 토큰 동기화", "Discord 서버 제어는 loopback 무인증 대신 범위가 제한된 Agent 토큰을 사용합니다")
+	}
 	if secretChanged {
 		appendV4Event("info", "bridge", "", "Agent 로컬 브리지 비밀키 자동 정리", "Agent/GDS 공유키를 안전한 로컬 키로 갱신했습니다")
 	}
@@ -176,6 +183,29 @@ func syncAgentServerCatalog(path string, servers []ServerConfig) (bool, error) {
 	if text == original {
 		return false, nil
 	}
+	if err := atomicWriteText(path, text); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// ensureAgentGSCToken writes the scoped StatusAgent credential into
+// agent.properties as gsc.token (GscClient already sends it as Bearer). The
+// Agent no longer depends on AllowLoopbackNoAuth for Discord server control.
+func ensureAgentGSCToken(path string) (bool, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return false, fmt.Errorf("agent.properties 읽기 실패: %w", err)
+	}
+	tok, _, err := ensureAgentAPIToken()
+	if err != nil {
+		return false, err
+	}
+	text := strings.ReplaceAll(string(b), "\r\n", "\n")
+	if propertyValue(text, "gsc.token") == tok {
+		return false, nil
+	}
+	text = setPropertyValue(text, "gsc.token", tok)
 	if err := atomicWriteText(path, text); err != nil {
 		return false, err
 	}

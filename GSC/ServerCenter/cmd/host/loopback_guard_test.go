@@ -61,9 +61,9 @@ func withTestConfig(t *testing.T, c Config) {
 
 func TestAuthenticateRequestLoopbackShortcutAndTokenFallback(t *testing.T) {
 	withTestConfig(t, Config{AllowLoopbackNoAuth: true, APIToken: "host-token-123"})
-	// Local program: token-free shortcut still works.
-	if p, ok := authenticateRequest(loopbackReq("GET", "127.0.0.1:8790", nil, "")); !ok || p.Kind != "local" {
-		t.Fatalf("local program lost loopback access: %v %v", p, ok)
+	// Local program without token: read-only shortcut by default (Day12.5 hardening).
+	if p, ok := authenticateRequest(loopbackReq("GET", "127.0.0.1:8790", nil, "")); !ok || p.Kind != principalLocalReadOnly {
+		t.Fatalf("local program should get read-only loopback access: %v %v", p, ok)
 	}
 	// Cross-site browser request without a token: refused.
 	if _, ok := authenticateRequest(loopbackReq("POST", "127.0.0.1:8790", map[string]string{"Origin": "https://evil.example"}, "")); ok {
@@ -116,12 +116,24 @@ func TestCrossSiteSimplePostCannotChangeStartCommand(t *testing.T) {
 		t.Fatalf("config file rewritten by cross-site request: %s", b)
 	}
 
+	// A token-free local program can no longer change start_command (Day12.5).
 	local := loopbackReq("POST", "127.0.0.1:8790", map[string]string{"Content-Type": "application/json"},
 		`{"servers":[{"id":"wild","start_command":"run.bat"}]}`)
 	rec = httptest.NewRecorder()
 	h(rec, local)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("token-free local POST status %d, want 401", rec.Code)
+	}
+	if got := configSnapshot().Servers[0].StartCommand; got != "start.bat" {
+		t.Fatalf("start_command changed without token: %q", got)
+	}
+	// The same local request WITH the Host API token still works.
+	local = loopbackReq("POST", "127.0.0.1:8790", map[string]string{"Content-Type": "application/json", "Authorization": "Bearer host-token-123"},
+		`{"servers":[{"id":"wild","start_command":"run.bat"}]}`)
+	rec = httptest.NewRecorder()
+	h(rec, local)
 	if rec.Code != http.StatusOK {
-		t.Fatalf("local program POST status %d: %s", rec.Code, rec.Body.String())
+		t.Fatalf("token local POST status %d: %s", rec.Code, rec.Body.String())
 	}
 	var saved Config
 	b, _ := os.ReadFile(configPath)
