@@ -192,32 +192,63 @@ jobs:
                 throw ('Archive digest mismatch: '+$ent.role)
               }
             }
-            # Exercise an actual /restore ONLY on a disposable CI GSC root:
-            $a=Get-Acl -LiteralPath $gsc
-            $a.SetAccessRuleProtection($true,$true)
-            Set-Acl -LiteralPath $gsc -AclObject $a
-            $rootArchive=Join-Path $latest.FullName 'PRIVATE-GSC_ROOT.dacl'
-            & icacls.exe $fixture /restore $rootArchive | Out-Null
-            if($LASTEXITCODE -ne 0){throw 'Isolated production-style archive restore failed'}
-            $restored=(Get-Acl -LiteralPath $gsc).GetSecurityDescriptorSddlForm(
-               [System.Security.AccessControl.AccessControlSections]::Access)
-            $parentAfter=(Get-Acl -LiteralPath $fixture).GetSecurityDescriptorSddlForm(
-               [System.Security.AccessControl.AccessControlSections]::Access)
-            # icacls /restore may add the non-permission SDDL D:AI
-            # (DACL auto-inherited) control marker. Exact ACE order,
-            # rights, inheritance flags and DACL protected-state MUST still
-            # match; ignore ONLY that documented marker on this CI fixture.
-            $expectedAcl=$rootDaclBefore -replace '^D:AI','D:'
-            $actualAcl=$restored -replace '^D:AI','D:'
-            $postAcl=Get-Acl -LiteralPath $gsc
-            if($expectedAcl -ne $actualAcl -or
-               $parentAfter -ne $parentDaclBefore -or
-               $postAcl.AreAccessRulesProtected) {
-              throw 'ACL archive restored different rights, flags, protection or parent DACL'
+            # Exercise EVERY original archive, rather than only the GSC root.
+            # All paths below originate from the private synthetic manifest.
+            # No operator or production ACL can be changed by this fixture.
+            $fixturePrefix=[System.IO.Path]::GetFullPath($fixture).TrimEnd('\')+'\'
+            $stagedCount=0
+            foreach($ent in $m.entries){
+              $objectPath=[System.IO.Path]::GetFullPath([string]$ent.actual_path)
+              $restoreParent=[System.IO.Path]::GetFullPath([string]$ent.restore_parent)
+              if(-not $objectPath.StartsWith($fixturePrefix,[StringComparison]::OrdinalIgnoreCase) -or
+                 -not ($restoreParent+'\').StartsWith($fixturePrefix,[StringComparison]::OrdinalIgnoreCase)){
+                throw ('Restore fixture path escaped runner scope: '+$ent.role)
+              }
+              $current=Get-Acl -LiteralPath $objectPath -ErrorAction Stop
+              $current.SetAccessRuleProtection($true,$true)
+              Set-Acl -LiteralPath $objectPath -AclObject $current -ErrorAction Stop
+              if(-not (Get-Acl -LiteralPath $objectPath).AreAccessRulesProtected){
+                throw ('Synthetic ACL staging failed: '+$ent.role)
+              }
+              $stagedCount++
             }
-            Write-Host ('GSC ACL BACKUP 10/10 + isolated icacls /restore PASS; '+
+            # Parent-first restore. Child DACLs may be affected by restoring
+            # parent inheritance, so verify all objects only AFTER every restore.
+            foreach($ent in @($m.entries | Sort-Object { $_.actual_path.Length })){
+              $archivePath=Join-Path $latest.FullName $ent.archive_name
+              & icacls.exe $ent.restore_parent /restore $archivePath | Out-Null
+              if($LASTEXITCODE -ne 0){
+                throw ('Isolated archive restore failed: '+$ent.role)
+              }
+            }
+            $verified=0
+            $autoInheritedMarkerNormalized=0
+            foreach($ent in $m.entries){
+              $post=Get-Acl -LiteralPath $ent.actual_path -ErrorAction Stop
+              $actualDacl=$post.GetSecurityDescriptorSddlForm(
+                [System.Security.AccessControl.AccessControlSections]::Access)
+              # icacls /restore may add the non-permission D:AI control marker.
+              # Ignore ONLY that marker, never ACE rights, order, flags,
+              # protection state or any other SDDL control bit.
+              $expectedAcl=([string]$ent.original_dacl_sddl) -replace '^D:AI','D:'
+              $actualAcl=$actualDacl -replace '^D:AI','D:'
+              if($expectedAcl -ne $actualAcl -or
+                 $post.AreAccessRulesProtected -ne [bool]$ent.original_inheritance_protected){
+                throw ('Restored ACL differs from original: '+$ent.role)
+              }
+              if($actualDacl -ne [string]$ent.original_dacl_sddl){
+                $autoInheritedMarkerNormalized++
+              }
+              $verified++
+            }
+            $parentAfter=(Get-Acl -LiteralPath $fixture).GetSecurityDescriptorSddlForm(
+              [System.Security.AccessControl.AccessControlSections]::Access)
+            if($parentAfter -ne $parentDaclBefore -or $verified -ne 10 -or $stagedCount -ne 10){
+              throw 'Synthetic parent DACL or 10-target restoration contract failed'
+            }
+            Write-Host ('GSC ACL BACKUP 10/10 + isolated 10/10 icacls /restore PASS; '+
                         'full_ACE_equivalence=true; parent_unchanged=true; '+
-                        'auto_inherited_marker_normalized='+($restored -ne $rootDaclBefore))
+                        'auto_inherited_marker_normalized_count='+$autoInheritedMarkerNormalized)
           } finally {
             if(Test-Path -LiteralPath $fixture){Remove-Item -LiteralPath $fixture -Force -Recurse -ErrorAction SilentlyContinue}
           }
