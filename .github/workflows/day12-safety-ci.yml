@@ -225,6 +225,10 @@ jobs:
               Write-Host ('RESTORE-DIAGNOSTIC: root_ace_count='+@($ba.Access).Count+
                           '; expected_dacl_length='+$rootDaclBefore.Length+
                           '; restored_dacl_length='+$restored.Length)
+              Write-Host ('RESTORE-DIAGNOSTIC: synthetic_before_prefix='+
+                          $rootDaclBefore.Substring(0,[Math]::Min(16,$rootDaclBefore.Length))+
+                          '; synthetic_after_prefix='+
+                          $restored.Substring(0,[Math]::Min(16,$restored.Length)))
               throw 'ACL archive restore altered parent or failed exact DACL comparison'
             }
             Write-Host ('GSC ACL BACKUP 10/10 + isolated icacls/SDDL rollback PASS; sddl_fallback='+$usedSddlFallback)
