@@ -315,6 +315,27 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Package tested ACL backup integrity audit (NO production APPLY)
+        shell: powershell
+        run: |
+          $folder=Join-Path $env:RUNNER_TEMP 'GSC-ACL-INTEGRITY-READ-ONLY-KIT'
+          New-Item -ItemType Directory -Force -Path $folder|Out-Null
+          foreach($n in @(
+            'Day12_Phase5_ACL_Backup_Integrity_READ_ONLY.ps1',
+            'START_Day12_Phase5_ACL_Backup_Integrity_READ_ONLY.cmd',
+            'README-Day12-ACL-INTEGRITY-KO.txt'
+          )){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12' $n) -Destination $folder -ErrorAction Stop
+          }
+          Compress-Archive -Path (Join-Path $folder '*') -DestinationPath 'Geumyi-Day12-ACL-Integrity-READ-ONLY.zip' -Force
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-acl-integrity-readonly-kit
+          path: Geumyi-Day12-ACL-Integrity-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Dual-stack SubPC exposure probe synthetic and unsafe-target rejection
         shell: powershell
         run: |
