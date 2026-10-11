@@ -222,8 +222,19 @@ jobs:
             $originalBytes=[System.IO.File]::ReadAllBytes($tamper)
             try {
               [System.IO.File]::WriteAllBytes($tamper,[System.Text.Encoding]::ASCII.GetBytes('synthetic-tamper'))
-              & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $auditTool -CIFixture -CIFixtureRoot $fixture -BackupDir $latest.FullName *> $null
-              if($LASTEXITCODE -eq 0){throw 'Tampered synthetic ACL archive was accepted'}
+              # Native stderr is expected for this negative test. PowerShell's
+              # Stop preference would otherwise turn its intentional nonzero
+              # exit into an unhandled NativeCommandError.
+              $priorPreference=$ErrorActionPreference
+              try {
+                $ErrorActionPreference='Continue'
+                & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $auditTool -CIFixture -CIFixtureRoot $fixture -BackupDir $latest.FullName *> $null
+                $tamperExit=$LASTEXITCODE
+              } finally {
+                $ErrorActionPreference=$priorPreference
+              }
+              if($tamperExit -eq 0){throw 'Tampered synthetic ACL archive was accepted'}
+              $global:LASTEXITCODE=0
             } finally {
               [System.IO.File]::WriteAllBytes($tamper,$originalBytes)
             }
