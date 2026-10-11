@@ -1,0 +1,168 @@
+name: Day12 Gemini PR47-49 Source Audit Bundle
+on:
+  push:
+    branches:
+      - audit/gemini-pr47-49-sourcepack-20261012
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sourcepack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Package explicit source allowlist at fixed PR HEADs
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import re
+          import subprocess
+          import zipfile
+          from pathlib import PurePosixPath
+
+          REFS = {
+              "main": "origin/main",
+              "PR47": "3592b29dc3a3d19009fd82435b68a2c0cc85826c",
+              "PR48": "50129f0f1bda08c39d4c648136b40a54f5bc897c",
+              "PR49": "70e6fea27fc39e31f823744d6971a5db53d85759",
+          }
+          SELECTED = [
+              ".github/workflows/day12-safety-ci.yml",
+              "GSC/ServerCenter/cmd/host/v41_control.go",
+              "GSC/ServerCenter/cmd/host/loopback_guard.go",
+              "GSC/ServerCenter/cmd/host/loopback_guard_test.go",
+              "GSC/ServerCenter/cmd/host/main.go",
+              "GSC/ServerCenter/cmd/host/lifecycle.go",
+              "GSC/ServerCenter/cmd/host/proc_windows.go",
+              "GSC/ServerCenter/cmd/host/companion_reconcile.go",
+              "GSC/ServerCenter/cmd/host/canary_rollout.go",
+              "GSC/ServerCenter/cmd/host/countdown.go",
+              "GSC/ServerCenter/cmd/host/external_updates.go",
+              "GSC/ServerCenter/cmd/host/github_public.go",
+              "GSC/ServerCenter/cmd/host/update_transaction.go",
+              "GSC/ServerCenter/cmd/host/updater.go",
+              "GSC/ServerCenter/cmd/host/v4_automation.go",
+              "GSC/ServerCenter/cmd/host/v4_backup.go",
+              "GSC/ServerCenter/cmd/host/v4_backup_actions.go",
+              "GSC/ServerCenter/cmd/host/v4_core.go",
+              "GSC/ServerCenter/cmd/host/config_atomic_temp_test.go",
+              "GSC/ServerCenter/cmd/setup/main.go",
+              "GSC/ServerCenter/cmd/setup/selfupdate_windows.go",
+              "GSC/ServerCenter/cmd/setup/selfupdate_report_temp_windows_test.go",
+              "GSC/ServerCenter/cmd/setup/selfupdate_staging_windows_test.go",
+              "GSC/ServerCenter/internal/atomicfile/atomicfile.go",
+              "GSC/ServerCenter/internal/atomicfile/atomicfile_test.go",
+              "GSC/ServerCenter/internal/atomicfile/replace_other.go",
+              "GSC/ServerCenter/internal/atomicfile/replace_windows.go",
+              "GSC/StatusAgent/src/kr/geumyi/statusagent/GscClient.java",
+              "GSC/StatusAgent/agent.properties.example",
+              "tools/day12/Day12_Phase5_ACL_Backup_Integrity_READ_ONLY.ps1",
+              "tools/day12/Day12_Phase5_ACL_Change_Preflight_READ_ONLY.ps1",
+              "tools/day12/Day12_Phase5_Production_ACL_Backup_READ_ONLY.ps1",
+              "tools/day12/ci/Day12_ACL_LeastPrivilege_Rehearsal_Windows_CI.ps1",
+              "tools/day12/Day12_Phase5_GSC_Subtree_Owner_Inventory_READ_ONLY.ps1",
+              "tools/day12/START_Day12_Phase5_GSC_Subtree_Owner_Inventory_READ_ONLY.cmd",
+              "docs/day12/phases/phase-05/DAY12-PHASE5-ACL-CHANGE-GATE-ROLLBACK-20261011.md",
+              "docs/day12/phases/phase-05/DAY12-PHASE5-ACL-LEAST-PRIVILEGE-PREDEPLOY-PLAN-20261011.md",
+              "docs/day12/phases/phase-05/DAY12-PHASE5-BACKUP-INTEGRITY-AND-3AI-REVIEW-20261012.md",
+          ]
+          DIFF_PATHS = [
+              ".github/workflows/day12-safety-ci.yml",
+              "GSC/ServerCenter/cmd/host",
+              "GSC/ServerCenter/cmd/setup",
+              "GSC/ServerCenter/internal/atomicfile",
+              "GSC/StatusAgent/src",
+              "tools/day12",
+              "docs/day12/phases/phase-05",
+          ]
+          ALERTS = (
+              rb"ghp_[A-Za-z0-9_]{24,}",
+              rb"github_pat_[A-Za-z0-9_]{24,}",
+              rb"sk-proj-[A-Za-z0-9_\-]{30,}",
+              rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----",
+              rb"(?i)(?:api_token|github_token|discord_token)\s*[:=]\s*[\"'](?:ghp_|github_pat_|sk-proj-)[^\"']+[\"']",
+          )
+          def git(*args, check=True):
+              r = subprocess.run(["git",*args],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+              if check and r.returncode: raise RuntimeError("git failed: "+r.stderr.decode(errors="replace")[:500])
+              return r
+          for ref,sha in REFS.items():
+              if git("rev-parse","--verify",sha+"^{commit}",check=False).returncode:
+                  raise RuntimeError("Required ref missing: "+ref)
+          commits = {k:git("rev-parse",v+"^{commit}").stdout.decode().strip() for k,v in REFS.items()}
+          manifest={"repo":"geumyi22/Geumyi-Minecraft-System","source":"GitHub checked out via isolated Actions runner","commits":commits,"entries":[],"missing_selected":[],"scope":"Allowlisted source snapshots and diff text only; no private host backups, tokens, credentials or runtime data"}
+          def add(z,name,payload):
+              if not isinstance(payload,bytes): payload=payload.encode("utf-8")
+              if any(re.search(p,payload) for p in ALERTS):
+                  raise RuntimeError("Possible credential in proposed package path "+name)
+              z.writestr(name,payload,compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
+              manifest["entries"].append({"path":name,"sha256":hashlib.sha256(payload).hexdigest(),"size":len(payload)})
+          readme = """Geumyi Minecraft System - Gemini independent code-security review
+          ================================================================
+          This bundle was created by GitHub Actions from FIXED source commits, not by guessing GitHub code.
+          Snapshot tree: snapshots/{main,PR47,PR48,PR49}/repository-relative-source-path
+          Changes: changes/*.patch (scoped to GSC/StatusAgent/Day12 files; unified patches)
+          MANIFEST.json: commit refs, available/missing files, sizes and SHA-256 digests.
+
+          Important:
+          - PR47, PR48, PR49 are Draft at packaging request time, not merged or deployed.
+          - A CI success is NOT proof that a live Windows host or real browser has been tested.
+          - PR48 & PR49 both add a browser-origin loopback guard, with overlap; check differences.
+          - Non-browser loopback clients can still bypass authentication while AllowLoopbackNoAuth=true.
+          - PR49 includes atomic file replacement, self-update staging and subtree inventory changes.
+          - A captured DACL+SHA match only proves local consistency, not effective permissions or full restore.
+          - Do not open, upload or request any real host PRIVATE-*.dacl or private manifests.
+          - Do not modify main, live ACL, firewall, worlds or backups.
+          - Code may omit called functions in unrelated source paths. Identify such gaps as unverified.
+          - This is a selective source audit, not a complete clone or executable server.
+
+          Requested independent findings:
+          1) Compare PR48/PR49 loopback no-auth defenses: Origin, Host, Fetch-Site, non-browser bypass.
+          2) Review Windows atomicfile/replace and installer self-update staging for TOCTOU,
+             failure rollback and identity/ACL behavior.
+          3) Review GSC subtree inventory reparse traversal and read-only self-test cleanup.
+          4) Review DACL backup/restore Windows fixture scope and missing standard-user validation.
+          5) Report exact evidence paths and line numbers, severity, reproducible counterexamples,
+             safe minimal fixes and CI gaps. Never call unexecuted steps PASS.
+
+          Related CI: PR49 commit 70e6fea: Day 12 Read-Only Safety CI, Day 11
+          Host Test, System CI, SBOM, Synthetic DR (5/5 success as checked in GitHub).
+          Live server tests, authenticated StatusAgent migration, real ACL apply and production E2E NOT done.
+          """
+          output="Geumyi-Gemini-PR47-48-49-Security-Audit.zip"
+          with zipfile.ZipFile(output,"w") as z:
+              add(z,"README-FIRST.txt",readme)
+              for label,ref in REFS.items():
+                  for path in SELECTED:
+                      if PurePosixPath(path).is_absolute() or ".." in PurePosixPath(path).parts:
+                          raise RuntimeError("Unsafe selection path")
+                      result=git("show",ref+":"+path,check=False)
+                      if result.returncode:
+                          manifest["missing_selected"].append({"revision":label,"path":path})
+                          continue
+                      add(z,"snapshots/"+label+"/"+path,result.stdout)
+              for label,base,head in [
+                  ("PR47-vs-main",REFS["main"],REFS["PR47"]),
+                  ("PR48-vs-main",REFS["main"],REFS["PR48"]),
+                  ("PR49-vs-main",REFS["main"],REFS["PR49"]),
+                  ("Claude-changes-PR47-to-PR49",REFS["PR47"],REFS["PR49"]),
+                  ("Review-diff-PR48-to-PR49",REFS["PR48"],REFS["PR49"]),
+              ]:
+                  patch=git("diff","--no-ext-diff","--no-textconv","--find-renames",base,head,"--",*DIFF_PATHS).stdout
+                  add(z,"changes/"+label+".patch",patch)
+              manifest_bytes=json.dumps(manifest,ensure_ascii=False,sort_keys=True,indent=2).encode("utf-8")
+              z.writestr("MANIFEST.json",manifest_bytes,compress_type=zipfile.ZIP_DEFLATED,compresslevel=9)
+          print("SOURCEPACK_READY",output,"files",len(manifest["entries"]),"missing_in_older_revisions",len(manifest["missing_selected"]))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: day12-gemini-pr47-49-audit-source
+          path: Geumyi-Gemini-PR47-48-49-Security-Audit.zip
+          if-no-files-found: error
+          retention-days: 7
