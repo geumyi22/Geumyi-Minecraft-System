@@ -118,19 +118,14 @@ try {
         (([int]$_.FileSystemRights -band [int]$create) -eq [int]$create)
     })
     if ($eligible.Count -ne 1) { throw 'UNEXPECTED_USERS_RIGHTS_SHAPE' }
+    # This is a controlled, *single-ACE synthetic fixture* only. Purging
+    # arbitrary Users ACEs on a real operator ACL is strictly forbidden.
+    # Remove the synthesized Users ACE, then restore only ReadAndExecute.
     $oldRule=$eligible[0]
-    $newMask = ([int]$oldRule.FileSystemRights -band (-bnot [int]$create))
-    # RemoveAccessRuleSpecific returns void; validate the post-change ACL below.
-    $a.RemoveAccessRuleSpecific($oldRule)
-    if ($newMask -ne 0) {
-        $replacement = [System.Security.AccessControl.FileSystemAccessRule]::new(
-            $oldRule.IdentityReference,
-            [System.Security.AccessControl.FileSystemRights]$newMask,
-            $oldRule.InheritanceFlags,
-            $oldRule.PropagationFlags,
-            $allow)
-        $a.AddAccessRule($replacement)
-    }
+    $a.PurgeAccessRules($usersSID)
+    $replacement = [System.Security.AccessControl.FileSystemAccessRule]::new(
+        $usersSID,$read,$oldRule.InheritanceFlags,$oldRule.PropagationFlags,$allow)
+    $a.AddAccessRule($replacement)
     Set-Acl -LiteralPath $gsc -AclObject $a -ErrorAction Stop
 
     if ((Get-DaclSddl $parent) -ne $initialParent) {
