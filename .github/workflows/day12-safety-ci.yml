@@ -192,6 +192,47 @@ jobs:
                 throw ('Archive digest mismatch: '+$ent.role)
               }
             }
+            # Independently audit the private backups in CI before mutation.
+            $auditTool='tools/day12/Day12_Phase5_ACL_Backup_Integrity_READ_ONLY.ps1'
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $auditTool -SelfTest
+            if($LASTEXITCODE -ne 0){throw 'ACL backup integrity self-test failed'}
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $auditTool -CIFixture -CIFixtureRoot $fixture -BackupDir $latest.FullName
+            if($LASTEXITCODE -ne 0){throw 'ACL backup integrity CI fixture audit failed'}
+            $audits=@(Get-ChildItem -LiteralPath $latest.FullName -File -Filter 'DAY12-ACL-INTEGRITY-SHARE-ONLY-THIS-*.json')
+            if($audits.Count -ne 1){throw 'Expected single redacted ACL integrity audit'}
+            $audit=Get-Content -LiteralPath $audits[0].FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+            if(-not $audit.synthetic -or $audit.archive_hashes_verified -ne 10 -or
+               $audit.unchanged_live_target_acls -ne 10 -or
+               @($audit.targets).Count -ne 10 -or
+               -not $audit.parent_dacl_unchanged -or
+               $audit.production_acl_modified -or $audit.real_production_restore_performed -or
+               $audit.strict_security_gate -ne 'NOT_PASSED' -or
+               $audit.raw_sddl_sid_paths_or_hashes_shared){
+              throw 'Integrity redacted schema or production safety contract failed'
+            }
+            $auditText=Get-Content -LiteralPath $audits[0].FullName -Raw -Encoding UTF8
+            if($auditText.Contains($fixture) -or $auditText.Contains('original_dacl_sddl') -or
+               $auditText.Contains('restore_parent') -or $auditText.Contains('archive_sha256') -or
+               $auditText.Contains($env:LOCALAPPDATA) -or $auditText.Contains('S-1-5-')){
+              throw 'ACL integrity report leaked private paths, SDDL, hashes or SID'
+            }
+            # Negative fixture: tamper with one disposable archive and ensure
+            # a new audit refuses it. Restore bytes ONLY within synthetic CI.
+            $tamper=Join-Path $latest.FullName 'PRIVATE-GSC_ROOT.dacl'
+            $originalBytes=[System.IO.File]::ReadAllBytes($tamper)
+            try {
+              [System.IO.File]::WriteAllBytes($tamper,[System.Text.Encoding]::ASCII.GetBytes('synthetic-tamper'))
+              & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $auditTool -CIFixture -CIFixtureRoot $fixture -BackupDir $latest.FullName *> $null
+              if($LASTEXITCODE -eq 0){throw 'Tampered synthetic ACL archive was accepted'}
+            } finally {
+              [System.IO.File]::WriteAllBytes($tamper,$originalBytes)
+            }
+            if((Get-FileHash -LiteralPath $tamper -Algorithm SHA256).Hash.ToLowerInvariant() -ne
+               @($m.entries | Where-Object {$_.role -eq 'GSC_ROOT'})[0].archive_sha256){
+              throw 'Synthetic original archive was not restored after negative test'
+            }
+            Write-Host 'On-host ACL backup integrity audit 10/10 + tamper rejection PASS (CI only)'
+
             # Exercise EVERY original archive, rather than only the GSC root.
             # All paths below originate from the private synthetic manifest.
             # No operator or production ACL can be changed by this fixture.
