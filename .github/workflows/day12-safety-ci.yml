@@ -203,35 +203,21 @@ jobs:
                [System.Security.AccessControl.AccessControlSections]::Access)
             $parentAfter=(Get-Acl -LiteralPath $fixture).GetSecurityDescriptorSddlForm(
                [System.Security.AccessControl.AccessControlSections]::Access)
-            # icacls /restore can normalize Windows DACL auto-inheritance
-            # metadata (AI flag) even after successful DACL recovery. The
-            # PRIVATE original SDDL is also retained for an exact fallback.
-            $usedSddlFallback=$false
-            if($restored -ne $rootDaclBefore){
-              $restoreAcl=Get-Acl -LiteralPath $gsc
-              $restoreAcl.SetSecurityDescriptorSddlForm(
-                $rootDaclBefore,[System.Security.AccessControl.AccessControlSections]::Access)
-              Set-Acl -LiteralPath $gsc -AclObject $restoreAcl
-              $restored=(Get-Acl -LiteralPath $gsc).GetSecurityDescriptorSddlForm(
-                [System.Security.AccessControl.AccessControlSections]::Access)
-              $usedSddlFallback=$true
+            # icacls /restore may add the non-permission SDDL D:AI
+            # (DACL auto-inherited) control marker. Exact ACE order,
+            # rights, inheritance flags and DACL protected-state MUST still
+            # match; ignore ONLY that documented marker on this CI fixture.
+            $expectedAcl=$rootDaclBefore -replace '^D:AI','D:'
+            $actualAcl=$restored -replace '^D:AI','D:'
+            $postAcl=Get-Acl -LiteralPath $gsc
+            if($expectedAcl -ne $actualAcl -or
+               $parentAfter -ne $parentDaclBefore -or
+               $postAcl.AreAccessRulesProtected) {
+              throw 'ACL archive restored different rights, flags, protection or parent DACL'
             }
-            if($restored -ne $rootDaclBefore -or $parentAfter -ne $parentDaclBefore){
-              $racl=Get-Acl -LiteralPath $gsc
-              Write-Host ('RESTORE-DIAGNOSTIC: root_dacl_equal='+($restored -eq $rootDaclBefore)+
-                          '; parent_dacl_equal='+($parentAfter -eq $parentDaclBefore)+
-                          '; root_inheritance_protected='+$racl.AreAccessRulesProtected)
-              $ba=Get-Acl -LiteralPath $gsc
-              Write-Host ('RESTORE-DIAGNOSTIC: root_ace_count='+@($ba.Access).Count+
-                          '; expected_dacl_length='+$rootDaclBefore.Length+
-                          '; restored_dacl_length='+$restored.Length)
-              Write-Host ('RESTORE-DIAGNOSTIC: synthetic_before_prefix='+
-                          $rootDaclBefore.Substring(0,[Math]::Min(16,$rootDaclBefore.Length))+
-                          '; synthetic_after_prefix='+
-                          $restored.Substring(0,[Math]::Min(16,$restored.Length)))
-              throw 'ACL archive restore altered parent or failed exact DACL comparison'
-            }
-            Write-Host ('GSC ACL BACKUP 10/10 + isolated icacls/SDDL rollback PASS; sddl_fallback='+$usedSddlFallback)
+            Write-Host ('GSC ACL BACKUP 10/10 + isolated icacls /restore PASS; '+
+                        'full_ACE_equivalence=true; parent_unchanged=true; '+
+                        'auto_inherited_marker_normalized='+($restored -ne $rootDaclBefore))
           } finally {
             if(Test-Path -LiteralPath $fixture){Remove-Item -LiteralPath $fixture -Force -Recurse -ErrorAction SilentlyContinue}
           }
