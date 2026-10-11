@@ -215,7 +215,7 @@ $report=[ordered]@{
 $out=Join-Path $BackupDir ('DAY12-ACL-INTEGRITY-SHARE-ONLY-THIS-'+
                            [guid]::NewGuid().ToString('N')+'.json')
 $shareText=$report|ConvertTo-Json -Depth 7
-$utf8=New-Object System.Text.UTF8Encoding($false)
+$utf8=[System.Text.UTF8Encoding]::new($false)
 $bytes=$utf8.GetBytes($shareText)
 $stream=[System.IO.FileStream]::new($out,[System.IO.FileMode]::CreateNew,
     [System.IO.FileAccess]::Write,[System.IO.FileShare]::None)
