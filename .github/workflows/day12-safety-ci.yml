@@ -107,6 +107,15 @@ jobs:
             if(Test-Path -LiteralPath $base){Remove-Item -LiteralPath $base -Recurse -Force}
           }
 
+      - name: Isolated Windows ACL least-privilege and real icacls restore rehearsal
+        shell: powershell
+        env:
+          GEUMYI_DAY12_ACL_REHEARSAL_CI: isolated_fixture
+        run: |
+          $tool='tools/day12/ci/Day12_ACL_LeastPrivilege_Rehearsal_Windows_CI.ps1'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -Synthetic
+          if($LASTEXITCODE -ne 0){throw 'Isolated ACL least-privilege/rollback rehearsal failed'}
+
       - name: Package CI-checked ACL preflight kit (NO APPLY)
         shell: powershell
         run: |
