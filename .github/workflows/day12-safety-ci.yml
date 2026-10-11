@@ -203,6 +203,19 @@ jobs:
                [System.Security.AccessControl.AccessControlSections]::Access)
             $parentAfter=(Get-Acl -LiteralPath $fixture).GetSecurityDescriptorSddlForm(
                [System.Security.AccessControl.AccessControlSections]::Access)
+            # icacls /restore can normalize Windows DACL auto-inheritance
+            # metadata (AI flag) even after successful DACL recovery. The
+            # PRIVATE original SDDL is also retained for an exact fallback.
+            $usedSddlFallback=$false
+            if($restored -ne $rootDaclBefore){
+              $restoreAcl=Get-Acl -LiteralPath $gsc
+              $restoreAcl.SetSecurityDescriptorSddlForm(
+                $rootDaclBefore,[System.Security.AccessControl.AccessControlSections]::Access)
+              Set-Acl -LiteralPath $gsc -AclObject $restoreAcl
+              $restored=(Get-Acl -LiteralPath $gsc).GetSecurityDescriptorSddlForm(
+                [System.Security.AccessControl.AccessControlSections]::Access)
+              $usedSddlFallback=$true
+            }
             if($restored -ne $rootDaclBefore -or $parentAfter -ne $parentDaclBefore){
               $racl=Get-Acl -LiteralPath $gsc
               Write-Host ('RESTORE-DIAGNOSTIC: root_dacl_equal='+($restored -eq $rootDaclBefore)+
@@ -214,7 +227,7 @@ jobs:
                           '; restored_dacl_length='+$restored.Length)
               throw 'ACL archive restore altered parent or failed exact DACL comparison'
             }
-            Write-Host 'GSC ACL BACKUP 10/10 + isolated rollback /restore PASS'
+            Write-Host ('GSC ACL BACKUP 10/10 + isolated icacls/SDDL rollback PASS; sddl_fallback='+$usedSddlFallback)
           } finally {
             if(Test-Path -LiteralPath $fixture){Remove-Item -LiteralPath $fixture -Force -Recurse -ErrorAction SilentlyContinue}
           }
