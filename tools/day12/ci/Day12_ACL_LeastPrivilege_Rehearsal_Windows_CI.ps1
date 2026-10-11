@@ -111,13 +111,20 @@ try {
     # ONLY the single known Users allow; keep all Users read/execute bits.
     $a = Get-Acl -LiteralPath $gsc -ErrorAction Stop
     $a.SetAccessRuleProtection($true,$true)
+    # Windows inherited ACE conversion is applied on-disk, not immediately
+    # removable as an explicit ACE in the same in-memory DACL object.
+    Set-Acl -LiteralPath $gsc -AclObject $a -ErrorAction Stop
+    $a = Get-Acl -LiteralPath $gsc -ErrorAction Stop
+    if (-not $a.AreAccessRulesProtected) { throw 'STAGING_ROOT_PROTECTION_NOT_APPLIED' }
     $eligible = @($a.Access | Where-Object {
         $sid='UNRESOLVED'
         try { $sid=$_.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Value } catch {}
         $sid -eq 'S-1-5-32-545' -and $_.AccessControlType -eq $allow -and
         (([int]$_.FileSystemRights -band [int]$create) -eq [int]$create)
     })
-    if ($eligible.Count -ne 1) { throw 'UNEXPECTED_USERS_RIGHTS_SHAPE' }
+    if ($eligible.Count -ne 1 -or $eligible[0].IsInherited) {
+        throw 'UNEXPECTED_USERS_RIGHTS_SHAPE_AFTER_PROTECTION'
+    }
     # This is a controlled, *single-ACE synthetic fixture* only. Purging
     # arbitrary Users ACEs on a real operator ACL is strictly forbidden.
     # Remove the synthesized Users ACE, then restore only ReadAndExecute.
