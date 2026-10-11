@@ -152,8 +152,8 @@ $privateAcl = New-Object System.Security.AccessControl.DirectorySecurity
 $privateAcl.SetAccessRuleProtection($true, $false)
 $privateAcl.SetOwner($currentSid)
 foreach ($sidString in @($currentSid.Value, 'S-1-5-18', 'S-1-5-32-544')) {
-    $sid = New-Object System.Security.Principal.SecurityIdentifier($sidString)
-    $entry = New-Object System.Security.AccessControl.FileSystemAccessRule(
+    $sid = [System.Security.Principal.SecurityIdentifier]::new($sidString)
+    $entry = [System.Security.AccessControl.FileSystemAccessRule]::new(
         $sid,
         [System.Security.AccessControl.FileSystemRights]::FullControl,
         ([System.Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [System.Security.AccessControl.InheritanceFlags]::ObjectInherit),
