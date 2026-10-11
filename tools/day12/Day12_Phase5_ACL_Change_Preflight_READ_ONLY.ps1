@@ -126,6 +126,11 @@ function Test-Contract {
 
 if ($SelfTest) { Test-Contract; exit 0 }
 
+$ciFixture = ($env:GEUMYI_DAY12_ACL_FIXTURE_ONLY -eq 'isolated_windows_ci')
+if ($ciFixture -and ($env:GITHUB_ACTIONS -ne 'true' -or [string]::IsNullOrWhiteSpace($env:RUNNER_TEMP))) {
+    throw 'CI_FIXTURE_MODE_REQUIRES_GITHUB_WINDOWS_RUNNER'
+}
+
 if ([string]::IsNullOrWhiteSpace($env:ProgramData) -or
     [string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) {
     throw 'PROGRAMDATA_OR_LOCALAPPDATA_MISSING'
@@ -203,7 +208,7 @@ $share = [ordered]@{
     phase='12.5-acl-change-preflight'
     tool='DAY12_GSC_ACL_PREDEPLOY_READONLY'
     captured_at=$time.ToString('o')
-    synthetic=$false
+    synthetic=$ciFixture
     production_acl_modified=$false
     gsc_service_modified=$false
     firewall_modified=$false
