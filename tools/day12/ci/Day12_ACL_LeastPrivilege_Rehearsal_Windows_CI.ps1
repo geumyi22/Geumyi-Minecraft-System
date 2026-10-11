@@ -128,6 +128,19 @@ try {
     $a.AddAccessRule($replacement)
     Set-Acl -LiteralPath $gsc -AclObject $a -ErrorAction Stop
 
+    # Diagnostics only for the isolated fixture. No production accounts/paths.
+    foreach ($p in @($parent,$gsc)) {
+        $objLabel = if ($p -eq $parent) { 'SYNTHETIC_PARENT' } else { 'SYNTHETIC_GSC_ROOT' }
+        $aclProbe = Get-Acl -LiteralPath $p
+        $userRules = @(Find-UsersAllows $p)
+        $summary = @($userRules | ForEach-Object {
+            ('mask='+[int]$_.FileSystemRights+',inherited='+[bool]$_.IsInherited+
+             ',flags='+[string]$_.InheritanceFlags)
+        }) -join ';'
+        Write-Host ('SYNTHETIC_ACL: '+$objLabel+',protected='+
+            $aclProbe.AreAccessRulesProtected+',UsersRules=['+$summary+']')
+    }
+
     if ((Get-DaclSddl $parent) -ne $initialParent) {
         throw 'PARENT_PROGRAMDATA_FIXTURE_CHANGED'
     }
