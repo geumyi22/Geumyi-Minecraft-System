@@ -107,6 +107,27 @@ jobs:
             if(Test-Path -LiteralPath $base){Remove-Item -LiteralPath $base -Recurse -Force}
           }
 
+      - name: Package CI-checked ACL preflight kit (NO APPLY)
+        shell: powershell
+        run: |
+          $dir=Join-Path $env:RUNNER_TEMP 'acl-preflight-kit'
+          New-Item -ItemType Directory -Path $dir -Force|Out-Null
+          foreach($f in @(
+            'Day12_Phase5_ACL_Change_Preflight_READ_ONLY.ps1',
+            'START_Day12_Phase5_ACL_Change_Preflight_READ_ONLY.cmd',
+            'README-Day12-ACL-PREFLIGHT-KO.txt'
+          )){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12' $f) -Destination $dir -ErrorAction Stop
+          }
+          Compress-Archive -LiteralPath (Join-Path $dir '*') -DestinationPath 'Geumyi-Day12-ACL-Preflight-READ-ONLY.zip' -Force
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-acl-predeployment-readonly-kit
+          path: Geumyi-Day12-ACL-Preflight-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Dual-stack SubPC exposure probe synthetic and unsafe-target rejection
         shell: powershell
         run: |
