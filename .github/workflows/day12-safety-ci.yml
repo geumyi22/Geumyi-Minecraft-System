@@ -64,6 +64,49 @@ jobs:
             if($s.Contains($pattern)){throw ('ACL preflight unsafe source marker: '+$pattern)}
           }
 
+      - name: ACL predeployment capture on disposable Windows directory tree
+        shell: powershell
+        run: |
+          $tool='tools/day12/Day12_Phase5_ACL_Change_Preflight_READ_ONLY.ps1'
+          $base=Join-Path $env:RUNNER_TEMP ('day12-acl-preflight-'+[guid]::NewGuid().ToString('N'))
+          $pd=Join-Path $base 'ProgramData'
+          $local=Join-Path $base 'LocalAppData'
+          $agent=Join-Path $pd 'GeumyiServerCenter/Runtime/Agent'
+          $oldPD=$env:ProgramData;$oldLA=$env:LOCALAPPDATA
+          $oldFixture=$env:GEUMYI_DAY12_ACL_FIXTURE_ONLY
+          try {
+            New-Item -ItemType Directory -Force -Path $agent,$local | Out-Null
+            Set-Content -LiteralPath (Join-Path $pd 'GeumyiServerCenter/server.json') -Value '{}' -Encoding ASCII
+            $env:ProgramData=$pd
+            $env:LOCALAPPDATA=$local
+            $env:GEUMYI_DAY12_ACL_FIXTURE_ONLY='isolated_windows_ci'
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool
+            if($LASTEXITCODE -ne 0){throw 'ACL fixture collector execution failed'}
+            $share=@(Get-ChildItem -LiteralPath $local -Filter 'DAY12-ACL-CHANGE-PREFLIGHT-SHARE-ONLY-THIS.json' -Recurse -File)
+            $private=@(Get-ChildItem -LiteralPath $local -Filter 'PRIVATE-ACL-SDDL-SNAPSHOT-DO-NOT-SHARE.json' -Recurse -File)
+            if($share.Count -ne 1 -or $private.Count -ne 1){throw 'ACL fixture evidence output missing'}
+            $j=Get-Content -LiteralPath $share[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+            $p=Get-Content -LiteralPath $private[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+            if(-not $j.synthetic -or -not $j.output_directory_acl_restricted -or
+                $j.production_acl_modified -or $j.raw_sddl_or_paths_shared -or
+                @($j.targets).Count -ne 11 -or
+                @($p.targets).Count -ne 11 -or
+                -not $p.targets[1].acl_sddl -or
+                $j.final_acl_security_pass -or $j.exact_ace_mutation_approved){
+              throw 'ACL fixture redaction/safety contract failed'
+            }
+            $raw=Get-Content -LiteralPath $share[0].FullName -Raw
+            if($raw.Contains($pd) -or $raw.Contains('acl_sddl') -or $raw.Contains('principal_sid')){
+              throw 'ACL fixture leaked private SDDL, SID or actual path into shareable JSON'
+            }
+            Write-Host 'ACL predeployment isolated filesystem capture PASS'
+          } finally {
+            $env:ProgramData=$oldPD
+            $env:LOCALAPPDATA=$oldLA
+            $env:GEUMYI_DAY12_ACL_FIXTURE_ONLY=$oldFixture
+            if(Test-Path -LiteralPath $base){Remove-Item -LiteralPath $base -Recurse -Force}
+          }
+
       - name: Dual-stack SubPC exposure probe synthetic and unsafe-target rejection
         shell: powershell
         run: |
