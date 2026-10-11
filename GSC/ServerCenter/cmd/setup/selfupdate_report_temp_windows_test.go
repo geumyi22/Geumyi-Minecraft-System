@@ -4,6 +4,8 @@ package main
 
 import (
 	"encoding/json"
+
+	"geumyi/servercenter/internal/atomicfile"
 	"os"
 	"path/filepath"
 	"testing"
@@ -32,7 +34,7 @@ func TestSelfUpdateReportLeavesPreplantedFixedTempUntouched(t *testing.T) {
 	if err != nil || string(stale) != "preplanted" {
 		t.Fatalf("fixed temp was touched: %v", err)
 	}
-	if extra, err := filepath.Glob(filepath.Join(dir, ".gsc-update-report-*.tmp")); err != nil || len(extra) != 0 {
+	if extra, err := filepath.Glob(filepath.Join(dir, atomicfile.TempPattern(target))); err != nil || len(extra) != 0 {
 		t.Fatalf("temporary report residue: %v count=%d", err, len(extra))
 	}
 }
@@ -52,7 +54,7 @@ func TestSelfUpdateReportRenameFailureLeavesPriorDestination(t *testing.T) {
 	if err != nil || string(b) != "keep" {
 		t.Fatalf("prior destination changed: %v", err)
 	}
-	if extra, err := filepath.Glob(filepath.Join(dir, ".gsc-update-report-*.tmp")); err != nil || len(extra) != 0 {
+	if extra, err := filepath.Glob(filepath.Join(dir, atomicfile.TempPattern(target))); err != nil || len(extra) != 0 {
 		t.Fatalf("rename failure left temporary report: %v count=%d", err, len(extra))
 	}
 }

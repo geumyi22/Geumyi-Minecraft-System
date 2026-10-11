@@ -17,6 +17,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 type ExternalArtifact struct {
@@ -329,37 +331,23 @@ func downloadExternalVerified(a ExternalArtifact, dst string) error {
 	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 		return err
 	}
-	tmp := dst + ".tmp"
-	f, err := os.Create(tmp)
-	if err != nil {
-		return err
-	}
-	h := sha256.New()
-	n, cpErr := io.Copy(io.MultiWriter(f, h), io.LimitReader(resp.Body, 96<<20))
-	closeErr := f.Close()
-	if cpErr != nil {
-		_ = os.Remove(tmp)
-		return cpErr
-	}
-	if closeErr != nil {
-		_ = os.Remove(tmp)
-		return closeErr
-	}
-	if n < 100000 || n >= 96<<20 {
-		_ = os.Remove(tmp)
-		return fmt.Errorf("suspicious artifact size: %d", n)
-	}
-	got := hex.EncodeToString(h.Sum(nil))
-	if !strings.EqualFold(got, a.SHA256) {
-		_ = os.Remove(tmp)
-		return fmt.Errorf("SHA-256 mismatch: expected %s got %s", a.SHA256, got)
-	}
-	_ = os.Remove(dst)
-	if err := os.Rename(tmp, dst); err != nil {
-		_ = os.Remove(tmp)
-		return err
-	}
-	return nil
+	// Size and SHA-256 are verified inside the fill callback; a mismatch
+	// publishes nothing and keeps any previously staged artifact.
+	return atomicfile.WriteFrom(dst, 0644, func(f io.Writer) error {
+		h := sha256.New()
+		n, cpErr := io.Copy(io.MultiWriter(f, h), io.LimitReader(resp.Body, 96<<20))
+		if cpErr != nil {
+			return cpErr
+		}
+		if n < 100000 || n >= 96<<20 {
+			return fmt.Errorf("suspicious artifact size: %d", n)
+		}
+		got := hex.EncodeToString(h.Sum(nil))
+		if !strings.EqualFold(got, a.SHA256) {
+			return fmt.Errorf("SHA-256 mismatch: expected %s got %s", a.SHA256, got)
+		}
+		return nil
+	})
 }
 
 func apiV4ExternalUpdateStage(w http.ResponseWriter, r *http.Request) {

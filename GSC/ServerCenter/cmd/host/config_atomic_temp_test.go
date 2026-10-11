@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+
 	"encoding/json"
+	"geumyi/servercenter/internal/atomicfile"
 	"os"
 	"path/filepath"
 	"testing"
@@ -31,7 +33,7 @@ func TestHostConfigSaveDoesNotTouchPreplantedFixedTemp(t *testing.T) {
 	if err != nil || string(fixedGot) != marker {
 		t.Fatalf("preplanted fixed temp modified: %v", err)
 	}
-	if temp, err := filepath.Glob(filepath.Join(dir, ".gsc-config-*.tmp")); err != nil || len(temp) != 0 {
+	if temp, err := filepath.Glob(filepath.Join(dir, atomicfile.TempPattern(target))); err != nil || len(temp) != 0 {
 		t.Fatalf("temporary files not cleaned: %v count=%d", err, len(temp))
 	}
 }
@@ -53,7 +55,7 @@ func TestHostConfigRenameFailurePreservesPriorDestinationAndCleansTemp(t *testin
 	if err != nil || string(got) != "untouched" {
 		t.Fatalf("prior destination was changed on failure: %v", err)
 	}
-	if temp, err := filepath.Glob(filepath.Join(dir, ".gsc-config-*.tmp")); err != nil || len(temp) != 0 {
+	if temp, err := filepath.Glob(filepath.Join(dir, atomicfile.TempPattern(target))); err != nil || len(temp) != 0 {
 		t.Fatalf("failure left temporary files: %v count=%d", err, len(temp))
 	}
 }

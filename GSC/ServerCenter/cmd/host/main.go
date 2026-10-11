@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"geumyi/servercenter/internal/atomicfile"
 	"geumyi/servercenter/internal/javaruntime"
 	"geumyi/servercenter/internal/securestore"
 	"io"
@@ -538,28 +539,7 @@ func writeHostConfigSafely(path string, data []byte) error {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
-	f, err := os.CreateTemp(dir, ".gsc-config-*.tmp")
-	if err != nil {
-		return err
-	}
-	tmp := f.Name()
-	defer os.Remove(tmp)
-	if err := f.Chmod(0600); err != nil {
-		_ = f.Close()
-		return err
-	}
-	if _, err := f.Write(data); err != nil {
-		_ = f.Close()
-		return err
-	}
-	if err := f.Sync(); err != nil {
-		_ = f.Close()
-		return err
-	}
-	if err := f.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmp, path)
+	return atomicfile.WriteFile(path, data, 0600)
 }
 
 func apiAgentAction(w http.ResponseWriter, r *http.Request) {
