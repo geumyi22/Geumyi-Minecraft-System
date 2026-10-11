@@ -50,6 +50,20 @@ jobs:
           }
           Write-Host "Parsed $($files.Count) Day 12 PowerShell scripts."
 
+      - name: ACL predeployment target-map synthetic self-test (NO host ACL access)
+        shell: powershell
+        run: |
+          $tool='tools/day12/Day12_Phase5_ACL_Change_Preflight_READ_ONLY.ps1'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -SelfTest
+          if($LASTEXITCODE -ne 0){throw 'ACL predeployment self-test failed'}
+          $s=Get-Content -LiteralPath $tool -Raw
+          foreach($pattern in @(
+            'Set-NetFirewallRule','Set-Service','Stop-Service','Restart-Service',
+            'Restart-Computer','icacls.exe','/grant','/deny','/reset','/restore'
+          )){
+            if($s.Contains($pattern)){throw ('ACL preflight unsafe source marker: '+$pattern)}
+          }
+
       - name: Dual-stack SubPC exposure probe synthetic and unsafe-target rejection
         shell: powershell
         run: |
