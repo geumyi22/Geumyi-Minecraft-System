@@ -89,3 +89,36 @@ The protected original ACL must be restorable before attempting any apply. After
 - \`FINAL-RELEASE-GATES.json\`: unchanged; strict signed auto-Stable and maintenance remain blocked.
 
 **This is a readiness and safe process document, not an authorization or proof that production ACLs were successfully secured.**
+
+
+## Updated real-host ACL source mapping — 2026-10-11 12:14 KST
+
+Operator supplied **sanitized**, non-synthetic \`DAY12-ACL-CHANGE-PREFLIGHT-SHARE-ONLY-THIS.json\`. The private local original SDDL was **not** shared with GitHub, so an exact ACE diff/restore command **cannot** be derived in this PR yet.
+
+| Role | Exists | BUILTIN_USERS create Allow ACE | Inherited | Direct Users write Allow ACE observed |
+| --- | --- | --- | --- | --- |
+| \`PROGRAMDATA_PARENT\` | yes | 1 | **no** | 1 |
+| \`GSC_ROOT\` | yes | 1 | **yes** | 1 |
+| \`GSC_RUNTIME\` | yes | 1 | **yes** | 1 |
+| \`STATUSAGENT_RUNTIME\` | yes | 1 | **yes** | 1 |
+| \`GSC_UPDATES\` | yes | 1 | **yes** | 1 |
+| \`GSC_BACKUPS\` | yes | 1 | **yes** | 1 |
+| \`GSC_STAGING\` | yes | 1 | **yes** | 1 |
+| \`GSC_STAGING_CHILD\` | yes | 1 | **yes** | 1 |
+| \`GSC_SERVER_JSON\` | yes | 0 | no | 0 |
+| \`GSC_TRUSTED_DEVICES\` | yes | 0 | no | 0 |
+| \`STATUSAGENT_JAR\` | yes | 0 | no | 0 |
+
+All 11 objects were captured. Required target gaps 0; reparse targets 0; unresolved SIDs 0; GSC Host account class \`LOCAL_SYSTEM\`; **no existing production ACL or service was modified**. The preflight creates and ACL-protects **its own evidence output folder only**, not ProgramData/GSC. Independent standard-account token, mandatory integrity, actual file create/replace, and update rollback remain unproven.
+
+**Revised change-scope decision:**
+- Do **not** edit the explicit ACE on the real \`%ProgramData%\` parent. This may affect unrelated applications and Windows services.
+- The **single proposed inheritance boundary** is the GSC **root directory**, but only if local private ACE detail confirms that root is the sole relevant source of create/write propagation to all sensitive descendants and the affected service/installer/updater identities retain necessary access.
+- Model intended result as *preserve appropriate Users read/traverse ACEs, SYSTEM/Administrators/service writes; remove only unnecessary Users create/write on GSC root and inherited children*. This is a **provisional design**, not an executable ACE grant/removal instruction; exact rights, owner, inheritance flags and inherited descendant behavior must be checked privately.
+- \`server.json\`, \`trusted-devices.json\`, and Agent JAR have **no observed BUILTIN_USERS write Allow ACE**. Do not alter their ACLs as part of an automatic fix.
+- \`GSC_BACKUPS\` in this inspection refers to **GSC ProgramData update backup metadata/storage**, not the protected full Minecraft world Golden backups.
+- Other local principals, explicit child ACEs and alternative access paths are not captured sufficiently by the aggregate counters; their absence must **never** be inferred.
+
+**Disposable rehearsal:** \`tools/day12/ci/Day12_ACL_LeastPrivilege_Rehearsal_Windows_CI.ps1\` uses a GUID-scoped synthetic Windows fixture under GitHub runner temp, creates an explicit parent BUILTIN_USERS Allow and a GSC subtree, saves its original DACL with \`icacls /save\`, changes **only synthetic GSC root inheritance/grants**, validates parent untouched, Users read/traverse retained and synthetic descendant create rights removed, then restores with \`icacls /restore\` and checks DACL-only SDDL equality. The CI guard refuses non-runner/non-fixture execution and does not touch any real user machine. **CI result must be checked and recorded before declaring even the rehearsal successful.**
+
+**Production permission gate remains CLOSED** pending a trusted on-host ACL backup archive with verified parent-relative restore context, private exact ACE mapping, independent standard-user effective right assessment and affirmative user approval specifying target/impact/window. This result **does not upgrade the formal phase-12.5, phase-12.10 or Stable gates**.
