@@ -438,6 +438,60 @@ jobs:
             }
           }
 
+      - name: GSC subtree owner inventory on Windows PowerShell 5.1 (self-test + disposable fixture, NO production path)
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          if($PSVersionTable.PSVersion.Major -ne 5 -or $PSVersionTable.PSEdition -ne 'Desktop'){
+            throw "Expected Windows PowerShell 5.1 Desktop, got $($PSVersionTable.PSVersion) $($PSVersionTable.PSEdition)"
+          }
+          Write-Host ("Windows PowerShell " + $PSVersionTable.PSVersion + " " + $PSVersionTable.PSEdition)
+          $tool=Join-Path $env:GITHUB_WORKSPACE 'tools\day12\Day12_Phase5_GSC_Subtree_Owner_Inventory_READ_ONLY.ps1'
+          $ps51=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -SelfTest
+          if($LASTEXITCODE -ne 0){throw "Inventory -SelfTest failed under PS 5.1: $LASTEXITCODE"}
+          $leftovers=@(Get-ChildItem -LiteralPath ([IO.Path]::GetTempPath()) -Directory -Filter 'gsc-inv-selftest-*' -ErrorAction SilentlyContinue)
+          if($leftovers.Count -ne 0){throw "Self-test left $($leftovers.Count) temp fixture directories"}
+
+          # Disposable GSC-like tree under RUNNER_TEMP with one junction and one legacy temp.
+          $fixture=Join-Path $env:RUNNER_TEMP ('gsc-inventory-fixture-' + [guid]::NewGuid().ToString('N'))
+          $outside=$fixture + '-junction-target'
+          New-Item -ItemType Directory -Path (Join-Path $fixture 'Runtime\Agent\data') -Force | Out-Null
+          New-Item -ItemType Directory -Path (Join-Path $fixture 'Backups\wild') -Force | Out-Null
+          New-Item -ItemType Directory -Path $outside -Force | Out-Null
+          Set-Content -LiteralPath (Join-Path $outside 'must-not-be-walked.txt') -Value 'x'
+          Set-Content -LiteralPath (Join-Path $fixture 'server.json') -Value '{}'
+          Set-Content -LiteralPath (Join-Path $fixture 'Runtime\Agent\agent.properties') -Value 'a=b'
+          Set-Content -LiteralPath (Join-Path $fixture 'Runtime\Agent\agent.properties.gsc.tmp') -Value 'legacy'
+          Set-Content -LiteralPath (Join-Path $fixture 'Backups\wild\.x.zip.gsc-123456789.tmp') -Value 'new-random'
+          cmd.exe /d /c mklink /J "$(Join-Path $fixture 'Staging')" "$outside" | Out-Null
+          if($LASTEXITCODE -ne 0){throw 'mklink /J failed on runner'}
+          $outBase=Join-Path $env:LOCALAPPDATA 'Geumyi-Day12-ACL-Inventory'
+          $before=@(Get-ChildItem -LiteralPath $outBase -Filter '*.json' -ErrorAction SilentlyContinue).Count
+          & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -CIFixture -CIFixtureRoot $fixture
+          if($LASTEXITCODE -ne 0){throw "Inventory fixture run failed: $LASTEXITCODE"}
+          $json=@(Get-ChildItem -LiteralPath $outBase -Filter 'DAY12-GSC-SUBTREE-INVENTORY-SHARE-ONLY-THIS-*.json' | Sort-Object LastWriteTime -Descending)
+          if($json.Count -ne ($before + 1)){throw 'Expected exactly one new share JSON'}
+          $r=Get-Content -LiteralPath $json[0].FullName -Raw | ConvertFrom-Json
+          $legacy=0; foreach($p in $r.legacy_predictable_temp_by_owner_class.PSObject.Properties){ $legacy += [int]$p.Value }
+          Write-Host ("objects=" + $r.objects + " reparse=" + $r.reparse_points + " legacy=" + $legacy + " new_random=" + $r.new_random_temp_files + " synthetic=" + $r.synthetic)
+          if(-not $r.synthetic){throw 'Fixture report must be marked synthetic'}
+          if($r.reparse_points -ne 1 -or $r.reparse_points_followed){throw 'Junction must be counted once and never followed'}
+          if($legacy -ne 1){throw "Expected exactly one legacy predictable temp, got $legacy"}
+          if($r.new_random_temp_files -ne 1){throw 'Expected one new random temp'}
+          # Root: Runtime, Backups, server.json, Staging(junction)=4; Agent=1; data+2 agent files=3; wild=1; zip temp=1 => 10.
+          # Verified with the same walker on PowerShell 7 + symlink; junction target content must be absent.
+          if($r.objects -ne 10){throw "Unexpected object count $($r.objects) (junction target walked?)"}
+          $text=Get-Content -LiteralPath $json[0].FullName -Raw
+          if($text -match [regex]::Escape($fixture) -or $text -match 'S-1-5-' -or $text -match 'must-not-be-walked'){
+            throw 'Share JSON leaked a path, SID or file name'
+          }
+          if(-not (Test-Path -LiteralPath (Join-Path $outside 'must-not-be-walked.txt'))){throw 'Junction target was modified'}
+          cmd.exe /d /c rmdir "$(Join-Path $fixture 'Staging')" | Out-Null
+          Remove-Item -LiteralPath $fixture -Recurse -Force
+          Remove-Item -LiteralPath $outside -Recurse -Force
+          Write-Host 'PS51_INVENTORY_SELFTEST_AND_FIXTURE_PASS'
+
       - name: Synthetic final Stable release gate omission and fail-closed tests
         shell: pwsh
         run: |
