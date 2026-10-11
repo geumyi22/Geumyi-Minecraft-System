@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - audit/gemini-pr47-49-sourcepack-20261012
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 permissions:
   contents: read
