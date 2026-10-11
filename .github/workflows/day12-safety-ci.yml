@@ -137,6 +137,101 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Exact GSC ACL backup archives and parent-relative restore on isolated Windows fixture
+        shell: powershell
+        env:
+          GEUMYI_DAY12_ACL_BACKUP_CI: isolated_fixture
+        run: |
+          $tool='tools/day12/Day12_Phase5_Production_ACL_Backup_READ_ONLY.ps1'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -SelfTest
+          if($LASTEXITCODE -ne 0){throw 'GSC ACL original backup self-test failed'}
+          $fixture=Join-Path $env:RUNNER_TEMP ('ACL-Backup-Fixture-'+[guid]::NewGuid().ToString('N'))
+          $gsc=Join-Path $fixture 'GeumyiServerCenter'
+          $agent=Join-Path $gsc 'Runtime/Agent'
+          $update=Join-Path $gsc 'Updates'
+          $backup=Join-Path $gsc 'Backups'
+          $stage=Join-Path $gsc 'Staging/GSC'
+          try {
+            New-Item -ItemType Directory -Force -Path $agent,$update,$backup,$stage|Out-Null
+            Set-Content -LiteralPath (Join-Path $gsc 'server.json') -Value '{}' -Encoding ASCII
+            Set-Content -LiteralPath (Join-Path $gsc 'trusted-devices.json') -Value '[]' -Encoding ASCII
+            Set-Content -LiteralPath (Join-Path $agent 'GeumyiStatusAgent-0.5.4.jar') -Value 'fixture' -Encoding ASCII
+            $parentDaclBefore=(Get-Acl -LiteralPath $fixture).GetSecurityDescriptorSddlForm(
+              [System.Security.AccessControl.AccessControlSections]::Access)
+            $rootDaclBefore=(Get-Acl -LiteralPath $gsc).GetSecurityDescriptorSddlForm(
+              [System.Security.AccessControl.AccessControlSections]::Access)
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -CIFixture -CIFixtureRoot $fixture
+            if($LASTEXITCODE -ne 0){throw 'GSC original ACL backup fixture execution failed'}
+            $resultBase=Join-Path $env:LOCALAPPDATA 'Geumyi-Day12-ACL-Backup'
+            $latest=Get-ChildItem -LiteralPath $resultBase -Directory -Filter 'backup-*'|
+              Sort-Object CreationTimeUtc -Descending|Select-Object -First 1
+            if($null -eq $latest){throw 'No private backup output directory'}
+            $shared=Join-Path $latest.FullName 'DAY12-ACL-BACKUP-SHARE-ONLY-THIS.json'
+            $priv=Join-Path $latest.FullName 'PRIVATE-ACL-BACKUP-MANIFEST-DO-NOT-SHARE.json'
+            $j=Get-Content -LiteralPath $shared -Raw -Encoding UTF8|ConvertFrom-Json
+            $m=Get-Content -LiteralPath $priv -Raw -Encoding UTF8|ConvertFrom-Json
+            $saved=@(Get-ChildItem -LiteralPath $latest.FullName -File -Filter 'PRIVATE-*.dacl')
+            if(-not $j.synthetic -or $j.status -ne 'CI_FIXTURE_BACKUP_PASS' -or
+               $j.scoped_role_count -ne 10 -or $j.captured_archive_count -ne 10 -or
+               $j.optional_missing_count -ne 0 -or $saved.Count -ne 10 -or
+               @($m.entries).Count -ne 10 -or
+               $j.production_acl_modified -or $j.real_production_restore_performed -or
+               -not $j.target_acls_unchanged_during_backup -or
+               -not $j.parent_acl_unchanged_during_backup -or
+               -not $j.backup_output_directory_acl_restricted) {
+              throw 'GSC original backup privacy/scope contract failed'
+            }
+            $shareText=Get-Content -LiteralPath $shared -Raw -Encoding UTF8
+            if($shareText.Contains($fixture) -or $shareText.Contains('original_dacl_sddl') -or
+               $shareText.Contains('restore_parent') -or $shareText.Contains('archive_sha256')) {
+              throw 'Sensitive ACL metadata leaked to sharing report'
+            }
+            foreach($ent in $m.entries){
+              $p=Join-Path $latest.FullName $ent.archive_name
+              if((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() -ne $ent.archive_sha256){
+                throw ('Archive digest mismatch: '+$ent.role)
+              }
+            }
+            # Exercise an actual /restore ONLY on a disposable CI GSC root:
+            $a=Get-Acl -LiteralPath $gsc
+            $a.SetAccessRuleProtection($true,$true)
+            Set-Acl -LiteralPath $gsc -AclObject $a
+            $rootArchive=Join-Path $latest.FullName 'PRIVATE-GSC_ROOT.dacl'
+            & icacls.exe $fixture /restore $rootArchive | Out-Null
+            if($LASTEXITCODE -ne 0){throw 'Isolated production-style archive restore failed'}
+            $restored=(Get-Acl -LiteralPath $gsc).GetSecurityDescriptorSddlForm(
+               [System.Security.AccessControl.AccessControlSections]::Access)
+            $parentAfter=(Get-Acl -LiteralPath $fixture).GetSecurityDescriptorSddlForm(
+               [System.Security.AccessControl.AccessControlSections]::Access)
+            if($restored -ne $rootDaclBefore -or $parentAfter -ne $parentDaclBefore){
+              throw 'ACL archive restore altered parent or failed exact DACL comparison'
+            }
+            Write-Host 'GSC ACL BACKUP 10/10 + isolated rollback /restore PASS'
+          } finally {
+            if(Test-Path -LiteralPath $fixture){Remove-Item -LiteralPath $fixture -Force -Recurse -ErrorAction SilentlyContinue}
+          }
+
+      - name: Package tested GSC ACL backup CMD (NO production APPLY)
+        shell: powershell
+        run: |
+          $folder=Join-Path $env:RUNNER_TEMP 'GSC-ACL-BACKUP-READ-ONLY-KIT'
+          New-Item -ItemType Directory -Force -Path $folder|Out-Null
+          foreach($n in @(
+            'Day12_Phase5_Production_ACL_Backup_READ_ONLY.ps1',
+            'START_Day12_Phase5_Production_ACL_Backup_READ_ONLY.cmd',
+            'README-Day12-ACL-ORIGINAL-BACKUP-KO.txt'
+          )){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12' $n) -Destination $folder -ErrorAction Stop
+          }
+          Compress-Archive -Path (Join-Path $folder '*') -DestinationPath 'Geumyi-Day12-ACL-Original-Backup-READ-ONLY.zip' -Force
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-acl-original-backup-readonly-kit
+          path: Geumyi-Day12-ACL-Original-Backup-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Dual-stack SubPC exposure probe synthetic and unsafe-target rejection
         shell: powershell
         run: |
