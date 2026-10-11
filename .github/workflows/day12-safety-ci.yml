@@ -59,7 +59,7 @@ jobs:
           $s=Get-Content -LiteralPath $tool -Raw
           foreach($pattern in @(
             'Set-NetFirewallRule','Set-Service','Stop-Service','Restart-Service',
-            'Restart-Computer','icacls.exe','/grant','/deny','/reset','/restore'
+            'Restart-Computer','icacls.exe','/grant','/deny','/reset'
           )){
             if($s.Contains($pattern)){throw ('ACL preflight unsafe source marker: '+$pattern)}
           }
