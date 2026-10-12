@@ -12,7 +12,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 type selfUpdateReport struct {
@@ -61,13 +64,15 @@ func clientSelfUpdateLockPath() string {
 
 func writeSelfUpdateReportAt(p string, r selfUpdateReport) {
 	r.Finished = time.Now().Format(time.RFC3339)
-	b, _ := json.MarshalIndent(r, "", "  ")
-	_ = os.MkdirAll(filepath.Dir(p), 0755)
-	tmp := p + ".tmp"
-	if os.WriteFile(tmp, append(b, '\n'), 0600) == nil {
-		_ = os.Remove(p)
-		_ = os.Rename(tmp, p)
+	b, err := json.MarshalIndent(r, "", "  ")
+	if err != nil {
+		return
 	}
+	if err := os.MkdirAll(filepath.Dir(p), 0755); err != nil {
+		return
+	}
+	// Unpredictable O_EXCL temp; a valid previous report is kept if replacement fails.
+	_ = atomicfile.WriteFile(p, append(b, '\n'), 0600)
 }
 
 func writeSelfUpdateReport(r selfUpdateReport) {
@@ -106,28 +111,12 @@ func copyFileStrict(src, dst string, mode os.FileMode) error {
 	if err = os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 		return err
 	}
-	tmp := dst + ".gsc-new"
-	_ = os.Remove(tmp)
-	out, err := os.OpenFile(tmp, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, mode)
-	if err != nil {
-		return err
-	}
-	_, cpErr := io.Copy(out, in)
-	closeErr := out.Close()
-	if cpErr != nil {
-		_ = os.Remove(tmp)
+	// Replace in place (MoveFileEx REPLACE_EXISTING); never delete the current
+	// service binary before the new copy is fully written and flushed.
+	return atomicfile.WriteFrom(dst, mode, func(w io.Writer) error {
+		_, cpErr := io.Copy(w, in)
 		return cpErr
-	}
-	if closeErr != nil {
-		_ = os.Remove(tmp)
-		return closeErr
-	}
-	_ = os.Remove(dst)
-	if err = os.Rename(tmp, dst); err != nil {
-		_ = os.Remove(tmp)
-		return err
-	}
-	return nil
+	})
 }
 
 func writeEmbeddedStrict(name, dst string) error {
@@ -141,16 +130,9 @@ func writeEmbeddedStrict(name, dst string) error {
 	if err = os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 		return err
 	}
-	tmp := dst + ".tmp"
-	if err = os.WriteFile(tmp, b, 0755); err != nil {
-		return err
-	}
-	_ = os.Remove(dst)
-	if err = os.Rename(tmp, dst); err != nil {
-		_ = os.Remove(tmp)
-		return err
-	}
-	return nil
+	// The staging directory is created exclusively by the caller; still never
+	// open a predictable "<exe>.tmp" that another account could pre-create.
+	return atomicfile.WriteFile(dst, b, 0755)
 }
 
 func processImageRunning(name string) bool {
@@ -387,13 +369,15 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 
 	clientWasRunning := clientExists && processImageRunning("GeumyiServerCenter.exe")
 	stamp := time.Now().Format("20060102-150405")
-	backupDir := filepath.Join(dataDir, "Backups", "Day11-GSCSelfUpdate-"+stamp)
-	report.BackupDir = backupDir
-	if err := os.MkdirAll(backupDir, 0700); err != nil {
+	// Exclusive, unpredictable directory: a pre-created (possibly user-owned)
+	// "Day11-GSCSelfUpdate-<stamp>" must never become the rollback source.
+	backupDir, err := newExclusiveDir(filepath.Join(dataDir, "Backups"), "Day11-GSCSelfUpdate-"+stamp+"-")
+	if err != nil {
 		report.Status = "failed"
 		report.Error = err.Error()
 		return
 	}
+	report.BackupDir = backupDir
 
 	// Include Setup even when it does not exist yet. The helper may create
 	// GeumyiServerCenter-Setup.exe during replacement; a failed update must
@@ -411,12 +395,12 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 	}
 	if !clientOnly {
 		if b, err := os.ReadFile(filepath.Join(dataDir, "server.json")); err == nil {
-			_ = os.WriteFile(filepath.Join(backupDir, "server.json"), b, 0600)
+			_ = atomicfile.WriteFile(filepath.Join(backupDir, "server.json"), b, 0600)
 		}
 	}
 
-	stageDir := filepath.Join(dataDir, "Staging", "GSC", "helper-"+stamp)
-	if err := os.MkdirAll(stageDir, 0700); err != nil {
+	stageDir, err := newExclusiveDir(filepath.Join(dataDir, "Staging", "GSC"), "helper-"+stamp+"-")
+	if err != nil {
 		report.Status = "failed"
 		report.Error = err.Error()
 		return
@@ -483,13 +467,16 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 	}
 
 	if hostExists {
-		if err := copyFileStrict(newHost, hostTarget, 0755); err != nil {
+		// Install from the signed, embedded payload bytes, not from the staged
+		// copy under %ProgramData%: the staging tree may be reachable by other
+		// local accounts, so re-reading it here would be a check-to-use race.
+		if err := writeEmbeddedStrict("GeumyiServerHost.exe", hostTarget); err != nil {
 			rollback(fmt.Errorf("Host replacement failed: %w", err))
 			return
 		}
 	}
 	if clientExists {
-		if err := copyFileStrict(newClient, clientTarget, 0755); err != nil {
+		if err := writeEmbeddedStrict("GeumyiServerCenter.exe", clientTarget); err != nil {
 			rollback(fmt.Errorf("Client replacement failed: %w", err))
 			return
 		}
@@ -521,4 +508,34 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 	} else {
 		setupLog("self-update success: target=" + version + " backup=" + backupDir)
 	}
+}
+
+// newExclusiveDir creates a fresh directory under parent with an unpredictable
+// suffix (os.MkdirTemp fails instead of reusing an existing directory) and
+// refuses a parent that is a reparse point (junction/symlink).
+func newExclusiveDir(parent, prefix string) (string, error) {
+	if err := os.MkdirAll(parent, 0755); err != nil {
+		return "", err
+	}
+	st, err := os.Lstat(parent)
+	if err != nil {
+		return "", err
+	}
+	if !st.IsDir() || isReparsePoint(st) {
+		return "", fmt.Errorf("%s is not a plain directory (reparse point or file)", parent)
+	}
+	return os.MkdirTemp(parent, prefix+"*")
+}
+
+// isReparsePoint checks FILE_ATTRIBUTE_REPARSE_POINT directly: since Go 1.23
+// directory junctions are no longer reported with os.ModeSymlink.
+func isReparsePoint(st os.FileInfo) bool {
+	const fileAttributeReparsePoint = 0x400
+	if st.Mode()&(os.ModeSymlink|os.ModeIrregular) != 0 {
+		return true
+	}
+	if d, ok := st.Sys().(*syscall.Win32FileAttributeData); ok {
+		return d.FileAttributes&fileAttributeReparsePoint != 0
+	}
+	return false
 }
