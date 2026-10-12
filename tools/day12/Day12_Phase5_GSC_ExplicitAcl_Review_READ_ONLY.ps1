@@ -18,8 +18,12 @@ $ErrorActionPreference = 'Stop'
 
 $script:TopBuckets = @('Backups','Checkpoints','PluginBackups','Runtime','Updates','Staging','logs','events','metrics','jobs','audit','ManagedPlugins')
 $script:BroadSids = @('S-1-5-32-545','S-1-1-0','S-1-5-11','S-1-5-32-546')  # Users, Everyone, Authenticated Users, Guests
-$script:WriteMask = [int][System.Security.AccessControl.FileSystemRights]::Write -bor
-                    [int][System.Security.AccessControl.FileSystemRights]::Modify -bor
+# Only atomic write-like bits: Write/Modify composite enums also contain
+# Read permissions. OR-ing those composites incorrectly marks READ as WRITE.
+$script:WriteMask = [int][System.Security.AccessControl.FileSystemRights]::WriteData -bor
+                    [int][System.Security.AccessControl.FileSystemRights]::AppendData -bor
+                    [int][System.Security.AccessControl.FileSystemRights]::WriteExtendedAttributes -bor
+                    [int][System.Security.AccessControl.FileSystemRights]::WriteAttributes -bor
                     [int][System.Security.AccessControl.FileSystemRights]::Delete -bor
                     [int][System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
                     [int][System.Security.AccessControl.FileSystemRights]::ChangePermissions -bor
