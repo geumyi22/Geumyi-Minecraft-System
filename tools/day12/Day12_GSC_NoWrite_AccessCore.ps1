@@ -18,6 +18,12 @@ public static class GeumyiDay12DirectoryOpenCheck {
 
     [DllImport("kernel32.dll", SetLastError = true)]
     public static extern bool CloseHandle(IntPtr handle);
+
+    // TOKEN_INFORMATION_CLASS.TokenElevationType = 18.
+    // Default=1, Full=2 (elevated admin), Limited=3 (UAC filtered admin).
+    [DllImport("advapi32.dll", SetLastError = true)]
+    public static extern bool GetTokenInformation(IntPtr token, int infoClass,
+      out int elevationType, int outputLength, out int returnLength);
 }
 '@
     Add-Type -TypeDefinition $nativeSignature -Language CSharp -ErrorAction Stop
@@ -56,6 +62,21 @@ function Get-Day12TokenClass {
     $id = [System.Security.Principal.WindowsIdentity]::GetCurrent()
     if ($null -eq $id -or -not $id.IsAuthenticated -or $null -eq $id.User) {
         return 'BLOCKED_UNVERIFIED_IDENTITY'
+    }
+    # Reject UAC *limited* administrators even if a deny-only admin SID
+    # does not appear in WindowsIdentity.Groups. Unreadable/unknown token
+    # elevation type is blocked, never promoted to a standard-user claim.
+    $elevationType = 0
+    $returnedBytes = 0
+    if (-not [GeumyiDay12DirectoryOpenCheck]::GetTokenInformation(
+            $id.Token, 18, [ref]$elevationType, 4, [ref]$returnedBytes)) {
+        return 'BLOCKED_TOKEN_ELEVATION_UNVERIFIED'
+    }
+    if ($elevationType -eq 2 -or $elevationType -eq 3) {
+        return 'BLOCKED_FULL_OR_UAC_FILTERED_ADMIN_TOKEN'
+    }
+    if ($elevationType -ne 1 -or $returnedBytes -ne 4) {
+        return 'BLOCKED_UNKNOWN_TOKEN_ELEVATION'
     }
     $disallowed = @(
         'S-1-5-18',        # SYSTEM
