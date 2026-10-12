@@ -1,5 +1,7 @@
 # Day 12 — 문서 모음
 
+**2026-10-13 빠른 Stable 마감 계획:** [DAY12-STABLE-FAST-TRACK-20261013.md](DAY12-STABLE-FAST-TRACK-20261013.md) — 기존 수동 Stable 릴리즈와 엄격한 최종 서명 Stable의 차이, 남은 실제 보안/복구/Canary 게이트, 중복 검사 방지.
+
 2026-10-11 기준: 기존 Day 12 상세 보고서 65개를 분야·단계별 폴더로 정리했습니다. 원본 파일 내용은 보존되며 파일 이름도 바꾸지 않았습니다. 새로운 프로젝트 상태는 [루트 README](../../README.md)와 [최종 종료 보고서](../../PROJECT-CLOSEOUT-2026-10-11.md)를 참고하세요.
 
 ## operations
