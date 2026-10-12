@@ -43,8 +43,15 @@ func setupPS(t *testing.T, script string, args ...string) {
 	t.Helper()
 	ps := powershellOrSkip(t)
 	full := "$ErrorActionPreference='Stop';" + script
-	cmdArgs := append([]string{"-NoProfile", "-NonInteractive", "-Command", full}, args...)
-	if out, err := exec.Command(ps, cmdArgs...).CombinedOutput(); err != nil {
+	if len(args) != 1 || args[0] == "" {
+		t.Skip("UNVERIFIED: expected exactly one nonempty disposable fixture path")
+	}
+	// PowerShell 5.1 and 7 do not handle a trailing native -Command argument
+	// identically. Pass only the disposable fixture path through the child
+	// environment, instead of relying on $args[0] in script scope.
+	cmd := exec.Command(ps, "-NoProfile", "-NonInteractive", "-Command", full)
+	cmd.Env = append(os.Environ(), "GSC_ACL_FIXTURE_PATH="+args[0])
+	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Skipf("UNVERIFIED: ACL fixture setup could not run: %v\n%s", err, out)
 	}
 }
@@ -52,7 +59,7 @@ func setupPS(t *testing.T, script string, args ...string) {
 func getACL(t *testing.T, path string) aclInfo {
 	t.Helper()
 	ps := powershellOrSkip(t)
-	script := `$ErrorActionPreference='Stop';$a=Get-Acl -LiteralPath $args[0];` +
+	script := `$ErrorActionPreference='Stop';$a=Get-Acl -LiteralPath $env:GSC_ACL_FIXTURE_PATH;` +
 		`$sddl=$a.GetSecurityDescriptorSddlForm([System.Security.AccessControl.AccessControlSections]::Access);` +
 		`Write-Output ("SDDL=$sddl");` +
 		`Write-Output ("PROTECTED=$($a.AreAccessRulesProtected)");` +
@@ -60,7 +67,9 @@ func getACL(t *testing.T, path string) aclInfo {
 		`foreach($r in $a.Access){ if($r.AccessControlType -eq 'Allow'){ ` +
 		`try{$s=$r.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Value}catch{$s='UNRESOLVED'};` +
 		`Write-Output ("SID=$s") } }`
-	out, err := exec.Command(ps, "-NoProfile", "-NonInteractive", "-Command", script, path).Output()
+	cmd := exec.Command(ps, "-NoProfile", "-NonInteractive", "-Command", script)
+	cmd.Env = append(os.Environ(), "GSC_ACL_FIXTURE_PATH="+path)
+	out, err := cmd.Output()
 	if err != nil {
 		t.Skipf("UNVERIFIED: Get-Acl %s could not run: %v", path, err)
 	}
@@ -97,7 +106,7 @@ func (a aclInfo) hasAllow(sid string) bool {
 const markerSID = "S-1-5-32-546"
 
 func setDirMarker(t *testing.T, dir string) {
-	setupPS(t, `$d=$args[0];$a=Get-Acl -LiteralPath $d;`+
+	setupPS(t, `$d=$env:GSC_ACL_FIXTURE_PATH;$a=Get-Acl -LiteralPath $d;`+
 		`$ace=New-Object System.Security.AccessControl.FileSystemAccessRule(`+
 		`(New-Object System.Security.Principal.SecurityIdentifier('`+markerSID+`')),`+
 		`'ReadAndExecute','ContainerInherit,ObjectInherit','None','Allow');`+
@@ -114,7 +123,7 @@ func TestAtomicReplaceYieldsFreshInheritedDaclNotPreplanted(t *testing.T) {
 	// the current inherited ACEs as explicit, so SYSTEM/Administrators keep full
 	// control (the file stays deletable/replaceable) while inheritance is off;
 	// then the marker ACE is purged.
-	setupPS(t, `$p=$args[0];Set-Content -LiteralPath $p -Value 'PREPLANTED' -NoNewline;`+
+	setupPS(t, `$p=$env:GSC_ACL_FIXTURE_PATH;Set-Content -LiteralPath $p -Value 'PREPLANTED' -NoNewline;`+
 		`$a=Get-Acl -LiteralPath $p;$a.SetAccessRuleProtection($true,$true);`+
 		`$a.PurgeAccessRules((New-Object System.Security.Principal.SecurityIdentifier('`+markerSID+`')));`+
 		`Set-Acl -LiteralPath $p -AclObject $a`, dst)
