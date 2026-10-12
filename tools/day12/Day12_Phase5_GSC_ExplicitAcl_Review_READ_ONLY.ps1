@@ -51,6 +51,9 @@ function Convert-ToAclFacts([System.Security.AccessControl.FileSystemSecurity]$a
         broad_write_allow_inherited = $false
         broad_write_deny = $false
         other_write_allow_explicit = $false
+        system_admin_write_allow = $false
+        non_system_admin_write_allow = $false
+        service_sid_write_allow = $false
         unmapped_access_rules = 0
     }
     foreach ($ace in $access) {
@@ -61,6 +64,14 @@ function Convert-ToAclFacts([System.Security.AccessControl.FileSystemSecurity]$a
         $canWrite = (([int]$ace.FileSystemRights -band $script:WriteMask) -ne 0)
         if (-not $canWrite) { continue }
         $broad = $script:BroadSids -contains $sid
+        if ($ace.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Allow) {
+            if ($sid -in @('S-1-5-18','S-1-5-32-544')) {
+                $facts.system_admin_write_allow = $true
+            } else {
+                $facts.non_system_admin_write_allow = $true
+                if ($sid -like 'S-1-5-80-*') { $facts.service_sid_write_allow = $true }
+            }
+        }
         if ($broad -and $ace.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Allow) {
             if ($ace.IsInherited) { $facts.broad_write_allow_inherited = $true }
             else { $facts.broad_write_allow_explicit = $true }
@@ -91,6 +102,9 @@ function New-Aggregate {
         broad_write_allow_inherited_objects = 0
         broad_write_deny_objects = 0
         other_write_allow_explicit_objects = 0
+        candidate_system_admin_write_only_objects = 0
+        candidate_non_system_admin_write_allow_objects = 0
+        candidate_service_sid_write_allow_objects = 0
         unmapped_rule_objects = 0
         candidate_by_bucket = [ordered]@{}
         protected_by_bucket = [ordered]@{}
@@ -144,6 +158,15 @@ function Measure-GscTree([string]$root,[int]$max) {
                     if($facts.broad_write_allow_inherited) { $result.broad_write_allow_inherited_objects++ }
                     if($facts.broad_write_deny) { $result.broad_write_deny_objects++ }
                     if($facts.other_write_allow_explicit) { $result.other_write_allow_explicit_objects++ }
+                    # This is an Allow-ACE PRINCIPAL CLASSIFICATION, not effective access.
+                    # Unknown, domain, current user, service and broad group grants
+                    # are never treated as SYSTEM/Admin-only.
+                    if($facts.system_admin_write_allow -and -not $facts.non_system_admin_write_allow -and
+                        $facts.unmapped_access_rules -eq 0) {
+                        $result.candidate_system_admin_write_only_objects++
+                    }
+                    if($facts.non_system_admin_write_allow) { $result.candidate_non_system_admin_write_allow_objects++ }
+                    if($facts.service_sid_write_allow) { $result.candidate_service_sid_write_allow_objects++ }
                 }
             }
             if($isDir) { $stack.Push([System.IO.DirectoryInfo]$item) }
@@ -165,7 +188,8 @@ function Test-Contract {
         $users,'Write','Allow')
     $acl.AddAccessRule($writeRule)
     $writeFacts = Convert-ToAclFacts $acl
-    if(-not $writeFacts.broad_write_allow_explicit -or $writeFacts.explicit -lt 1) {
+    if(-not $writeFacts.broad_write_allow_explicit -or -not $writeFacts.non_system_admin_write_allow -or
+       $writeFacts.explicit -lt 1) {
         throw 'WRITE_RULE_NOT_IDENTIFIED'
     }
     $denyRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
@@ -173,6 +197,25 @@ function Test-Contract {
     $acl.AddAccessRule($denyRule)
     if(-not (Convert-ToAclFacts $acl).broad_write_deny) {
         throw 'DENY_RULE_NOT_IDENTIFIED'
+    }
+    # A grant to SYSTEM is recognized as known privileged, while a random
+    # principal must NEVER be called SYSTEM/Administrators. These are synthetic
+    # in-memory ACEs and do not touch host ACLs or create an account.
+    $systemAcl = New-Object System.Security.AccessControl.FileSecurity
+    $systemSid = New-Object System.Security.Principal.SecurityIdentifier('S-1-5-18')
+    $systemAcl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule(
+        $systemSid,'FullControl','Allow')))
+    $sf = Convert-ToAclFacts $systemAcl
+    if(-not $sf.system_admin_write_allow -or $sf.non_system_admin_write_allow) {
+        throw 'SYSTEM_WRITE_ALLOW_CLASS_SELFTEST_FAILED'
+    }
+    $unknownAcl = New-Object System.Security.AccessControl.FileSecurity
+    $unknownSid = New-Object System.Security.Principal.SecurityIdentifier('S-1-5-21-333-444-555-1001')
+    $unknownAcl.AddAccessRule((New-Object System.Security.AccessControl.FileSystemAccessRule(
+        $unknownSid,'Write','Allow')))
+    $uf = Convert-ToAclFacts $unknownAcl
+    if($uf.system_admin_write_allow -or -not $uf.non_system_admin_write_allow) {
+        throw 'UNKNOWN_WRITE_GRANT_CLASS_SELFTEST_FAILED'
     }
     $sample = @{
         schema=1; candidate_count=6; broad_write_allow_explicit_objects=1
@@ -261,6 +304,9 @@ $share = [ordered]@{
     broad_write_allow_inherited_objects=$r.broad_write_allow_inherited_objects
     broad_write_deny_objects=$r.broad_write_deny_objects
     other_write_allow_explicit_objects=$r.other_write_allow_explicit_objects
+    candidate_system_admin_write_only_objects=$r.candidate_system_admin_write_only_objects
+    candidate_non_system_admin_write_allow_objects=$r.candidate_non_system_admin_write_allow_objects
+    candidate_service_sid_write_allow_objects=$r.candidate_service_sid_write_allow_objects
     candidate_by_bucket=$r.candidate_by_bucket
     protected_by_bucket=$r.protected_by_bucket
     broad_write_allow_explicit_by_bucket=$r.broad_write_allow_explicit_by_bucket
@@ -271,7 +317,7 @@ $share = [ordered]@{
     names_paths_sids_or_raw_sddl_shared=$false
     evidence_state=$quality
     strict_security_gate='NOT_PASSED'
-    note='ACE presence is NOT effective access. No live standard-user create/modify probe was performed. Share counts-only JSON; no production ACL apply is authorized.'
+    note='Privileged-only is classified by Allow ACE SID category, NOT effective access, owner, MIC or exploitability. No live standard-user create/modify probe. No production ACL apply authorized.'
 }
 $dstDir = Join-Path $env:LOCALAPPDATA 'Geumyi-Day12-ACL-ExplicitReview'
 $localRoot = Get-Item -LiteralPath $env:LOCALAPPDATA -Force -ErrorAction Stop
