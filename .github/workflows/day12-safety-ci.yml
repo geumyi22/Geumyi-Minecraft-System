@@ -116,6 +116,20 @@ jobs:
           & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -Synthetic
           if($LASTEXITCODE -ne 0){throw 'Isolated ACL least-privilege/rollback rehearsal failed'}
 
+      - name: ACL negative test with a real standard-user token (disposable CI fixture)
+        shell: powershell
+        env:
+          GEUMYI_DAY12_ACL_NEGTEST_CI: isolated_fixture
+        run: |
+          $ErrorActionPreference='Stop'
+          $tool='tools/day12/ci/Day12_ACL_NegativeTest_Windows_CI.ps1'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -Synthetic
+          $rc=$LASTEXITCODE
+          # 0=PASS, 1=FAIL, 42=BLOCKED/UNVERIFIED. BLOCKED must NOT look like success.
+          if($rc -eq 42){throw "ACL negative test BLOCKED/UNVERIFIED (could not create a real standard-user token or run the checks). See DAY12-ACL-NEGATIVE-TEST-RESULT.json."}
+          if($rc -ne 0){throw "ACL negative test FAILED (exit $rc)."}
+          Write-Host 'ACL_NEGATIVE_TEST_PASS'
+
       - name: Package CI-checked ACL preflight kit (NO APPLY)
         shell: powershell
         run: |
