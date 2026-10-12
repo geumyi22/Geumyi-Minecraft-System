@@ -47,11 +47,26 @@ function Analyze([object[]]$Samples,[double]$Hours,[int]$Target,[int]$Interval){
     notes=@(
       "Keep the console window open throughout the full monitoring interval; interruption is incomplete.",
       "Samples at 5-minute intervals may miss short failures in between; this is not a production monitoring service.",
-      "Probe checks GSC 127.0.0.1 Java TCP and Bedrock RakNet responses, not game-client gameplay.",
+      "Probe checks TCP-only loopback controls on public Velocity 25565/25566/25567 and GSC Host 8787; it does NOT verify Bedrock RakNet, HTTP API authentication or game-client gameplay.",
       "Observed process churn may reflect other Java programs and requires operator review.",
       "Do not upload PRIVATE-SAMPLES-DO-NOT-UPLOAD.ndjson (includes PIDs/times); share only the summary.",
       "Eight hours and a normal summary do not establish Stable eligibility; analyze logs, user experience, resource trends and security separately."
     )
+  }
+}
+function Test-LoopbackTcp([int]$Port) {
+  # Network-only handshake of existing TCP listeners. No credentials or
+  # GSC API calls, no game commands, no remote scan and no configuration writes.
+  $client=New-Object System.Net.Sockets.TcpClient
+  $async=$null
+  try{
+    $async=$client.BeginConnect("127.0.0.1",$Port,$null,$null)
+    if(-not $async.AsyncWaitHandle.WaitOne(1500,$false)){return $false}
+    try{$client.EndConnect($async);return $client.Connected}catch{return $false}
+  }catch{return $false}
+  finally{
+    if($null -ne $async){$async.AsyncWaitHandle.Close()}
+    $client.Dispose()
   }
 }
 function Snapshot([double]$Seconds){
@@ -69,24 +84,20 @@ function Snapshot([double]$Seconds){
       }
     })
   }catch{$err+="PROCESS_QUERY"}
-  try{
-    $response=Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8787/api/v4/network/entry-status" -TimeoutSec 6
-    $rows=@($response.endpoints)
-    $expect=@{wild=@(25565,19132);playground=@(25566,19133);other=@(25567,19134)}
-    $seen=@{};$healthy=($rows.Count -eq 3)
-    foreach($r in $rows){
-      $id=[string]$r.id
-      if(-not $expect.ContainsKey($id) -or $seen.ContainsKey($id)){$healthy=$false;break}
-      $seen[$id]=$true
-      if([int]$r.java_tcp -ne [int]$expect[$id][0] -or
-         [int]$r.bedrock_udp -ne [int]$expect[$id][1] -or
-         -not [bool]$r.java_responding -or -not [bool]$r.bedrock_raknet_pong){$healthy=$false}
-    }
-  }catch{$err+="GSC_APP_PROBE"}
+  # The control endpoint /api/v4/network/entry-status can return 401 after
+  # local authentication hardening. A 401 is NOT an unhealthy Minecraft
+  # service. Instead probe only the four known existing local TCP listeners.
+  # These are narrower observations than Bedrock RakNet or client gameplay.
+  $tcp=[ordered]@{}
+  foreach($port in @(25565,25566,25567,8787)){
+    $tcp["$port"]=Test-LoopbackTcp $port
+  }
+  $healthy=@($tcp.Values|Where-Object{-not $_}).Count -eq 0
   return [ordered]@{
     captured_utc=(Get-Date).ToUniversalTime().ToString("o")
     elapsed_seconds=[math]::Round($Seconds,1)
     processes=@($procs);application_probe_healthy=$healthy
+    tcp_loopback_controls=$tcp
     capture_error=($err.Count -gt 0);error_categories=@($err)
   }
 }
@@ -138,7 +149,7 @@ while($true){
   [void]$samples.Add($sample)
   $sample|ConvertTo-Json -Compress -Depth 10|Add-Content -LiteralPath $private -Encoding UTF8
   Write-Host ("Sample "+$samples.Count+" / "+(Get-Date -Format "HH:mm:ss")+
-    " / GSC Java+RakNet="+$sample.application_probe_healthy)
+    " / Velocity+Host TCP="+$sample.application_probe_healthy)
   if($clock.Elapsed.TotalSeconds -ge $deadline){break}
   $next=[math]::Min($deadline,([math]::Floor($now/$interval)+1)*$interval)
   $delay=[math]::Max(1,[int][math]::Ceiling($next-$clock.Elapsed.TotalSeconds))
