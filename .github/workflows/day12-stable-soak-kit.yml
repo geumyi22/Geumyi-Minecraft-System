@@ -33,6 +33,9 @@ jobs:
           $report = ($out | Out-String) | ConvertFrom-Json
           if($report.mode -ne 'CONTINUOUS_READ_ONLY_SOAK' -or $report.schema -ne 3 -or
              $report.result -ne 'REVIEW_REQUIRED' -or $report.stable_release_allowed -or
+             $report.other_backend_expected_state_by_operator -ne 'OFFLINE' -or
+             $report.other_backend_actual_state_proven -or
+             (@($report.required_local_tcp_ports) -contains 25567) -or
              -not $report.duration_requirement_met -or $report.observed_added_java_gsc_process_identities -ne 1 -or
              $report.observed_removed_java_gsc_process_identities -ne 1 -or
              $report.application_probe_unhealthy_samples -ne 1 -or
@@ -46,7 +49,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $out = & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase12_Continuous_Soak_READ_ONLY.ps1 -ProbeSelfTest 2>&1
-          if($LASTEXITCODE -ne 0 -or ($out | Out-String) -notmatch 'SOAK_TCP_LOOPBACK_FIXTURE_PASS') {
+          if($LASTEXITCODE -ne 0 -or ($out | Out-String) -notmatch 'SOAK_TCP_LOOPBACK_FIXTURE_PASS' -or ($out | Out-String) -notmatch 'SOAK_OTHER_OFFLINE_OPTIONAL_PROXY_PASS') {
             $out | ForEach-Object { Write-Host $_ }
             throw 'SOAK_EPHEMERAL_TCP_CONTROLS_FAILED'
           }
@@ -61,7 +64,7 @@ jobs:
           # under ErrorActionPreference=Stop. Capture the EXPECTED veto without
           # weakening any assertion or permitting a production test to start.
           $ErrorActionPreference = 'Continue'
-          $out = @(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase12_Continuous_Soak_READ_ONLY.ps1 -LivePreflight 2>&1)
+          $out = @(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase12_Continuous_Soak_READ_ONLY.ps1 -LivePreflight -ExpectedOtherBackendState OFFLINE 2>&1)
           $code = $LASTEXITCODE
           $ErrorActionPreference = 'Stop'
           if($code -eq 0){ throw 'SOAK_NON_HOST_PREFLIGHT_WRONGLY_PASSED' }
