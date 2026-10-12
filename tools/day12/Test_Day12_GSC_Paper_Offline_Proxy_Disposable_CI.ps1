@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([Parameter(Mandatory=$true)][string]$PaperZip,[Parameter(Mandatory=$true)][string]$HostExe,[switch]$ExerciseCrashRecovery)
+param([Parameter(Mandatory=$true)][string]$PaperZip,[Parameter(Mandatory=$true)][string]$HostExe,[switch]$ExerciseCrashRecovery,[string]$ExpectedHostVersion="4.3.8")
 Set-StrictMode -Version Latest
 $ErrorActionPreference="Stop"
 # Only executed by GitHub-hosted disposable Windows runner. Not user's PC.
@@ -166,15 +166,16 @@ try{
   }
   if(-not(WaitPort 28987 45 $gsc)){throw "GSC_HOST_NOT_RESPONDING"}
   $h=Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:28987/api/health" -TimeoutSec 7 -NoProxy
-  if(-not $h.ok -or [string]$h.version -ne "4.3.8"){throw "GSC_HEALTH_WRONG_VERSION"}
+  if(-not $h.ok -or [string]$h.version -ne $ExpectedHostVersion){throw "GSC_HEALTH_WRONG_VERSION"}
   $report.real_disposable_gsc_host_started=$true
-  $r=Invoke-WebRequest -Method POST -Uri "http://127.0.0.1:28987/api/server/action" -Body '{"id":"stage-playground","action":"start"}' -ContentType "application/json" -TimeoutSec 8 -NoProxy
+  $headers=@{Authorization="Bearer ci-only-not-live"}
+  $r=Invoke-WebRequest -Method POST -Uri "http://127.0.0.1:28987/api/server/action" -Headers $headers -Body '{"id":"stage-playground","action":"start"}' -ContentType "application/json" -TimeoutSec 8 -NoProxy
   if([int]$r.StatusCode -ne 202){throw "DISPOSABLE_GSC_START_NOT_ACCEPTED"}
   $report.gsc_start_accepted=$true
   $end=(Get-Date).AddSeconds(230)
   while((Get-Date) -lt $end){
     try{
-      $status=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:28987/api/v4/update/status?id=stage-playground" -TimeoutSec 5 -NoProxy
+      $status=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:28987/api/v4/update/status?id=stage-playground" -Headers $headers -TimeoutSec 5 -NoProxy
       if([string]$status.phase -eq "error" -and
          [string]$status.error -match '(?i)(proxy|connect|github|network|refused)'){
         $report.updater_network_failure_observed=$true
@@ -213,7 +214,7 @@ try{
     $recoverDeadline=(Get-Date).AddSeconds(35)
     while((Get-Date) -lt $recoverDeadline){
       try{
-        $v=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:28987/api/v1/servers/stage-playground" -TimeoutSec 7 -NoProxy
+        $v=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:28987/api/v1/servers/stage-playground" -Headers $headers -TimeoutSec 7 -NoProxy
         if([string]$v.state -eq "RECOVERING"){$report.real_gsc_state_recovering_observed=$true;break}
       }catch{}
       if(Connected 25789){break}
