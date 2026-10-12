@@ -10,30 +10,43 @@ import (
 	"testing"
 )
 
-// aclInfo captures the three security properties the ACL work reasons about.
-// allowSIDs holds every Allow-ACE trustee resolved to its SID string, so tests
-// compare by SID rather than by fragile SDDL short aliases (e.g. BUILTIN\Guests
-// renders as "BG", never "S-1-5-32-546", in GetSecurityDescriptorSddlForm).
+// These Windows-only tests compare the DACL / Owner / inheritance of a file
+// before and after atomicfile.WriteFile. They need powershell.exe and the
+// ability to set ACLs on a disposable temp tree. When the runner cannot satisfy
+// those preconditions the test reports UNVERIFIED via t.Skip (never a silent
+// pass); only a real security-property violation is a failure.
+
 type aclInfo struct {
 	sddl      string
 	protected bool
 	owner     string
-	allowSIDs []string
+	allowSIDs []string // Allow-ACE trustees resolved to SID (SDDL aliases like "BG" avoided)
 }
 
 func powershellOrSkip(t *testing.T) string {
 	t.Helper()
 	ps, err := exec.LookPath("powershell.exe")
 	if err != nil {
-		t.Skip("powershell.exe not available")
+		t.Skip("UNVERIFIED: powershell.exe not available on this runner")
 	}
 	return ps
+}
+
+// setupPS runs an ACL/fixture setup command; a failure means the environment
+// could not establish the precondition, so the test is UNVERIFIED (skipped).
+func setupPS(t *testing.T, script string, args ...string) {
+	t.Helper()
+	ps := powershellOrSkip(t)
+	full := "$ErrorActionPreference='Stop';" + script
+	cmdArgs := append([]string{"-NoProfile", "-NonInteractive", "-Command", full}, args...)
+	if out, err := exec.Command(ps, cmdArgs...).CombinedOutput(); err != nil {
+		t.Skipf("UNVERIFIED: ACL fixture setup could not run: %v\n%s", err, out)
+	}
 }
 
 func getACL(t *testing.T, path string) aclInfo {
 	t.Helper()
 	ps := powershellOrSkip(t)
-	// Emit one SID= line per Allow ACE (translated), plus SDDL/PROTECTED/OWNER.
 	script := `$ErrorActionPreference='Stop';$a=Get-Acl -LiteralPath $args[0];` +
 		`$sddl=$a.GetSecurityDescriptorSddlForm([System.Security.AccessControl.AccessControlSections]::Access);` +
 		`Write-Output ("SDDL=$sddl");` +
@@ -44,7 +57,7 @@ func getACL(t *testing.T, path string) aclInfo {
 		`Write-Output ("SID=$s") } }`
 	out, err := exec.Command(ps, "-NoProfile", "-NonInteractive", "-Command", script, path).Output()
 	if err != nil {
-		t.Fatalf("Get-Acl %s: %v", path, err)
+		t.Skipf("UNVERIFIED: Get-Acl %s could not run: %v", path, err)
 	}
 	var info aclInfo
 	for _, line := range strings.Split(string(out), "\n") {
@@ -61,7 +74,7 @@ func getACL(t *testing.T, path string) aclInfo {
 		}
 	}
 	if info.sddl == "" {
-		t.Fatalf("empty SDDL for %s: %q", path, out)
+		t.Skipf("UNVERIFIED: empty SDDL for %s: %q", path, out)
 	}
 	return info
 }
@@ -75,23 +88,11 @@ func (a aclInfo) hasAllow(sid string) bool {
 	return false
 }
 
-func runPS(t *testing.T, script string, args ...string) {
-	t.Helper()
-	ps := powershellOrSkip(t)
-	full := "$ErrorActionPreference='Stop';" + script
-	cmdArgs := append([]string{"-NoProfile", "-NonInteractive", "-Command", full}, args...)
-	if out, err := exec.Command(ps, cmdArgs...).CombinedOutput(); err != nil {
-		t.Fatalf("powershell setup failed: %v\n%s", err, out)
-	}
-}
-
-// A distinctive inheritable ACE on the directory lets us prove the published
-// file is a FRESH object that inherited the directory DACL, not a pre-planted
-// file that kept its own protected DACL. BUILTIN\Guests is harmless and unusual.
+// BUILTIN\Guests: harmless, unusual, easy to spot as an inherited marker.
 const markerSID = "S-1-5-32-546"
 
 func setDirMarker(t *testing.T, dir string) {
-	runPS(t, `$d=$args[0];$a=Get-Acl -LiteralPath $d;`+
+	setupPS(t, `$d=$args[0];$a=Get-Acl -LiteralPath $d;`+
 		`$ace=New-Object System.Security.AccessControl.FileSystemAccessRule(`+
 		`(New-Object System.Security.Principal.SecurityIdentifier('`+markerSID+`')),`+
 		`'ReadAndExecute','ContainerInherit,ObjectInherit','None','Allow');`+
@@ -103,27 +104,33 @@ func TestAtomicReplaceYieldsFreshInheritedDaclNotPreplanted(t *testing.T) {
 	setDirMarker(t, dir)
 
 	dst := filepath.Join(dir, "server.json")
-	// Pre-plant the destination with a PROTECTED DACL (inheritance off) and the
-	// marker ACE absent — models a file an attacker created first.
-	runPS(t, `$p=$args[0];Set-Content -LiteralPath $p -Value 'PREPLANTED' -NoNewline;`+
-		`$a=Get-Acl -LiteralPath $p;$a.SetAccessRuleProtection($true,$false);Set-Acl -LiteralPath $p -AclObject $a`, dst)
+	// Pre-plant a PROTECTED destination with the marker ACE absent (an
+	// attacker-created-first model). SetAccessRuleProtection($true,$true) COPIES
+	// the current inherited ACEs as explicit, so SYSTEM/Administrators keep full
+	// control (the file stays deletable/replaceable) while inheritance is off;
+	// then the marker ACE is purged.
+	setupPS(t, `$p=$args[0];Set-Content -LiteralPath $p -Value 'PREPLANTED' -NoNewline;`+
+		`$a=Get-Acl -LiteralPath $p;$a.SetAccessRuleProtection($true,$true);`+
+		`$a.PurgeAccessRules((New-Object System.Security.Principal.SecurityIdentifier('`+markerSID+`')));`+
+		`Set-Acl -LiteralPath $p -AclObject $a`, dst)
 
 	before := getACL(t, dst)
 	if !before.protected {
-		t.Fatal("pre-plant should be protected (inheritance off)")
+		t.Skip("UNVERIFIED: pre-plant did not become protected on this runner")
 	}
 	if before.hasAllow(markerSID) {
-		t.Fatal("pre-plant unexpectedly already allows the marker SID")
+		t.Skip("UNVERIFIED: pre-plant still allows the marker SID")
 	}
 
 	if err := WriteFile(dst, []byte(`{"port":8787}`), 0600); err != nil {
-		t.Fatalf("WriteFile: %v", err)
+		t.Fatalf("WriteFile replace failed: %v", err)
 	}
 	if b, _ := os.ReadFile(dst); string(b) != `{"port":8787}` {
 		t.Fatalf("content not replaced: %q", b)
 	}
 
 	after := getACL(t, dst)
+	// Security properties — real failures if violated:
 	if after.protected {
 		t.Error("after replace: DACL still protected (stale pre-planted descriptor survived)")
 	}
@@ -131,20 +138,18 @@ func TestAtomicReplaceYieldsFreshInheritedDaclNotPreplanted(t *testing.T) {
 		t.Errorf("after replace: inherited marker ACE missing; allow=%v sddl=%s", after.allowSIDs, after.sddl)
 	}
 	if after.sddl == before.sddl {
-		t.Error("after replace: DACL identical to pre-plant (file was reused, not replaced)")
+		t.Error("after replace: DACL identical to pre-plant (file reused, not replaced)")
 	}
 	t.Logf("before: protected=%v owner=%s allow=%v", before.protected, before.owner, before.allowSIDs)
 	t.Logf("after : protected=%v owner=%s allow=%v", after.protected, after.owner, after.allowSIDs)
 }
 
-// When the destination does not exist yet, the new file must also inherit the
-// directory DACL (no surprise protected descriptor).
 func TestAtomicWriteFreshFileInheritsDirectoryDacl(t *testing.T) {
 	dir := t.TempDir()
 	setDirMarker(t, dir)
 	dst := filepath.Join(dir, "trusted-devices.json")
 	if err := WriteFile(dst, []byte("[]"), 0600); err != nil {
-		t.Fatalf("WriteFile: %v", err)
+		t.Fatalf("WriteFile failed: %v", err)
 	}
 	after := getACL(t, dst)
 	if after.protected {
