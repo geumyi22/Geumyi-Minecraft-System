@@ -7,35 +7,22 @@ import (
 	"strings"
 )
 
-// loopbackNoAuthRequestAllowed decides whether a request that already arrived
-// over a loopback socket may use AllowLoopbackNoAuth.
-//
-// Threat: any web page visited in a browser on the server PC can send
-// requests to http://127.0.0.1:<port>. "Simple" cross-origin POSTs (for example
-// Content-Type text/plain) need no CORS preflight and the JSON handlers decode
-// the body regardless of Content-Type, so /api/settings (start_command, path)
-// and control routes were reachable without any credential. DNS rebinding
-// additionally lets an attacker page read responses.
-//
-// Legitimate local callers are unaffected:
-//   - StatusAgent / scripts: Java HttpClient and PowerShell send no Origin and
-//     no Sec-Fetch-* headers and address a loopback literal (Host 127.0.0.1:port).
-//   - The Host dashboard served from the same origin: Origin equals Host and
-//     Sec-Fetch-Site is "same-origin" (or "none" for typed navigations).
-//
-// A request rejected here is not refused outright: it continues to token or
-// trusted-device authentication, so a dashboard holding a token still works.
+// loopbackNoAuthRequestAllowed decides whether a request already arriving
+// over a loopback socket may use the legacy AllowLoopbackNoAuth shortcut.
+// Cross-site browser requests and DNS-rebinding Host names must use normal
+// token/device authentication instead. This is NOT protection against local
+// non-browser processes; that requires disabling the shortcut entirely.
 func loopbackNoAuthRequestAllowed(r *http.Request) bool {
 	if !isLoopbackHostName(r.Host) {
-		return false // DNS rebinding: Host carries the attacker's hostname
+		return false
 	}
 	switch strings.ToLower(strings.TrimSpace(r.Header.Get("Sec-Fetch-Site"))) {
 	case "", "same-origin", "none":
 	default:
-		return false // cross-site or same-site (another local web app) browser request
+		return false
 	}
-	if o := strings.TrimSpace(r.Header.Get("Origin")); o != "" {
-		return sameLoopbackOrigin(o, r.Host)
+	if origin := strings.TrimSpace(r.Header.Get("Origin")); origin != "" {
+		return sameLoopbackOrigin(origin, r.Host)
 	}
 	return true
 }
@@ -60,8 +47,8 @@ func isLoopbackHostName(hostport string) bool {
 	return ip != nil && ip.IsLoopback()
 }
 
-// sameLoopbackOrigin accepts only an http(s) Origin whose authority is exactly
-// the request Host and is itself a loopback name. "null" and other ports fail.
+// sameLoopbackOrigin requires the full origin authority (including port) to
+// match the loopback request Host. Sandboxed "null" and arbitrary websites fail.
 func sameLoopbackOrigin(origin, reqHost string) bool {
 	u, err := url.Parse(origin)
 	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
