@@ -4,7 +4,9 @@ chcp 65001 >nul
 title Geumyi Day12 - 8 hour read-only soak / production host
 echo ===========================================================
 echo   Geumyi Day 12.12 - 8h real HOST stability monitor
-echo   Four localhost TCP controls, process identity + resources
+echo   Other Paper: intentionally OFFLINE (operator statement)
+echo   Velocity 25567 is proxy-only informational while Other is OFFLINE.
+echo   Required TCP: 25565, 25566, 8787 + process identity/resources
 echo   READ ONLY: no server start, stop, restart, ACL or world change
 echo   IMPORTANT: keep this window OPEN for eight full hours.
 echo ===========================================================
@@ -22,8 +24,8 @@ if errorlevel 1 (
   pause
   exit /b 3
 )
-echo [2/3] Confirm existing GSC Host and four local TCP controls...
-powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%TOOL%" -LivePreflight
+echo [2/3] Verify required live local controls; Other expected OFFLINE...
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%TOOL%" -LivePreflight -ExpectedOtherBackendState OFFLINE
 if errorlevel 1 (
   echo [BLOCKED] One or more required listeners is not reachable.
   echo Please send the screen. No eight-hour soak was started.
@@ -31,7 +33,7 @@ if errorlevel 1 (
   exit /b 4
 )
 echo [3/3] Starting continuous 8 hours. DO NOT CLOSE THIS WINDOW.
-powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%TOOL%" -DurationHours 8 -IntervalMinutes 5
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%TOOL%" -DurationHours 8 -IntervalMinutes 5 -ExpectedOtherBackendState OFFLINE
 set "CODE=%ERRORLEVEL%"
 echo.
 echo Soak exit code: %CODE%
