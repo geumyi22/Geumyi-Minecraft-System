@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 // Day 11 canary rollout is intentionally policy-only. Promoting a target pins
@@ -92,11 +94,7 @@ func saveCanaryRolloutStateUnlocked(st canaryRolloutState) error {
 	if err != nil {
 		return err
 	}
-	tmp := canaryRolloutPath() + ".tmp"
-	if err := os.WriteFile(tmp, b, 0600); err != nil {
-		return err
-	}
-	return os.Rename(tmp, canaryRolloutPath())
+	return atomicfile.WriteFile(canaryRolloutPath(), b, 0600)
 }
 
 func rolloutContains(values []string, id string) bool {

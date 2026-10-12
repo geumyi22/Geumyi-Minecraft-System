@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 type V4Automation struct {
@@ -48,12 +50,7 @@ func saveAutomations(a []V4Automation) error {
 		return e
 	}
 	_ = os.MkdirAll(filepath.Dir(automationsPath()), 0755)
-	tmp := automationsPath() + ".tmp"
-	if e = os.WriteFile(tmp, b, 0600); e != nil {
-		return e
-	}
-	_ = os.Remove(automationsPath())
-	return os.Rename(tmp, automationsPath())
+	return atomicfile.WriteFile(automationsPath(), b, 0600)
 }
 func dayAllowed(days []int, w time.Weekday) bool {
 	if len(days) == 0 {
