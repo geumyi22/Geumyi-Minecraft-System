@@ -156,7 +156,7 @@ if (-not [string]::Equals([IO.Path]::GetFullPath($env:ProgramData).TrimEnd('\'),
 }
 $targetRoot = Join-Path $canonicalParent 'GeumyiServerCenter'
 $root = $null
-try { $root = Get-Item -LiteralPath $targetRoot -Force -ErrorAction Stop } catch { $null = $null }
+try { $root = Get-Item -LiteralPath $targetRoot -Force -ErrorAction Stop } catch { $root = $null }
 if ($null -eq $root -or ($root.Attributes -band [IO.FileAttributes]::Directory) -eq 0 -or
     ($root.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
     Write-SanitizedResult $state
