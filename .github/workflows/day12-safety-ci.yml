@@ -538,7 +538,7 @@ jobs:
             'If BLOCKED or FAILED, send the screen; do NOT adjust ACLs manually.'
           )
           [IO.File]::WriteAllLines((Join-Path $root 'README-FIRST.txt'), $guide, (New-Object System.Text.UTF8Encoding($false)))
-          Compress-Archive -LiteralPath (Join-Path $root '*') -DestinationPath 'Geumyi-Day12-GSC-Subtree-READ-ONLY.zip' -Force
+          Compress-Archive -Path (Join-Path $root '*') -DestinationPath 'Geumyi-Day12-GSC-Subtree-READ-ONLY.zip' -Force
           if(-not (Test-Path 'Geumyi-Day12-GSC-Subtree-READ-ONLY.zip')){throw 'Operator kit ZIP missing'}
 
       - uses: actions/upload-artifact@v7
