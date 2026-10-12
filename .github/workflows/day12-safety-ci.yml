@@ -165,6 +165,9 @@ jobs:
               throw 'NO_WRITE_PROBE_PRIVILEGED_VETO_CONTRACT_FAILED'
           }
           Write-Host 'NATIVE_NO_WRITE_PROBE_PRIVILEGED_VETO_PASS'
+          # Exit 42 was EXPECTED and verified. Reset the shell's native exit
+          # code so Actions does not mistake this successful veto for failure.
+          $global:LASTEXITCODE=0
 
       - name: Package GSC standard-user no-write diagnostic kit (READ ONLY)
         shell: powershell
