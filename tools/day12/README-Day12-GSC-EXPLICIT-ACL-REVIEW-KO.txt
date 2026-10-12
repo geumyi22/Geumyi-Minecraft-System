@@ -5,6 +5,9 @@
 - 실제 폴더명/파일명/경로, SID, 사용자 이름, 원문 ACL(SDDL), 토큰, 월드 및 백업 내용은 수집 결과 JSON에 포함하지 않습니다.
 - BUILTIN\Users, Everyone, Authenticated Users, Guests 같은 넓은 권한 주체에 대한 명시적 또는 상속된 쓰기 허용 ACE의 '존재 여부'만 분류합니다.
 - ACE 존재 여부만으로 실제 Windows 표준 사용자의 유효 접근 권한(Effective Access)을 증명하지는 못합니다.
+- 새 분류값 candidate_system_admin_write_only_objects는 '쓰기 Allow ACE가 SYSTEM/Administrators에만 귀속된 객체 수'를 뜻합니다. 파일 소유자 권한, 접근 토큰, Deny ACE, MIC, 실제 접근 결과를 확인한 것은 아닙니다.
+- candidate_non_system_admin_write_allow_objects는 기타 주체(서비스·사용자·도메인 그룹 포함)에 대한 쓰기 Allow ACE를 가진 객체 수입니다. 해당 주체의 실제 위험성이나 권한 상승 성공 여부를 뜻하지 않습니다.
+- 실제 계정명·SID·원본 ACL은 공유용 JSON에 포함되지 않습니다.
 
 실행 방법
 1. 실제 GSC를 실행하는 서버 PC에서 ZIP 전체를 압축 해제합니다.
