@@ -20,35 +20,6 @@ if (-not (Test-Path -LiteralPath $core -PathType Leaf)) {
 }
 . $core
 
-function Get-EligibleTokenClass {
-    $id = [System.Security.Principal.WindowsIdentity]::GetCurrent()
-    if ($null -eq $id -or -not $id.IsAuthenticated -or $null -eq $id.User) {
-        return 'BLOCKED_UNVERIFIED_IDENTITY'
-    }
-    $disallowed = @(
-        'S-1-5-18',        # SYSTEM
-        'S-1-5-32-544',    # Administrators (including UAC deny-only group)
-        'S-1-5-32-547',    # Power Users
-        'S-1-5-32-548',    # Account Operators
-        'S-1-5-32-549',    # Server Operators
-        'S-1-5-32-550',    # Print Operators
-        'S-1-5-32-551'     # Backup Operators
-    )
-    if ($disallowed -contains $id.User.Value) { return 'BLOCKED_PRIVILEGED_ACCOUNT' }
-    $groups = $id.Groups
-    if ($null -eq $groups) { return 'BLOCKED_UNVERIFIED_GROUPS' }
-    foreach ($sid in $groups) {
-        if ($disallowed -contains $sid.Value) {
-            return 'BLOCKED_PRIVILEGED_OR_FILTERED_ADMIN_ACCOUNT'
-        }
-    }
-    if ((New-Object System.Security.Principal.WindowsPrincipal($id)).IsInRole(
-            [System.Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        return 'BLOCKED_PRIVILEGED_TOKEN'
-    }
-    return 'STANDARD_ACCOUNT_TOKEN'
-}
-
 function Write-SanitizedResult([hashtable]$facts) {
     if ([string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) {
         throw 'LOCALAPPDATA_UNAVAILABLE'
@@ -127,7 +98,7 @@ if ($SelfTest) {
 if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
     throw 'WINDOWS_ONLY'
 }
-$class = Get-EligibleTokenClass
+$class = Get-Day12TokenClass
 $state = @{
     token_class = $class
     root_checked = $false
