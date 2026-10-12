@@ -1,5 +1,8 @@
 # Geumyi Minecraft System
 
+> **현재 상태 · 2026-10-13:** [**Day 1~12 상세 통합 현황**](docs/PROJECT-DAY1-12-MASTER-STATUS-20261013.md) · [**저장소 지도/워크플로 분류**](docs/REPOSITORY-MAP-20261013.md) · [**Day12 단계별 문서**](docs/day12/INDEX.md) · [**정식 Stable 최단 경로**](docs/day12/DAY12-STABLE-FAST-TRACK-20261013.md). 기존 Day 1~11은 완료, Day 12는 **소규모 운영 수락과 엄격한 최종 서명 Stable 검증을 별도 판정**합니다. **Other Paper는 운영자 확인으로 의도적 OFFLINE**이며 Velocity 25567 프런트엔드의 개폐와 구분합니다. 이 문서의 역사적 E2E는 **오늘 실호스트 모든 서버 ONLINE**이라는 뜻이 아닙니다.
+
+
 > **프로젝트 종료 정리 (2026-10-11):** 일반 기능 개발과 반복 테스트는 소규모 서버 운영 기준으로 마감했습니다. GitHub/PC 정리 기록과 유지할 복구 자산은 [PROJECT-CLOSEOUT-2026-10-11.md](PROJECT-CLOSEOUT-2026-10-11.md)에 있습니다. 정식 Stable 릴리즈의 엄격한 보안 게이트는 아직 통과하지 않았습니다.
 
 **최신 수동 설치 패키지:** [GSC 4.5.1 / GSCM 1.5.1+151 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) (2026-10-11 공개, GitHub Latest). 마지막 실제 운영 기기 확인은 GSC 4.3.8 / GSCM 1.1.5+117이며, 자동 Stable 배포용 서명 manifest는 별도입니다.
