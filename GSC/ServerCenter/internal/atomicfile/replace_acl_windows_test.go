@@ -25,11 +25,16 @@ type aclInfo struct {
 
 func powershellOrSkip(t *testing.T) string {
 	t.Helper()
-	ps, err := exec.LookPath("powershell.exe")
-	if err != nil {
-		t.Skip("UNVERIFIED: powershell.exe not available on this runner")
+	// The Windows runner has PowerShell 7 available and runs its CI shell under
+	// pwsh. Prefer that host for the ACL fixture rather than treating a broken
+	// Windows PowerShell 5.1 module auto-import as a passing test skip.
+	for _, executable := range []string{"pwsh.exe", "powershell.exe"} {
+		if ps, err := exec.LookPath(executable); err == nil {
+			return ps
+		}
 	}
-	return ps
+	t.Skip("UNVERIFIED: neither pwsh.exe nor powershell.exe available")
+	return ""
 }
 
 // setupPS runs an ACL/fixture setup command; a failure means the environment
