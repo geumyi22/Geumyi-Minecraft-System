@@ -18,10 +18,13 @@ function Compare-Samples([object[]]$a,[object[]]$b){
   }
 }
 function Analyze([object[]]$Samples,[double]$Hours,[int]$Target,[int]$Interval,[string]$OtherState){
-  $new=0;$removed=0;$unknown=0;$unhealthy=0;$captureErrors=0;$maxGap=0.0
+  $new=0;$removed=0;$unknown=0;$unhealthy=0;$captureErrors=0;$maxGap=0.0;$otherProxyObservations=0
   foreach($sample in @($Samples)){
     if(-not [bool]$sample.application_probe_healthy){$unhealthy++}
     if([bool]$sample.capture_error){$captureErrors++}
+    $controls=$null
+    try{$controls=$sample.tcp_loopback_controls}catch{}
+    if($null -ne $controls -and [bool]$controls['25567']){$otherProxyObservations++}
   }
   for($i=1;$i -lt $Samples.Count;$i++){
     $x=Compare-Samples @($Samples[$i-1].processes) @($Samples[$i].processes)
@@ -38,7 +41,7 @@ function Analyze([object[]]$Samples,[double]$Hours,[int]$Target,[int]$Interval,[
     sampling_interval_minutes=$Interval;sample_count=$Samples.Count
     other_backend_expected_state_by_operator=$OtherState
     other_backend_actual_state_proven=$false
-    other_velocity_25567_listener_observed_samples=@($Samples|Where-Object{$null -ne $_.tcp_loopback_controls -and [bool]$_.tcp_loopback_controls["25567"]}).Count
+    other_velocity_25567_listener_observed_samples=$otherProxyObservations
     required_local_tcp_ports=$(if($OtherState -eq "ONLINE"){@(25565,25566,25567,8787)}else{@(25565,25566,8787)})
     max_sample_gap_minutes=[math]::Round($maxGap,2)
     sampling_continuity_adequate=($Samples.Count -ge 2 -and $maxGap -le 2.2*$Interval -and $unknown -eq 0)
