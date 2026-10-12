@@ -57,8 +57,14 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           # Runner has no GSC service; live preflight must fail before 8h run.
-          $out = & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase12_Continuous_Soak_READ_ONLY.ps1 -LivePreflight 2>&1
-          if($LASTEXITCODE -eq 0){ throw 'SOAK_NON_HOST_PREFLIGHT_WRONGLY_PASSED' }
+          # Windows PowerShell wraps expected child stderr as NativeCommandError
+          # under ErrorActionPreference=Stop. Capture the EXPECTED veto without
+          # weakening any assertion or permitting a production test to start.
+          $ErrorActionPreference = 'Continue'
+          $out = @(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase12_Continuous_Soak_READ_ONLY.ps1 -LivePreflight 2>&1)
+          $code = $LASTEXITCODE
+          $ErrorActionPreference = 'Stop'
+          if($code -eq 0){ throw 'SOAK_NON_HOST_PREFLIGHT_WRONGLY_PASSED' }
           $text = ($out | Out-String)
           if($text -notmatch 'REFUSE_NON_HOST_PC' -and $text -notmatch 'SOAK_HOST_SERVICE_NOT_RUNNING'){
             throw 'SOAK_NON_HOST_EXPECTED_ERROR_NOT_SEEN'
