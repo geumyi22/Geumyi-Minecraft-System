@@ -1,0 +1,101 @@
+name: Day12 Current-Head GSC 4.5.1 Disposable Offline and Recovery E2E
+
+on:
+  pull_request:
+    paths:
+      - 'tools/day12/Test_Day12_GSC_Paper_Offline_Proxy_Disposable_CI.ps1'
+      - '.github/workflows/day12-current-head-disposable-e2e.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-current-head:
+    name: Disposable real GSC 4.5.1 + Paper 26.3 (${{ matrix.mode }})
+    runs-on: windows-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [offline, crash]
+    env:
+      GEUMYI_DAY12_DISPOSABLE_ONLY: 'yes'
+      GH_TOKEN: ${{ github.token }}
+      DAY12_MODE: ${{ matrix.mode }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: GSC/ServerCenter/go.mod
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Verify disposable fixture constraints
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $path='tools/day12/Test_Day12_GSC_Paper_Offline_Proxy_Disposable_CI.ps1'
+          $tokens=$null; $errors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path).Path,[ref]$tokens,[ref]$errors)
+          if(@($errors).Count){throw 'DISPOSABLE_CURRENT_HEAD_PARSER_FAILED'}
+          $raw=Get-Content $path -Raw -Encoding UTF8
+          foreach($required in @('REFUSE_NON_DISPOSABLE_RUNNER','GEUMYI_DAY12_DISPOSABLE_ONLY','GSC_CHILD_PROCESS_HTTPS_PROXY_REFUSES_UPDATE_SOURCE_ONLY')){
+            if(-not $raw.Contains($required)){throw ('MISSING_DISPOSABLE_SAFETY_GUARD:'+ $required)}
+          }
+          $ver=(Get-Content 'GSC/ServerCenter/cmd/host/main.go' | Select-String 'const appVersion = "4.5.1"')
+          if(@($ver).Count -ne 1){throw 'UNEXPECTED_HOST_SOURCE_VERSION'}
+          Write-Host 'DISPOSABLE_RUNNER_SOURCE_VERSION_GUARDS_PASS'
+
+      - name: Build checked-out GSC Host 4.5.1 to disposable runner
+        shell: pwsh
+        working-directory: GSC/ServerCenter
+        run: |
+          go build -o "$env:RUNNER_TEMP/Day12-Disposable-GSC-CurrentHead.exe" ./cmd/host
+          if($LASTEXITCODE -ne 0 -or -not (Test-Path "$env:RUNNER_TEMP/Day12-Disposable-GSC-CurrentHead.exe")){
+            throw 'CURRENT_HEAD_HOST_BUILD_FAILED'
+          }
+
+      - name: Download and SHA256-verify pinned public Paper 26.3 archive
+        shell: pwsh
+        run: |
+          $dir=Join-Path $env:RUNNER_TEMP 'day12-current-head-paper'
+          New-Item -ItemType Directory -Force -Path $dir | Out-Null
+          gh release download mc-2026.09.26-v3 --repo geumyi22/Geumyi-Minecraft-System --pattern 'Geumyi_Playground_Paper26.3_Current_2026-09-26.zip' --dir $dir
+          if($LASTEXITCODE -ne 0){throw 'PINNED_PAPER_RELEASE_UNAVAILABLE'}
+          $zip=Join-Path $dir 'Geumyi_Playground_Paper26.3_Current_2026-09-26.zip'
+          if((Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant() -ne '6198ad133c37667a4a0a92567f204c4c24e5f265864f8dd19605407c6e3ced4b'){
+            throw 'PINNED_PAPER_ARCHIVE_DIGEST_MISMATCH'
+          }
+
+      - name: Run REAL disposable GSC + Paper E2E (not operator host)
+        shell: pwsh
+        run: |
+          $zip=Join-Path $env:RUNNER_TEMP 'day12-current-head-paper/Geumyi_Playground_Paper26.3_Current_2026-09-26.zip'
+          $hostExe=Join-Path $env:RUNNER_TEMP 'Day12-Disposable-GSC-CurrentHead.exe'
+          if($env:DAY12_MODE -eq 'crash'){
+            & ./tools/day12/Test_Day12_GSC_Paper_Offline_Proxy_Disposable_CI.ps1 -PaperZip $zip -HostExe $hostExe -ExpectedHostVersion '4.5.1' -ExerciseCrashRecovery
+          }else{
+            & ./tools/day12/Test_Day12_GSC_Paper_Offline_Proxy_Disposable_CI.ps1 -PaperZip $zip -HostExe $hostExe -ExpectedHostVersion '4.5.1'
+          }
+          if($LASTEXITCODE -ne 0){throw ('CURRENT_HEAD_DISPOSABLE_E2E_FAILED:'+ $env:DAY12_MODE)}
+          $reportPath=Join-Path $env:RUNNER_TEMP 'Day12-GSC-Paper-Disposable-Offline-Source.json'
+          $report=Get-Content -LiteralPath $reportPath -Raw -Encoding UTF8 | ConvertFrom-Json
+          $expected=if($env:DAY12_MODE -eq 'crash'){'DISPOSABLE_REAL_GSC_PAPER_CRASH_RECOVERY_PASS'}else{'DISPOSABLE_REAL_GSC_PAPER_PROCESS_SCOPED_OFFLINE_SOURCE_PASS'}
+          if($report.result -ne $expected -or $report.actual_operator_server_pc -or $report.offline_operator_server_boot_verified -or
+             $report.stable_release_allowed -or $report.user_world_or_golden_changed -or $report.backend_ports_private -ne 'UNCHANGED_FAIL' -or
+             -not $report.real_disposable_gsc_host_started -or -not $report.real_paper_restarted_despite_update_outage -or
+             -not $report.original_paper_jar_unchanged) {
+            throw ('CURRENT_HEAD_DISPOSABLE_RESULT_CONTRACT_INVALID:'+ $env:DAY12_MODE)
+          }
+          Write-Host ('CURRENT_HEAD_DISPOSABLE_REAL_PAPER_E2E_PASS:'+ $env:DAY12_MODE)
+
+      - name: Preserve sanitized disposable E2E evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: day12-current-head-disposable-${{ matrix.mode }}-result
+          path: ${{ runner.temp }}/Day12-GSC-Paper-Disposable-Offline-Source.json
+          if-no-files-found: warn
+          retention-days: 14
