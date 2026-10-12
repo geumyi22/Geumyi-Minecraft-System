@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param([ValidateRange(8,12)][int]$DurationHours=8,
       [ValidateRange(1,30)][int]$IntervalMinutes=5,
-      [string]$OutputDir="",[switch]$Synthetic)
+      [string]$OutputDir="",[switch]$Synthetic,[switch]$ProbeSelfTest,[switch]$LivePreflight)
 Set-StrictMode -Version Latest
 $ErrorActionPreference="Stop"
 # READ ONLY: no service, process, firewall, configuration, task, world, backup or cache mutations.
@@ -100,6 +100,31 @@ function Snapshot([double]$Seconds){
     tcp_loopback_controls=$tcp
     capture_error=($err.Count -gt 0);error_categories=@($err)
   }
+}
+if($ProbeSelfTest){
+  # Disposable ephemeral loopback listener; never a Minecraft or GSC port.
+  $listener=New-Object System.Net.Sockets.TcpListener([System.Net.IPAddress]::Loopback,0)
+  try{
+    $listener.Start()
+    $port=[int]$listener.LocalEndpoint.Port
+    if(-not (Test-LoopbackTcp $port)){throw "SOAK_TCP_LOOPBACK_POSITIVE_CONTROL_FAILED"}
+  }finally{$listener.Stop()}
+  if(Test-LoopbackTcp $port){throw "SOAK_TCP_LOOPBACK_NEGATIVE_CONTROL_FAILED"}
+  Write-Host "SOAK_TCP_LOOPBACK_FIXTURE_PASS"
+  exit 0
+}
+if($LivePreflight){
+  if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){throw "WINDOWS_SERVER_PC_ONLY"}
+  $service=Get-Service -Name "Geumyi Server Center Host" -ErrorAction SilentlyContinue
+  if($null -eq $service){throw "REFUSE_NON_HOST_PC"}
+  if($service.Status -ne 'Running'){throw "SOAK_HOST_SERVICE_NOT_RUNNING"}
+  $failed=@(25565,25566,25567,8787 | Where-Object {-not (Test-LoopbackTcp $_)})
+  if($failed.Count -gt 0){
+    Write-Host ("SOAK_PRECHECK_BLOCKED_LOCAL_CONTROLS=" + ($failed -join ","))
+    exit 42
+  }
+  Write-Host "SOAK_PREFLIGHT_ALL_FOUR_LOCAL_TCP_CONTROLS_PASS"
+  exit 0
 }
 if($Synthetic){
   $a=@([pscustomobject]@{name="java";pid=101;started_at="s1"},
