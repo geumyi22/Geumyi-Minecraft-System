@@ -3,6 +3,8 @@ param([switch]$Synthetic)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+# Same no-write native directory probe used by the real-host operator kit.
+. (Join-Path $PSScriptRoot '..\Day12_GSC_NoWrite_AccessCore.ps1')
 
 # =============================================================================
 # Day12.5 ACL NEGATIVE TEST (GitHub Actions Windows runner ONLY).
@@ -208,12 +210,19 @@ try {
     }
     $facts['impersonated_is_admin'] = [bool]$imp.IsAdmin
     if ($imp.IsAdmin) { Block 'IMPERSONATED_TOKEN_IS_ADMIN_NOT_STANDARD' }
+    $tokenClass = Invoke-AsUser $token { Get-Day12TokenClass }
+    $facts['real_standard_token_class_confirmed'] = ($tokenClass -eq 'STANDARD_ACCOUNT_TOKEN')
+    if (-not $facts['real_standard_token_class_confirmed']) { Block 'TOKEN_CLASSIFIER_DID_NOT_ACCEPT_REAL_STANDARD_USER' }
 
     # Case A: Users create allowed -> standard user CAN create (risk detected).
     Set-UsersCreateAllowed $dir
     $script:__d = $dir
     $aCreate = Invoke-AsUser $token { Test-CanCreate $script:__d 'std-created-A.txt' }
     $facts['caseA_users_create_allowed_detected'] = [bool]$aCreate
+    $facts['caseA_nowrite_addfile_handle_allowed'] = (
+        (Invoke-AsUser $token { Invoke-Day12DirectoryAccessCheck -Directory $script:__d -Right CreateFiles }) -eq 'ALLOWED')
+    $facts['caseA_nowrite_adddirectory_handle_allowed'] = (
+        (Invoke-AsUser $token { Invoke-Day12DirectoryAccessCheck -Directory $script:__d -Right CreateDirectories }) -eq 'ALLOWED')
 
     # Current (admin) account preserves write under the same ACL.
     $facts['caseA_admin_can_create'] = (Test-CanCreate $dir 'admin-created-A.txt')
@@ -233,6 +242,10 @@ try {
         } catch { return $false }
     }
     $facts['caseB_std_create_denied']  = (-not $bCreate)
+    $facts['caseB_nowrite_addfile_handle_denied'] = (
+        (Invoke-AsUser $token { Invoke-Day12DirectoryAccessCheck -Directory $script:__d -Right CreateFiles }) -eq 'DENIED')
+    $facts['caseB_nowrite_adddirectory_handle_denied'] = (
+        (Invoke-AsUser $token { Invoke-Day12DirectoryAccessCheck -Directory $script:__d -Right CreateDirectories }) -eq 'DENIED')
     $facts['caseB_std_modify_denied']  = (-not $bModify)
     $facts['caseB_std_replace_denied'] = (-not $bReplace)
     # Standard user must still READ (legitimate read preserved).
@@ -245,7 +258,12 @@ try {
     $facts['caseB_existing_file_unchanged'] = $keepUnchanged
 
     # Verdict: every expected condition must hold, else FAIL (never silent pass).
-    $pass = $facts['caseA_users_create_allowed_detected'] -and
+    $pass = $facts['real_standard_token_class_confirmed'] -and
+            $facts['caseA_nowrite_addfile_handle_allowed'] -and
+            $facts['caseA_nowrite_adddirectory_handle_allowed'] -and
+            $facts['caseB_nowrite_addfile_handle_denied'] -and
+            $facts['caseB_nowrite_adddirectory_handle_denied'] -and
+            $facts['caseA_users_create_allowed_detected'] -and
             $facts['caseA_admin_can_create'] -and
             $facts['caseB_std_create_denied'] -and
             $facts['caseB_std_modify_denied'] -and
