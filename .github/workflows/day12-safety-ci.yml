@@ -139,6 +139,59 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Native no-write permission check selftest and privileged-token veto (PS 5.1)
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $probe='tools/day12/Day12_Phase5_GSC_StandardUser_NoWriteProbe_READ_ONLY.ps1'
+          $ps51=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $probe -SelfTest
+          if($LASTEXITCODE -ne 0){throw 'NATIVE_NO_WRITE_PROBE_SELFTEST_FAILED'}
+          # GitHub Windows runner is privileged: a secure operator tool must
+          # BLOCK, not pretend it performed an actual standard-user audit.
+          $dir=Join-Path $env:LOCALAPPDATA 'Geumyi-Day12-StandardUser-AccessProbe'
+          $before=@(Get-ChildItem -LiteralPath $dir -Filter 'DAY12-GSC-STANDARD-USER-NOWRITE-SHARE-ONLY-THIS-*.json' -File -ErrorAction SilentlyContinue).Count
+          & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $probe
+          if($LASTEXITCODE -ne 42){throw 'PRIVILEGED_RUNNER_TOKEN_MUST_BE_BLOCKED'}
+          $results=@(Get-ChildItem -LiteralPath $dir -Filter 'DAY12-GSC-STANDARD-USER-NOWRITE-SHARE-ONLY-THIS-*.json' -File | Sort-Object LastWriteTime -Descending)
+          if($results.Count -ne ($before+1)){throw 'NO_WRITE_PROBE_BLOCKED_REPORT_MISSING'}
+          $raw=Get-Content -LiteralPath $results[0].FullName -Raw -Encoding UTF8
+          $r=$raw | ConvertFrom-Json
+          if($r.result -ne 'BLOCKED_UNVERIFIED' -or $r.token_class -eq 'STANDARD_ACCOUNT_TOKEN' -or
+             $r.root_checked -or $r.production_acl_modified -or $r.raw_sids_paths_credentials_or_sddl_shared -or
+             $r.strict_security_gate -ne 'NOT_PASSED' -or $r.create_files_access -ne 'UNVERIFIED' -or
+             $r.create_directories_access -ne 'UNVERIFIED' -or
+             $raw -match 'S-1-5-|[A-Z]:\\|principal_sid|acl_sddl'){
+              throw 'NO_WRITE_PROBE_PRIVILEGED_VETO_CONTRACT_FAILED'
+          }
+          Write-Host 'NATIVE_NO_WRITE_PROBE_PRIVILEGED_VETO_PASS'
+
+      - name: Package GSC standard-user no-write diagnostic kit (READ ONLY)
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP ('gsc-nowrite-kit-'+[guid]::NewGuid().ToString('N'))
+          New-Item -ItemType Directory -Path $dir -ErrorAction Stop | Out-Null
+          foreach($file in @(
+            'Day12_GSC_NoWrite_AccessCore.ps1',
+            'Day12_Phase5_GSC_StandardUser_NoWriteProbe_READ_ONLY.ps1',
+            'START_Day12_Phase5_GSC_StandardUser_NoWriteProbe_READ_ONLY.cmd',
+            'README-Day12-STANDARD-USER-NOWRITE-KO.txt'
+          )){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12' $file) -Destination $dir -ErrorAction Stop
+          }
+          Compress-Archive -Path (Join-Path $dir '*') -DestinationPath 'Geumyi-Day12-StandardUser-NoWrite-READ-ONLY.zip' -Force
+          if(-not (Test-Path 'Geumyi-Day12-StandardUser-NoWrite-READ-ONLY.zip')){
+            throw 'NO_WRITE_PROBE_KIT_MISSING'
+          }
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc-standard-user-nowrite-operator-kit
+          path: Geumyi-Day12-StandardUser-NoWrite-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Package CI-checked ACL preflight kit (NO APPLY)
         shell: powershell
         run: |
