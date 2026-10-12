@@ -601,7 +601,11 @@ jobs:
                $j.strict_security_gate -ne 'NOT_PASSED' -or $j.evidence_state -ne 'BLOCKED_UNVERIFIED' -or
                [int]$j.candidate_count -lt 2 -or [int]$j.explicit_ace_objects -lt 1 -or
                [int]$j.protected_dacl_objects -lt 1 -or
-               [int]$j.broad_write_allow_explicit_objects -lt 1 -or [int]$j.reparse_points -ne 1){
+               [int]$j.broad_write_allow_explicit_objects -lt 1 -or
+               [int]$j.candidate_non_system_admin_write_allow_objects -lt 1 -or
+               ([int]$j.candidate_system_admin_write_only_objects +
+                [int]$j.candidate_non_system_admin_write_allow_objects) -gt [int]$j.candidate_count -or
+               [int]$j.reparse_points -ne 1){
               throw 'EXPLICIT_ACL_REVIEW_CLASSIFICATION_CONTRACT_FAILED'
             }
             if($raw -match 'S-1-5-|(?i)[A-Z]:\\|fixture-weak|fixture-protected|never-follow-this|agent.properties|principal_sid|acl_sddl'){
