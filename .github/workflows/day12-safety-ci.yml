@@ -130,6 +130,15 @@ jobs:
           if($rc -ne 0){throw "ACL negative test FAILED (exit $rc)."}
           Write-Host 'ACL_NEGATIVE_TEST_PASS'
 
+      - name: Preserve standard-user ACL synthetic test evidence (JSON only)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: day12-acl-standard-user-negative-result
+          path: ${{ runner.temp }}/DAY12-ACL-NEGATIVE-TEST-RESULT.json
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Package CI-checked ACL preflight kit (NO APPLY)
         shell: powershell
         run: |
