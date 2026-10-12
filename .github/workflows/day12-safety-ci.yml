@@ -515,6 +515,39 @@ jobs:
           Remove-Item -LiteralPath $outside -Recurse -Force
           Write-Host 'PS51_INVENTORY_SELFTEST_AND_FIXTURE_PASS'
 
+      - name: Package reviewed GSC subtree inventory READ-ONLY operator kit
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'gsc-subtree-operator-kit'
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          foreach($leaf in @(
+            'Day12_Phase5_GSC_Subtree_Owner_Inventory_READ_ONLY.ps1',
+            'START_Day12_Phase5_GSC_Subtree_Owner_Inventory_READ_ONLY.cmd'
+          )){ Copy-Item -LiteralPath (Join-Path 'tools/day12' $leaf) -Destination $root -ErrorAction Stop }
+          $guide = @(
+            'Geumyi Day12.5 - GSC subtree inventory [READ ONLY]',
+            ('GitHub reviewed commit: ' + $env:GITHUB_SHA),
+            'Run on the actual GSC Windows server PC only.',
+            'Extract BOTH CMD and PS1 into the SAME directory.',
+            'Double-click START_Day12_Phase5_GSC_Subtree_Owner_Inventory_READ_ONLY.cmd.',
+            'The CMD runs a disposable temporary fixture self-test, then only inventories the GSC subtree.',
+            'It does NOT apply ACLs, restore, delete production data, or stop/restart servers.',
+            'It writes only a counts-only shareable JSON to LOCALAPPDATA/Geumyi-Day12-ACL-Inventory.',
+            'Send ONLY the newest DAY12-GSC-SUBTREE-INVENTORY-SHARE-ONLY-THIS-*.json to ChatGPT.',
+            'If BLOCKED or FAILED, send the screen; do NOT adjust ACLs manually.'
+          )
+          [IO.File]::WriteAllLines((Join-Path $root 'README-FIRST.txt'), $guide, (New-Object System.Text.UTF8Encoding($false)))
+          Compress-Archive -LiteralPath (Join-Path $root '*') -DestinationPath 'Geumyi-Day12-GSC-Subtree-READ-ONLY.zip' -Force
+          if(-not (Test-Path 'Geumyi-Day12-GSC-Subtree-READ-ONLY.zip')){throw 'Operator kit ZIP missing'}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc-subtree-operator-readonly-kit
+          path: Geumyi-Day12-GSC-Subtree-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Synthetic final Stable release gate omission and fail-closed tests
         shell: pwsh
         run: |
