@@ -548,6 +548,102 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: GSC explicit/protected ACL counts-only review (PS 5.1, disposable Windows fixture)
+        shell: powershell
+        env:
+          GEUMYI_DAY12_EXPLICIT_ACL_CI: isolated_fixture
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tool = Join-Path $env:GITHUB_WORKSPACE 'tools\day12\Day12_Phase5_GSC_ExplicitAcl_Review_READ_ONLY.ps1'
+          $ps51 = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -SelfTest
+          if($LASTEXITCODE -ne 0){ throw 'EXPLICIT_ACL_REVIEW_SELFTEST_FAILED' }
+
+          $base = Join-Path $env:RUNNER_TEMP ('gsc-explicit-acl-fixture-' + [guid]::NewGuid().ToString('N'))
+          $root = Join-Path $base 'GeumyiServerCenter'
+          $outside = Join-Path $base 'outside'
+          $junction = Join-Path $root 'Staging'
+          $linked = $false
+          try {
+            foreach($dir in @((Join-Path $root 'Runtime'),(Join-Path $root 'Updates'),(Join-Path $root 'Backups'),$outside)){
+              New-Item -ItemType Directory -Force -Path $dir | Out-Null
+            }
+            $weak = Join-Path $root 'Runtime\fixture-weak.bin'
+            $protected = Join-Path $root 'Updates\fixture-protected.bin'
+            $plain = Join-Path $root 'Backups\fixture-plain.bin'
+            Set-Content -LiteralPath $weak -Value 'unchanged' -Encoding ASCII
+            Set-Content -LiteralPath $protected -Value 'unchanged' -Encoding ASCII
+            Set-Content -LiteralPath $plain -Value 'unchanged' -Encoding ASCII
+            Set-Content -LiteralPath (Join-Path $outside 'never-follow-this.txt') -Value 'outside' -Encoding ASCII
+            $users = New-Object System.Security.Principal.SecurityIdentifier('S-1-5-32-545')
+            $weakAcl = Get-Acl -LiteralPath $weak
+            $allow = New-Object System.Security.AccessControl.FileSystemAccessRule(
+                $users,'Write','Allow')
+            $weakAcl.AddAccessRule($allow)
+            Set-Acl -LiteralPath $weak -AclObject $weakAcl
+            $protectAcl = Get-Acl -LiteralPath $protected
+            $protectAcl.SetAccessRuleProtection($true, $true)
+            Set-Acl -LiteralPath $protected -AclObject $protectAcl
+            cmd.exe /d /c mklink /J "$junction" "$outside" | Out-Null
+            if($LASTEXITCODE -ne 0){ throw 'FIXTURE_JUNCTION_FAILED' }
+            $linked = $true
+
+            $outBase = Join-Path $env:LOCALAPPDATA 'Geumyi-Day12-ACL-ExplicitReview'
+            $before = @(Get-ChildItem -LiteralPath $outBase -Filter 'DAY12-GSC-EXPLICIT-ACL-SHARE-ONLY-THIS-*.json' -File -ErrorAction SilentlyContinue).Count
+            & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -CIFixture -CIFixtureRoot $root
+            if($LASTEXITCODE -ne 0){ throw 'EXPLICIT_ACL_REVIEW_FIXTURE_FAILED' }
+            $files = @(Get-ChildItem -LiteralPath $outBase -Filter 'DAY12-GSC-EXPLICIT-ACL-SHARE-ONLY-THIS-*.json' -File | Sort-Object LastWriteTime -Descending)
+            if($files.Count -ne ($before+1)){ throw 'EXPLICIT_ACL_REVIEW_OUTPUT_MISSING' }
+            $raw = Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8
+            $j = $raw | ConvertFrom-Json
+            if(-not $j.synthetic -or $j.production_acl_modified -or $j.effective_access_verified -or
+               $j.effective_standard_user_write_denial_proven -or $j.names_paths_sids_or_raw_sddl_shared -or
+               $j.strict_security_gate -ne 'NOT_PASSED' -or $j.evidence_state -ne 'BLOCKED_UNVERIFIED' -or
+               [int]$j.candidate_count -lt 2 -or [int]$j.explicit_ace_objects -lt 1 -or
+               [int]$j.protected_dacl_objects -lt 1 -or
+               [int]$j.broad_write_allow_explicit_objects -lt 1 -or [int]$j.reparse_points -ne 1){
+              throw 'EXPLICIT_ACL_REVIEW_CLASSIFICATION_CONTRACT_FAILED'
+            }
+            if($raw -match 'S-1-5-|(?i)[A-Z]:\\|fixture-weak|fixture-protected|never-follow-this|agent.properties|principal_sid|acl_sddl'){
+              throw 'EXPLICIT_ACL_REVIEW_SHARE_JSON_LEAKED_PRIVATE_METADATA'
+            }
+            if((Get-Content -LiteralPath $weak -Raw).Trim() -ne 'unchanged' -or
+               (Get-Content -LiteralPath $protected -Raw).Trim() -ne 'unchanged' -or
+               (Get-Content -LiteralPath $plain -Raw).Trim() -ne 'unchanged' -or
+               -not (Test-Path -LiteralPath (Join-Path $outside 'never-follow-this.txt'))){
+              throw 'EXPLICIT_ACL_REVIEW_MODIFIED_READONLY_SOURCE'
+            }
+            Write-Host 'PS51_EXPLICIT_ACL_READONLY_FIXTURE_PASS'
+          } finally {
+            if($linked){
+              [IO.Directory]::Delete($junction,$false)
+            }
+            if(Test-Path -LiteralPath $base){ Remove-Item -LiteralPath $base -Recurse -Force }
+          }
+
+      - name: Package reviewed explicit ACL counts-only READ-ONLY operator kit
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP ('gsc-explicit-operator-kit-' + [guid]::NewGuid().ToString('N'))
+          New-Item -ItemType Directory -Path $root -ErrorAction Stop | Out-Null
+          foreach($name in @(
+            'Day12_Phase5_GSC_ExplicitAcl_Review_READ_ONLY.ps1',
+            'START_Day12_Phase5_GSC_ExplicitAcl_Review_READ_ONLY.cmd',
+            'README-Day12-GSC-EXPLICIT-ACL-REVIEW-KO.txt'
+          )){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12' $name) -Destination $root -ErrorAction Stop
+          }
+          Compress-Archive -Path (Join-Path $root '*') -DestinationPath 'Geumyi-Day12-Explicit-ACL-READ-ONLY.zip' -Force
+          if(-not (Test-Path 'Geumyi-Day12-Explicit-ACL-READ-ONLY.zip')){ throw 'EXPLICIT_ACL_OPERATOR_KIT_MISSING' }
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc-explicit-acl-operator-readonly-kit
+          path: Geumyi-Day12-Explicit-ACL-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Synthetic final Stable release gate omission and fail-closed tests
         shell: pwsh
         run: |
