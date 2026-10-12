@@ -119,13 +119,16 @@ func TestAtomicReplaceYieldsFreshInheritedDaclNotPreplanted(t *testing.T) {
 
 	dst := filepath.Join(dir, "server.json")
 	// Pre-plant a PROTECTED destination with the marker ACE absent (an
-	// attacker-created-first model). SetAccessRuleProtection($true,$true) COPIES
-	// the current inherited ACEs as explicit, so SYSTEM/Administrators keep full
-	// control (the file stays deletable/replaceable) while inheritance is off;
-	// then the marker ACE is purged.
+	// attacker-created-first model). Remove inherited ACEs, then explicitly
+	// grant SYSTEM, Administrators, and the fixture creator FullControl so
+	// the file remains replaceable. Merely purging a copied inheritable ACE
+	// left the Guest marker on some hosted Windows runners.
 	setupPS(t, `$p=$env:GSC_ACL_FIXTURE_PATH;Set-Content -LiteralPath $p -Value 'PREPLANTED' -NoNewline;`+
-		`$a=Get-Acl -LiteralPath $p;$a.SetAccessRuleProtection($true,$true);`+
-		`$a.PurgeAccessRules((New-Object System.Security.Principal.SecurityIdentifier('`+markerSID+`')));`+
+		`$a=Get-Acl -LiteralPath $p;$a.SetAccessRuleProtection($true,$false);`+
+		`$sids=@('S-1-5-18','S-1-5-32-544',([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value));`+
+		`foreach($sid in $sids){$rule=New-Object System.Security.AccessControl.FileSystemAccessRule(`+
+		`(New-Object System.Security.Principal.SecurityIdentifier($sid)),`+
+		`'FullControl','None','None','Allow');$a.AddAccessRule($rule)};`+
 		`Set-Acl -LiteralPath $p -AclObject $a`, dst)
 
 	before := getACL(t, dst)
