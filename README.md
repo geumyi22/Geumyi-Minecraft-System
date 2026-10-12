@@ -4,6 +4,8 @@
 
 **최신 수동 설치 패키지:** [GSC 4.5.1 / GSCM 1.5.1+151 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) (2026-10-11 공개, GitHub Latest). 마지막 실제 운영 기기 확인은 GSC 4.3.8 / GSCM 1.1.5+117이며, 자동 Stable 배포용 서명 manifest는 별도입니다.
 
+**최종 서명 Stable을 위한 한 번에 끝내는 계획:** [Day12 Stable Fast Track](docs/day12/DAY12-STABLE-FAST-TRACK-20261013.md). 이미 공개한 수동 Stable 패키지는 유지하고, 필수 실환경 보안·오프라인 기동·서명 Canary 롤백 검증만 구분합니다. Draft PR #53의 미병합 보안 변경은 기존 Stable 릴리즈에 포함되지 않습니다.
+
 GSC 4.5.1 및 GSCM 1.5.1+151 Stable 수동 설치 빌드 대상의 소스·복구 근거·CI·리소스팩을 모은 저장소입니다. **원본 그대로 회수한 소스와 바이너리 기준으로 재구성한 소스를 구분해서 기록합니다.**
 
 | Component | Baseline | Path | Recovery status |
