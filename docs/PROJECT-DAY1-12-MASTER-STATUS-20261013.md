@@ -45,7 +45,7 @@
 | **12.7** 캐시·오프라인 기동 | 실호스트 캐시 **84/84 SHA+크기**, 최신 **GSC 4.5.1 + 실제 Paper 26.3 격리 CI**에서 업데이트 서버 장애 시 정상 시작 확인 | 🟠 **실호스트 실제 오프라인 기동**은 아직 미검증. 격리 HTTP 프록시 장애 ≠ 네트워크 단절 |
 | **12.8** 재해 복구 | 일회용 DR/recovery CI·rollback, 복구 패키지 | ✅ 합성/격리 CI 검증. 보호된 실제 월드 전체 복구는 실행하지 않음 |
 | **12.9** 운영 UX | GSC 데스크톱/GSCM Android 콘솔 UI 정상 운영자 수락, iOS 상태/재접속 수락 | ✅ 운영 UI 범위 수락; 최신 수정 iOS IPA 기기별 서명·설치 증거는 예외 |
-| **12.10** 백엔드·포트 보안 | 설정/Windows read-only/외부 LAN/Tailnet IPv4/IPv6 접근 **0/8** + API 인증 거부 **8/8** 범위 증거 | 🔴 `FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS`: 실제 OS TCP 리스너 **IPv4/IPv6 owner PID**·백엔드별 바인딩 소유자 검증 부족. Other가 의도적 OFFLINE이면 **해당 백엔드의 LISTEN 행을 요구하지 않음**, 대신 증거 범위를 명시 |
+| **12.10** 백엔드·포트 보안 | 기존 LAN/Tailnet 양 IP 계열 외부 private TCP 접근 **0/8** 보조 증거 및 2026-10-13 **실서버 Native IPv4 Java/RCON 루프백·Paper PID 3쌍/6포트 모두 매칭, 이유 오류 0**. IPv6 owner 조회 정상·매칭 0, 의도적 OFFLINE Other 포트 이상 리스너 0. [실측 상세](day12/phases/phase-10/DAY12-PHASE10-LIVE-OWNER-BIND-20261013.md) | ✅ **온라인 3서버의 6/6 Native 소유권·루프백 실측은 범위 한정 PASS**. ⚠️ OS/방화벽·WFP 전 경로 보안 정책 검토 및 Canonical `backend_ports_private`는 **아직 FAIL/REVIEW**. IPv6 0개 및 Other OFFLINE은 포트 부재로만 제한 해석 |
 | **12.11** 통합 E2E | 운영자 기존 Java/Bedrock/GSCM 기능 PASS, 18개 중 **16개 수락/범위별 마감**, #2 호스트 Java 역할 문제 해소; 최신 **GSC 4.5.1 + 실제 Paper 26.3 격리 CI**에서 비정상 종료→RECOVERING→신규 PID 복구 통과 | 🟠 #12 실제 운영서버 crash를 수행한 것은 **아님**; #17 **정식 서명 Canary apply/rollback 실제 스테이징**은 미증명. 사용자 실기기 최종 후보 확인 별개 |
 | **12.12** 연속 안정성 | **실호스트 8시간 계측 완료** (2026-10-13 01:35~09:35 KST), 5분 간격 97샘플·최대 간격 5분·관측된 TCP 이상 0·수집 오류 0·Java/GSC 프로세스 교체 0·식별 불가 0. [실제 측정 근거](day12/phases/phase-12/DAY12-PHASE12-INSTRUMENTED-LIVE-SOAK-20261013.md) | ✅ **8시간 TCP/프로세스 모니터링은 실호스트 범위 한정 PASS**. 원본 JSON의 `REVIEW_REQUIRED`/자동 Stable 불허 유지. 기타 의도적 OFFLINE·Velocity 25567 구분, 게임/E2E 및 엄격한 릴리즈 게이트 별개 |
 | **12.13** Final Stable | [수동 설치 Stable GSC 4.5.1 / GSCM 1.5.1+151](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) **기공개** | 🔒 최종 **보안 통합 코드 병합·자동 서명 Stable·Maintenance Mode**는 엄격한 필수 실호스트 게이트 PASS 전 미승인 |
@@ -54,6 +54,7 @@
 
 - 통합 저장소 작업 브랜치 **`integration/day12-security-review-20261012`**, PR **#53 Draft/미병합**. 이미 공개된 구버전 수동 Stable에는 해당 PR의 새 보안 코드가 포함되지 않습니다.
 - **PR #53 HEAD `5467b01d` 시점 GitHub 7/7 CI 성공**: System CI, Day12 Safety, Security/SBOM, Host Test, Synthetic DR, 8시간 모니터 배포/자체시험, GSC 4.5.1 + Paper 26.3 실제 프로세스 격리 Offline/Crash 복구 2개 테스트.
+- **2026-10-13 추가 12.10 실호스트 증거:** [Native 소유권/루프백 바인딩 6/6 실제 보고서](day12/phases/phase-10/DAY12-PHASE10-LIVE-OWNER-BIND-20261013.md), 기타 의도적 OFFLINE; 최종 보안 전체 게이트는 별도 미완료.
 - **2026-10-13 추가 실호스트 증거:** 8시간 모니터링 97개 샘플, 연속성 정상, TCP 관측 오류 0, 프로세스 교체 0, 수집 실패 0. [증거·범위·한계](day12/phases/phase-12/DAY12-PHASE12-INSTRUMENTED-LIVE-SOAK-20261013.md). 기존 검사기 사용 결과이며 **새 Other-aware 검사기를 또 8시간 실행할 필요는 없습니다.**
 - **이 문서 이후 PR HEAD는 변경될 수 있습니다.** 과거 7/7 성공을 새 커밋의 자동 성공으로 간주하지 않습니다. GitHub Actions는 각 커밋별 완료 여부를 확인하세요.
 - Release 결정의 단일 기계 판정 기준: `FINAL-RELEASE-GATES.json` + `tools/day12/validate_final_release_gates.py`. 사람 수락/CI 결과로 다른 실호스트 필수 게이트를 묵시적 PASS 전환하지 않습니다.
