@@ -68,7 +68,7 @@ function Get-OneDriveCandidateRoots {
 function InspectConfig([string]$Path) {
   $res=[ordered]@{
     status="CONFIG_UNAVAILABLE";host_version="UNKNOWN";expected_other="OFFLINE"
-    profiles=@();world_consistency_proven=$false
+    profiles=@();internal_resolved_roots=@();world_consistency_proven=$false
     config_mutated=$false;server_root_paths_exported=$false
   }
   if(-not $Path -or -not (Test-Path -LiteralPath $Path -PathType Leaf)){return $res}
@@ -80,9 +80,21 @@ function InspectConfig([string]$Path) {
       if($id -notin @("wild","playground","lobby","other")){continue}
       $serverRoot=""
       $candidate=[string]$sv.path
-      if(-not [string]::IsNullOrWhiteSpace($candidate)){
-        $serverRoot=CanonicalDirectory $candidate
+      # GSC itself accepts either a direct path OR a path_file whose contents
+      # give the server root. Inspect the pointer read-only, never export it.
+      if([string]::IsNullOrWhiteSpace($candidate)){
+        $pointer=[string]$sv.path_file
+        if(-not [string]::IsNullOrWhiteSpace($pointer)){
+          $pointer=[Environment]::ExpandEnvironmentVariables($pointer)
+          if(Test-Path -LiteralPath $pointer -PathType Leaf){
+            $candidate=(Get-Content -LiteralPath $pointer -Raw -Encoding UTF8 -ErrorAction Stop).Trim().Trim([char]0xfeff).Trim('"')
+          }
+        }
       }
+      if(-not [string]::IsNullOrWhiteSpace($candidate)){
+        $serverRoot=CanonicalDirectory ([Environment]::ExpandEnvironmentVariables($candidate))
+      }
+      if($serverRoot){$res.internal_resolved_roots+= $serverRoot}
       $role=[ordered]@{
         id=$id;root_found=[bool]$serverRoot;configured_java_port=[int]$sv.java_port
         loopback_tcp_reachable=$(if($serverRoot){CanConnectLocalTcp ([int]$sv.java_port)}else{$false})
@@ -113,6 +125,18 @@ function Decide([object]$Cfg,[string]$Google,[string]$Microsoft,[string[]]$Known
   if($Google -and $Microsoft -and
       ((PathIsInside $Google $Microsoft) -or (PathIsInside $Microsoft $Google))){
     [void]$fail.Add("CLOUD_DESTINATION_OVERLAP")
+  }
+  # A chosen destination may never be an actual server source folder or
+  # a nested folder of it; prevent both recursion and live-world sync.
+  foreach($serverPath in @($Cfg.internal_resolved_roots)){
+    if(-not $serverPath){continue}
+    foreach($cloudPath in @($Google,$Microsoft)){
+      if(-not $cloudPath){continue}
+      if((PathIsInside $cloudPath $serverPath) -or
+         (PathIsInside $serverPath $cloudPath)){
+        [void]$fail.Add("CLOUD_DESTINATION_OVERLAPS_SERVER_ROOT")
+      }
+    }
   }
   $matchingOneDrive=@($KnownOneDriveRoots|Where-Object{PathIsInside $Microsoft $_}).Count -gt 0
   if($Microsoft -and -not $matchingOneDrive){
@@ -181,16 +205,18 @@ if($Synthetic){
     [pscustomobject]@{id="playground";root_found=$true},
     [pscustomobject]@{id="lobby";root_found=$true},
     [pscustomobject]@{id="other";root_found=$true}
-  )}
+  );internal_resolved_roots=@("D:\Geumyi\wild","D:\Geumyi\playground") }
   $good=Decide $cfg "G:\My Drive" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $true $true $true
   $badSource=Decide ([pscustomobject]@{status="CONFIG_UNAVAILABLE";profiles=@()}) "G:\My Drive" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $true $true $true
   $badSync=Decide $cfg "G:\My Drive" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $false $true $true
   $badOverlap=Decide $cfg "G:\My Drive" "G:\My Drive\OneDrive" @("G:\My Drive") $true $true $true
+  $badInsideWorld=Decide $cfg "D:\Geumyi\wild\Backups" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $true $true $true
   if($good.result -ne "DESTINATIONS_AND_SOURCE_DISCOVERED_REVIEW_REQUIRED" -or
      $good.stable_release_allowed -or $good.cloud_backup_created -or
      $badSource.result -ne "BLOCKED_DISCOVERY_REVIEW_REQUIRED" -or
      $badSync.result -ne "BLOCKED_DISCOVERY_REVIEW_REQUIRED" -or
-     $badOverlap.result -ne "BLOCKED_DISCOVERY_REVIEW_REQUIRED"){
+     $badOverlap.result -ne "BLOCKED_DISCOVERY_REVIEW_REQUIRED" -or
+     $badInsideWorld.result -ne "BLOCKED_DISCOVERY_REVIEW_REQUIRED"){
     throw "CLOUD_PREFLIGHT_SYNTHETIC_FAIL_CLOSED_REGRESSION"
   }
   Write-Host "CLOUD_PREFLIGHT_SYNTHETIC_PASS"
