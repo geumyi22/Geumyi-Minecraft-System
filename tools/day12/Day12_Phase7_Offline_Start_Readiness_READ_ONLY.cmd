@@ -8,9 +8,12 @@ echo ===============================================================
 echo Run only on the Minecraft SERVER PC. Not on SubPC.
 echo.
 echo This is NOT an outage or restart. It:
-echo - Checks GSC 4.3.8, zero active jobs, Playground player count
+echo - Supports detected GSC Host 4.3.8 or 4.5.1, zero jobs, zero Playground players
 echo - Checks protected+verified Playground full backup
 echo - Checks explicit non-managed update policy and safe phase
+echo - Does NOT start the actual offline test or change managed update policy.
+echo - Other Paper remains intentionally OFFLINE throughout this precheck.
+echo - Host version and update policy guard failures are REVIEW, not server crash.
 echo - DOES NOT disconnect network, change firewall, restart server
 echo - DOES NOT modify world, Java/plugins, Golden, cache, ACL, GSC
 echo.
