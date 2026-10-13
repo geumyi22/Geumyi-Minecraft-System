@@ -61,11 +61,27 @@ if($Synthetic){
     if($native.status -eq "ERROR" -or $basic.Count -eq 0 -or $owner.Count -eq 0){
       throw "Controlled localhost native listener was not observed from both IPv4 table classes"
     }
+    # The live Windows 26220 host produces raw state=0 for API-proven
+    # listener-only tables. ALL tables must NOT treat state=0 as LISTEN.
+    $ownerListenerState0=[GeumyiDay12TcpListenerV2]::IsListenerClassStateAccepted([uint32]3,0)
+    $basicListenerState0=[GeumyiDay12TcpListenerV2]::IsListenerClassStateAccepted([uint32]0,0)
+    $allOwnerState0=[GeumyiDay12TcpListenerV2]::IsListenerClassStateAccepted([uint32]5,0)
+    $allBasicState0=[GeumyiDay12TcpListenerV2]::IsListenerClassStateAccepted([uint32]2,0)
+    $allOwnerListen=[GeumyiDay12TcpListenerV2]::IsListenerClassStateAccepted([uint32]5,2)
+    if(-not $ownerListenerState0 -or -not $basicListenerState0 -or
+       $allOwnerState0 -or $allBasicState0 -or -not $allOwnerListen){
+      throw "Native API listener table-class versus raw-state-zero safety regression"
+    }
     $result=[ordered]@{
       schema=1;phase="12.10-native-crosscheck";read_only=$true;synthetic=$true
       result="SYNTHETIC_PASS";provider_status=$native.status
       controlled_listener_observed_basic=($basic.Count -gt 0)
       controlled_listener_observed_owner=($owner.Count -gt 0)
+      class3_state0_listener_accepted=$ownerListenerState0
+      class0_state0_listener_accepted=$basicListenerState0
+      class5_state0_not_promoted=(-not $allOwnerState0)
+      class2_state0_not_promoted=(-not $allBasicState0)
+      class5_state2_supported=$allOwnerListen
       mutation_performed=$false;secrets_exported=$false
     }
     $result|ConvertTo-Json -Depth 6|Set-Content -LiteralPath $out -Encoding UTF8
