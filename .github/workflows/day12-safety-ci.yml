@@ -857,7 +857,10 @@ jobs:
           if($reports.Count -ne 1){throw 'Native crosscheck expected a single report'}
           $r=Get-Content -LiteralPath $reports[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
           if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.read_only -or -not $r.synthetic -or
-            -not $r.controlled_listener_observed_basic -or -not $r.controlled_listener_observed_owner -or $r.mutation_performed){
+            -not $r.controlled_listener_observed_basic -or -not $r.controlled_listener_observed_owner -or
+            -not $r.class3_state0_listener_accepted -or -not $r.class0_state0_listener_accepted -or
+            -not $r.class5_state0_not_promoted -or -not $r.class2_state0_not_promoted -or
+            -not $r.class5_state2_supported -or $r.mutation_performed){
             throw 'Native controlled listener report contract failed'
           }
 
