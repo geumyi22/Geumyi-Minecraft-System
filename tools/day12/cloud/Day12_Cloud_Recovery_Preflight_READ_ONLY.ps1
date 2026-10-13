@@ -41,7 +41,7 @@ function PathIsInside([string]$Child,[string]$Parent) {
   if(-not $Child -or -not $Parent){return $false}
   $a=$Child.TrimEnd('\');$b=$Parent.TrimEnd('\')
   return $a.Equals($b,[StringComparison]::OrdinalIgnoreCase) -or
-    $a.StartsWith($b+'\\',[StringComparison]::OrdinalIgnoreCase)
+    $a.StartsWith($b+'\',[StringComparison]::OrdinalIgnoreCase)
 }
 function CanConnectLocalTcp([int]$Port) {
   if($Port -le 0 -or $Port -gt 65535){return $false}
