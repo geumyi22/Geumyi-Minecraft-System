@@ -82,6 +82,26 @@ function Resolve-GSCReadOnlySettings {
     return [pscustomobject]@{status=$reason;data=$null}
   }
 }
+function Merge-ReadOnlyGSCSettingsRoots([object]$Result,[object]$Settings) {
+  # Pure classification of the already-resolved GSC GET settings profile.
+  # Paths never appear in the user-shareable report. Exact directory
+  # accessibility is checked under the read-only operator token.
+  if([string]$Settings.status -ne "OK"){return}
+  foreach($role in $Result.profiles){
+    if($role.root_found){continue}
+    $matching=@($Settings.data.servers|Where-Object{[string]$_.id -eq $role.id})
+    if($matching.Count -ne 1){continue}
+    $candidate=CanonicalDirectory ([string]$matching[0].path)
+    if($candidate){
+      $role.root_found=$true
+      $role.root_resolution_method="GSC_SETTINGS_GET_PATH_READ_ONLY"
+      $role.loopback_tcp_reachable=CanConnectLocalTcp ([int]$role.configured_java_port)
+      $Result.internal_resolved_roots+= $candidate
+    } else {
+      $role.root_resolution_method="GSC_SETTINGS_GET_PATH_NOT_ACCESSIBLE"
+    }
+  }
+}
 function InspectConfig([string]$Path) {
   $res=[ordered]@{
     status="CONFIG_UNAVAILABLE";host_version="UNKNOWN";expected_other="OFFLINE"
@@ -132,20 +152,7 @@ function InspectConfig([string]$Path) {
     $settings=Resolve-GSCReadOnlySettings
     $res.settings_api_status=[string]$settings.status
     if($settings.status -eq "OK"){
-      foreach($role in $res.profiles){
-        if($role.root_found){continue}
-        $matching=@($settings.data.servers|Where-Object{[string]$_.id -eq $role.id})
-        if($matching.Count -ne 1){continue}
-        $candidate=CanonicalDirectory ([string]$matching[0].path)
-        if($candidate){
-          $role.root_found=$true
-          $role.root_resolution_method="GSC_SETTINGS_GET_PATH_READ_ONLY"
-          $role.loopback_tcp_reachable=CanConnectLocalTcp ([int]$role.configured_java_port)
-          $res.internal_resolved_roots+= $candidate
-        } else {
-          $role.root_resolution_method="GSC_SETTINGS_GET_PATH_NOT_ACCESSIBLE"
-        }
-      }
+      Merge-ReadOnlyGSCSettingsRoots $res $settings
     }
   }else{$res.settings_api_status="NOT_NEEDED"}
   return $res
@@ -255,6 +262,28 @@ if($Synthetic){
   $badSync=Decide $cfg "G:\My Drive" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $false $true $true
   $badOverlap=Decide $cfg "G:\My Drive" "G:\My Drive\OneDrive" @("G:\My Drive") $true $true $true
   $badInsideWorld=Decide $cfg "D:\Geumyi\wild\Backups" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $true $true $true
+  # Existing Windows folder is safe fixture for GSC API fallback path
+  # resolution, no user paths or temporary files are created.
+  $windowsRoot=CanonicalDirectory $env:WINDIR
+  if(-not $windowsRoot){throw "SYNTHETIC_WINDOWS_ROOT_NOT_FOUND"}
+  $mock=[ordered]@{
+    profiles=@([pscustomobject]@{
+      id="wild";root_found=$false;root_resolution_method="CONFIG_PATH_FILE_NOT_RESOLVED";
+      configured_java_port=0;loopback_tcp_reachable=$false
+    });
+    internal_resolved_roots=@()
+  }
+  $fakeReply=[pscustomobject]@{
+    status="OK";data=[pscustomobject]@{
+      servers=@([pscustomobject]@{id="wild";path=$windowsRoot})
+    }
+  }
+  Merge-ReadOnlyGSCSettingsRoots $mock $fakeReply
+  if(-not $mock.profiles[0].root_found -or
+     $mock.profiles[0].root_resolution_method -ne "GSC_SETTINGS_GET_PATH_READ_ONLY" -or
+     $mock.internal_resolved_roots.Count -ne 1){
+    throw "SYNTHETIC_GSC_READONLY_SETTINGS_FALLBACK_FAIL"
+  }
   if($good.result -ne "DESTINATIONS_AND_SOURCE_DISCOVERED_REVIEW_REQUIRED" -or
      $good.stable_release_allowed -or $good.cloud_backup_created -or
      $badSource.result -ne "BLOCKED_DISCOVERY_REVIEW_REQUIRED" -or
