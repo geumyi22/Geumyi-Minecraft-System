@@ -11,6 +11,8 @@
 3. [**이미 공개된 수동 설치 Stable**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151)은 **GSC 4.5.1 / GSCM 1.5.1+151**입니다. 최종 실기기 확인 **기준선**은 GSC **4.3.8** / GSCM **1.1.5+117**이었습니다. 어떤 실행 파일이 오늘 서버에 설치·로드됐는지는 이 문서만으로 알 수 없습니다.
 4. [**Day12 보안 통합 Draft PR #53**](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/53)은 **미병합/미배포**입니다. 2026-10-13 실제 호스트 **8시간 연속 계측은 범위 한정 PASS**로 확보했습니다([보고서](day12/phases/phase-12/DAY12-PHASE12-INSTRUMENTED-LIVE-SOAK-20261013.md)). 새 자동 서명 Stable과 실제 ACL/방화벽 변경은 아직 아닙니다. Release gate는 [FINAL-RELEASE-GATES.json](../FINAL-RELEASE-GATES.json)의 **BLOCKED** 상태를 유지합니다.
 
+**2026-10-14 새로운 복구 경로 준비:** 운영자가 **Google Drive 2TB / Microsoft OneDrive 1TB 로그인·업로드 가능**을 확인했습니다. [새 이중 클라우드 복구 계획](day12/DAY12-DUAL-CLOUD-RECOVERY-PLAN-20261014.md)과 [읽기 전용 위치·서버 루트 사전 검사](../tools/day12/cloud/)를 준비했습니다. **현재 사용 가능한 저장공간·클라우드 폴더 위치·백업 업로드 완료·실제 복원 성공은 아직 검증되지 않았습니다.** 기존 서버 파일 백업은 운영자가 이미 삭제했으므로 현 시점 12.7의 백업 부재 위험은 해소됐다고 표시하지 않습니다.
+
 ## 1. Day 1~12 — 세부 일차별 현재 상태
 
 | 일차 | 목표 | 완료 범위와 실제 근거 | 남은 범위·주의 |
@@ -45,7 +47,7 @@
 | **12.4** 저장소·백업·로그 정책 | 실제 dry-run 제거 후보 **0**; 운영자 승인 **NO ACTION** | ✅ 리뷰 종료. 정리 정책을 실제로 자동 설치한 것으로 표시하지 않음 |
 | **12.5** 권한·보안 | 보안 CI·ACL/방화벽 READ_ONLY, 실제 14,304 객체/6개 보호 파일 확인. 상속된 Users Create/WRITE Allow와 광범위 방화벽 Allow 후보는 [최신 보안 판단](day12/phases/phase-05/DAY12-PHASE5-NO-BACKUP-SECURITY-DISPOSITION-20261013.md) 참조 | ⚠️ 실제 표준 사용자 계정 **부재**, 유효 쓰기 거부/허용 **UNVERIFIED**. 운영 ACL·방화벽 변경은 현재 복구 스냅샷이 검증되지 않아 금지. CI 합성 PASS는 실호스트 보안 PASS가 아님 |
 | **12.6** 서명 릴리즈 체인 | GitHub build/reproducibility/manifest 서명 순서·차단 정책·Android signer 검증 CI | ✅ **CI·설계만** 확인. 최종 자동 서명 Stable 자체는 미발행; iOS IPA는 unsigned |
-| **12.7** 캐시·오프라인 기동 | 실호스트 캐시 **84/84**, GSC 4.5.1 + Paper 26.3 격리 CI 업데이트 출처 장애 속 기동 성공. **2026-10-13 23:23 실제 GSC Host 4.5.1 / 놀이터 ONLINE·접속자 0·작업 0** 사전검사 [결과](day12/phases/phase-07/DAY12-PHASE7-LIVE-READINESS-20261013-2323.md) | 🟠 **실서버 실제 오프라인 기동은 미실행**. 확인 필요 원인 정확히 2개: `AUTOMATIC_UPDATE_POLICY_MUST_BE_REVIEWED`, `TARGET_PROTECTED_VERIFIED_FULL_BACKUP_NOT_CONFIRMED`. 실제 백업 부재를 뜻하지 않음. 동일 사전검사 재실행 금지; 복구자산/정책 확인 전 운영 재시작 금지 |
+| **12.7** 캐시·오프라인 기동 | 실호스트 캐시 **84/84**, GSC 4.5.1 + Paper 26.3 격리 CI 업데이트 출처 장애 속 기동 성공. **2026-10-13 23:23 실제 GSC Host 4.5.1 / 놀이터 ONLINE·접속자 0·작업 0** 사전검사 [결과](day12/phases/phase-07/DAY12-PHASE7-LIVE-READINESS-20261013-2323.md) | 🟠 **실서버 실제 오프라인 기동은 미실행**. 확인 필요 원인 정확히 2개: `AUTOMATIC_UPDATE_POLICY_MUST_BE_REVIEWED`, `TARGET_PROTECTED_VERIFIED_FULL_BACKUP_NOT_CONFIRMED`. 사용자는 이전 서버 파일 백업을 전부 삭제했다고 확인; 현재 복구본 없음 위험 유지. 동일 사전검사 재실행 금지; 복구자산/정책 확인 전 운영 재시작 금지 |
 | **12.8** 재해 복구 | 일회용 DR/recovery CI·rollback, 복구 패키지 | ✅ 합성/격리 CI 검증. 보호된 실제 월드 전체 복구는 실행하지 않음 |
 | **12.9** 운영 UX | GSC 데스크톱/GSCM Android 콘솔 UI 정상 운영자 수락, iOS 상태/재접속 수락 | ✅ 운영 UI 범위 수락; 최신 수정 iOS IPA 기기별 서명·설치 증거는 예외 |
 | **12.10** 백엔드·포트 보안 | 기존 LAN/Tailnet 양 IP 계열 외부 private TCP 접근 **0/8** 보조 증거 및 2026-10-13 **실서버 Native IPv4 Java/RCON 루프백·Paper PID 3쌍/6포트 모두 매칭, 이유 오류 0**. IPv6 owner 조회 정상·매칭 0, 의도적 OFFLINE Other 포트 이상 리스너 0. [실측 상세](day12/phases/phase-10/DAY12-PHASE10-LIVE-OWNER-BIND-20261013.md) | ✅ **온라인 3서버의 6/6 Native 소유권·루프백 실측은 범위 한정 PASS**. ⚠️ OS/방화벽·WFP 전 경로 보안 정책 검토 및 Canonical `backend_ports_private`는 **아직 FAIL/REVIEW**. IPv6 0개 및 Other OFFLINE은 포트 부재로만 제한 해석 |
