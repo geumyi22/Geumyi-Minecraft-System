@@ -7,6 +7,8 @@
 
 ## Decision that avoids unnecessary rework
 
+**2026-10-13 실서버 계측 후속:** [Day12.12 실제 8시간 모니터링 보고](phases/phase-12/DAY12-PHASE12-INSTRUMENTED-LIVE-SOAK-20261013.md). 기간 **8시간**, 샘플 **97개**, 최대 간격 **5분**, 프로세스 식별 교체·TCP 이상·수집 오류 **0**. **기존 ZIP 결과도 사용 가능**하며 Other Paper는 의도적 OFFLINE; Velocity 25567은 백엔드가 아니라 프록시 전면 포트입니다. `PASS_REAL_HOST_INSTRUMENTED_8H_TCP_PROCESS_SCOPE`로 인정하되 원본 `result=REVIEW_REQUIRED`와 나머지 필수 Stable 게이트는 변경하지 않습니다. **반복 8시간 모니터는 요청하지 않습니다.**
+
 **Manual installer Stable ALREADY EXISTS** as GitHub Release [`system-2026.10.11-stable-gsc451-gscm151`](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151), publicly published 2026-10-11 KST (tag commit `06bfbe53c53d966331834ecd8301f4764df60679`, 10 release assets). It packages **GSC 4.5.1 / GSCM 1.5.1+151**. GSCM iOS artifact is **unsigned**. This is **not** the Day12 mandatory-gated final automatically signed Stable. It does not include unmerged Draft PR #53 (`integration/day12-security-review-20261012`); no claim is made that its new security changes were deployed.
 
 The historically last **live-confirmed** runtime baseline was GSC **4.3.8 / GSCM 1.1.5+117**, per `FINAL-BASELINE.json` and README. The 4.5.1 / 1.5.1 package exists, but current operator-host installed versions / updated iOS device compatibility are *not independently proven*. Do not confuse package availability, installation, and running build identity.
