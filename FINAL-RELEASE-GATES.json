@@ -36,6 +36,12 @@
     "day12_12_source_report_sha256": "5e2768341791ef9ca408c260ed86498f848eebe5ac2231d62ffdf6b00cad057a",
     "day12_10_scoped_native_live_owner_review": "docs/day12/phases/phase-10/DAY12-PHASE10-LIVE-OWNER-BIND-20261013.md",
     "day12_10_scoped_native_live_result": "PASS_SCOPED_LIVE_NATIVE_IPV4_LOOPBACK_PAPER_OWNER_6_OF_6",
-    "day12_10_scoped_native_live_captured_utc": "2026-10-13T13:58:56.1817278Z"
+    "day12_10_scoped_native_live_captured_utc": "2026-10-13T13:58:56.1817278Z",
+    "day12_7_live_blocker_review": "docs/day12/phases/phase-07/DAY12-PHASE7-LIVE-READINESS-20261013-2323.md",
+    "day12_7_operator_confirmed_deleted_server_file_backups": "2026-10-13 KST; historical Golden 4/4 does NOT certify current availability",
+    "day12_11_signed_beta_integrity_ci_run": 38415291770,
+    "day12_11_signed_beta_no_backup_canary_review": "docs/day12/phases/phase-11/DAY12-PHASE11-NO-BACKUP-CANARY-REVIEW-20261013.md",
+    "day12_5_no_backup_effective_access_review": "docs/day12/phases/phase-05/DAY12-PHASE5-NO-BACKUP-SECURITY-DISPOSITION-20261013.md",
+    "day12_no_production_restore_route_verified": false
   }
 }
