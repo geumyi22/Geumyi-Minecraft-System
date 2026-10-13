@@ -192,6 +192,7 @@ function Decide([object]$Cfg,[string]$Google,[string]$Microsoft,[string[]]$Known
   return [ordered]@{
     result=$(if($fail.Count -eq 0){"DESTINATIONS_AND_SOURCE_DISCOVERED_REVIEW_REQUIRED"}else{"BLOCKED_DISCOVERY_REVIEW_REQUIRED"})
     reason_codes=@($fail|Select-Object -Unique)
+    gsc_settings_local_readonly_status=[string]$Cfg.settings_api_status
     discovered_server_profile_count=$profiles.Count
     active_server_roots_found=@($profiles|Where-Object{$_.id -in @("wild","playground","lobby") -and $_.root_found}).Count
     other_server_operator_expected_offline=$true
@@ -248,7 +249,7 @@ if($Synthetic){
     [pscustomobject]@{id="playground";root_found=$true},
     [pscustomobject]@{id="lobby";root_found=$true},
     [pscustomobject]@{id="other";root_found=$true}
-  );internal_resolved_roots=@("D:\Geumyi\wild","D:\Geumyi\playground") }
+  );internal_resolved_roots=@("D:\Geumyi\wild","D:\Geumyi\playground");settings_api_status="NOT_NEEDED" }
   $good=Decide $cfg "G:\My Drive" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $true $true $true
   $badSource=Decide ([pscustomobject]@{status="CONFIG_UNAVAILABLE";profiles=@();internal_resolved_roots=@()}) "G:\My Drive" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $true $true $true
   $badSync=Decide $cfg "G:\My Drive" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $false $true $true
