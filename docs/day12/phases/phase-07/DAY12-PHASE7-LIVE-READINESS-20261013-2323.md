@@ -6,6 +6,9 @@
 
 ## 원본 검증 결과 — 차단 두 건
 
+> **2026-10-13 운영자 추가 확인 (사후 경위):** 과거 검증 뒤 저장공간 때문에 **서버 파일 전체 백업들을 본인이 삭제했다고 보고**했습니다. 그러므로 이 보고서의 `TARGET_PROTECTED_VERIFIED_FULL_BACKUP_NOT_CONFIRMED`는 현재 삭제 사실과 부합합니다. 과거 Golden 4/4 검증은 **당시 존재·무결성의 이력**이지 현재 가용 복구수단의 증명이 아닙니다. 외부 별도 복구본이 있는지는 확인되지 않았으며, **운영 Playground 재시작·실서버 오프라인 기동·Canary 적용·ACL 변경은 현재 검증 가능한 복구 체크포인트가 없어 중지**합니다. 백업 API 오류 조사 또는 백업을 찾기 위한 반복 검사는 중단합니다. 사용자 저장공간 제약을 반영하여 **대용량 Full 백업은 승인 없이 다시 생성하지 않습니다.** 12.7은 기존 4.5.1 + 실제 Paper 26.3 일회용 Windows CI 성공까지만 인정합니다.
+
+
 원본 `result=BLOCKED_NEEDS_SAFETY_REVIEW`, `stable_release_allowed=false`. 아래 두 이유만 포함되어 있음:
 
 1. **`AUTOMATIC_UPDATE_POLICY_MUST_BE_REVIEWED`** — `update_policy_nonmanaged=false`. `hold` 또는 `manual` 정책이 확증되지 않았다는 뜻. **실제 policy 원문을 공유하지 않았으므로 관리형(`managed`)으로 단정하지 않음.** 이전 2026-10-10 4.3.8 검사에서도 같은 이유 한 건이 확인됨. 플러그인이 자동 갱신될 가능성을 배제하지 못하므로, 일반 서버를 재시작하며 테스트하거나 권한 없이 정책을 수동 전환해서는 안 됨.
