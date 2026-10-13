@@ -104,7 +104,7 @@ function Merge-ReadOnlyGSCSettingsRoots([object]$Result,[object]$Settings) {
 }
 function InspectConfig([string]$Path) {
   $res=[ordered]@{
-    status="CONFIG_UNAVAILABLE";host_version="UNKNOWN";expected_other="OFFLINE"
+    status="CONFIG_UNAVAILABLE";host_version="UNKNOWN";expected_other="OFFLINE";settings_api_status="NOT_QUERIED"
     profiles=@();internal_resolved_roots=@();world_consistency_proven=$false
     config_mutated=$false;server_root_paths_exported=$false
   }
@@ -258,7 +258,7 @@ if($Synthetic){
     [pscustomobject]@{id="other";root_found=$true}
   );internal_resolved_roots=@("D:\Geumyi\wild","D:\Geumyi\playground");settings_api_status="NOT_NEEDED" }
   $good=Decide $cfg "G:\My Drive" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $true $true $true
-  $badSource=Decide ([pscustomobject]@{status="CONFIG_UNAVAILABLE";profiles=@();internal_resolved_roots=@()}) "G:\My Drive" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $true $true $true
+  $badSource=Decide ([pscustomobject]@{status="CONFIG_UNAVAILABLE";profiles=@();internal_resolved_roots=@();settings_api_status="NOT_QUERIED"}) "G:\My Drive" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $true $true $true
   $badSync=Decide $cfg "G:\My Drive" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $false $true $true
   $badOverlap=Decide $cfg "G:\My Drive" "G:\My Drive\OneDrive" @("G:\My Drive") $true $true $true
   $badInsideWorld=Decide $cfg "D:\Geumyi\wild\Backups" "C:\Users\Fixture\OneDrive" @("C:\Users\Fixture\OneDrive") $true $true $true
