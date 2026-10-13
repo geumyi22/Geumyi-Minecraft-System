@@ -30,6 +30,16 @@ public static class GeumyiDay12TcpListenerV2 {
     if(second!=0){Marshal.FreeHGlobal(ptr);throw new InvalidOperationException("NATIVE_TABLE_READ");}
     return ptr;
   }
+  // TCP_TABLE_BASIC_LISTENER (0) and TCP_TABLE_OWNER_PID_LISTENER (3)
+  // are listener-scoped BY THE API TABLE CLASS. A real Windows 26220 host
+  // returned dwState=0 even for self-owned, self-connected TCP listeners.
+  // Filtering these listener-only tables by the conventional dwState=2
+  // erroneously hid all active Paper/RCON owners. For *_ALL tables we MUST
+  // still require state==2; raw state-0 in ALL is never proof of LISTEN.
+  public static bool IsListenerClassStateAccepted(uint tableClass, int state) {
+    if(tableClass==0 || tableClass==3) return true;
+    return state==2;
+  }
   private static Row[] ReadTable(uint family, uint tableClass) {
     int size=0;
     IntPtr table=Load(family,tableClass,ref size);
@@ -41,7 +51,7 @@ public static class GeumyiDay12TcpListenerV2 {
       for(int i=0;i<n;i++){
         IntPtr r=IntPtr.Add(table,4+i*stride);
         int state=Marshal.ReadInt32(r, family==23?48:0);
-        if(state!=2) continue; // MIB_TCP_STATE_LISTEN
+        if(!IsListenerClassStateAccepted(tableClass,state)) continue;
         int portOffset=family==23?20:8;
         byte[] b=new byte[2];
         Marshal.Copy(IntPtr.Add(r,portOffset),b,0,2);
