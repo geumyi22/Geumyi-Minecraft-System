@@ -1,0 +1,116 @@
+name: Day12 GSC 4.5.1 Published Signed Beta Integrity (NO LIVE APPLY)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/day12-gsc451-signed-beta-integrity-audit.yml'
+      - 'docs/day12/phases/phase-11/DAY12-PHASE11-NO-BACKUP-CANARY-REVIEW-20261013.md'
+      - 'GSC/ServerCenter/cmd/host/self_update.go'
+      - 'GSC/ServerCenter/cmd/host/canary_rollout.go'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-existing-beta-chain-no-install:
+    name: Verify published Ed25519 Beta / never install or promote
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: system-2026.10.11-gsc451-signed-beta.1
+      REPO: geumyi22/Geumyi-Minecraft-System
+    steps:
+      - uses: actions/checkout@v7
+      - name: Read release metadata; require existing public prerelease
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" -R "$REPO" --json tagName,isDraft,isPrerelease --jq \
+            'select(.tagName=="system-2026.10.11-gsc451-signed-beta.1" and .isDraft==false and .isPrerelease==true) | .tagName' \
+            | grep -Fx "$TAG"
+      - name: Obtain only published public signing evidence in disposable runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/day12-beta-evidence"
+          cd "${RUNNER_TEMP}/day12-beta-evidence"
+          for name in deployment-beta.json deployment-beta.json.sig deployment-public.pem GeumyiServerCenter-v4.5.1-Setup.exe; do
+            gh release download "$TAG" -R "$REPO" --pattern "$name" --dir . --clobber
+            test -s "$name"
+          done
+          # Fixed exact digests from the public existing release metadata.
+          printf '%s  %s\n' \
+            d44b4422b65b23df96019cd4bc4d5c3e185d96d59ec6df515432c5d01d0c209f deployment-beta.json \
+            f09a31765b76e52e1f57ed5601dd38c102a7f5443f4ea9c19acb1d710a0a0fae deployment-beta.json.sig \
+            f21e62e87bb9d68ba05a964e0efd2e160ac249ebfbbf5f4a5125bae8f11718e3 deployment-public.pem \
+            9b5e79f10cfd7eb0080cbeaaad0339c531804e393b0a897377c411f185c588da GeumyiServerCenter-v4.5.1-Setup.exe \
+              | sha256sum -c -
+          test "$(wc -c < deployment-beta.json.sig)" -eq 64
+          # Ed25519 verifies RAW exact file bytes, no whitespace normalization.
+          openssl pkeyutl -verify -rawin -pubin -inkey deployment-public.pem \
+            -sigfile deployment-beta.json.sig -in deployment-beta.json
+          cp deployment-beta.json tampered-beta.json
+          printf '\n' >> tampered-beta.json
+          if openssl pkeyutl -verify -rawin -pubin -inkey deployment-public.pem \
+              -sigfile deployment-beta.json.sig -in tampered-beta.json > /dev/null 2>&1; then
+            echo 'TAMPERED_MANIFEST_WAS_ACCEPTED'; exit 1
+          fi
+          echo "SIGNED_BETA_VERIFIED_TAMPER_REJECTED"
+
+      - name: Verify manifest's exact release/channel/version/asset identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${RUNNER_TEMP}/day12-beta-evidence"
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          data=json.loads(Path("deployment-beta.json").read_text(encoding="utf-8"))
+          assert data["schema"]==1
+          assert data["channel"]=="beta", "Beta must NEVER be promoted to Canary/Stable"
+          assert data["release"]=="system-2026.10.11-gsc451-signed-beta.1"
+          assert data["repository"]=="geumyi22/Geumyi-Minecraft-System"
+          assert set(data["components"])=={"gsc"}, "No Paper/Velocity/plugins"
+          c=data["components"]["gsc"]
+          binary=Path("GeumyiServerCenter-v4.5.1-Setup.exe")
+          assert c["version"]=="4.5.1"
+          assert c["kind"]=="gsc"
+          assert c["file"]==binary.name
+          assert c["size"]==binary.stat().st_size
+          assert c["sha256"].lower()==hashlib.sha256(binary.read_bytes()).hexdigest()
+          assert "host" in c["targets"]
+          assert c.get("requires_restart") is True
+          assert c["url"]==(
+            "https://github.com/geumyi22/Geumyi-Minecraft-System/releases/download/"
+            "system-2026.10.11-gsc451-signed-beta.1/"+binary.name
+          )
+          print("SIGNED_BETA_GSC451_ONLY_INTEGRITY_PASS")
+          print("This is a signed Beta integrity check, NOT Canary apply/rollback.")
+          print("The real operator host already reported 4.5.1; same-version self-update is blocked.")
+          print("No production GSC/Server/World/Backup/Firewall/ACL changed.")
+          PY
+
+      - name: Unit-verify Canary policy rollback and same-version self-update protections
+        shell: bash
+        working-directory: GSC/ServerCenter
+        run: |
+          set -euo pipefail
+          go test ./cmd/host -run \
+            'TestDay11CanaryTargetPolicyIsPolicyOnlyAndRestorable|TestDay11CanaryUnknownServerDoesNotMutateConfig|TestDay11GSCVersionComparisonBlocksDowngrade' \
+            -count=1 -timeout 5m
+          echo "CANARY_POLICY_ROLLBACK_AND_VERSION_GATES_UNIT_PASS"
+      - name: Report exact boundary, never emit release
+        shell: bash
+        run: |
+          {
+            echo "### Day12.11 — existing GSC 4.5.1 signed Beta audit"
+            echo "- Published release exact-byte SHA256 and Ed25519 signature: PASS"
+            echo "- Tampered manifest rejected: PASS"
+            echo "- Manifest limits components to GSC, Beta channel, 4.5.1: PASS"
+            echo "- Canary policy restore/same-version guard unit tests: PASS"
+            echo "- **NOT DONE:** true newer signed Canary on disposable Windows with apply/restart/rollback"
+            echo "- **NOT DONE:** real operator server Canary, backup restoration, or final Stable."
+            echo "- Server backups reported deleted; all production mutations BLOCKED until recovery path is established."
+          } >> "$GITHUB_STEP_SUMMARY"
