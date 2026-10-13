@@ -1,59 +1,43 @@
-금이 마인크래프트 Day12 — Google Drive 2TB + Microsoft OneDrive 1TB 복구 준비
-2026-10-14 · 원본 서버 변경 없음 · **읽기 전용 1단계**
+금이 마인크래프트 Day12 — Windows 경로 진단 v4 (2026-10-14)
 
-사용자 확인된 사실: 두 클라우드에 로그인되어 있으며 서버 PC에서 업로드 가능.
-단, 실제 남은 용량, Windows 동기화 위치, 현재 계정, 업로드 완료 및 복원 가능 여부는 아직 미검증.
-이 검사기는 월드/설정/백업을 건드리지 않으며, 파일을 업로드하지도 않습니다.
+v3를 다시 실행하지 않습니다. 새 v4 ZIP 전체를 압축 해제한 뒤
+RUN_Day12_Cloud_Recovery_Preflight_READ_ONLY.cmd를 서버 PC에서 한 번 실행하세요.
 
-[준비]
-- 실제 Windows 마인크래프트 서버 PC에서 실행하세요.
-- Google Drive 데스크톱 앱과 OneDrive가 로그인·실행되어 있어야 합니다.
-- 서버와 기타(Other)는 현재 설정 그대로 두세요. 기타 서버는 계속 OFFLINE입니다.
-- 과거 서버 백업이 삭제됐으므로 이 검사를 통과한다고 복구 가능하다고 선언하지 않습니다.
+1. Google Drive의 기존 '내 드라이브' 폴더를 선택합니다. G: 가상 드라이브도 지원합니다.
+2. OneDrive 환경변수·Windows 알려진 폴더·계정/동기화 루트 레지스트리·Explorer
+   셸 항목에서 발견한 기존 폴더를 PC 화면에서만 보여 줍니다. 의도한 폴더의 번호를
+   입력하여 확인하거나 Enter를 눌러 폴더를 선택합니다. 계정 소유권/동기화 검증은 아닙니다.
+3. 완료하면 결과 폴더가 열립니다. 다음 JSON 하나만 채팅에 첨부하세요.
+   DAY12-CLOUD-PREFLIGHT-V4-SHARE-ONLY-THIS.json
+   결과는 동기화될 수 있는 바탕화면 대신 LOCALAPPDATA\Geumyi-ReadOnly-Diagnostics에 저장합니다.
 
-[사용법]
-1. ZIP 전체를 압축 해제합니다.
-2. RUN_Day12_Cloud_Recovery_Preflight_READ_ONLY.cmd를 한 번 실행합니다.
-3. 두 번 나오는 Windows 폴더 선택에서 각각 Google Drive에 표시되는
-   **내 드라이브(My Drive)** 폴더, Microsoft **OneDrive** 폴더를 선택합니다.
-   (클라우드 실제 로그인 계정과 일치하는 폴더인지 사용자가 확인.)
-4. 완료 후 바탕화면 Geumyi-Cloud-Preflight-YYYYMMDD-HHmmss 폴더에서
-   DAY12-CLOUD-PREFLIGHT-SHARE-ONLY-THIS.json 파일 **하나만** 이 채팅에 첨부하세요.
-5. 결과가 BLOCKED여도 서버를 재시작하지 말고, Google Drive/OneDrive 폴더 또는
-   기존 GSC server.json 설정을 임의 이동/수정하지 마세요. 이유 코드로 조정합니다.
+공유 JSON에는 사용자 이름, 서버/클라우드 경로, 계정명, 토큰, 원본 API/설정을 넣지 않습니다.
+경로 원문은 OneDrive 선택 시 PC 화면에서만 표시합니다. 화면이나 server.json은 보내지 마세요.
+동봉 BUILD-INFO-V4.json은 CI가 확인한 소스 커밋과 파일 해시이며 실행 결과가 아닙니다.
 
-[검사 범위]
-- 운영 GSC Host 서비스 상태 및 기존 %ProgramData%\GeumyiServerCenter\server.json의
-  프로필 ID와 서버 경로 존재 여부만 **읽습니다**.
-- Wild/Playground/Lobby 루트 발견 여부, Other 설정 존재 여부만 상태로 저장합니다.
-- 두 클라우드 폴더 존재, OneDrive 환경변수 경로와 일치 여부,
-  GoogleDriveFS/OneDrive 프로세스 존재 여부를 분류합니다.
-- 실제 디스크와 클라우드 쿼터, Google/OneDrive 동기화 완료, 월드 일관성,
-  ZIP 압축/암호화/업로드/해시 검증/테스트 복원은 **하지 않습니다**.
-- 설정 파일 원문, 사용자 이름, 월드/절대경로, 서버 IP, 토큰, 비밀번호 등을
-  공유용 JSON에 넣지 않습니다.
+진단은 GSC server.json과 localhost:8790의 GET /api/settings를 읽습니다.
+소스상 API는 {servers:[{id,path,path_file,...}]}입니다. path와 path_file은 servers[] 안에 있습니다.
+직접 path가 있으면 우선하며 path_file로 덮어쓰지 않습니다. UTF-8 BOM, 따옴표,
+%환경변수%, $환경변수/${환경변수}를 처리합니다. 상대 경로는 Host 작업 폴더를
+추측하지 않고 RELATIVE_HOST_CONTEXT_REQUIRED로 남깁니다. 설정 접근 실패여도 API를 확인합니다.
+API의 data/settings/config 래퍼는 제한적인 호환 처리이며 실제 Host 소스 계약과 구분합니다.
+여러 목록, 중복 ID, 서로 다른 접근 가능한 설정/API 경로는 모호한 결과로 차단합니다.
+401/403은 인증 거부로 기록하며 인증을 우회하지 않습니다. HTTP 리디렉션은 따르지 않습니다.
 
-[다음 단계]
-- 서버별 월드는 원본 실행 중 단순 동기화하면 손상될 수 있습니다.
-  온라인 서버는 저장 일관성 (Paper save-all flush 등 또는 정상 종료/스냅샷)
-  확보 후 백업을 만들어야 합니다. 이번 1단계에서는 수행하지 않습니다.
-- 백업 ZIP에는 GSC 비밀번호·인증 토큰·플레이어 정보가 있을 수 있으므로
-  암호화된 형태로 사설 클라우드에 저장해야 합니다. GitHub나 채팅에 올리지 않습니다.
-- Google Drive가 '파일 스트리밍'이면 가상 드라이브라도 임시 업로드 캐시가
-  로컬 PC 용량을 소비할 수 있습니다. 2TB/1TB 요금제는 PC 여유용량 증거가 아닙니다.
-- 실제 복구가 가능함을 확인하기 전에는 최종 Stable의 12.7/12.11/12.5
-  실서버 변경/자동 서명 배포 게이트를 PASS 처리하지 않습니다.
+폴더/reparse/junction의 정확한 경로 메타데이터와 server.properties 존재 메타데이터만 확인합니다.
+월드/서버 폴더 재귀 탐색, 크기 산정, 파일 복사, 백업, 업로드, 복원, 서버 정지/업데이트는 하지 않습니다.
+임시 합성 테스트 파일과 공유용 결과 JSON만 새로 만듭니다. 테스트는 전용 임시 폴더를 사용합니다.
+경로 접근 실패나 루트 0/3은 데이터 손실·월드 삭제·서버 중단을 뜻하지 않습니다.
+reparse 최종 대상과 물리적 경로 중복은 미검증이므로 향후 백업 전에 별도 확인이 필요합니다.
 
-[v3 개선 / 2026-10-14 오전 1:20 실제 검사에 따른 수정]
-- 기존 검사 결과: Google Drive와 OneDrive 실행 프로세스 모두 발견, Google Drive 선택 폴더 오류 없음.
-  그러나 OneDrive는 폴더 선택/접근 오류, Wild/Playground/Lobby GSC 루트 0/3 확인.
-  이는 월드 손상 또는 서비스 중단의 증거가 아닙니다.
-- v3는 GSC 설정의 직접 path/path_file이 열리지 않을 때만 GSC Host가 이미 해석한
-  /api/settings 로컬 GET을 추가 사용합니다. 서버 설정, 토큰, 경로 원문은 공유 JSON에 기록하지 않습니다.
-- OneDrive 폴더 선택 창에서 취소했거나 선택할 수 없는 경우, Windows에 OneDrive 환경 폴더가
-  정확히 1개일 때만 **Y를 직접 입력**하여 그 기존 폴더를 사용할 수 있습니다.
-  실제 본인 OneDrive 계정과 같은지 확인한 뒤 Y를 입력하세요.
-- 서버별 root_resolution_method 및 gsc_settings_local_readonly_status가 새로 기록되어
-  경로 접근/설정 문제인지 좁혀볼 수 있습니다. API 401/403은 BLOCKED로 남습니다.
-- **이전 v2 결과를 다시 보낼 필요는 없습니다.** 새 경로 해석 기법을 포함한 v3 검사 1회만 필요.
-- 실제 클라우드 업로드·동기화·암호화·월드 백업 및 복원은 **여전히 미수행**입니다.
+Google Drive G:의 Explorer 표시 930GB/여유 410GB는 Windows 가상 볼륨/캐시 표시일 수 있습니다.
+Google 2TB 클라우드 쿼터나 실제 잔여 용량과 혼동하지 않습니다. 로컬 캐시 용량도 미검증입니다.
+Windows가 FAT32라고 보고하면 실제 파일시스템 여부와 파일 제한 확인 필요로 기록합니다.
+실제 FAT32는 파일 하나가 4GiB 이상일 수 없습니다(최대 4,294,967,295바이트).
+DriveFS의 에뮬레이션된 FAT32 표시만으로 이 제한의 실제 적용 여부를 확정하지 않습니다.
+이 진단은 확인용 대용량 파일을 만들거나 업로드하지 않습니다.
+
+기타 Other는 의도한 OFFLINE 상태입니다. 실제 프로세스 상태는 이 진단으로 증명하지 않습니다.
+이전에 삭제된 백업이 복구되었다고 취급하지 않습니다. 백업·업로드·복원 증거는 여전히 없으며
+PR #53은 Draft, 최종 Stable/운영 변경 게이트는 BLOCKED입니다.
+CI PASS는 합성 Windows 테스트가 통과했다는 뜻이며 실제 서버 경로·클라우드 검증 PASS가 아닙니다.
