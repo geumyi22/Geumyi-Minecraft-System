@@ -34,6 +34,9 @@ Do not create a Windows account just to turn an UNVERIFIED result into PASS. Nev
 
 ## Four engineering blockers to a *new* final automatically signed Stable
 
+> **2026-10-13 최신 안전 우선순위 (운영자 직접 확인):** 기존에 검증된 **전체 서버 파일 백업은 저장공간 때문에 삭제**됐습니다. Golden 4/4는 *과거* PASS로만 인정하며 **현재 롤백 자산은 검증되지 않았습니다**. 실제 서버 중단/재시작, 서명 Canary 적용, 권한 변경 전에 최소한 **독립 저장소의 검증된 복구 가능 스냅샷 또는 기능적으로 동등한 되돌리기 경로**가 필요합니다. 필요 용량과 복구 방식은 별도 확인 전까지 추정하지 않습니다. 기존 전체 백업을 자동으로 다시 만들지 않습니다. **12.7 백업 목록 반복 재검사와 오프라인 기동은 생략이 아니라 안전상 BLOCKED**로 유지하고, 기존 격리 GSC 4.5.1+Paper 26.3 CI만 재활용합니다. [상세 경위](phases/phase-07/DAY12-PHASE7-LIVE-READINESS-20261013-2323.md).
+
+
 > **2026-10-13 22:58 KST 신규 실제 증거:** [12.10 Native listener owner/bind 보고서](phases/phase-10/DAY12-PHASE10-LIVE-OWNER-BIND-20261013.md). Wild/Playground/Lobby 실서버 Java+RCON **3쌍/6포트** Native IPv4 루프백·Paper 소유권 매칭, 상태값 0 호환 수정 효과 확인, 오류 코드 0; IPv6 owner provider는 수집 정상·대상 매칭 0; Other OFFLINE 2포트 이상 리스너 0. **이 실측 스코프는 PASS**로 기록하고 같은 TCP 진단을 다시 요청하지 않습니다. 단, 최종 `backend_ports_private` 게이트는 방화벽·WFP 전체 실효 정책 등 별도 안전성 판단 전 FAIL-CLOSED 유지합니다. 이제 12.7→12.11→12.5 준비를 우선합니다.
 
 
