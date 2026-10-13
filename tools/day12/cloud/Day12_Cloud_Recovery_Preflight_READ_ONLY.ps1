@@ -65,6 +65,23 @@ function Get-OneDriveCandidateRoots {
   }
   return @($roots|Select-Object -Unique)
 }
+function Resolve-GSCReadOnlySettings {
+  # Existing local GSC API on 8790; GET only. Response contains private
+  # directory strings, which must never be copied to the shared report.
+  try {
+    $api=Invoke-RestMethod -Method GET -Uri "http://127.0.0.1:8790/api/settings" -TimeoutSec 5 -ErrorAction Stop
+    if($null -eq $api.servers){return [pscustomobject]@{status="API_NO_SERVER_LIST";data=$null}}
+    return [pscustomobject]@{status="OK";data=$api}
+  } catch {
+    $reason="API_UNAVAILABLE"
+    try {
+      $code=[int]$_.Exception.Response.StatusCode.value__
+      if($code -in @(401,403)){$reason="API_READ_ACCESS_DENIED"}
+      elseif($code -eq 404){$reason="API_NOT_FOUND"}
+    }catch{}
+    return [pscustomobject]@{status=$reason;data=$null}
+  }
+}
 function InspectConfig([string]$Path) {
   $res=[ordered]@{
     status="CONFIG_UNAVAILABLE";host_version="UNKNOWN";expected_other="OFFLINE"
@@ -94,9 +111,12 @@ function InspectConfig([string]$Path) {
       if(-not [string]::IsNullOrWhiteSpace($candidate)){
         $serverRoot=CanonicalDirectory ([Environment]::ExpandEnvironmentVariables($candidate))
       }
+      $source=if(-not [string]::IsNullOrWhiteSpace([string]$sv.path)){"CONFIG_DIRECT_PATH"}
+        elseif(-not [string]::IsNullOrWhiteSpace([string]$sv.path_file)){"CONFIG_PATH_FILE"}else{"NO_CONFIG_PATH"}
+      if(-not $serverRoot){$source+="_NOT_RESOLVED"}
       if($serverRoot){$res.internal_resolved_roots+= $serverRoot}
       $role=[ordered]@{
-        id=$id;root_found=[bool]$serverRoot;configured_java_port=[int]$sv.java_port
+        id=$id;root_found=[bool]$serverRoot;root_resolution_method=$source;configured_java_port=[int]$sv.java_port
         loopback_tcp_reachable=$(if($serverRoot){CanConnectLocalTcp ([int]$sv.java_port)}else{$false})
         root_bytes_estimated=$false;root_bytes=$null
         quiescent_offline_snapshot_proven=$false
@@ -105,6 +125,29 @@ function InspectConfig([string]$Path) {
     }
     $res.status="CONFIG_READ_ONLY_PARSED"
   }catch{$res.status="CONFIG_PARSE_OR_ACCESS_ERROR"}
+  # When server.json's source/ptr cannot be resolved under the calling
+  # account, inspect the GSC Host's OWN already-resolved configured paths.
+  # This avoids asking for raw private server.json or source folder paths.
+  if(@($res.profiles|Where-Object{-not $_.root_found}).Count -gt 0){
+    $settings=Resolve-GSCReadOnlySettings
+    $res.settings_api_status=[string]$settings.status
+    if($settings.status -eq "OK"){
+      foreach($role in $res.profiles){
+        if($role.root_found){continue}
+        $matching=@($settings.data.servers|Where-Object{[string]$_.id -eq $role.id})
+        if($matching.Count -ne 1){continue}
+        $candidate=CanonicalDirectory ([string]$matching[0].path)
+        if($candidate){
+          $role.root_found=$true
+          $role.root_resolution_method="GSC_SETTINGS_GET_PATH_READ_ONLY"
+          $role.loopback_tcp_reachable=CanConnectLocalTcp ([int]$role.configured_java_port)
+          $res.internal_resolved_roots+= $candidate
+        } else {
+          $role.root_resolution_method="GSC_SETTINGS_GET_PATH_NOT_ACCESSIBLE"
+        }
+      }
+    }
+  }else{$res.settings_api_status="NOT_NEEDED"}
   return $res
 }
 function Decide([object]$Cfg,[string]$Google,[string]$Microsoft,[string[]]$KnownOneDriveRoots,[bool]$GoogleClient,[bool]$OneDriveClient,[bool]$HostRunning) {
@@ -224,13 +267,22 @@ if($Synthetic){
   exit 0
 }
 if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){throw "WINDOWS_SERVER_PC_ONLY"}
+$roots=@(Get-OneDriveCandidateRoots)
 if($Interactive) {
   if(-not $GoogleDriveRoot){$GoogleDriveRoot=Select-ExistingFolder "Select Google Drive synced folder (My Drive) on this Windows PC"}
-  if(-not $OneDriveRoot){$OneDriveRoot=Select-ExistingFolder "Select Microsoft OneDrive synced folder on this Windows PC"}
+  if(-not $OneDriveRoot){
+    $OneDriveRoot=Select-ExistingFolder "Select Microsoft OneDrive synced folder on this Windows PC"
+    if(-not $OneDriveRoot -and $roots.Count -eq 1){
+      Write-Host "OneDrive folder selection was cancelled/unavailable."
+      Write-Host "Windows has exactly one existing OneDrive environment root."
+      Write-Host "Press Y only if this Windows OneDrive account is the intended PRIVATE BACKUP account."
+      $answer=[Console]::ReadLine()
+      if([string]$answer -match '^(?i:y|yes)$'){$OneDriveRoot=$roots[0]}
+    }
+  }
 }
 $google=CanonicalDirectory $GoogleDriveRoot
 $microsoft=CanonicalDirectory $OneDriveRoot
-$roots=@(Get-OneDriveCandidateRoots)
 if(-not $ConfigPath){
   $ConfigPath=Join-Path $env:ProgramData "GeumyiServerCenter\server.json"
 }
