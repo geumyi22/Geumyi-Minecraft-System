@@ -77,8 +77,8 @@ jobs:
       - name: Windows PowerShell 7 v4 path and privacy regression
         shell: pwsh
         run: |
-          $out=@(& tools/day12/cloud/Day12_Cloud_Recovery_Preflight_READ_ONLY.ps1 -Synthetic)
-          if(-not $? -or ($out|Out-String) -notmatch 'CLOUD_PREFLIGHT_V4_WINDOWS_PATH_PRIVACY_PASS'){
+          $out=@(& pwsh -NoProfile -NonInteractive -File tools/day12/cloud/Day12_Cloud_Recovery_Preflight_READ_ONLY.ps1 -Synthetic)
+          if($LASTEXITCODE -ne 0 -or ($out|Out-String) -notmatch 'CLOUD_PREFLIGHT_V4_WINDOWS_PATH_PRIVACY_PASS'){
             throw 'V4_PWSH_REGRESSION_FAILED'
           }
 
