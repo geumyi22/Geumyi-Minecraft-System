@@ -9,7 +9,7 @@
 1. **현재 기타(Other) Paper 서버: 운영자가 의도적으로 OFFLINE이라고 확인**했습니다. 장애/비정상 종료/자동복구 대상으로 오인하지 않습니다. Wild·Playground·Lobby의 **현재** 상태는 본 턴에서 호스트를 직접 관찰하지 않았으므로 확정하지 않습니다.
 2. **Velocity 프런트엔드 25567 ≠ 기타 Paper 백엔드의 ONLINE 상태**입니다. 기타가 OFFLINE이어도 Velocity 25567은 LISTEN 중일 수 있습니다. Day12 8시간 모니터의 수정된 배포용 CMD는 `-ExpectedOtherBackendState OFFLINE`을 명시하며, 25567은 참고값으로 기록하고 필수 TCP 25565/25566/8787만 판정합니다. 실제 Other OFFLINE은 운영자 선언이며 스크립트가 Paper 프로세스를 직접 증명하는 것은 아닙니다.
 3. [**이미 공개된 수동 설치 Stable**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151)은 **GSC 4.5.1 / GSCM 1.5.1+151**입니다. 최종 실기기 확인 **기준선**은 GSC **4.3.8** / GSCM **1.1.5+117**이었습니다. 어떤 실행 파일이 오늘 서버에 설치·로드됐는지는 이 문서만으로 알 수 없습니다.
-4. [**Day12 보안 통합 Draft PR #53**](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/53)은 **미병합/미배포**입니다. 새 자동 서명 Stable, 실제 ACL/방화벽 변경, 최종 8시간 계측 PASS는 아직 아닙니다. Release gate는 [FINAL-RELEASE-GATES.json](../FINAL-RELEASE-GATES.json)의 **BLOCKED** 상태를 유지합니다.
+4. [**Day12 보안 통합 Draft PR #53**](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/53)은 **미병합/미배포**입니다. 2026-10-13 실제 호스트 **8시간 연속 계측은 범위 한정 PASS**로 확보했습니다([보고서](day12/phases/phase-12/DAY12-PHASE12-INSTRUMENTED-LIVE-SOAK-20261013.md)). 새 자동 서명 Stable과 실제 ACL/방화벽 변경은 아직 아닙니다. Release gate는 [FINAL-RELEASE-GATES.json](../FINAL-RELEASE-GATES.json)의 **BLOCKED** 상태를 유지합니다.
 
 ## 1. Day 1~12 — 세부 일차별 현재 상태
 
@@ -26,7 +26,7 @@
 | **Day 9** | 원자적 트랜잭션·백업·자동 롤백 | ✅ staging/backup/journal, health gate, 중단 복구·rollback, 장애 주입·서버 PC Final E2E PASS | [타임라인 원본](../DAY-TIMELINE.md) |
 | **Day 10** | Velocity/Lobby 4서버·Java/Bedrock E2E | ✅ Java 프록시→로비→Wild/Playground/Other, 이전 위치 복원, 재부팅 자동 기동; Bedrock 서버 이동/복귀 운영자 실기기 PASS | **당시 실행 성공**이지 현재 Other까지 ONLINE이라는 뜻은 아님. [Day10 E2E](history/day-10/DAY10-E2E-REPORT.md) |
 | **Day 11** | GSC/GSCM 운영 UI·전체 업데이트 관리 | ✅ 11.0~11.7, GSC **4.3.8** Client/Host self-update, GSCM **1.1.5+117**, Protection & Recovery 2.0, 운영자 Java/Bedrock 및 GSCM 실기기 확인 PASS | 해당 버전은 **마지막 실기기 검증 기준선**. [Day11 최종 보고](history/day-11/DAY11-FINAL-REPORT.md) |
-| **Day 12** | 운영 마감·최종 강화·Stable | ✅ 2026-10-11 **소규모 운영 기준 수락** 및 수동 Stable 공개. Golden 4/4, 캐시 84/84, 플러그인 역사적 SHA 13/13, 반복 기능검증은 수락 범위에서 닫음. 추가 보안 소스/CI 및 실제 GSC 4.5.1 격리 Paper 장애 복구 테스트 | **엄격한 최종 서명 Stable**은 현재 12.5/12.7/12.10/12.11/12.12 실제 게이트 때문에 미완료. 아래 세부 단계 참조 |
+| **Day 12** | 운영 마감·최종 강화·Stable | ✅ 2026-10-11 **소규모 운영 기준 수락** 및 수동 Stable 공개. Golden 4/4, 캐시 84/84, 플러그인 역사적 SHA 13/13, 반복 기능검증은 수락 범위에서 닫음. 추가 보안 소스/CI 및 실제 GSC 4.5.1 격리 Paper 장애 복구 테스트 | **엄격한 최종 서명 Stable**은 현재 12.5/12.7/12.10/12.11 및 12.12 공식 게이트 검토 때문에 미완료. 아래 세부 단계 참조 |
 
 > ✅ **완료**는 해당 일차의 *당시 승인된 범위* 종료를 뜻합니다. 정식 자동 Stable의 모든 현재 조건이 PASS라는 뜻이 아닙니다. 2026-10-11 소규모 서버 운영 종료 결정 후 2026-10-13 사용자가 **8시간 시험 포함 남은 정식 Stable 검증을 다시 승인**했습니다. 따라서 이 시험을 취소하거나 과거 사용자 면제 결과를 *신규 실험 PASS*로 둔갑시키지 않습니다.
 
@@ -47,14 +47,15 @@
 | **12.9** 운영 UX | GSC 데스크톱/GSCM Android 콘솔 UI 정상 운영자 수락, iOS 상태/재접속 수락 | ✅ 운영 UI 범위 수락; 최신 수정 iOS IPA 기기별 서명·설치 증거는 예외 |
 | **12.10** 백엔드·포트 보안 | 설정/Windows read-only/외부 LAN/Tailnet IPv4/IPv6 접근 **0/8** + API 인증 거부 **8/8** 범위 증거 | 🔴 `FAIL_UNVERIFIED_NATIVE_OWNER_ADDRESS`: 실제 OS TCP 리스너 **IPv4/IPv6 owner PID**·백엔드별 바인딩 소유자 검증 부족. Other가 의도적 OFFLINE이면 **해당 백엔드의 LISTEN 행을 요구하지 않음**, 대신 증거 범위를 명시 |
 | **12.11** 통합 E2E | 운영자 기존 Java/Bedrock/GSCM 기능 PASS, 18개 중 **16개 수락/범위별 마감**, #2 호스트 Java 역할 문제 해소; 최신 **GSC 4.5.1 + 실제 Paper 26.3 격리 CI**에서 비정상 종료→RECOVERING→신규 PID 복구 통과 | 🟠 #12 실제 운영서버 crash를 수행한 것은 **아님**; #17 **정식 서명 Canary apply/rollback 실제 스테이징**은 미증명. 사용자 실기기 최종 후보 확인 별개 |
-| **12.12** 연속 안정성 | 과거 장애 없는 운영자 정상운영 수락. 2026-10-13 **8시간 계측 테스트 실행 재승인**, 검사 도구 개선 | ⏳ **실호스트 8시간 결과 JSON을 아직 받지 못함**. ZIP CI PASS ≠ 실제 8시간 시행·통과 |
+| **12.12** 연속 안정성 | **실호스트 8시간 계측 완료** (2026-10-13 01:35~09:35 KST), 5분 간격 97샘플·최대 간격 5분·관측된 TCP 이상 0·수집 오류 0·Java/GSC 프로세스 교체 0·식별 불가 0. [실제 측정 근거](day12/phases/phase-12/DAY12-PHASE12-INSTRUMENTED-LIVE-SOAK-20261013.md) | ✅ **8시간 TCP/프로세스 모니터링은 실호스트 범위 한정 PASS**. 원본 JSON의 `REVIEW_REQUIRED`/자동 Stable 불허 유지. 기타 의도적 OFFLINE·Velocity 25567 구분, 게임/E2E 및 엄격한 릴리즈 게이트 별개 |
 | **12.13** Final Stable | [수동 설치 Stable GSC 4.5.1 / GSCM 1.5.1+151](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) **기공개** | 🔒 최종 **보안 통합 코드 병합·자동 서명 Stable·Maintenance Mode**는 엄격한 필수 실호스트 게이트 PASS 전 미승인 |
 
 ## 3. 2026-10-13 GitHub 최신 엔지니어링 진행
 
 - 통합 저장소 작업 브랜치 **`integration/day12-security-review-20261012`**, PR **#53 Draft/미병합**. 이미 공개된 구버전 수동 Stable에는 해당 PR의 새 보안 코드가 포함되지 않습니다.
 - **PR #53 HEAD `5467b01d` 시점 GitHub 7/7 CI 성공**: System CI, Day12 Safety, Security/SBOM, Host Test, Synthetic DR, 8시간 모니터 배포/자체시험, GSC 4.5.1 + Paper 26.3 실제 프로세스 격리 Offline/Crash 복구 2개 테스트.
-- **이 문서 이후 PR HEAD는 변경될 수 있습니다.** 새 `Other OFFLINE` 모니터 로직은 그 시점 CI를 별도로 확인하고 배포 파일을 재패키징해야 합니다. 과거 7/7을 새 커밋의 성공으로 표기하지 않습니다.
+- **2026-10-13 추가 실호스트 증거:** 8시간 모니터링 97개 샘플, 연속성 정상, TCP 관측 오류 0, 프로세스 교체 0, 수집 실패 0. [증거·범위·한계](day12/phases/phase-12/DAY12-PHASE12-INSTRUMENTED-LIVE-SOAK-20261013.md). 기존 검사기 사용 결과이며 **새 Other-aware 검사기를 또 8시간 실행할 필요는 없습니다.**
+- **이 문서 이후 PR HEAD는 변경될 수 있습니다.** 과거 7/7 성공을 새 커밋의 자동 성공으로 간주하지 않습니다. GitHub Actions는 각 커밋별 완료 여부를 확인하세요.
 - Release 결정의 단일 기계 판정 기준: `FINAL-RELEASE-GATES.json` + `tools/day12/validate_final_release_gates.py`. 사람 수락/CI 결과로 다른 실호스트 필수 게이트를 묵시적 PASS 전환하지 않습니다.
 
 ## 4. 이 문서를 읽는 순서 · 안전 원칙
