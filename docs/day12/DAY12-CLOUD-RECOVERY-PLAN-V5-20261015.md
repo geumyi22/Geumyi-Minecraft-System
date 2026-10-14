@@ -2,6 +2,8 @@
 
 PR #53 remains Draft. This stage plans destinations and checks existing directory metadata. It does not create a backup, upload, stop/update a server, change synchronization, enumerate world trees, or modify final release gates.
 
+**Follow-on isolated engineering progress:** [Cross-platform synthetic AES-256-GCM multi-part + synthetic Wild/Playground/Lobby/GSC tree restore](DAY12-CLOUD-DISPOSABLE-CRYPTO-RESTORE-20261015.md), Windows/Linux CI 2/2 PASS ([run #38621301778](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38621301778)). It proves only disposable fixture encoding/restoration and tamper/path-traversal refusal. It is **not a production backup tool**, does not encrypt/archive the user's worlds, and does not verify cloud quota, provider transfer, actual key recovery or a Paper/GSC restart. This does not change the v5 destination review result or strict final release gates.
+
 ## Accepted actual evidence
 
 The operator's v4 report generated `2026-10-13T17:05:20.5020770Z` (2026-10-14 02:05:20 KST) has SHA256 `496b7730b25b5b70abf551c5349cd7163c29c7e73163f15231092edbfbfd77c6`. It found the three expected online source roots, the Other root, config/API agreement and an accessible OneDrive path matching discovery. All server roots and OneDrive had reparse attributes. Reparse attributes alone do not identify a junction: cloud placeholders can also be reparse objects. The operator then explicitly confirmed the original server folders are inside OneDrive.
