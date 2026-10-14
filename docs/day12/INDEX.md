@@ -1,5 +1,7 @@
 # Day 12 — 문서 모음
 
+**최신 개발 진행 (2026-10-15):** [실제 PC에서 확인된 v5 백업 대상·정합성 계획](DAY12-CLOUD-RECOVERY-PLAN-V5-20261015.md) — 서버 경로 3/3, 기타 OFFLINE, Google·OneDrive·로컬 작업 후보 **각 1곳씩 계획만 생성**·메타데이터상 비중복, 실제 업로드/백업/복원은 **0건**. [**일회용 암호화·다중 서버 구조 복원 CI 2/2 PASS**](DAY12-CLOUD-DISPOSABLE-CRYPTO-RESTORE-20261015.md) — 가짜 데이터만 사용하고 실제 월드·클라우드·운영 설정을 건드리지 않았습니다. 2026-10-14의 v3 조회 기록은 **이전 상태**이며 재실행할 필요가 없습니다. PR #53 Draft·최종 서명 Stable 차단 유지.
+
 **현재 운영·마감 기준 (2026-10-13):** [Day1~12 상세 현황](../PROJECT-DAY1-12-MASTER-STATUS-20261013.md) · [저장소 지도](../REPOSITORY-MAP-20261013.md). Other Paper는 **의도적 OFFLINE**이므로 Velocity 25567을 Other Paper 실동작 증거로 쓰지 않습니다. `Day12-REPO-PROGRESS.md`와 이하 보고서의 이전 상태는 그 날짜의 역사 기록입니다.
 
 **2026-10-13 빠른 Stable 마감 계획:** [DAY12-STABLE-FAST-TRACK-20261013.md](DAY12-STABLE-FAST-TRACK-20261013.md) — 기존 수동 Stable 릴리즈와 엄격한 최종 서명 Stable의 차이, 남은 실제 보안/복구/Canary 게이트, 중복 검사 방지.
