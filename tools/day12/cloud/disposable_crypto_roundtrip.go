@@ -7,6 +7,7 @@
 package main
 
 import (
+	"archive/tar"
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
@@ -19,8 +20,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
+	"sort"
+	"strings"
 )
 
 const chunkSize = 64 * 1024 // Small synthetic parts; NOT a production sizing claim.
@@ -191,6 +195,138 @@ func restore(dir string, data, tag, master []byte) ([]byte, error) {
 	return output, nil
 }
 
+// The structured restore rehearsal uses only synthetic TAR payloads. This
+// deliberately separate, disposable extractor rejects symlinks, hard links,
+// traversal, absolute paths, Windows drive syntax, duplicates and large items.
+// It is NOT yet approved for production archive extraction or real credentials.
+func fixtureTar(files map[string][]byte) ([]byte, error) {
+	var out bytes.Buffer
+	tw := tar.NewWriter(&out)
+	names := make([]string, 0, len(files))
+	for name := range files {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		data := files[name]
+		if err := tw.WriteHeader(&tar.Header{
+			Name: name, Mode: 0600, Size: int64(len(data)), Typeflag: tar.TypeReg,
+		}); err != nil {
+			return nil, err
+		}
+		if _, err := tw.Write(data); err != nil {
+			return nil, err
+		}
+	}
+	if err := tw.Close(); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
+}
+
+func fixtureRestoreTree(data []byte, target string) error {
+	r := tar.NewReader(bytes.NewReader(data))
+	seen := map[string]bool{}
+	files := 0
+	var total int64
+	for {
+		hdr, err := r.Next()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		files++
+		total += hdr.Size
+		if files > 20 || hdr.Size < 0 || hdr.Size > 2*1024*1024 || total > 8*1024*1024 {
+			return errors.New("oversized disposable tree")
+		}
+		if hdr.Typeflag != tar.TypeReg || strings.ContainsAny(hdr.Name, ":\\") ||
+			path.IsAbs(hdr.Name) || hdr.Name == "" || path.Clean(hdr.Name) != hdr.Name ||
+			hdr.Name == ".." || strings.HasPrefix(hdr.Name, "../") {
+			return errors.New("unsafe disposable archive name/type")
+		}
+		safeName := strings.ToLower(hdr.Name)
+		if seen[safeName] {
+			return errors.New("duplicate or case-colliding entry")
+		}
+		seen[safeName] = true
+		dst := filepath.Join(target, filepath.FromSlash(hdr.Name))
+		relative, err := filepath.Rel(target, dst)
+		if err != nil || relative == "." || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+			return errors.New("restoration root escape")
+		}
+		if err := os.MkdirAll(filepath.Dir(dst), 0700); err != nil {
+			return err
+		}
+		f, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+		if err != nil {
+			return err
+		}
+		n, copyErr := io.CopyN(f, r, hdr.Size)
+		closeErr := f.Close()
+		if copyErr != nil || closeErr != nil || n != hdr.Size {
+			return errors.New("partial or unavailable fixture write")
+		}
+	}
+}
+
+func unsafeTarFixture(name string, kind byte) []byte {
+	var out bytes.Buffer
+	tw := tar.NewWriter(&out)
+	h := &tar.Header{Name: name, Mode: 0600, Size: 1, Typeflag: kind}
+	if kind == tar.TypeSymlink {
+		h.Size = 0
+		h.Linkname = "../target"
+	}
+	must(tw.WriteHeader(h))
+	if h.Size == 1 {
+		_, err := tw.Write([]byte("x"))
+		must(err)
+	}
+	must(tw.Close())
+	return out.Bytes()
+}
+
+func testStructuredDisposableRestore(root string, master []byte) {
+	files := map[string][]byte{
+		"servers/wild/world/region/r.0.0.mca":       []byte("SYNTHETIC_REGION_NOT_MINECRAFT_WORLD"),
+		"servers/playground/plugins/example.yml":    []byte("synthetic: true\n"),
+		"servers/lobby/server.properties":             []byte("online-mode=false\n# fixture only\n"),
+		"management/gsc-version.txt":                  []byte("4.5.1-FIXTURE-NOT_INSTALLED"),
+	}
+	payload, err := fixtureTar(files)
+	must(err)
+	chunkDir := filepath.Join(root, "structured-encrypted")
+	must(os.Mkdir(chunkDir, 0700))
+	meta, tag, err := seal(chunkDir, payload, master)
+	must(err)
+	decoded, err := restore(chunkDir, meta, tag, master)
+	must(err)
+	if !bytes.Equal(decoded, payload) {
+		panic("STRUCTURED_ENCRYPTED_RESTORE_PAYLOAD_MISMATCH")
+	}
+	restoreDir := filepath.Join(root, "structured-restore")
+	must(os.Mkdir(restoreDir, 0700))
+	must(fixtureRestoreTree(decoded, restoreDir))
+	for name, want := range files {
+		got, err := os.ReadFile(filepath.Join(restoreDir, filepath.FromSlash(name)))
+		must(err)
+		if !bytes.Equal(got, want) {
+			panic("STRUCTURED_TREE_CONTENT_MISMATCH")
+		}
+	}
+	badDir := filepath.Join(root, "bad-tar")
+	must(os.Mkdir(badDir, 0700))
+	expectRejected("STRUCTURED_PATH_TRAVERSAL",
+		fixtureRestoreTree(unsafeTarFixture("../escape", tar.TypeReg), badDir))
+	expectRejected("STRUCTURED_ABSOLUTE_PATH",
+		fixtureRestoreTree(unsafeTarFixture("/root-escape", tar.TypeReg), badDir))
+	expectRejected("STRUCTURED_SYMLINK",
+		fixtureRestoreTree(unsafeTarFixture("root/link", tar.TypeSymlink), badDir))
+}
+
 func must(err error) {
 	if err != nil {
 		panic(err)
@@ -282,5 +418,6 @@ func main() {
 	if !bytes.Equal(again, input) {
 		panic("RECOVERY_AFTER_NEGATIVE_TESTS_FAILED")
 	}
-	fmt.Printf("DAY12_CRYPTO_DISPOSABLE_ROUNDTRIP_PASS parts=%d negative_cases=7 no_cloud_upload=true no_production_source_read=true no_real_backup_created=true\n", len(m.Parts))
+	testStructuredDisposableRestore(root, master)
+	fmt.Printf("DAY12_CRYPTO_DISPOSABLE_ROUNDTRIP_PASS parts=%d negative_cases=10 structured_tree_restore=true no_cloud_upload=true no_production_source_read=true no_real_backup_created=true\n", len(m.Parts))
 }
