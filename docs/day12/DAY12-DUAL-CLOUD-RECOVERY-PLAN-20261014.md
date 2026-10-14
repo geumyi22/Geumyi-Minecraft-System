@@ -4,7 +4,7 @@
 >
 > 운영자 고지: Google Drive **2TB**, OneDrive **1TB** 구독 및 **서버 PC에서 두 클라우드 로그인·업로드 가능**. 구독 총 용량과 실제 잔여 용량, 현재 선택된 로컬 마운트, 동기화 전송 완료는 별도로 검증되어야 한다. 서버 PC의 **과거 서버 파일 백업들은 저장공간 때문에 운영자가 모두 삭제했다고 확인**. 과거 Golden 4/4는 당시 무결성 확인 이력이지 현재 복구본 존재 증거가 아니다. **Other Paper는 의도적 OFFLINE**으로 유지한다.
 
-**2026-10-14 01:20 실호스트 사전검사 결과:** [실제 차단 원인 보고](DAY12-CLOUD-PREFLIGHT-REAL-RESULT-20261014.md). 앱 2개 모두 실행, Google Drive 폴더는 접근 검사 통과, OneDrive 폴더 미선택·Wild/Playground/Lobby 서버 설정 경로 확인 0/3. **백업·업로드·복원은 아직 한 건도 수행하지 않았습니다.** 원인은 대체 검사법으로만 확인하며 서비스·월드는 현재 상태 그대로 둡니다. 보완 v3 ZIP은 Windows CI #38430806565 통과(합성 GSC localhost 경로 fallback 및 민감경로 비노출 검증), **실제 운영 서버 v3 결과는 대기 중**입니다.
+**갱신 2026-10-15:** 실제 v4에서 Wild/Playground/Lobby 루트 **3/3**, Other 루트와 OneDrive 경로 접근을 확인했습니다. 운영자는 서버 원본이 OneDrive 안에 있음을 확인했습니다. v4의 전체 공급자 폴더와 원본 포함 관계를 실제 새 백업 목적지 중복과 구분하는 [v5 위치·일관성 계획](DAY12-CLOUD-RECOVERY-PLAN-V5-20261015.md)으로 이어갑니다. **백업·업로드·복원은 아직 수행하지 않았습니다.** v3/v4 재실행은 필요하지 않습니다. 원본 위치와 서버·동기화 설정은 그대로 둡니다.
 
 ## 1. 설계 목표와 우선순위
 
@@ -19,15 +19,15 @@
 
 ## 2. 단계 A — 현재 실제로 준비한 READ-ONLY 사전검사
 
-**도구:** `tools/day12/cloud/Day12_Cloud_Recovery_Preflight_READ_ONLY.ps1`와 `RUN_Day12_Cloud_Recovery_Preflight_READ_ONLY.cmd`. 전용 GitHub Windows CI에서 PowerShell 5.1 구문·합성 정상/차단 케이스·서버 경로와 클라우드 폴더가 겹치지 않도록 하는 조건·공유 JSON 불변조건을 검증한다.
+**현재 도구:** `tools/day12/cloud/Day12_Cloud_Recovery_Plan_READ_ONLY.ps1`와 `RUN_Day12_Cloud_Recovery_Plan_READ_ONLY.cmd`. v4 발견 함수를 재사용하며 공급자 상위 폴더, 실제 새 아카이브 후보와 로컬 작업 후보를 구분한다. Windows PowerShell 5.1/7에서 경로 별칭·원본 중복·보고서 위치·개인 정보 비노출을 검사한다. 후보 폴더를 생성하지 않는다.
 
 - Windows 폴더 선택기에서 사용자가 Google Drive 내 드라이브와 OneDrive 실제 폴더를 **명시 선택**. Windows 프로세스/환경변수는 힌트이며 실제 계정 소유권 또는 업로드 완료 증거는 아님.
 - `%ProgramData%\GeumyiServerCenter\server.json`에서 ID와 **`path` 또는 `path_file` 간접 서버 루트**를 원문 노출 없이 확인. 세 온라인 역할의 루트 존재와 기타 역할 설정 여부 관찰.
 - 응답에는 중요한 사용자 정보(절대 경로, 사용자명, API 키, 인증 토큰, 실제 config·월드 내용)를 넣지 않는다.
-- 이 단계는 서버 중지·재시작/월드 백업·클라우드 복사·로그인 세션 변경·폴더 생성·네트워크/ACL 변경 **모두 하지 않음**.
-- 정상 종료하더라도 보고서 `DESTINATIONS_AND_SOURCE_DISCOVERED_REVIEW_REQUIRED`은 **복구본 생성 PASS가 아님**. `BLOCKED_DISCOVERY_REVIEW_REQUIRED`는 경로·프로세스·서비스 추가 정보가 필요하다는 뜻이며 현재 월드 손상을 주장하지 않음.
+- 이 단계는 서버 중지·재시작/월드 백업·클라우드 복사·로그인 세션 변경·목적지 폴더 생성·네트워크/ACL 변경 **모두 하지 않음**. 새 공유용 보고서와 합성 테스트 파일만 별도 위치에 만든다.
+- `PLAN_PATHS_REVIEW_REQUIRED`은 경로 계획 검토 단계이며 **복구본 생성 PASS가 아님**. `BLOCKED_PLAN_REVIEW_REQUIRED`는 미확인/중복된 실제 후보를 검토해야 한다는 뜻이며 월드 손상을 주장하지 않는다.
 
-## 3. 단계 B — 암호화·정합성 있는 백업 (사전검사 결과 받은 후만 실행)
+## 3. 단계 B — 암호화·정합성 있는 백업 (전제 검증과 별도 실행 승인 후)
 
 1. **데이터보호 전제:** Minecraft 월드와 GSC 설정에는 사용자·인증 정보가 포함될 수 있어 암호화된 개인 저장소가 필수. 압축 파일 또는 임시 폴더를 GitHub·채팅·공개 링크에 업로드하지 않는다. 고객이 관리하는 강한 복원 암호를 사용하고 서버가 파괴될 때에도 찾을 수 있도록 별도 안전한 방법으로 보관한다. 암호를 스크립트 파일·CLI 명령행·환경변수·원격 로그에 노출시키지 않는다. 구현 가능한 검증된 암호화 도구/복구 경로를 선정한 뒤 실제 데이터에 적용한다.
 2. **실행 중 서버 정합성:** Paper가 실행 중인 세계 디렉터리를 단순 `Copy-Item`/OneDrive 실시간 동기화/DriveFS 동기화로 바로 백업하지 않는다. GSC `withOnlineWorldFreeze`의 기존 방식은 `save-off`→`save-all flush`→아카이브→`save-on`을 사용하지만, *느린 클라우드 업로드 전체 시간* 동안 save-off를 유지하면 안 된다. 전체 월드 백업은 안전한 짧은 일관성 있는 로컬/볼륨 스냅샷 또는 승인된 일시 정지 후 스냅샷을 먼저 만든 후 비동기 업로드한다. VSS 등 COW 스냅샷은 별도 공간·관리자 요건이 있으므로 무검증 즉시 적용하지 않는다.
@@ -45,4 +45,4 @@
 - **12.12** 실제 8시간·97샘플 실서버 TCP/프로세스 안정성 범위 PASS. 같은 8시간 재시행 없음.
 - **12.13** 기존 수동 GSC 4.5.1/GSCM 1.5.1 Stable은 공개 유지. PR #53은 Draft·미병합, `FINAL-RELEASE-GATES.json`의 strict `stable_release_allowed=false` 유지. Cloud preflight CI만으로 12.7·12.11·12.5 또는 최종 서명 Stable을 PASS 처리하지 않음.
 
-**사용자가 해야 할 최초 실기기 작업:** Cloud READ-ONLY ZIP을 서버 PC에서 한 번 실행하고, **`DAY12-CLOUD-PREFLIGHT-SHARE-ONLY-THIS.json`만 공유**. 그 결과로 *안전하고 용량에 맞는* 실제 백업 절차를 확정한다. 선택한 동기화 폴더 또는 서버 경로 원문은 채팅에 올릴 필요가 없다.
+**운영자 작업:** 실제 v4는 이미 받았다. 이 채팅에서 같은 서버 PC의 v5 메타데이터 검사를 직접 실행할 수 있으면 결과를 생성하여 전달하며 재실행을 요구하지 않는다. 별도 PC에서 재현이 필요할 때만 새 v5 CMD를 한 번 실행하여 **`DAY12-CLOUD-RECOVERY-PLAN-V5-SHARE-ONLY-THIS.json`만 공유**한다. 목적지/서버 경로 원문과 계정명·비밀번호는 공유하지 않는다. 실제 백업·업로드·복원은 아직 승인·실행하지 않았다.

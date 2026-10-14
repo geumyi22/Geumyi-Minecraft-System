@@ -16,6 +16,8 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Strict parse Windows PowerShell 5.1 and inspect v4 no-write contract
         shell: powershell
         run: |
@@ -149,5 +151,84 @@ jobs:
         with:
           name: day12-google-onedrive-safe-readonly-preflight-v4
           path: Geumyi-Day12-GoogleDrive-OneDrive-READ-ONLY-Preflight-v4.zip
+          if-no-files-found: error
+          retention-days: 30
+
+  windows-cloud-recovery-plan-v5:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Parse and test v5 Windows PowerShell 5.1 and 7
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($file in @('Day12_Cloud_Recovery_Plan_READ_ONLY.ps1','Test_Cloud_Recovery_Plan_V5.ps1')){
+            $tokens=$null;$errors=$null
+            [void][Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path ('tools/day12/cloud/'+$file)).Path,[ref]$tokens,[ref]$errors)
+            if(@($errors).Count){throw 'V5_PARSE_FAILED'}
+          }
+          foreach($engine in @('powershell.exe','pwsh')){
+            $out=@(& $engine -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/cloud/Day12_Cloud_Recovery_Plan_READ_ONLY.ps1 -Synthetic)
+            if($LASTEXITCODE -ne 0 -or ($out|Out-String) -notmatch 'CLOUD_RECOVERY_PLAN_V5_SYNTHETIC_PASS'){
+              throw ('V5_WINDOWS_REGRESSION_FAILED_'+$engine)
+            }
+            $text=$out|Out-String
+            $report=$text.Substring($text.IndexOf('{'))|ConvertFrom-Json
+            if($report.diagnostic_version -ne 5 -or $report.result -ne 'PLAN_PATHS_REVIEW_REQUIRED' -or
+               -not $report.synthetic -or -not $report.read_only -or
+               -not $report.checks.all_candidates_planned_not_created -or
+               $report.checks.backup_execution_allowed -or $report.checks.stable_release_allowed -or
+               $report.checks.cloud_backup_created -or $report.destination_directories_created -or
+               $report.cloud_upload_performed -or $report.private_paths_exported){throw 'V5_FALSE_EXECUTION_OR_PRIVACY_CLAIM'}
+          }
+          $out=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/cloud/Day12_Cloud_Recovery_Plan_READ_ONLY.ps1 -Synthetic -QuietSynthetic)
+          if($LASTEXITCODE -ne 0 -or ($out|Out-String) -notmatch 'CLOUD_RECOVERY_PLAN_V5_SYNTHETIC_PASS' -or
+             ($out|Out-String).Contains('{')){throw 'V5_CMD_QUIET_SYNTHETIC_FAILED'}
+          Write-Host 'V5_WINDOWS_BOTH_SHELLS_AND_QUIET_CMD_PASS'
+      - name: Hosted runner remains blocked and exports categorical report only
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP ('v5-nonhost-'+[guid]::NewGuid().ToString('N'))
+          $out=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/cloud/Day12_Cloud_Recovery_Plan_READ_ONLY.ps1 -OutputDir $dir)
+          if($LASTEXITCODE -ne 0){throw 'V5_NONHOST_RUNTIME_FAILED'}
+          $report=Get-Content -LiteralPath (Join-Path $dir 'DAY12-CLOUD-RECOVERY-PLAN-V5-SHARE-ONLY-THIS.json') -Raw|ConvertFrom-Json
+          if($report.result -ne 'BLOCKED_PLAN_REVIEW_REQUIRED' -or $report.checks.backup_execution_allowed -or
+             $report.checks.stable_release_allowed -or $report.destination_directories_created){throw 'V5_NONHOST_FALSE_PASS'}
+          Write-Host 'V5_NONHOST_FAIL_CLOSED_PASS'
+      - name: Package v5 plan with exact-head source manifest
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $files=@('Day12_Cloud_Recovery_Preflight_READ_ONLY.ps1','Test_Cloud_Preflight_V4.ps1',
+            'Day12_Cloud_Recovery_Plan_READ_ONLY.ps1','Test_Cloud_Recovery_Plan_V5.ps1',
+            'RUN_Day12_Cloud_Recovery_Plan_READ_ONLY.cmd','README-Day12-CLOUD-RECOVERY-PLAN-V5-KO.txt')
+          $dir=Join-Path $env:RUNNER_TEMP ('v5-kit-'+[guid]::NewGuid().ToString('N'))
+          [void](New-Item -ItemType Directory -Path $dir)
+          $head='${{ github.event.pull_request.head.sha || github.sha }}'
+          $manifest=[ordered]@{diagnostic_version=5;source_head_sha=$head;files=@()}
+          foreach($name in $files){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12/cloud' $name) -Destination $dir
+            $manifest.files+=@{name=$name;sha256=(Get-FileHash -LiteralPath (Join-Path $dir $name) -Algorithm SHA256).Hash.ToLowerInvariant()}
+          }
+          $manifest|ConvertTo-Json -Depth 5|Set-Content -LiteralPath (Join-Path $dir 'BUILD-INFO-V5.json') -Encoding UTF8
+          $files+='BUILD-INFO-V5.json'
+          $zip=Join-Path $PWD 'Geumyi-Day12-Cloud-Recovery-Plan-READ-ONLY-v5.zip'
+          Compress-Archive -Path (Join-Path $dir '*') -DestinationPath $zip
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive=[IO.Compression.ZipFile]::OpenRead($zip)
+          try {
+            $actual=@($archive.Entries|ForEach-Object{$_.FullName}|Sort-Object)
+            if($actual.Count -ne $files.Count -or (Compare-Object $actual ($files|Sort-Object))){throw 'V5_ZIP_CONTENTS_MISMATCH'}
+          } finally {$archive.Dispose()}
+          Write-Host ('V5_READONLY_KIT_SHA256='+(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant())
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-cloud-recovery-plan-safe-readonly-v5
+          path: Geumyi-Day12-Cloud-Recovery-Plan-READ-ONLY-v5.zip
           if-no-files-found: error
           retention-days: 30
