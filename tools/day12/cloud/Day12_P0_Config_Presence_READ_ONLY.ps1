@@ -6,7 +6,8 @@ param(
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
-# Metadata-only exact allowlist. No directory enumeration, no file-content access.
+# Exact-candidate metadata only: no candidate content reads or folder enumeration.
+# Existing v4/v5 path resolver DOES read GSC config/path-pointer text in private memory.
 # This is NOT an operational backup or a complete recovery configuration inventory.
 $p0FunctionsOnly=[bool]$FunctionsOnly
 $p0ConfigPath=$ConfigPath
@@ -119,7 +120,8 @@ function Build-P0PresenceReport($SourceRecords) {
     proxy_status='EXPLICIT_ROOT_MAPPING_REQUIRED'
     reason_codes=@($reasons.ToArray()|Select-Object -Unique)
     secret_values_exported=$false;absolute_paths_exported=$false
-    content_bytes_opened=0;source_folder_recursion_performed=$false
+    candidate_file_content_bytes_opened=0;resolver_config_and_path_pointer_text_read_in_memory=$true
+    source_folder_recursion_performed=$false
     cloud_placeholder_hydration_requested=$false
     backup_created=$false;encryption_performed=$false;upload_performed=$false
     server_or_sync_changed=$false;other_started=$false
