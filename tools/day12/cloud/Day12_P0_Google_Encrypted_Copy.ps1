@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param([switch]$FunctionsOnly)
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
