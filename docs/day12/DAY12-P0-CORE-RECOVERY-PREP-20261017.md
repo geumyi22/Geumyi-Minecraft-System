@@ -129,3 +129,12 @@
 - 별도 검증기 p0_offline_archive_verify.go는 정확히 20개 AES-GCM 파일, 암호화 매니페스트, 파일 상대경로/순서/AAD, 원문 길이·SHA256, 세 프록시 forwarding/Floodgate 키 동등성을 메모리 복호화해 재검증한다. 잘못된 암호·변조·누락·초과 항목을 거부한다.
 - 이 문서는 CI SUCCESS와 운영자 보고 LOCAL_CAPTURE_COMPLETED까지만 입증한다. 운영자 실서버의 P0_OFFLINE_VERIFY_PASS 아직 미제공; Google Drive 실제 업로드·다운로드, 디스크로 격리 추출, 서비스 기동 복원, 전체 P0/P1/Stable 게이트는 계속 미완료.
 - 사용자에게 원본 OneDrive 설정 재읽기·재백업 생성·복구 암호 공유를 요청하지 않는다. 이 새 암호문 독립 로컬 검증 결과를 받은 다음 Google Drive 암호문 안전 전송/독립 다운로드 검증을 진행한다.
+
+## 2026-10-17 운영자 실제 P0 암호문 독립 메모리 복원 검증 결과
+
+- **운영자가 실제 서버 PC에서 `RUN_Day12_P0_Offline_Verify_READ_ONLY.cmd`를 실행하여 `P0_OFFLINE_VERIFY_PASS`를 제공했다.**
+- 출력 `P0_ENCRYPTED_FILES_VERIFIED=20`, `P0_NO_PLAINTEXT_OUTPUT=true`, `P0_REMOTE_CLOUD_DOWNLOAD_VERIFIED=false`, `P0_LIVE_APPLICATION_RESTORE_VERIFIED=false`. 실행기 출력에 `[PASS] Local AES-GCM authentication verified.`가 표시됨.
+- 운영자가 기존 로컬 암호화 복구 암호를 서버 PC의 숨김 입력에서 제공했으며, 원문 비밀키·복구 암호·로컬 경로·암호문 또는 복호화 평문은 채팅/GitHub에 공유하지 않았다.
+- **현장 P0 로컬 독립 무결성·메모리 복호화 검사는 PASS**로 기록하고 같은 기존 백업에 대한 재검사를 요구하지 않는다.
+- 다만 이 결과는 백업 파일을 평문 파일로 추출한 격리 복구나 서버 서비스를 재기동하는 E2E 복구를 증명하지 않는다. Google Drive 업로드/원격 존재·독립 다운로드·복원은 **아직 0회**. 멀티서비스 설정 snapshot 원자성과 월드/플러그인 풀 백업 P1도 미완료.
+- 다음 안전 단계는 **암호화 사본의 Google Drive 전송 전 별도 source/destination 읽기 전용 사전검사**와 전송에 대한 명시 승인 확인이다. 원본 OneDrive/server, 기존 암호화 백업, Other Paper 상태를 변경하지 않는다. G: mounted client checksum equal은 독립 클라우드 다운로드 E2E를 대체하지 않는다.
