@@ -1,0 +1,31 @@
+@echo off
+setlocal EnableExtensions DisableDelayedExpansion
+title Geumyi Day12 P0 Encrypted-Only Google Drive Copy
+cd /d "%~dp0"
+echo ==========================================================
+echo Geumyi P0 ENCRYPTED-ONLY copy to selected Google My Drive.
+echo 23 archive entries. NO plaintext, no world, no restart.
+echo New destination only. Never deletes or overwrites files.
+echo G: hash verification DOES NOT PROVE remote upload completion.
+echo ==========================================================
+if not exist "%~dp0Day12_P0_Google_Encrypted_Copy.ps1" (
+  echo [BLOCKED] Missing exact encrypted-copy PowerShell tool.
+  pause
+  exit /b 2
+)
+if not exist "%~dp0Day12_P0_Google_Transfer_Preflight_READ_ONLY.ps1" (
+  echo [BLOCKED] Missing verified read-only preflight dependency.
+  pause
+  exit /b 2
+)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0Day12_P0_Google_Encrypted_Copy.ps1"
+set "RET=%ERRORLEVEL%"
+if not "%RET%"=="0" (
+  echo [BLOCKED] Cloud upload NOT confirmed. Leave any partial folder unchanged.
+) else (
+  echo [MOUNT COPY PASS] Google remote state and download still unverified.
+)
+echo.
+echo Send only P0_ result lines; do NOT send password, config or archive.
+pause
+exit /b %RET%
