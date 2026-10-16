@@ -15,7 +15,7 @@
 | Wild / Playground / Other / Lobby | 실제 GSC config/API에서 정합 일치한 **각 서버 루트**의 `server.properties` | `rcon.password` 등 민감정보 가능. Other는 OFFLINE 유지 |
 | 각 Paper | `bukkit.yml`, `spigot.yml`, `permissions.yml`, `ops.json`, `whitelist.json`, `banned-players.json`, `banned-ips.json`, `config/paper-global.yml`, `config/paper-world-defaults.yml`, `start.bat`/`start.cmd`, `eula.txt` | 존재/필요 여부는 환경 의존. 개별 파일을 발견해도 플러그인 데이터/월드 백업이 아님 |
 | Wild / Other 일부 기술 플러그인 | `plugins/GeumyiTechnology/config.yml`, `plugins/GeumyiChemistry/config.yml` | 설정 파일만. 플러그인이 별도로 저장하는 머신/플레이어 상태는 P1 정합성 범위 |
-| 3개 Velocity 인스턴스 | 각 실행 루트의 `velocity.toml`, `forwarding.secret` 및 Geyser/Floodgate 설정·키 | **실경로 미확인**. 세 프록시와 서버 간 동일한 forwarding secret 관계를 복구 시 입증해야 하므로 자동 추정 금지 |
+| 3개 Velocity 인스턴스 | 각 실행 루트의 `velocity.toml`, `forwarding.secret` 및 Geyser/Floodgate 설정·키 | **세 프록시 경로·설정 및 비밀키 존재와 로컬 SHA-256 일치는 운영자 관측 완료**. 키 유출 없이 별도 복원 가능성 확인이 여전히 필요 |
 | GSC 모바일/공통 런타임 | 기기 페어링, GSCM 연결, StatusAgent 토큰, GDS/로비 서버 연결, 배포 바이너리 버전·서명 | `server.json`만으로 전부 복구된다고 보장할 수 없음. 별도 원본/상태·권한 보존 매핑이 필요 |
 
 **금지:** 기존 GSC 백업 API의 `config`/ZIP 기능을 곧바로 P0 암호화 백업으로 간주하지 않는다. 원래 ZIP은 평문이고 내부 manifest에 절대 경로가 들어갈 수 있다. 공개 저장소 템플릿은 실제 운영 자격증명·로컬 상태 백업을 대체하지 않는다.
@@ -51,7 +51,7 @@
 - Wild/Playground/Other의 `permissions.yml`과 각 서버의 `start.cmd`는 `FILE_NOT_PRESENT` 범주로 관측되었다. 선택적 후보의 부재일 뿐, 기존 `start.bat` 관측이 있으므로 오류로 격상하지 않는다. Lobby의 `permissions.yml`은 cloud/reparse 범주로 관측됐다.
 - Paper `config/` 및 Wild/Other 기술 플러그인 설정 하위 후보는 `NESTED_REPARSE_OR_CLOUD_PARENT_BLOCKED`. 파일 누락 증거가 아니며 검사를 반복하거나 재분석 지점을 강제로 따라가지 않는다.
 - 재사용 가능한 이전 근거: `tools/day10/finish_four_servers.ps1`는 세 Velocity의 설치 위치를 `%PROGRAMDATA%\\GeumyiServerCenter\\Network\\FourServer\\{wild,playground,other}`로 생성하고 `Geumyi Day10 Velocity {id}` 예약 작업의 `WorkingDirectory`에 연결한다. 이전 2026-10-10 Bedrock inventory 정정 후 `root_present=true`가 관측되었다. **이는 현재 운영자 PC의 새 경로 검사 결과가 아니며, 현재 파일 내용/키 일치성도 미검증**이다. 무의미하게 이전 Day10 프로세스/네트워크 테스트를 반복하지 않는다.
-- **남은 P0 핵심 갭:** 세 Proxy의 `velocity.toml`, `forwarding.secret`, 각 Geyser/Floodgate runtime config/private key, GSC/GDS/StatusAgent 모바일 관련 credential/state 및 정확한 복원 순서/키 회수 절차. 실제 민감정보 파일은 채팅/공개 GitHub에 올리지 않는다.
+- **남은 P0 핵심 갭:** 세 Proxy의 실경로·설정·키 존재/로컬 일치 관측은 완료됐으나 **실제 설정 내용 무결성·파일 간 시점 일치·독립 키 회수·격리 복구 미검증**. 추가적으로 GSC/GDS/StatusAgent 모바일 관련 credential/state와 정확한 복원 순서 확인 필요. 실제 민감정보 파일은 채팅/공개 GitHub에 올리지 않는다.
 - 운영 클라우드: 실제 원본 OneDrive, Google Drive G:는 로그인만 된 별도 2TB 계정, 원격 웹 저장량은 운영자 화면으로 확인. Google Drive에 복구 아카이브를 생성했다고 주장하지 않는다.
 - 신규 조사 수집보다 원본/메타데이터 재사용을 우선한다. 실제 백업 전에는 안전한 비공개 로컬 AEAD 키 입력, 소스 read/Files On-Demand 영향, 원본 스냅샷 정합성, 소스와 출력의 물리적 분리, 클라우드 실제 업로드/다운로드/격리 복원의 증거가 필요하다. P0/P1/Stable 게이트 계속 false.
 
@@ -72,3 +72,9 @@
 - **이 파일은 실제 백업 프로그램이 아니며, 테스트 성공으로 GSC·Paper 운영 비밀키의 복원/클라우드 업로드가 성공했다고 주장하지 않는다.** 실제 원본 접근 없이 CLI 실행을 허용하는 운영 프로그램이 아직 없음.
 - 실제 운영용 P0 암호화 도구를 승인하려면 (1) 사용자 데이터/키를 프로세스 인수나 공개 로그에 내놓지 않는 256비트 키 생성 및 독립 회수 수단, (2) Source OneDrive hydration/read consent, (3) 파일별 원본/재분석/용량 상한, (4) GSC/프록시/플러그인 writer 일관성, (5) 출력-원본 물리 분리와 no-overwrite, (6) 암호문 무결성·Google Drive 업로드 완료·독립 다운로드·격리 복원, (7) Windows 실제 실행 검증이 필요하다.
 - GitHub PR #53은 Draft. 현재 `p0_backup_allowed=false`, `stable_release_allowed=false`; 절대 자동 변경하지 않는다.
+
+## Windows/Linux P0 합성 암호화 CI 결과
+
+- [검증 실행 #38940950883](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38940950883): **Windows-latest SUCCESS, Ubuntu-latest SUCCESS**. P0 필수 상대경로, 가짜 Velocity/Floodgate 키 동등성, 가짜 GSC·Paper 설정, AES-256-GCM/HMAC, 격리 복원, 경로 이동/심볼릭 링크·변조 거부를 합성 데이터로 실행.
+- 이 **2/2 PASS**는 코드 테스트 한정이다. 실제 Windows 실서버 OneDrive, Google G: 업로드, 운영자 키 보관, 원본 source/hydration 영향, 정합 스냅샷, 원격 다운로드 복구 또는 P0 게이트 완료는 모두 미검증.
+- 실제 백업 수행과 최종 release 허가는 기존대로 BLOCKED. 원본 서버/프로세스/키/클라우드 데이터 변경 없음.
