@@ -78,3 +78,18 @@
 - [검증 실행 #38940950883](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38940950883): **Windows-latest SUCCESS, Ubuntu-latest SUCCESS**. P0 필수 상대경로, 가짜 Velocity/Floodgate 키 동등성, 가짜 GSC·Paper 설정, AES-256-GCM/HMAC, 격리 복원, 경로 이동/심볼릭 링크·변조 거부를 합성 데이터로 실행.
 - 이 **2/2 PASS**는 코드 테스트 한정이다. 실제 Windows 실서버 OneDrive, Google G: 업로드, 운영자 키 보관, 원본 source/hydration 영향, 정합 스냅샷, 원격 다운로드 복구 또는 P0 게이트 완료는 모두 미검증.
 - 실제 백업 수행과 최종 release 허가는 기존대로 BLOCKED. 원본 서버/프로세스/키/클라우드 데이터 변경 없음.
+
+## 2026-10-17 운영자의 P0 설정 파일 선택 읽기 승인
+
+운영자가 P0 백업을 위해 **선별된 서버 설정 파일만 읽고, OneDrive Files On-Demand로 인한 해당 파일의 로컬 다운로드가 필요한 경우 이를 허용**했다. 이는 원본 변경·동기화 정책 변경·월드 전체 데이터 읽기·Google Drive 업로드·서버 정지/재시작·Stable 릴리스 승인으로 확대되지 않는다.
+
+### v1 로컬 암호화 캡처 설계 (명시적 승인 내 최소 범위)
+
+- 정확히 20개: GSC `server.json` 1, Paper `server.properties` 4, Velocity 각 `velocity.toml`, `forwarding.secret`, Geyser 설정, Floodgate 설정과 `key.pem` 5종 × 3.
+- Day10 예약 작업과 기존 v4/v5 GSC+API source mapping를 재사용한다. 모든 Paper 원본은 운영자가 확인한 OneDrive 루트 내부여야 하고, 모든 백업 생성은 **별도의 신규 LOCALAPPDATA/GMS staging** 아래에서만 허용된다. 소스/공급자 겹침 혹은 alias 근거 불확실 시 실패.
+- 암호는 `Read-Host -AsSecureString`으로 새 복구용 passphrase를 2회 수집하고, UTF-8 JSON을 **콘솔 파이프(표준입력)** 로 암호화 Go 실행 파일에 전달한다. 프로세스 인수, 파일 내 고정 암호나 공개 보고서에 기밀을 전달하지 않는다. 최소 20문자·PBKDF2-HMAC-SHA256 450,000회·랜덤 salt·AES-256-GCM, 각 파일 인증 AAD는 아카이브 ID/순번/상대경로를 묶는다. 분할 암호문과 암호화된 manifest만 로컬 출력한다.
+- 키 손실 시 복구가 불가능할 수 있으므로 별도 오프라인 보관을 운영자에게 요구한다. 별도 PC의 독립 복호화·실제 복원 도구가 아직 없으므로 생성 직후 로컬 복호/해시 일치만으로 **독립 키 복구 PASS를 주장하지 않는다**.
+- 원본 파일마다 단일 8MiB / 총 48MiB 캡, 읽기 전후 크기·수정 시각 점검 및 캡처 시 세 프록시 실키 바이트 동일성 재확인; 읽기 중 변조/누락/키 불일치 시 incomplete. 이것은 원자적 멀티서비스 snapshot 보증이 아니다.
+- Google G:에는 절대 자동 쓰지 않음. 클라우드 전송은 암호화 출력이 확인된 후 독립 단계에서 수행할 별도 승인 사항이다.
+- 기존 synthetic fixture `tools/day12/cloud/p0_crypto_contract_disposable.go`는 그 자체로 생산용 백업 도구가 아니다. 신규 `p0_local_encrypted_capture.go`는 자기 완결형 가짜 파일 합성 캡처 테스트에 성공한 경우에만 Windows 실행 파일을 CI 아티팩트로 패키징한다.
+- 실제 운영자 실행·백업 성공·Google 업로드·독립 복원·P0 게이트 완료는 **아직 미실행/미검증**. CI 실패 시 실패본을 운영자에 배포하지 않는다.
