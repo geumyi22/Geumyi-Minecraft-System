@@ -157,3 +157,12 @@
 - 목적지는 사용자가 G:의 최상위 `My Drive`/`내 드라이브` 폴더를 **직접 확인해 입력**한다. 새 고유 이름의 `Geumyi-P0-Encrypted-Config-...` 하위 폴더를 **신규 생성**, 기존 파일 덮어쓰기/원본 삭제/평문 추출 없이 암호문과 검증용 메타데이터만 복사한다. 파일 복사 직전 `GOOGLE_P0_ENCRYPTED_UPLOAD_APPROVED` 추가 확인을 요구한다.
 - 복사 중 실패하면 불완전 Google 폴더가 남을 수 있으며 **성공으로 보고하거나 자동 삭제하지 않는다**. Google 웹 확인·독립 재다운로드·SHA256/AES-GCM 재검증 전까지 `P0_GOOGLE_REMOTE_UPLOAD_VERIFIED=false`이고 P0/P1/Stable gate 역시 false.
 - CI는 G: 운영 Google 계정이 아닌 임시 합성 경로에서 no-overwrite·정확한 23개·누락/변조 거부와 파일별 SHA 검사를 실시한다. G: 실제 동기화는 사용자 PC에서만 관찰 가능.
+
+## 2026-10-17 Google G: 암호화 백업 신규 복사 운영 도구 검증
+
+- [GitHub Actions #38963341571](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38963341571): **Windows PowerShell 5.1과 7 synthetic 23-file copy/hash + missing/overwrite refusals PASS**, PowerShell syntax and source safe-operation checks PASS, Windows operator ZIP packaging PASS.
+- `Geumyi-Day12-P0-GOOGLE-ENCRYPTED-COPY-v1.zip`: 8,990 bytes, SHA256 `b496cb18c7047c7dea9198b8969c12901ac6f849682352995fd8086bb5e28c5c`. CI artifact에서 이중 ZIP 분리 및 내장 `BUILD-INFO-P0-GOOGLE-COPY.json`에 기록된 정확한 4개 페이로드 SHA-256 대조 성공. 소스 Git HEAD `f6c632d8b9039a25c4e061411e3d9e165a24c539`. 한국어 `내 드라이브`를 Windows PowerShell 5.1에서도 파싱하도록 UTF-8 BOM 보존 확인.
+- 운영자 실행: 새 ZIP을 서버 PC의 로컬 디렉터리에서 풀고 `RUN_Day12_P0_Google_Encrypted_Copy.cmd` 실행; G: 루트에서 `My Drive` 또는 `내 드라이브`가 올바른 계정임을 확인하고 **그 기존 폴더 전체 경로**를 붙여넣은 뒤 `GOOGLE_P0_ENCRYPTED_UPLOAD_APPROVED`를 입력.
+- 신규 Google 하위 폴더에 `header.json`, `manifest.gcm`, `LOCAL_CAPTURE_VERIFIED.txt`, `part-000.gcm`~`part-019.gcm`만 신규 생성. 읽기는 검증된 로컬 암호문에만 한정; 파일마다 로컬 원본 복사 전/후 SHA-256 및 G: 복사본 SHA-256 대조. 기존 로컬/OneDrive 원본은 삭제하지 않음; 서버·서비스·Google 계정 동기화 설정 변경 없음.
+- 현장 PC **실제 Google G: 파일 복사는 아직 실행됐다는 증거 없음**. 실행 결과 `P0_G_MOUNT_COPY_HASH_VERIFIED=23` 이후에도 Google 웹 원격 파일 존재·별도 다운로드·AES-GCM 독립 재검증까지 해야 독립 클라우드 보관 증거가 된다. G: mounted hash verification만으로 완료 선언 금지.
+- 일부 복사 실패 시 해당 새 Google 폴더가 부분 상태로 남을 수 있으므로 자동 삭제하지 않고 성공 아카이브로 취급하지 않음. 오류 코드만 공유, 무분별한 재시도/중복 생성 금지. PR #53 Draft, P0/P1/Stable 전체 게이트 false.
