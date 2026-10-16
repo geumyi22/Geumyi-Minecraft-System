@@ -13,7 +13,11 @@ $ErrorActionPreference='Stop'
 # Day12 capacity-v1: read only, NO backup or sync operations.
 # Uses v5's reviewed private-path resolver; exports counts only.
 $capacityFunctionsOnly=[bool]$FunctionsOnly
+$capacityConfigPath=$ConfigPath
+$capacityOutputDir=$OutputDir
 . (Join-Path $PSScriptRoot 'Day12_Cloud_Recovery_Plan_READ_ONLY.ps1') -FunctionsOnly
+$ConfigPath=$capacityConfigPath
+$OutputDir=$capacityOutputDir
 
 function Measure-MetadataTree([string]$Root,[int]$EntryLimit,[int]$SecondsLimit) {
   $stack=New-Object 'System.Collections.Generic.Stack[string]'
