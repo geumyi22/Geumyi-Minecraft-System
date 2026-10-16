@@ -12,6 +12,7 @@ $ErrorActionPreference='Stop'
 
 # Day12 capacity-v1: read only, NO backup or sync operations.
 # Uses v5's reviewed private-path resolver; exports counts only.
+$capacityFunctionsOnly=[bool]$FunctionsOnly
 . (Join-Path $PSScriptRoot 'Day12_Cloud_Recovery_Plan_READ_ONLY.ps1') -FunctionsOnly
 
 function Measure-MetadataTree([string]$Root,[int]$EntryLimit,[int]$SecondsLimit) {
@@ -142,7 +143,7 @@ function Build-CapacityReport($Records,[bool]$DoMeasure,[int]$Entries,[int]$Seco
     execution_authorized=$false;stable_release_allowed=$false
   }
 }
-if($FunctionsOnly){return}
+if($capacityFunctionsOnly){return}
 try {
   if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){throw 'WINDOWS_REQUIRED'}
   if(-not $ConfigPath){$ConfigPath=Join-Path $env:ProgramData 'GeumyiServerCenter\server.json'}
