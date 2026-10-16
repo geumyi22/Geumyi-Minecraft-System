@@ -20,7 +20,8 @@ try {
   $ok=Build-P0PresenceReport $records
   if($ok.result -ne 'P0_PRESENCE_REVIEW_REQUIRED' -or
      $ok.paper_and_gsc_candidates.Count -ne 5 -or
-     $ok.content_bytes_opened -ne 0 -or $ok.secret_values_exported -or
+     $ok.candidate_file_content_bytes_opened -ne 0 -or
+     -not $ok.resolver_config_and_path_pointer_text_read_in_memory -or $ok.secret_values_exported -or
      $ok.upload_performed -or $ok.backup_created -or
      $ok.p0_backup_allowed -or $ok.stable_release_allowed){
     throw 'P0_FAIL_CLOSED_REPORT_BROKEN'
