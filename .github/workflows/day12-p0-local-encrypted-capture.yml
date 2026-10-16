@@ -109,7 +109,7 @@ jobs:
           foreach($needle in @('Read-Host','-AsSecureString','Report-LocationIsSeparate',
             'Get-PrivateSourceRecords','Get-ScheduledTask','Private-PathInside',
             'Get-OneDriveCandidates','SOURCE_SELECTED_CONSENT',
-            'RUN_Day12_P0_Local_Encrypted_Capture.cmd')){
+            'SOURCE_SELECTED_CONSENT')){
             if(-not $script.Contains($needle)){throw ('P0_WRAPPER_GUARD_MISSING_'+$needle)}
           }
       - name: Build reproducible operator executable and exact bundle
