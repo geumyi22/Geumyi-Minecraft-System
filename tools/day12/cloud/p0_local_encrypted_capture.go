@@ -357,8 +357,7 @@ func fixture() error {
    return fail("PLAINTEXT_LEAK_TO_ARCHIVE")
   }
  }
- fmt.Printf("DAY12_P0_LOCAL_CAPTURE_DISPOSABLE_PASS exact_files=%d AES256GCM=true PBKDF2=true tamper_rejected=true no_cloud_upload=true no_operator_source_read=true
-",len(req.Files))
+ fmt.Printf("DAY12_P0_LOCAL_CAPTURE_DISPOSABLE_PASS exact_files=%d AES256GCM=true PBKDF2=true tamper_rejected=true no_cloud_upload=true no_operator_source_read=true",len(req.Files))
  return nil
 }
 func main(){
