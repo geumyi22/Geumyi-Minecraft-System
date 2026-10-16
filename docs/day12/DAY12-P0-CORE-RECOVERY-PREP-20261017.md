@@ -138,3 +138,12 @@
 - **현장 P0 로컬 독립 무결성·메모리 복호화 검사는 PASS**로 기록하고 같은 기존 백업에 대한 재검사를 요구하지 않는다.
 - 다만 이 결과는 백업 파일을 평문 파일로 추출한 격리 복구나 서버 서비스를 재기동하는 E2E 복구를 증명하지 않는다. Google Drive 업로드/원격 존재·독립 다운로드·복원은 **아직 0회**. 멀티서비스 설정 snapshot 원자성과 월드/플러그인 풀 백업 P1도 미완료.
 - 다음 안전 단계는 **암호화 사본의 Google Drive 전송 전 별도 source/destination 읽기 전용 사전검사**와 전송에 대한 명시 승인 확인이다. 원본 OneDrive/server, 기존 암호화 백업, Other Paper 상태를 변경하지 않는다. G: mounted client checksum equal은 독립 클라우드 다운로드 E2E를 대체하지 않는다.
+
+## 2026-10-17 Google 전송 전 읽기 전용 P0 메타데이터 점검 도구
+
+- 기존 운영자 `P0_OFFLINE_VERIFY_PASS` 20개 암호문 실제 검증은 이미 확인됨. 그 암호화 사본을 수정하거나 원본 OneDrive를 다시 열 필요 없음.
+- Windows 사전검사 도구 `Day12_P0_Google_Transfer_Preflight_READ_ONLY.ps1`는 `%LOCALAPPDATA%/Geumyi-P0-Encrypted-Staging`에서 가장 최근 완료 표시가 있는 암호화 폴더의 **정확한 23개 파일명·크기·파일 속성**을 관측한다. 암호문 내용과 비밀키는 읽지 않음.
+- Google Drive는 `G:\` 마운트 루트 존재 정보만 확인하고 자식 폴더를 검색하지 않음. 계정 정체성, 동기화 업로드 완료, 클라우드 원격 존재와 독립 다운로드를 이 검사로 확인했다고 주장하지 않음.
+- 합성 PowerShell 테스트는 파일 20개+메타데이터 3개 존재 검증, 추가 파일/누락 파일 거부, 경로 제한을 검증. [CI #38954822820](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38954822820) Windows PowerShell 5.1/7 **SUCCESS**.
+- 패키지 `Geumyi-Day12-P0-GOOGLE-PREFLIGHT-READ-ONLY-v1.zip` 4,492 bytes SHA-256 `c84139afd8f217971cb053cee7e4d92edd9d44115f7a307de4a23ef4a76b7397`. ZIP 내부 3개 페이로드 SHA256가 BUILD-INFO 메타데이터와 일치.
+- 운영자 실제 PC 사전검사 결과는 아직 미제출. `P0_CLOUD_TRANSFER_PREFLIGHT_REVIEW_READY`이더라도 G: 실제 쓰기/암호문 업로드·독립 다운로드·실서비스 복원은 미실행이며, **업로드는 명시 동의 후 별도 검증된 절차로 진행한다**. P0/P1/Stable release gate 계속 거부.
