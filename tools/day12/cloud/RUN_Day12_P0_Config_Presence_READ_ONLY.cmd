@@ -4,7 +4,8 @@ title Geumyi Day12 P0 Config Presence - READ ONLY
 cd /d "%~dp0"
 echo ========================================================
 echo Day12 P0 Config Presence [READ ONLY]
-echo Exact-file metadata only: NO contents, backup, upload
+echo Candidate metadata only; local GSC config read for root resolution
+ echo NO candidate content copy, backup, cloud upload
 echo Will not start/stop Minecraft, GSC or cloud sync.
 echo ========================================================
 if not exist "%~dp0Day12_P0_Config_Presence_READ_ONLY.ps1" (
