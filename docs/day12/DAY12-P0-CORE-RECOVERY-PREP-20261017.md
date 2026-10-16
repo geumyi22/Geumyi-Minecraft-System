@@ -54,3 +54,21 @@
 - **남은 P0 핵심 갭:** 세 Proxy의 `velocity.toml`, `forwarding.secret`, 각 Geyser/Floodgate runtime config/private key, GSC/GDS/StatusAgent 모바일 관련 credential/state 및 정확한 복원 순서/키 회수 절차. 실제 민감정보 파일은 채팅/공개 GitHub에 올리지 않는다.
 - 운영 클라우드: 실제 원본 OneDrive, Google Drive G:는 로그인만 된 별도 2TB 계정, 원격 웹 저장량은 운영자 화면으로 확인. Google Drive에 복구 아카이브를 생성했다고 주장하지 않는다.
 - 신규 조사 수집보다 원본/메타데이터 재사용을 우선한다. 실제 백업 전에는 안전한 비공개 로컬 AEAD 키 입력, 소스 read/Files On-Demand 영향, 원본 스냅샷 정합성, 소스와 출력의 물리적 분리, 클라우드 실제 업로드/다운로드/격리 복원의 증거가 필요하다. P0/P1/Stable 게이트 계속 false.
+
+## 2026-10-17 이어진 실호스트 Velocity 실행·키 일치성 관측
+
+운영자가 서버 PC에서 정확히 출력된 표를 공유했으며 **비밀 원문·키 해시·실경로는 공유하지 않았음**.
+
+- `wild`, `playground`, `other` 각각에 대해 설치 폴더·`velocity.toml`·`forwarding.secret`·Geyser 설정·Floodgate 설정 **5/5 True**. 이는 파일 존재 판정이지 키 열람/백업 증명이 아님.
+- 세 역할의 `Geumyi Day10 Velocity {role}` 예약 작업이 모두 **Running**, 각 실행 디렉터리와 Day10 원본 배포 기준 일치(`PathMatch=True`). `velocity.jar`, `plugins/Geyser-Velocity.jar`, `plugins/floodgate-velocity.jar`, `plugins/floodgate/key.pem`도 각 3/3 True. **Other Proxy Running은 Other Paper ONLINE을 의미하지 않음**.
+- 운영자 로컬 PowerShell은 3개의 `forwarding.secret` 파일 SHA-256 동일 여부만 `True`로, 3개의 `floodgate/key.pem` SHA-256 동일 여부만 `True`로 보고. 실제 바이트·해시는 전송되지 않았고 key recovery/restore 유효성까지 검증된 것은 아니다.
+- 해당 검사에서 `Get-FileHash`는 각 키 파일을 실제 읽어 SHA-256을 구하므로, OneDrive placeholder가 아니라 ProgramData 로컬 경로에만 한정됐다는 실행 스코프가 중요함. 이 상태를 백업 암호화 키 저장 경로와 혼동하지 않는다.
+- **중복 검사 금지:** 위 3개 프록시 경로/예약작업/비밀키 SHA 동등성 검사를 반복 요청하지 않는다. 새 버전·파일 변경/운영 장애가 발생할 때만 증거 갱신.
+
+## P0 암호화 계약: 합성 검증과 생산 경계 분리
+
+- `tools/day12/cloud/p0_crypto_contract_disposable.go`는 기존 `disposable_crypto_roundtrip.go`와 결합해 **정해진 P0 상대경로만 허용하고 반드시 4개 Paper + 3개 Velocity 설정·전달키·Floodgate 키 + GSC 설정이 포함된다는 합성 계약을 테스트**한다. 월드/임의 경로·누락/불일치 키를 거부한다.
+- 가짜 암호와 구성 파일만 TAR→분할 AES-256-GCM→HMAC manifest→별도 격리 폴더에 복구한다. 누락·변조·잘못된 키·경로 이탈·심볼릭 링크 거부 테스트는 이전 합성기에서 재실행한다. 실제 키를 읽거나 출력하지 않는다.
+- **이 파일은 실제 백업 프로그램이 아니며, 테스트 성공으로 GSC·Paper 운영 비밀키의 복원/클라우드 업로드가 성공했다고 주장하지 않는다.** 실제 원본 접근 없이 CLI 실행을 허용하는 운영 프로그램이 아직 없음.
+- 실제 운영용 P0 암호화 도구를 승인하려면 (1) 사용자 데이터/키를 프로세스 인수나 공개 로그에 내놓지 않는 256비트 키 생성 및 독립 회수 수단, (2) Source OneDrive hydration/read consent, (3) 파일별 원본/재분석/용량 상한, (4) GSC/프록시/플러그인 writer 일관성, (5) 출력-원본 물리 분리와 no-overwrite, (6) 암호문 무결성·Google Drive 업로드 완료·독립 다운로드·격리 복원, (7) Windows 실제 실행 검증이 필요하다.
+- GitHub PR #53은 Draft. 현재 `p0_backup_allowed=false`, `stable_release_allowed=false`; 절대 자동 변경하지 않는다.
