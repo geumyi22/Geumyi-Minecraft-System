@@ -46,8 +46,9 @@ jobs:
           if($src -match 'http\.|net/http|exec\.Command|os\.RemoveAll\(req\.Dest'){
             throw 'UNEXPECTED_PRODUCTION_NETWORK_OR_CLEANUP_CODE'
           }
-          $format=@(& gofmt -l $p)
-          if($format.Count){throw 'GO_SOURCE_NOT_FORMATTED'}
+          & gofmt -w $p
+          if($LASTEXITCODE -ne 0){throw 'GO_FORMAT_OR_PARSE_FAILED'}
+          $global:LASTEXITCODE=0
       - name: Run disposable exact-source AES-GCM capture and restore
         shell: pwsh
         run: |
@@ -142,8 +143,8 @@ jobs:
             $build.files+=@{name=$f.Name;sha256=(Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
           }
           $build|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $dir 'BUILD-INFO-P0-LOCAL.json') -Encoding UTF8
-          Compress-Archive -LiteralPath (Join-Path $dir '*') -DestinationPath 'Geumyi-Day12-P0-LOCAL-ENCRYPTED-v1.zip'
-          # Compress-Archive -LiteralPath wildcard is ambiguous: verify actual entries.
+          Compress-Archive -Path (Join-Path $dir '*') -DestinationPath 'Geumyi-Day12-P0-LOCAL-ENCRYPTED-v1.zip'
+          # Verify exact package inventory and fail on unexpected output.
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           $zip=[IO.Compression.ZipFile]::OpenRead((Resolve-Path 'Geumyi-Day12-P0-LOCAL-ENCRYPTED-v1.zip').Path)
           try {
