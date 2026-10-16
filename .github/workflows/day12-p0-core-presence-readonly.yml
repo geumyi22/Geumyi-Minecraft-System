@@ -34,7 +34,7 @@ jobs:
           foreach($required in @('Inspect-P0Candidate','Build-P0PresenceReport',
             'Get-PrivateSourceRecords','Report-LocationIsSeparate',
             'secret_values_exported=$false','cloud_placeholder_hydration_requested=$false',
-            'content_bytes_opened=0','p0_backup_allowed=$false',
+            'candidate_file_content_bytes_opened=0','p0_backup_allowed=$false',
             'stable_release_allowed=$false',
             'THREE_VELOCITY_PROXY_ROOTS_AND_SECRETS_NOT_INVENTORIED')){
             if(-not $source.Contains($required)){throw ('P0_REQUIRED_GUARD_MISSING='+$required)}
