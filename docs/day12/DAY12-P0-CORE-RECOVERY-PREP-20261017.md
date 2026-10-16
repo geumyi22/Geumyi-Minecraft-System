@@ -93,3 +93,11 @@
 - Google G:에는 절대 자동 쓰지 않음. 클라우드 전송은 암호화 출력이 확인된 후 독립 단계에서 수행할 별도 승인 사항이다.
 - 기존 synthetic fixture `tools/day12/cloud/p0_crypto_contract_disposable.go`는 그 자체로 생산용 백업 도구가 아니다. 신규 `p0_local_encrypted_capture.go`는 자기 완결형 가짜 파일 합성 캡처 테스트에 성공한 경우에만 Windows 실행 파일을 CI 아티팩트로 패키징한다.
 - 실제 운영자 실행·백업 성공·Google 업로드·독립 복원·P0 게이트 완료는 **아직 미실행/미검증**. CI 실패 시 실패본을 운영자에 배포하지 않는다.
+
+## P0 로컬 암호화 도구 v1 — 합성 CI 완료, 운영 실행 대기
+
+- [GitHub Actions #38943566555](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38943566555): **Windows 합성 테스트 SUCCESS, Ubuntu 합성 테스트 SUCCESS, Windows operator ZIP 패키징 SUCCESS**.
+- 파일 `Geumyi-Day12-P0-LOCAL-ENCRYPTED-v1.zip` SHA-256 `ab05119ba9a2374f93e7e185745fac58ee76d4f16a5e3ba6800957eb4a5a039d`, 1,126,449바이트. 실제 GitHub Actions 아티팩트 ZIP을 펼쳐 안쪽 ZIP의 정확한 7개 파일과 `BUILD-INFO-P0-LOCAL.json`의 SHA-256 목록을 검증했다. 해당 빌드 입력 HEAD `6e31b68ec2d3152c444a6330a2930ebac92f9c85`.
+- 사용자 로컬에서 실제 실행된 것은 아님. **원본 OneDrive 설정 read/hydration, 비공개 로컬 암호화 캡처, 재다운로드, 독립 복원은 아직 0건.** 인증정보나 키를 GitHub에 업로드하지 않았음.
+- 파일 내용이 바뀌거나 클라우드 placeholder/경로/쓰기권한 조건에서 벗어나면 fail closed. 그 경우 무리하게 재실행하지 않고 사용자 로그의 whitelisted 상태 코드만 확인한다. 20개 파일을 넘겨 P1 월드 데이터로 확대하지 않는다.
+- P0 로컬 캡처 성공 시에도 **P0 복구 완료/Google cloud 독립 사본/어플리케이션 정합성/실서비스 복원/Stable**은 모두 미완료로 유지한다.
