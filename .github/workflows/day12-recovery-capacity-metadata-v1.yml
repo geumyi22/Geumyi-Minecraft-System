@@ -1,0 +1,107 @@
+name: Day12 Recovery Capacity Metadata v1
+
+on:
+  pull_request:
+    paths:
+      - 'tools/day12/cloud/**'
+      - '.github/workflows/day12-recovery-capacity-metadata-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capacity-metadata-disposable-windows:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - name: Parse scripts and inspect no-write / fail-closed source contract
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $base='tools/day12/cloud'
+          $names=@('Day12_Cloud_Recovery_Preflight_READ_ONLY.ps1',
+            'Day12_Cloud_Recovery_Plan_READ_ONLY.ps1',
+            'Day12_Recovery_Capacity_Metadata_READ_ONLY.ps1',
+            'Test_Recovery_Capacity_Metadata_V1.ps1')
+          foreach($engine in @('powershell.exe','pwsh')){
+            foreach($name in $names){
+              $target=Join-Path $base $name
+              if(-not (Test-Path -LiteralPath $target)){throw ('MISSING='+$name)}
+              $tokens=$null;$errors=$null
+              [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $target).Path,[ref]$tokens,[ref]$errors)
+              if(@($errors).Count){throw ('BAD_POWERSHELL_PARSE='+$name)}
+            }
+          }
+          $code=Get-Content -LiteralPath (Join-Path $base 'Day12_Recovery_Capacity_Metadata_READ_ONLY.ps1') -Raw
+          foreach($needle in @('Get-PrivateSourceRecords','Report-LocationIsSeparate',
+            'Get-LocalSettings','source_file_contents_read=$false',
+            'credentials_or_private_paths_exported=$false',
+            'google_drive_virtual_volume_is_not_cloud_quota=$true',
+            'stable_release_allowed=$false','skipMask=0x00441400','MaxEntries=25000')){
+            if(-not $code.Contains($needle)){throw ('GUARD_MISSING='+$needle)}
+          }
+          if($code -match '(?i)Invoke-RestMethod|Invoke-WebRequest|Remove-Item|Set-Acl|icacls|Start-Process|Copy-Item|Move-Item|Expand-Archive|Compress-Archive'){
+            throw 'PRODUCTION_MUTATION_OPCODE_NOT_ALLOWED'
+          }
+          Write-Host 'CAPACITY_V1_PARSER_AND_SOURCE_GATES_PASS'
+      - name: Run synthetic Windows path and privacy fixtures (PS 5.1 and 7)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($engine in @('powershell.exe','pwsh')){
+            $output=@(& $engine -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/cloud/Test_Recovery_Capacity_Metadata_V1.ps1)
+            if($LASTEXITCODE -ne 0 -or ($output|Out-String) -notmatch 'CAPACITY_V1_WINDOWS_DISPOSABLE_PASS'){
+              $output|ForEach-Object{Write-Host $_}
+              throw ('CAPACITY_DISPOSABLE_FAIL_'+$engine)
+            }
+          }
+          Write-Host 'CAPACITY_V1_DUAL_WINDOWS_ENGINE_PASS'
+      - name: Refuse to claim server or remote cloud evidence on hosted runner
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $out=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/cloud/Day12_Recovery_Capacity_Metadata_READ_ONLY.ps1 -MeasureSourceMetadata)
+          if($LASTEXITCODE -ne 2 -or ($out|Out-String) -notmatch 'CAPACITY_V1_FAIL_CLOSED_NO_SERVER_CHANGE'){
+            throw 'HOSTED_RUNNER_FALSE_SOURCE_OR_QUOTA_CLAIM'
+          }
+          Write-Host 'CAPACITY_V1_HOSTED_RUNNER_FAIL_CLOSED_PASS'
+      - name: Package current-head operator kit with checksum manifest
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $names=@('Day12_Cloud_Recovery_Preflight_READ_ONLY.ps1',
+            'Day12_Cloud_Recovery_Plan_READ_ONLY.ps1',
+            'Day12_Recovery_Capacity_Metadata_READ_ONLY.ps1',
+            'RUN_Day12_Recovery_Capacity_Metadata_READ_ONLY.cmd',
+            'README-Day12-CAPACITY-METADATA-V1-KO.txt')
+          $src='tools/day12/cloud'
+          $dest=Join-Path $env:RUNNER_TEMP ('capacity-kit-'+[guid]::NewGuid().ToString('N'))
+          [void](New-Item -ItemType Directory -Path $dest)
+          foreach($name in $names){
+            Copy-Item -LiteralPath (Join-Path $src $name) -Destination $dest -ErrorAction Stop
+          }
+          $event=Get-Content -LiteralPath $env:GITHUB_EVENT_PATH -Raw|ConvertFrom-Json
+          $head=if($null -ne $event.pull_request){$event.pull_request.head.sha}else{$env:GITHUB_SHA}
+          $manifest=[ordered]@{kit='Day12-Capacity-Metadata-v1';source_head_sha=$head;files=@()}
+          foreach($name in $names){
+            $manifest.files+=@{name=$name;sha256=(Get-FileHash -LiteralPath (Join-Path $dest $name) -Algorithm SHA256).Hash.ToLowerInvariant()}
+          }
+          $manifest|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $dest 'BUILD-INFO-CAPACITY-V1.json') -Encoding UTF8
+          $names+='BUILD-INFO-CAPACITY-V1.json'
+          $zip='Geumyi-Day12-Recovery-Capacity-READ-ONLY-v1.zip'
+          Compress-Archive -Path (Join-Path $dest '*') -DestinationPath $zip -ErrorAction Stop
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $reader=[IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip).Path)
+          try {
+            $actual=@($reader.Entries|ForEach-Object{$_.FullName}|Sort-Object)
+            if(Compare-Object $actual @($names|Sort-Object)){throw 'ZIP_FILE_LIST_MISMATCH'}
+          } finally {$reader.Dispose()}
+          Write-Host ('CAPACITY_V1_OPERATOR_ZIP_SHA256='+(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant())
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-recovery-capacity-readonly-v1
+          path: Geumyi-Day12-Recovery-Capacity-READ-ONLY-v1.zip
+          if-no-files-found: error
+          retention-days: 30
