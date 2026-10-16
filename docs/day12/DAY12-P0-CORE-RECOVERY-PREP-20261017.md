@@ -22,9 +22,10 @@
 
 ## 이번에 추가한 스코프 한정 도구
 
-`tools/day12/cloud/Day12_P0_Config_Presence_READ_ONLY.ps1`는 v4/v5에서 이미 검증된 경로 resolver를 **읽기 전용**으로 가져와, 4개 Paper/GSC의 **고정된 이름만** 메타데이터 조회한다. 재귀 디렉터리 열거·파일 본문 오픈·비밀값 출력·서버/클라우드 수정이 없고, nested reparse 하위 조회를 거부한다.
+`tools/day12/cloud/Day12_P0_Config_Presence_READ_ONLY.ps1`는 v4/v5에서 이미 검증된 경로 resolver를 **읽기 전용**으로 가져와, 4개 Paper/GSC의 **고정된 이름만** 메타데이터 조회한다. 재귀 디렉터리 열거·P0 후보 파일 본문 오픈·비밀값 출력·서버/클라우드 수정이 없고, nested reparse 하위 조회를 거부한다.
 
 - OneDrive 루트 자체는 이미 알려진 reparse 경로지만, 내부 파일이 cloud/reparse/offline/recall-on-access인 경우 `CLOUD_OR_REPARSE_CONTENT_NOT_INSPECTED`로 분류하고 내용은 읽지 않는다.
+- **예외 범위:** 기존 GSC 서버 경로 resolver는 `server.json` 설정 텍스트와 경로 포인터 파일을 로컬 메모리에서 실제로 읽는다. 그러므로 전체 실행에서 파일 내용을 전혀 읽지 않는다는 주장은 하지 않는다. 후보 파일은 메타데이터 조회만 수행한다.
 - 정확한 파일 경로는 private in-memory 처리. 공유 JSON에는 각 항목의 상대 이름·계급·민감 여부·메타데이터 분류만 기록한다.
 - 서버가 온라인 상태여도 중지/저장/스냅샷을 수행하지 않음. 데이터 정합성 또는 복구 가능성에 관한 결론 없음.
 - 세 Velocity 원본 경로는 이 도구로 발견했다고 주장하지 않으며 `THREE_VELOCITY_PROXY_ROOTS_AND_SECRETS_NOT_INVENTORIED` 차단 근거를 항상 남긴다.
