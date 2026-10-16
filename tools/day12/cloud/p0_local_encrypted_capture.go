@@ -322,6 +322,8 @@ func fixture() error {
  for _,name:=range requiredNames(){
   p:=filepath.Join(inputs,fmt.Sprintf("input-%03d",len(fixtures)))
   body:=[]byte("SYNTHETIC_FAKE_CONFIG_OR_KEY:"+name+":NOT_REAL")
+  if strings.HasSuffix(name,"/forwarding.secret"){body=[]byte("SYNTHETIC_FAKE_CONFIG_OR_KEY:SHARED_FORWARDING_KEY:NOT_REAL")}
+  if strings.HasSuffix(name,"/plugins/floodgate/key.pem"){body=[]byte("SYNTHETIC_FAKE_CONFIG_OR_KEY:SHARED_FLOODGATE_KEY:NOT_REAL")}
   if e=writeExclusive(p,body);e!=nil{return e}
   fixtures=append(fixtures,candidate{Name:name,Source:p})
  }
