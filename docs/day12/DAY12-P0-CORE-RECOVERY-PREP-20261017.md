@@ -147,3 +147,13 @@
 - 합성 PowerShell 테스트는 파일 20개+메타데이터 3개 존재 검증, 추가 파일/누락 파일 거부, 경로 제한을 검증. [CI #38954822820](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38954822820) Windows PowerShell 5.1/7 **SUCCESS**.
 - 패키지 `Geumyi-Day12-P0-GOOGLE-PREFLIGHT-READ-ONLY-v1.zip` 4,492 bytes SHA-256 `c84139afd8f217971cb053cee7e4d92edd9d44115f7a307de4a23ef4a76b7397`. ZIP 내부 3개 페이로드 SHA256가 BUILD-INFO 메타데이터와 일치.
 - 운영자 실제 PC 사전검사 결과는 아직 미제출. `P0_CLOUD_TRANSFER_PREFLIGHT_REVIEW_READY`이더라도 G: 실제 쓰기/암호문 업로드·독립 다운로드·실서비스 복원은 미실행이며, **업로드는 명시 동의 후 별도 검증된 절차로 진행한다**. P0/P1/Stable release gate 계속 거부.
+
+## 2026-10-17 운영자 Google Drive 암호문 복사 승인 및 실행 경계
+
+- 운영자가 이전 로컬 AES-GCM 독립 복호화 PASS 이후 `P0_CLOUD_TRANSFER_PREFLIGHT_STATUS=P0_CLOUD_TRANSFER_PREFLIGHT_REVIEW_READY`, `P0_ARCHIVE_SET_STATUS=LOCAL_P0_ENCRYPTED_SET_METADATA_COMPLETE`, `P0_ENCRYPTED_PARTS=20`, `P0_ARCHIVE_ENTRIES=23`, `P0_ARCHIVE_BYTES=81413`, `G_MOUNT_ROOT_PRESENT=True` 실서버 출력을 공유.
+- 같은 보고서는 Google 계정 독립 식별, Google 서버 원격 사본, 업로드 및 다운로드를 모두 `false`로 기록한다. G: 마운트 성공은 실제 동기화/클라우드 업로드 보증이 아니다.
+- 운영자가 **정확히 해당 23개 기존 P0 암호화 백업 구성 파일을 Google Drive의 확인된 2TB 계정으로 업로드하는 작업을 명시 승인**했다. 이 승인은 로컬 원본 파일 수정·삭제, OneDrive 원본 열람, 서버 재시작, Other Paper 기동, 외부 비밀번호 노출 또는 Stability 게이트 변경 승인이 아니다.
+- 새 `Day12_P0_Google_Encrypted_Copy.ps1`는 검증된 `%LOCALAPPDATA%/Geumyi-P0-Encrypted-Staging/P0-*` 최근 완료 폴더의 23개 파일만 입력으로 사용한다. 실제 운영자 보고 크기 **81,413바이트**와 다르면 중단하며, 매 파일 SHA-256을 복사 전·후와 G: 마운트 사본에서 비교하고 정확히 23개/합계를 검증한다.
+- 목적지는 사용자가 G:의 최상위 `My Drive`/`내 드라이브` 폴더를 **직접 확인해 입력**한다. 새 고유 이름의 `Geumyi-P0-Encrypted-Config-...` 하위 폴더를 **신규 생성**, 기존 파일 덮어쓰기/원본 삭제/평문 추출 없이 암호문과 검증용 메타데이터만 복사한다. 파일 복사 직전 `GOOGLE_P0_ENCRYPTED_UPLOAD_APPROVED` 추가 확인을 요구한다.
+- 복사 중 실패하면 불완전 Google 폴더가 남을 수 있으며 **성공으로 보고하거나 자동 삭제하지 않는다**. Google 웹 확인·독립 재다운로드·SHA256/AES-GCM 재검증 전까지 `P0_GOOGLE_REMOTE_UPLOAD_VERIFIED=false`이고 P0/P1/Stable gate 역시 false.
+- CI는 G: 운영 Google 계정이 아닌 임시 합성 경로에서 no-overwrite·정확한 23개·누락/변조 거부와 파일별 SHA 검사를 실시한다. G: 실제 동기화는 사용자 PC에서만 관찰 가능.
