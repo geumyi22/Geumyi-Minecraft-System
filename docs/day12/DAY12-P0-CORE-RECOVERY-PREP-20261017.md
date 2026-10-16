@@ -42,3 +42,15 @@
 6. P0 이후에도 월드 및 별도 플러그인 상태 P1 확보 전에는 Stable/ACL/Canary production gate 변경 금지. Other 기동 금지.
 
 이 문서는 복구 전략을 정의한다. **아직 백업 실행 승인이나 복구 증거가 아니다.**
+
+## 2026-10-17 실제 P0 설정 메타데이터 검사
+
+- 운영자가 제공한 `DAY12-P0-PRESENCE-V1-SHARE-ONLY-THIS.json`은 `P0_PRESENCE_REVIEW_REQUIRED` 및 `read_only=true`이고 네 Paper 루트와 GSC 상태 루트의 메타데이터 접근이 관측되었다. JSON에 비밀번호/절대 경로는 기록되지 않았다고 보고된다.
+- Wild/Playground/Other/Lobby의 **각** `server.properties`에 `CLOUD_OR_REPARSE_CONTENT_NOT_INSPECTED`가 기록되었다. OneDrive의 cloud/reparse 파일 메타데이터를 관측했을 뿐, 본문·해시·열람/복원 가능성 또는 네 원본의 시점 일관성을 확인한 증거가 아니다.
+- GSC `server.json`은 `LOCAL_FILE_METADATA_OBSERVED`. 이 1개로 모든 GSC runtime/token/pairing 상태와 백업 스냅샷이 완성됐다는 의미는 아니다.
+- Wild/Playground/Other의 `permissions.yml`과 각 서버의 `start.cmd`는 `FILE_NOT_PRESENT` 범주로 관측되었다. 선택적 후보의 부재일 뿐, 기존 `start.bat` 관측이 있으므로 오류로 격상하지 않는다. Lobby의 `permissions.yml`은 cloud/reparse 범주로 관측됐다.
+- Paper `config/` 및 Wild/Other 기술 플러그인 설정 하위 후보는 `NESTED_REPARSE_OR_CLOUD_PARENT_BLOCKED`. 파일 누락 증거가 아니며 검사를 반복하거나 재분석 지점을 강제로 따라가지 않는다.
+- 재사용 가능한 이전 근거: `tools/day10/finish_four_servers.ps1`는 세 Velocity의 설치 위치를 `%PROGRAMDATA%\\GeumyiServerCenter\\Network\\FourServer\\{wild,playground,other}`로 생성하고 `Geumyi Day10 Velocity {id}` 예약 작업의 `WorkingDirectory`에 연결한다. 이전 2026-10-10 Bedrock inventory 정정 후 `root_present=true`가 관측되었다. **이는 현재 운영자 PC의 새 경로 검사 결과가 아니며, 현재 파일 내용/키 일치성도 미검증**이다. 무의미하게 이전 Day10 프로세스/네트워크 테스트를 반복하지 않는다.
+- **남은 P0 핵심 갭:** 세 Proxy의 `velocity.toml`, `forwarding.secret`, 각 Geyser/Floodgate runtime config/private key, GSC/GDS/StatusAgent 모바일 관련 credential/state 및 정확한 복원 순서/키 회수 절차. 실제 민감정보 파일은 채팅/공개 GitHub에 올리지 않는다.
+- 운영 클라우드: 실제 원본 OneDrive, Google Drive G:는 로그인만 된 별도 2TB 계정, 원격 웹 저장량은 운영자 화면으로 확인. Google Drive에 복구 아카이브를 생성했다고 주장하지 않는다.
+- 신규 조사 수집보다 원본/메타데이터 재사용을 우선한다. 실제 백업 전에는 안전한 비공개 로컬 AEAD 키 입력, 소스 read/Files On-Demand 영향, 원본 스냅샷 정합성, 소스와 출력의 물리적 분리, 클라우드 실제 업로드/다운로드/격리 복원의 증거가 필요하다. P0/P1/Stable 게이트 계속 false.
