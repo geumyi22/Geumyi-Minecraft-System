@@ -255,9 +255,7 @@ func addEncryptedFiles(req request) (string,error){
  if e=writeExclusive(filepath.Join(req.Dest,"header.json"),hb);e!=nil{return "",e}
  if e=verify(req.Dest,req.Passphrase);e!=nil{return "",e}
  if e=writeExclusive(filepath.Join(req.Dest,"LOCAL_CAPTURE_VERIFIED.txt"),
-  []byte("DAY12_P0_LOCAL_ENCRYPTED_CAPTURE_VERIFIED_ONLY
-Not uploaded to cloud. Not application-consistent, not a full backup.
-"));e!=nil{return "",e}
+  []byte("DAY12_P0_LOCAL_ENCRYPTED_CAPTURE_VERIFIED_ONLY - LOCAL ONLY. No upload. Not application consistent. Not a full backup."));e!=nil{return "",e}
  return h.ArchiveID,nil
 }
 func verify(dir,passphrase string) error {
