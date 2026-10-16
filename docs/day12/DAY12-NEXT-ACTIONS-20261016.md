@@ -40,3 +40,12 @@
 - [12.7 실서버 안전 사전검사](phases/phase-07/DAY12-PHASE7-LIVE-READINESS-20261013-2323.md)
 - [12.5 실제 보안 위험 판단](phases/phase-05/DAY12-PHASE5-NO-BACKUP-SECURITY-DISPOSITION-20261013.md)
 - [12.11 서명 Canary 검토](phases/phase-11/DAY12-PHASE11-NO-BACKUP-CANARY-REVIEW-20261013.md)
+
+## 2026-10-17 용량 조사 v1 실제 결과 — 스코프 한정, 재실행 불필요
+
+- `DAY12-CAPACITY-METADATA-V1-SHARE-ONLY-THIS.json` 수신. 실제 Windows 호스트에서 읽기 전용으로 수행했으며 사용자 설정·월드·서비스·백업·클라우드 파일 변경 보고 없음.
+- Wild/Playground/Other/Lobby 네 원본은 OneDrive 계열 reparse/cloud 항목이 각 폴더에서 제외되어 `REPARSE_OR_CLOUD_ITEMS_SKIPPED` / `measurement_complete=false`. 결과의 `observed_bytes=0`은 서버 파일 크기가 0이거나 유실되었다는 증거가 **아님**. 이 제한을 무시해 백업 크기·압축률·저장 여력을 추정하지 않는다.
+- GSC 상태 폴더만 일반 디렉터리 메타데이터를 집계함. 이것은 네 서버 월드 전체 크기 또는 복구 가능성을 증명하지 않는다. 실제 숫자·원본 경로·사용자 프로필은 공개 저장소에 기록하지 않는다.
+- 로컬 Windows 디스크 여유 공간은 관측되었으나 Google Drive/OneDrive **원격 계정 quota**, OneDrive 파일 온디맨드의 논리 크기, DriveFS 로컬 캐시, 저장물의 중복 여부는 확인되지 않았다.
+- **다음 선택:** 기존 v3/v4/v5 경로 검사나 capacity-v1을 반복하지 않는다. OneDrive의 Files On-Demand 재분석 항목을 일반 심볼릭 링크처럼 따라가거나, 콘텐츠 열기를 통해 클라우드 파일을 자동 다운로드하는 임시 크기 측정 방식은 사용하지 않는다. 먼저 각 공급자의 웹/계정 저장소 화면에서 실제 원격 사용량·할당량을 읽기 전용으로 확보한다. 원본 월드·플러그인 논리 크기는 다운로드·placeholder hydration 없는 제공자 메타데이터 접근이 검증되기 전까지 미확인으로 유지한다.
+- 백업 생성/압축/재시작/ACL 적용/클라우드 업로드/PR 병합/정식 릴리스 게이트 변경은 승인되지 않았다. 기존 서명 Stable은 분리 보존한다.
