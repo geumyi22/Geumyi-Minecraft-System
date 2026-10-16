@@ -1,5 +1,7 @@
 # Geumyi Minecraft System
 
+> **2026-10-16 최신 다음 단계:** [**Day12 최단 마감 작업/담당표**](docs/day12/DAY12-NEXT-ACTIONS-20261016.md) · [**실제 v5 복구 위치 계획**](docs/day12/DAY12-CLOUD-RECOVERY-PLAN-V5-20261015.md). Wild/놀이터/로비 경로 3/3 및 후보 경로 비중복 *메타데이터*까지 확인. **실제 백업·클라우드 업로드·복원 0건**이고 최종 서명 Stable은 엄격한 실환경 게이트 때문에 차단 중입니다. 이전에 통과한 8시간 실서버 모니터와 Native 6/6 검사는 반복하지 않습니다.
+
 > **현재 상태 · 2026-10-13:** [**Day 1~12 상세 통합 현황**](docs/PROJECT-DAY1-12-MASTER-STATUS-20261013.md) · [**저장소 지도/워크플로 분류**](docs/REPOSITORY-MAP-20261013.md) · [**Day12 단계별 문서**](docs/day12/INDEX.md) · [**정식 Stable 최단 경로**](docs/day12/DAY12-STABLE-FAST-TRACK-20261013.md). 기존 Day 1~11은 완료, Day 12는 **소규모 운영 수락과 엄격한 최종 서명 Stable 검증을 별도 판정**합니다. **Other Paper는 운영자 확인으로 의도적 OFFLINE**이며 Velocity 25567 프런트엔드의 개폐와 구분합니다. 이 문서의 역사적 E2E는 **오늘 실호스트 모든 서버 ONLINE**이라는 뜻이 아닙니다.
 
 
