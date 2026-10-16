@@ -166,7 +166,7 @@ try {
   Write-Host '======================================================'
   Write-Host 'Open Windows Explorer -> G: -> My Drive / 내 드라이브.'
   Write-Host 'Confirm it belongs to your intended Google account.'
-  $google=Read-Host 'Paste EXISTING G:\My Drive or G:\내 드라이브 path'
+  $google=(Read-Host 'Paste EXISTING G:\My Drive or G:\내 드라이브 path').Trim().Trim('"')
   if(-not(P0-CheckGoogleMyDriveParent $google)){
     P0-Refuse 'GOOGLE_MYDRIVE_PATH_NOT_VERIFIED'
   }
