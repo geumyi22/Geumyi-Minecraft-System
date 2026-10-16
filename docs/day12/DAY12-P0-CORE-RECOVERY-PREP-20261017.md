@@ -120,3 +120,12 @@
 - 누락·추가·변조·잘못된 암호·정해진 staging 밖 접근은 실패. 검증 중 기존 암호문 파일 변경/새 백업 생성/온라인 서비스 재시작/클라우드 송신이 없어야 한다.
 - 새 \`Test_P0_Offline_Verify_Interop_CI.ps1\`는 GitHub Windows/Linux 일회용 가짜 설정 데이터를 생산용 캡처기 포맷으로 암호화한 뒤 **서로 분리된 검증기**로 다시 읽는다. 실패 시 CI는 배포 ZIP을 생성하지 않는다.
 - 이 검사는 암호화 archive **독립 디코딩 가능성(메모리 복원)** 범위 한정이며, 실제 격리 파일 추출, 서비스 구성 적용·기동 검증, Google 업로드/다운로드는 **다음 작업**이다.
+
+## 2026-10-17 P0 로컬 백업 독립 AEAD 검증 도구 v1
+
+- [Windows + Linux 테스트 및 패키징 CI #38953201117](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38953201117): Windows·Linux 가짜 암호문 생성/독립 검증 상호운용 2/2 SUCCESS, Windows PowerShell 문법 검사 및 오퍼레이터 ZIP 패키징 SUCCESS.
+- 사용자용 ZIP: Geumyi-Day12-P0-OFFLINE-VERIFY-READ-ONLY-v1.zip, 1,061,126 bytes, SHA256 66d5d90e7d7700c05a9fc0eca414e1087c4c8d35589817fcf6a130ebff2b84ff. 내부 다섯 파일의 빌드 정보/SHA256 목록 독립 대조 PASS.
+- 실행: RUN_Day12_P0_Offline_Verify_READ_ONLY.cmd. 오직 LOCALAPPDATA의 가장 최근 완료된 P0 암호화 로컬 폴더만 읽는다. 새로운 암호화 백업·평문 복원 파일·클라우드 업로드는 생성하지 않고, 암호는 서버 PC에서만 입력한다.
+- 별도 검증기 p0_offline_archive_verify.go는 정확히 20개 AES-GCM 파일, 암호화 매니페스트, 파일 상대경로/순서/AAD, 원문 길이·SHA256, 세 프록시 forwarding/Floodgate 키 동등성을 메모리 복호화해 재검증한다. 잘못된 암호·변조·누락·초과 항목을 거부한다.
+- 이 문서는 CI SUCCESS와 운영자 보고 LOCAL_CAPTURE_COMPLETED까지만 입증한다. 운영자 실서버의 P0_OFFLINE_VERIFY_PASS 아직 미제공; Google Drive 실제 업로드·다운로드, 디스크로 격리 추출, 서비스 기동 복원, 전체 P0/P1/Stable 게이트는 계속 미완료.
+- 사용자에게 원본 OneDrive 설정 재읽기·재백업 생성·복구 암호 공유를 요청하지 않는다. 이 새 암호문 독립 로컬 검증 결과를 받은 다음 Google Drive 암호문 안전 전송/독립 다운로드 검증을 진행한다.
