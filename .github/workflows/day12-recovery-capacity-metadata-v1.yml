@@ -67,6 +67,8 @@ jobs:
             throw 'HOSTED_RUNNER_FALSE_SOURCE_OR_QUOTA_CLAIM'
           }
           Write-Host 'CAPACITY_V1_HOSTED_RUNNER_FAIL_CLOSED_PASS'
+          # Intentional child exit 2 has been verified. Do not propagate it as the CI step exit.
+          $global:LASTEXITCODE=0
       - name: Package current-head operator kit with checksum manifest
         shell: pwsh
         run: |
