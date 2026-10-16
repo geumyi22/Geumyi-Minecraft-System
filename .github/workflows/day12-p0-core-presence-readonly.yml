@@ -1,0 +1,109 @@
+name: Day12 P0 Core Config Presence Read Only
+
+on:
+  pull_request:
+    paths:
+      - 'tools/day12/cloud/**'
+      - '.github/workflows/day12-p0-core-presence-readonly.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-p0-disposable:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - name: Parse Windows PowerShell 5.1/7 and no-source-read guard
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $base='tools/day12/cloud'
+          $files=@('Day12_Cloud_Recovery_Preflight_READ_ONLY.ps1',
+            'Day12_Cloud_Recovery_Plan_READ_ONLY.ps1',
+            'Day12_P0_Config_Presence_READ_ONLY.ps1','Test_P0_Config_Presence_V1.ps1')
+          foreach($file in $files){
+            $tokens=$null;$errors=$null
+            [void][Management.Automation.Language.Parser]::ParseFile(
+              (Resolve-Path (Join-Path $base $file)).Path,[ref]$tokens,[ref]$errors)
+            if(@($errors).Count){throw ('P0_PS_PARSE_FAILED='+$file)}
+          }
+          $source=Get-Content -LiteralPath (Join-Path $base 'Day12_P0_Config_Presence_READ_ONLY.ps1') -Raw
+          foreach($required in @('Inspect-P0Candidate','Build-P0PresenceReport',
+            'Get-PrivateSourceRecords','Report-LocationIsSeparate',
+            'secret_values_exported=$false','cloud_placeholder_hydration_requested=$false',
+            'content_bytes_opened=0','p0_backup_allowed=$false',
+            'stable_release_allowed=$false',
+            'THREE_VELOCITY_PROXY_ROOTS_AND_SECRETS_NOT_INVENTORIED')){
+            if(-not $source.Contains($required)){throw ('P0_REQUIRED_GUARD_MISSING='+$required)}
+          }
+          if($source -match '(?i)ReadAllBytes|ReadAllText|Get-Content|Invoke-RestMethod|Invoke-WebRequest|Compress-Archive|Copy-Item|Move-Item|Remove-Item|Get-ChildItem|Set-Acl|Start-Process'){
+            throw 'P0_DATA_READ_OR_MUTATION_OPCODE_FORBIDDEN'
+          }
+          Write-Host 'P0_PRESENCE_PARSE_AND_SOURCE_SCOPE_PASS'
+      - name: Windows PowerShell 5.1 and 7 disposable secrets/privacy/reparse tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          foreach($engine in @('powershell.exe','pwsh')){
+            $global:LASTEXITCODE=0
+            $result=@(& $engine -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/cloud/Test_P0_Config_Presence_V1.ps1)
+            if($LASTEXITCODE -ne 0 -or ($result|Out-String) -notmatch 'P0_PRESENCE_V1_WINDOWS_DISPOSABLE_PASS'){
+              $result|ForEach-Object {Write-Host $_}
+              throw ('P0_DISPOSABLE_TEST_FAILED_'+$engine)
+            }
+          }
+          $global:LASTEXITCODE=0
+          Write-Host 'P0_PRESENCE_DUAL_ENGINE_DISPOSABLE_PASS'
+      - name: Nonhost runner must fail closed without private source
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $global:LASTEXITCODE=0
+          $result=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/cloud/Day12_P0_Config_Presence_READ_ONLY.ps1)
+          if($LASTEXITCODE -ne 2 -or ($result|Out-String) -notmatch 'P0_METADATA_BLOCKED_NO_SOURCE_OR_CLOUD_CHANGE'){
+            throw 'P0_HOSTED_RUNNER_MUST_FAIL_CLOSED'
+          }
+          $global:LASTEXITCODE=0
+          Write-Host 'P0_NONHOST_FAIL_CLOSED_PASS'
+      - name: Package exact-file P0 read-only operator ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $source='tools/day12/cloud'
+          $files=@(
+            'Day12_Cloud_Recovery_Preflight_READ_ONLY.ps1',
+            'Day12_Cloud_Recovery_Plan_READ_ONLY.ps1',
+            'Day12_P0_Config_Presence_READ_ONLY.ps1',
+            'RUN_Day12_P0_Config_Presence_READ_ONLY.cmd',
+            'README-Day12-P0-PRESENCE-V1-KO.txt')
+          $dir=Join-Path $env:RUNNER_TEMP ('p0-readonly-'+[guid]::NewGuid().ToString('N'))
+          [void](New-Item -ItemType Directory -Path $dir)
+          foreach($file in $files){
+            Copy-Item -LiteralPath (Join-Path $source $file) -Destination $dir -ErrorAction Stop
+          }
+          $event=Get-Content -LiteralPath $env:GITHUB_EVENT_PATH -Raw|ConvertFrom-Json
+          $head=if($null -ne $event.pull_request){$event.pull_request.head.sha}else{$env:GITHUB_SHA}
+          $manifest=[ordered]@{kit='Day12-P0-Config-Presence-v1';source_head_sha=$head;files=@()}
+          foreach($file in $files){
+            $manifest.files+=@{name=$file;sha256=(Get-FileHash -LiteralPath (Join-Path $dir $file) -Algorithm SHA256).Hash.ToLowerInvariant()}
+          }
+          $manifest|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $dir 'BUILD-INFO-P0-V1.json') -Encoding UTF8
+          $files+='BUILD-INFO-P0-V1.json'
+          $zip='Geumyi-Day12-P0-Config-Presence-READ-ONLY-v1.zip'
+          Compress-Archive -Path (Join-Path $dir '*') -DestinationPath $zip -ErrorAction Stop
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $reader=[IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip).Path)
+          try {
+            $actual=@($reader.Entries|ForEach-Object{$_.FullName}|Sort-Object)
+            if(Compare-Object $actual @($files|Sort-Object)){throw 'P0_ZIP_FILE_LIST_MISMATCH'}
+          } finally {$reader.Dispose()}
+          Write-Host ('P0_ZIP_SHA256='+(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant())
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-p0-config-presence-readonly-v1
+          path: Geumyi-Day12-P0-Config-Presence-READ-ONLY-v1.zip
+          if-no-files-found: error
+          retention-days: 30
