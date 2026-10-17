@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"runtime"
@@ -103,5 +105,14 @@ func TestVelocityControlPreflightStillBlocksWithActualTcpMissingSample(t *testin
 			!result.Observed.JavaTCPProbeResponding || !result.Observed.BedrockRaknetPong {
 			t.Fatalf("TCP telemetry should not override observed Java/RakNet replies or unblock %q: %+v", action, result)
 		}
+	}
+}
+
+func TestVelocityReadOnlyProbeConcurrencyGateIsFailClosed(t *testing.T) {
+	velocityReadOnlyProbeGate <- struct{}{}
+	defer func() { <-velocityReadOnlyProbeGate }()
+	_, err := queryVelocityReadOnlyInventory(context.Background())
+	if !errors.Is(err, errVelocityReadOnlyBusy) {
+		t.Fatalf("concurrent Velocity status read must be rejected before PowerShell spawn, got: %v", err)
 	}
 }
