@@ -58,7 +58,7 @@ function P0-CheckMirrorParent(
 ) {
   # Google Drive desktop mirror mode: G: contains an OS Shell Link whose
   # target must resolve to the EXISTING matching C: user-profile mirror.
-  # WScript.Shell only READS the existing provider link, never creates it.
+  # Shell.Application only READS the provider shortcut target.
   if(-not(P0-MirrorCandidateUnderProfile $Candidate $ProfileRoot)){return $false}
   if([string]::IsNullOrWhiteSpace($ShortcutRoot)){return $false}
   try {
@@ -70,8 +70,20 @@ function P0-CheckMirrorParent(
     if($links.Count -ne 1){return $false}
     $link=$links[0]
     if((([long]$link.Attributes -band 0x00000400) -ne 0)){return $false}
-    $shell=New-Object -ComObject WScript.Shell
-    $target=$shell.CreateShortcut($link.FullName).TargetPath
+    # Shell.Application uses Unicode Shell Namespace / property system.
+    # WScript.Shell.CreateShortcut corrupts non-ANSI Korean paths on some
+    # Windows locales, so it must NEVER parse the production G: link.
+    $shell=New-Object -ComObject Shell.Application
+    $folder=$shell.NameSpace($ShortcutRoot)
+    if($null -eq $folder){return $false}
+    $entry=$folder.ParseName($link.Name)
+    if($null -eq $entry){return $false}
+    $target=[string]$entry.ExtendedProperty('System.Link.TargetParsingPath')
+    if([string]::IsNullOrWhiteSpace($target)){
+      $linked=$entry.GetLink()
+      if($null -eq $linked -or $null -eq $linked.Target){return $false}
+      $target=[string]$linked.Target.Path
+    }
     return (P0-PathIdentical $target $Candidate)
   } catch {return $false}
 }
