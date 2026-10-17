@@ -32,7 +32,7 @@ function Get-ScheduledTask {
   $dir=Join-Path $global:velocityFixtureRoot $id
   if($global:velocityFixtureMode -eq 'drift' -and $id -eq 'wild'){$dir=Join-Path $global:velocityFixtureRoot 'WRONG'}
   return [pscustomobject]@{
-    TaskPath='\';State='Running';Principal=[pscustomobject]@{UserId='SYSTEM'}
+    TaskPath='\';State=$(if($global:velocityFixtureMode -eq 'task_stopped' -and $id -eq 'wild'){'Ready'}else{'Running'});Principal=[pscustomobject]@{UserId='SYSTEM'}
     Actions=@([pscustomobject]@{
       Execute='C:\Windows\System32\java.exe'
       WorkingDirectory=$dir
@@ -52,8 +52,11 @@ function Get-NetUDPEndpoint {
   [CmdletBinding()]
   param([int]$LocalPort)
   if($LocalPort -notin @(19132,19133,19134)){throw 'unexpected UDP request'}
-  if($global:velocityFixtureMode -eq 'all_sockets_missing'){return}
+  if($global:velocityFixtureMode -in @('all_sockets_missing','udp_missing')){return}
   $id=$LocalPort-19132
+  if($global:velocityFixtureMode -eq 'udp_wrong_child' -and $id -eq 1) {
+    return [pscustomobject]@{OwningProcess=9911}
+  }
   return [pscustomobject]@{OwningProcess=(4101+$id*10)}
 }
 
@@ -82,8 +85,12 @@ if(@($good.proxies|Where-Object {$_.status -ne 'ports_ready_owner_unverified'}).
   throw 'Healthy fixture did not report bounded port status'
 }
 $tcpMissing=Probe 'tcp_missing'
-if(@($tcpMissing.proxies|Where-Object {$_.status -ne 'ports_partial_or_conflicting'}).Count -ne 0){
-  throw 'Missing TCP provider rows must not claim OFFLINE'
+if(@($tcpMissing.proxies|Where-Object {
+  $_.status -ne 'tcp_inventory_missing_udp_child_verified' -or
+  $_.java_listening -or -not $_.bedrock_listening -or
+  -not $_.udp_owner_matches_velocity_child -or $_.port_owner_consistent
+}).Count -ne 0){
+  throw 'Missing TCP + validated UDP child must show inconclusive telemetry, not conflict or ONLINE'
 }
 $socketsMissing=Probe 'all_sockets_missing'
 if(@($socketsMissing.proxies|Where-Object {$_.status -ne 'socket_inventory_missing'}).Count -ne 0){
@@ -93,8 +100,21 @@ $missing=Probe 'missing_task'
 if([string]$missing.proxies[0].status -ne 'task_missing_or_duplicate'){throw 'Missing task was not detected'}
 $drift=Probe 'drift'
 if([string]$drift.proxies[0].status -ne 'task_config_drift'){throw 'Task action path drift was not detected'}
+$udpMissing=Probe 'udp_missing'
+if(@($udpMissing.proxies|Where-Object {$_.status -ne 'ports_partial_or_conflicting'}).Count -ne 0){
+  throw 'Missing UDP with observed TCP must not be considered ready'
+}
+$wrongChild=Probe 'udp_wrong_child'
+if([bool]$wrongChild.udp_three_unique_child_owners -or
+  @($wrongChild.proxies|Where-Object {$_.udp_owner_matches_velocity_child}).Count -ne 0){
+  throw 'Foreign UDP child ownership was accepted as a valid three-pair mapping'
+}
+$stopped=Probe 'task_stopped'
+if([string]$stopped.proxies[0].status -ne 'task_not_running_unverified'){
+  throw 'A stopped task cannot claim expected task readiness'
+}
 $orphan=Probe 'orphan'
 if([bool]$orphan.process_pair_census_consistent -or [bool]$orphan.udp_three_unique_child_owners){
   throw 'Orphan process wrongly accepted'
 }
-Write-Host 'VELOCITY_READ_ONLY_WINDOWS_FIXTURE_PASS: 6 cases; no real processes, tasks, ports, or files changed.'
+Write-Host 'VELOCITY_READ_ONLY_WINDOWS_FIXTURE_PASS: 9 cases; no real processes, tasks, ports, or files changed.'
