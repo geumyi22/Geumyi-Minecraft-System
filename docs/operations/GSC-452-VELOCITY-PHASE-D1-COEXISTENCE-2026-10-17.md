@@ -11,11 +11,18 @@ The temporary coexistence CI intentionally uses a **public, fixed, independently
 | Test input | Version/build | SHA-256 |
 | --- | --- | --- |
 | Velocity proxy | PaperMC 4.2.0 Build 30 | `35a5596a5468a035d8a32c8de5ebb0dc6b8d8f0cc3ff5169d514aca762af8aa8` |
-| Geyser-Velocity | Geyser 2.12.0 Build 1263 (2026-10-17) | `f04cb787529b731ed5a1ab4797ee49bb5192c9ccec5217bfed2f368723036043` |
+| Geyser-Velocity, **operator-matched** | **Geyser 2.11.3 Build 1251 (2026-10-10)** | **`dd963f2123704b89c47d3775b908b189b8174b1650008c51d37b1026d6dd928e`** |
+| Geyser-Velocity, forward reference | Geyser 2.12.0 Build 1263 (2026-10-17) | `f04cb787529b731ed5a1ab4797ee49bb5192c9ccec5217bfed2f368723036043` |
 | Floodgate-Velocity | Floodgate 2.2.5 Build 141 (2026-09-17) | `649835022de37ff09255fc626d4bfe7bc2a3b926d07b0dfaf1f51e12bf37001d` |
 | Geumyi Velocity Bridge | GSC 4.5.2 Canary **disabled prototype** | compiled from PR #58 source; **never installed on host** |
 
-Official download API metadata: https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest and https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest . The test itself uses the explicit project/version/build download URLs rather than a mutable `latest`.
+**Operator-provided sanitized JAR fingerprint report** `GeyserFloodgate-READ-ONLY-20261018-000712.json` (collected 2026-10-18 00:07 KST): wild, playground and other each have one and only one recognized Geyser-Velocity JAR, SHA-256 `dd963f2123704b89c47d3775b908b189b8174b1650008c51d37b1026d6dd928e`, 48,674,589 bytes, and one Floodgate-Velocity JAR, SHA-256 `649835022de37ff09255fc626d4bfe7bc2a3b926d07b0dfaf1f51e12bf37001d`, 6,892,304 bytes. The source result says `actual_plugin_loading_verified=false`, `host_state_changed=false` and `jar_or_config_changed=false`. SHA-256 is an artifact identity comparison, **not verification that a particular JVM loaded that JAR or that Bedrock E2E works**.
+
+**Official Geyser identity verified:** https://download.geysermc.org/v2/projects/geyser/versions/2.11.3/builds/1251 identifies exactly this Geyser SHA-256; the build was published at 2026-10-10T02:01:50Z. Existing Floodgate identity Build 141 and Velocity identity Build 30 were independently verified previously.
+
+**Two independently named isolated cases** run against identical pinned Velocity and Floodgate artifacts: `operator` (real-server file-identity match, Geyser 2.11.3/1251, exact expected 48,674,589 bytes) and `reference` (newer Geyser 2.12.0/1263). CI must report both results. A success on the newer reference **must not be substituted** for an unsuccessful operator-matched case. Neither case installs anything on the operator's server.
+
+Official fixed-version metadata: https://download.geysermc.org/v2/projects/geyser/versions/2.11.3/builds/1251 and https://download.geysermc.org/v2/projects/floodgate/versions/2.2.5/builds/141 . The tests never use mutable `latest` download URLs.
 
 ## Disposable integration test (test runner ONLY)
 
@@ -54,7 +61,8 @@ Ambiguous duplicates and missing directories are classified as **loading unverif
 - [x] Disposable bare proxy Java 25/26 plugin initialization smoke
 - [x] Disposable **public** Geyser/Floodgate plus disabled bridge plugin co-loading (network-isolated)
 - [x] One-shot signed localhost **read-only test fixture** (Go/Java/Python canonical vector); rejects all lifecycle verbs
-- [ ] Verify the *actual operator-installed* Geyser/Floodgate builds via a separate privacy-preserving read-only inventory, if full production compatibility is needed
+- [x] Match all six inspected Geyser/Floodgate JAR hashes to official **Geyser 2.11.3 Build 1251 / Floodgate 2.2.5 Build 141** artifact identities (loaded runtime still unverified)
+- [ ] Confirm the **operator-matched** SHA-pinned 2.11.3/1251 disposable co-load smoke passes exact-head CI (new comparison job)
 - [ ] Disposable Java+Bedrock **client E2E** with backend, credentials policy and resource-pack transfer
 - [ ] Restricted authenticated production GSC↔Velocity **broker/plugin** design, independent security review and Windows OS peer identity ACLs (not implemented)
 - [ ] Prove actual Day10 task-to-process ownership plus scheduler auto-restart semantics on disposable Windows VM
