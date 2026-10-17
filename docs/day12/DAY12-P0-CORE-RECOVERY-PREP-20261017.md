@@ -206,3 +206,11 @@
 - 운영 ZIP `Geumyi-Day12-P0-GOOGLE-MIRROR-ENCRYPTED-COPY-v2.zip`: **9,703 bytes**, SHA-256 `f7e79078cb0f3a93708724f02d659645d6e1e127848d7beadf1474a97890c789`. Github Actions artifact에서 안쪽 ZIP을 실제 추출했고, 다섯 파일 중 네 페이로드의 SHA-256이 `BUILD-INFO-P0-GOOGLE-COPY.json` 기록과 정확히 일치함. 빌드 source HEAD `9d76fc18d5f0dd314346cc235399de20f5dd1acd`.
 - 실제 Windows 호스트에서 C: 미러 폴더 입력·신규 암호문 23개 복사와 검증 결과는 **아직 수신되지 않음**. C: 미러 폴더에 복사되었다 하더라도 Google 웹 계정의 원격 업로드 완료·독립 다운로드 재검증과 실서버 서비스 복원은 별도 게이트로 유지한다.
 - 기존 v1.1/이전 G: 전용 ZIP은 재실행 금지. 운영자에게 v2만 배포하고 `P0_GOOGLE_MIRROR_COPY_HASH_VERIFIED=23`, `P0_GOOGLE_MIRROR_COPY_COMPLETE=true` 두 줄을 확인받는다.
+
+## 2026-10-17 Google Drive 웹 다운로드 P0 ZIP 독립 복호화 검증 준비
+
+- 사용자 보고: 새 Google 미러 폴더 `Geumyi-P0-Encrypted-Config-20261017-142513-2c78f21b5b8249e6`가 **Google Drive 웹에서 확인됨**, 폴더 안 암호화 백업 구성 **23개를 웹에서 확인**, 폴더 ZIP **웹 다운로드 완료**. 이는 서버 측 목록 가시성과 다운로드 완료 보고이며 웹 다운로드한 바이트 무결성 PASS는 아직 아님.
+- 이전 운영자 보고: P0 로컬 `P0_OFFLINE_VERIFY_PASS`, 20개 AES-GCM 복호화 PASS, 미러링 로컬 복사 `P0_GOOGLE_MIRROR_COPY_HASH_VERIFIED=23`, `P0_GOOGLE_MIRROR_COPY_BYTES=81413`, `P0_GOOGLE_MIRROR_COPY_COMPLETE=true`.
+- 다음 독립 검증 작업은 Google Drive 웹 다운로드 ZIP을 **해제하거나 기존 백업/서버/클라우드에 쓰지 않고** ZIP의 23개 암호문을 원본 P0 로컬 암호문과 SHA256 모두 비교하고, ZIP 안의 파일을 직접 AES-256-GCM으로 재복호화 인증하는 것. 암호 입력/인증은 서버 PC 로컬에서만 처리하고 키/평문은 GitHub/채팅에 공유하지 않는다.
+- 프로토타입 `p0_google_web_download_verify.go`는 Go1.23.2 Linux 로컬 `go build`, `go vet`, Python AESGCM로 생성한 동일 형식 **정확히 81,413바이트 가짜 백업 ZIP의 flat/nested 2형태 정상 복호화 PASS**. 틀린 암호, 타이퍼/변조, 추가·누락·중복, 트래버설, 다운로드 폴더 이탈, 로컬 원본 변경은 FAIL CLOSED. Windows/amd64 cross-compile 성공; **Windows 운영 PC에서 실 ZIP을 실행한 것은 아님**.
+- 독립 웹 ZIP 검증 PASS가 실제 호스트에서 확인되어도 **실제 설정 파일 평문 추출, 별도 격리 머신에서 서비스 기동 및 월드/플러그인 P1 백업, Stable 릴리스**는 별도 미완료 게이트 유지.
