@@ -272,8 +272,8 @@ def run(plugin: pathlib.Path, profile: str) -> None:
                 print("DISPOSABLE ENDPOINTS UNVERIFIED:", protocol,
                       "probe_exit:", attempt.returncode,
                       "jvm_still_running:", still_running,
-                      "ci_generated_geyser_transport": test_only_transport_hint(root),
-                      "udp_19132_bound_in_container": test_only_socket_present(
+                      "ci_generated_geyser_transport", test_only_transport_hint(root),
+                      "udp_19132_bound_in_container", test_only_socket_present(
                           docker, container_name, 19132
                       ) if still_running else False,
                       "classes:", classes[:2], file=sys.stderr)
