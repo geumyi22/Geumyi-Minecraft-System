@@ -166,3 +166,11 @@
 - 신규 Google 하위 폴더에 `header.json`, `manifest.gcm`, `LOCAL_CAPTURE_VERIFIED.txt`, `part-000.gcm`~`part-019.gcm`만 신규 생성. 읽기는 검증된 로컬 암호문에만 한정; 파일마다 로컬 원본 복사 전/후 SHA-256 및 G: 복사본 SHA-256 대조. 기존 로컬/OneDrive 원본은 삭제하지 않음; 서버·서비스·Google 계정 동기화 설정 변경 없음.
 - 현장 PC **실제 Google G: 파일 복사는 아직 실행됐다는 증거 없음**. 실행 결과 `P0_G_MOUNT_COPY_HASH_VERIFIED=23` 이후에도 Google 웹 원격 파일 존재·별도 다운로드·AES-GCM 독립 재검증까지 해야 독립 클라우드 보관 증거가 된다. G: mounted hash verification만으로 완료 선언 금지.
 - 일부 복사 실패 시 해당 새 Google 폴더가 부분 상태로 남을 수 있으므로 자동 삭제하지 않고 성공 아카이브로 취급하지 않음. 오류 코드만 공유, 무분별한 재시도/중복 생성 금지. PR #53 Draft, P0/P1/Stable 전체 게이트 false.
+
+## 2026-10-17 Google G: 전송 실행기 거짓 성공 반환 결함 — 확인 및 수정
+
+- 운영자가 전송 ZIP 실행 출력의 CMD 헤더와 `[MOUNT COPY PASS]`만 공유. **업로드 경로 입력·수동 승인 질문·스크립트의 `P0_G_MOUNT_COPY_HASH_VERIFIED=23` 및 `P0_G_MOUNT_COPY_COMPLETE=true`가 전혀 표시되지 않음.** 이 출력만으로 로컬→G: 복사/원격 업로드 성공이라고 주장하지 않는다.
+- Draft PR #53의 `Day12_P0_Google_Encrypted_Copy.ps1`에서 동일 명칭 `$FunctionsOnly`를 `Day12_P0_Google_Transfer_Preflight_READ_ONLY.ps1`의 dot-source import와 엔트리포인트에 함께 사용해, import 파라미터 바인딩이 호출자 변수에 영향을 주면 **운영 메인 로직이 스킵되고 프로세스 exit 0이 반환되는 결함**이 있었다.
+- 수정: 보조 스크립트 import 전에 호출 모드 `$script:P0_Copy_EntryMode`를 별도 보존, 운영 진입 시 `P0_GOOGLE_COPY_ENTRYPOINT_STARTED` 출력. CMD 파일은 종료코드 0만으로 `[MOUNT COPY PASS]`를 표시하지 않으며 **해시 검증·복사 완료 두 P0 상태 줄**이 없으면 성공으로 처리하지 말라고 안내한다.
+- Windows PowerShell 5.1/7 자동화에서 **실제 메인 엔트리포인트를 빈 `LOCALAPPDATA`로 실행해** 실패 코드·진입 메시지를 반환하고 성공을 거짓 보고하지 않는 회귀 테스트를 추가. 이 테스트는 G:와 실제 서버/OneDrive를 만지지 않는다.
+- **현재 현장 G: 복사 증거 없음, Google 클라우드 원격 저장/재다운로드 미확인.** 기존 암호화 로컬 백업 20개/23개 항목·81,413바이트 및 이전 독립 AES-GCM PASS는 유효한 관측으로 유지. 이전 ZIP 재실행 금지; 수정 CI PASS·새 ZIP 검증 후에만 진행한다.
