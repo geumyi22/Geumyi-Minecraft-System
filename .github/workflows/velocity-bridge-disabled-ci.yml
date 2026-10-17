@@ -7,6 +7,7 @@ on:
       - 'Plugins/GeumyiVelocityBridge/**'
       - 'tools/velocity/Velocity_Compatibility_READ_ONLY.ps1'
       - 'tools/velocity/CI_Velocity420_Disabled_Runtime_Smoke.py'
+      - 'tools/velocity/CI_Velocity420_Geyser_Floodgate_Smoke.py'
       - '.github/workflows/velocity-bridge-disabled-ci.yml'
   workflow_dispatch:
 
@@ -108,6 +109,17 @@ jobs:
           plugin_jar=$(find Plugins/GeumyiVelocityBridge/build/libs -maxdepth 1 -name '*.jar' | head -n1)
           test -n "$plugin_jar"
           python3 tools/velocity/CI_Velocity420_Disabled_Runtime_Smoke.py "$plugin_jar"
+      - name: SHA-pinned Geyser and Floodgate coexistence, isolated no-network Docker
+        if: matrix.velocity_api == '4.2.0'
+        shell: bash
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          python3 -m py_compile tools/velocity/CI_Velocity420_Geyser_Floodgate_Smoke.py
+          plugin_jar=$(find Plugins/GeumyiVelocityBridge/build/libs -maxdepth 1 -name '*.jar' | head -n1)
+          test -n "$plugin_jar"
+          docker pull eclipse-temurin:26-jre
+          python3 tools/velocity/CI_Velocity420_Geyser_Floodgate_Smoke.py "$plugin_jar"
 
   velocity-compatibility-synthetic:
     name: Windows version fingerprint collector synthetic (NO LIVE TASKS)
