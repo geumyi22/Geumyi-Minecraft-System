@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"runtime"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -71,6 +72,25 @@ func TestVelocityStatusEndpointIsGETOnlyAndDoesNotOfferProcessActions(t *testing
 		apiV4VelocityStatus(rec, req)
 		if rec.Code != http.StatusNotImplemented {
 			t.Fatalf("non-Windows read = %d, want 501", rec.Code)
+		}
+	}
+}
+
+func TestVelocityInventoryPowerShellSourceIsStrictlyReadOnly(t *testing.T) {
+	// This guards against accidentally turning a diagnostics endpoint into
+	// a task/process control endpoint during later feature development.
+	forbidden := regexp.MustCompile(`(?i)\b(?:Stop-Process|Start-Process|Stop-ScheduledTask|Start-ScheduledTask|Set-ScheduledTask|Register-ScheduledTask|Unregister-ScheduledTask|Remove-ScheduledTask|Set-NetFirewallRule|New-NetFirewallRule|Remove-NetFirewallRule|Set-Content|Out-File|Remove-Item|Invoke-Expression)\b`)
+	if hit := forbidden.FindString(velocityStatusPS); hit != "" {
+		t.Fatalf("Velocity status script contains a mutating operation: %q", hit)
+	}
+	for _, marker := range []string{
+		"Get-CimInstance Win32_Process",
+		"socket_inventory_missing",
+		"task_process_identity_verified=$false",
+		"live_java_raknet_e2e_verified=$false",
+	} {
+		if !strings.Contains(velocityStatusPS, marker) {
+			t.Fatalf("Velocity status guard marker is missing: %q", marker)
 		}
 	}
 }
