@@ -7,8 +7,8 @@ $tokens=$null; $errors=$null
 [void][System.Management.Automation.Language.Parser]::ParseFile($probe,[ref]$tokens,[ref]$errors)
 if(@($errors).Count -gt 0){throw 'Velocity probe failed Windows PowerShell parser'}
 
-$script:fixture = 'healthy'
-$script:root = Join-Path $env:ProgramData 'GeumyiServerCenter\Network\FourServer'
+$global:velocityFixtureMode = 'healthy'
+$global:velocityFixtureRoot = Join-Path $env:ProgramData 'GeumyiServerCenter\Network\FourServer'
 function Get-CimInstance {
   [CmdletBinding()]
   param([string]$ClassName,[string]$Filter)
@@ -17,7 +17,7 @@ function Get-CimInstance {
   foreach($i in 0..2){
     $parent=4100+($i*10);$child=$parent+1
     $rows+= [pscustomobject]@{Name='java.exe';ProcessId=$parent;ParentProcessId=500;CommandLine='java.exe -Xmx512M -jar velocity.jar'}
-    if($script:fixture -ne 'orphan' -or $i -ne 1){
+    if($global:velocityFixtureMode -ne 'orphan' -or $i -ne 1){
       $rows+= [pscustomobject]@{Name='java.exe';ProcessId=$child;ParentProcessId=$parent;CommandLine='java.exe -Xmx512M -jar velocity.jar'}
     }
   }
@@ -26,11 +26,11 @@ function Get-CimInstance {
 function Get-ScheduledTask {
   [CmdletBinding()]
   param([string]$TaskName)
-  if($script:fixture -eq 'missing_task' -and $TaskName -like '*wild'){return}
+  if($global:velocityFixtureMode -eq 'missing_task' -and $TaskName -like '*wild'){return}
   $id=$TaskName -replace '^Geumyi Day10 Velocity ',''
   if($id -notin @('wild','playground','other')){throw 'unexpected fixture task'}
-  $dir=Join-Path $script:root $id
-  if($script:fixture -eq 'drift' -and $id -eq 'wild'){$dir=Join-Path $script:root 'WRONG'}
+  $dir=Join-Path $global:velocityFixtureRoot $id
+  if($global:velocityFixtureMode -eq 'drift' -and $id -eq 'wild'){$dir=Join-Path $global:velocityFixtureRoot 'WRONG'}
   return [pscustomobject]@{
     TaskPath='\';State='Running';Principal=[pscustomobject]@{UserId='SYSTEM'}
     Actions=@([pscustomobject]@{
@@ -44,7 +44,7 @@ function Get-NetTCPConnection {
   [CmdletBinding()]
   param([int]$LocalPort,[string]$State)
   if($State -ne 'Listen' -or $LocalPort -notin @(25565,25566,25567)){throw 'unexpected TCP request'}
-  if($script:fixture -in @('tcp_missing','all_sockets_missing')){return}
+  if($global:velocityFixtureMode -in @('tcp_missing','all_sockets_missing')){return}
   $id=$LocalPort-25565
   return [pscustomobject]@{OwningProcess=(4101+$id*10)}
 }
@@ -52,13 +52,13 @@ function Get-NetUDPEndpoint {
   [CmdletBinding()]
   param([int]$LocalPort)
   if($LocalPort -notin @(19132,19133,19134)){throw 'unexpected UDP request'}
-  if($script:fixture -eq 'all_sockets_missing'){return}
+  if($global:velocityFixtureMode -eq 'all_sockets_missing'){return}
   $id=$LocalPort-19132
   return [pscustomobject]@{OwningProcess=(4101+$id*10)}
 }
 
 function Probe([string]$mode){
-  $script:fixture=$mode
+  $global:velocityFixtureMode=$mode
   $raw=@(& $probe)
   if($raw.Count -ne 1){throw "Unexpected stdout count for $mode"}
   $json=([string]$raw[0] | ConvertFrom-Json -ErrorAction Stop)
