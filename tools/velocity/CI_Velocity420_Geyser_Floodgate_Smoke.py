@@ -101,13 +101,22 @@ def run(plugin: pathlib.Path, profile: str) -> None:
             dest.parent.mkdir(parents=True, exist_ok=True)
             download_pinned(dest, url, sha, length, maximum)
         shutil.copyfile(plugin, root / "plugins" / "geumyi-velocity-bridge-disabled.jar")
+        # Compile a CI-only fixed-loopback protocol probe to Java 26 bytecode.
+        # It runs inside the SAME network-disabled test namespace as Velocity.
+        probe_dir = root / "probes"
+        probe_dir.mkdir()
+        subprocess.run(
+            ["javac", "-d", str(probe_dir),
+             "tools/velocity/CI_Velocity_Loopback_Probe.java"],
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20,
+        )
         # Docker isolated bridge: no host plugin path, no production mounts,
         # no outgoing network and no privileged OS capabilities.
         # Name is randomized and scoped to this runner; only this container
         # can be removed in finally, including if Docker client times out.
         container_name = "gsc452-coexistence-" + os.urandom(8).hex()
         invocation = [
-            docker, "run", "--rm", "--name", container_name,
+            docker, "run", "-d", "--rm", "--name", container_name,
             "--network", "none",
             # Docker bind mount preserves host runner UID/GID. The temporary
             # directory is 0700: matching the invoking runner avoids both
@@ -123,53 +132,81 @@ def run(plugin: pathlib.Path, profile: str) -> None:
             "eclipse-temurin:26-jre",
             "java", "-Xms128M", "-Xmx640M", "-jar", "velocity-4.2.0-30.jar",
         ]
-        docker_exit = "timeout"
+        combined = ""
+        ready = {"bridge": False, "geyser": False, "floodgate": False}
+        protocol = {"java_status": False, "raknet_pong": False}
+        docker_exit = "not_started"
         try:
-            try:
-                p = subprocess.run(invocation, capture_output=True, text=True, timeout=65)
-                docker_exit = str(p.returncode)
-                combined = p.stdout[-300000:] + p.stderr[-300000:]
-            except subprocess.TimeoutExpired as ex:
-                combined = (ex.stdout or b"").decode("utf8", errors="replace") if isinstance(ex.stdout, bytes) else (ex.stdout or "")
-                combined += (ex.stderr or b"").decode("utf8", errors="replace") if isinstance(ex.stderr, bytes) else (ex.stderr or "")
+            spawned = subprocess.run(
+                invocation, capture_output=True, text=True, timeout=25,
+            )
+            docker_exit = str(spawned.returncode)
+            if spawned.returncode != 0:
+                raise RuntimeError("disposable Docker runtime failed to start")
+            # Docker run -d returns immediately; only the CI-owned child JVM
+            # is visible, in a private --network none namespace.
+            deadline = time.monotonic() + 40
+            while time.monotonic() < deadline:
+                capture = subprocess.run(
+                    [docker, "logs", "--tail", "600", container_name],
+                    capture_output=True, text=True, timeout=10,
+                )
+                combined = (capture.stdout + capture.stderr)[-300000:]
+                ready = {
+                    "bridge": BRIDGE_MARKER in combined,
+                    "geyser": regex_loaded(combined, "geyser"),
+                    "floodgate": regex_loaded(combined, "floodgate"),
+                }
+                if all(ready.values()):
+                    # Let the same JVM finish any asynchronous socket binds.
+                    time.sleep(1.5)
+                    break
+                inspect = subprocess.run(
+                    [docker, "inspect", "--format", "{{.State.Running}}", container_name],
+                    capture_output=True, text=True, timeout=6,
+                )
+                if inspect.returncode != 0 or inspect.stdout.strip() != "true":
+                    break
+                time.sleep(0.75)
+            if not all(ready.values()):
+                classes = sorted(set(re.findall(
+                    r"\b[A-Z][A-Za-z0-9]*(?:Exception|Error)\b", combined
+                )))[:10]
+                print("ISOLATED COEXISTENCE UNVERIFIED:", ready,
+                      "docker_exit:", docker_exit,
+                      "log_bytes:", len(combined),
+                      "error_classes:", classes, file=sys.stderr)
+                raise RuntimeError("disposable plugins did not all initialize")
+
+            # Execute probe from the SAME isolated Java container. No port is
+            # published and no real user/backend address is accepted.
+            attempt = subprocess.run(
+                [docker, "exec", "--user", f"{os.getuid()}:{os.getgid()}",
+                 "--workdir", "/work", container_name,
+                 "java", "-cp", "/work/probes", "CI_Velocity_Loopback_Probe"],
+                capture_output=True, text=True, timeout=20,
+            )
+            protocol = {
+                "java_status": "DISPOSABLE_JAVA_STATUS_RESPONSE=PASS" in attempt.stdout,
+                "raknet_pong": "DISPOSABLE_BEDROCK_RAKNET_PONG=PASS" in attempt.stdout,
+            }
+            if attempt.returncode != 0 or not all(protocol.values()):
+                print("DISPOSABLE ENDPOINTS UNVERIFIED:", protocol,
+                      "probe_exit:", attempt.returncode, file=sys.stderr)
+                raise RuntimeError("loopback Java status/RakNet response test failed")
         finally:
+            # Only this script's uniquely named disposable CI container.
             subprocess.run(
                 [docker, "rm", "-f", container_name],
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 timeout=15, check=False,
             )
-        # Do not echo runtime log, generated Floodgate keys, user names, paths.
-        ready = {
-            "bridge": BRIDGE_MARKER in combined,
-            "geyser": regex_loaded(combined, "geyser"),
-            "floodgate": regex_loaded(combined, "floodgate"),
-        }
-        if not all(ready.values()):
-            # Sanitize CI diagnostics: do not print generated Floodgate key
-            # material, plugin configs, file paths, IPs or raw JVM logs.
-            classes = sorted(set(re.findall(
-                r"\b[A-Z][A-Za-z0-9]*(?:Exception|Error)\b", combined
-            )))[:10]
-            patterns = {
-                "docker_daemon_error": "Error response from daemon" in combined,
-                "missing_image": "Unable to find image" in combined,
-                "java_access_error": "Unable to access jarfile" in combined,
-                "failed_plugin": bool(re.search(r"(?i)(failed to load|could not load|plugin load failed)", combined)),
-                "bind_error": bool(re.search(r"(?i)(failed to bind|address already in use)", combined)),
-                "missing_network": bool(re.search(r"(?i)(unknownhostexception|network is unreachable)", combined)),
-            }
-            print("ISOLATED COEXISTENCE NOT VERIFIED:", ready,
-                  "docker_exit:", docker_exit,
-                  "log_bytes:", len(combined),
-                  "error_classes:", classes,
-                  "error_categories:", patterns,
-                  file=sys.stderr)
-            raise RuntimeError("test bootstrap did not confirm every plugin; production remains blocked")
         print(
             "ISOLATED COEXISTENCE STARTUP PASS: profile=" + profile
             + ", SHA256-pinned Velocity 4.2.0/30 + Geyser " + version + "/" + build
             + " + Floodgate 2.2.5/141 + disabled Geumyi bridge."
         )
+        print("ISOLATED PUBLIC ENDPOINT PROBES PASS: Java status 25577 and RakNet unconnected PONG 19132, no login.")
         print("No external network or production resources. No player login, resourcepack or stop/restart test.")
 
 
