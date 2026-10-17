@@ -23,7 +23,8 @@ set "RET=%ERRORLEVEL%"
 if not "%RET%"=="0" (
   echo [BLOCKED] Cloud upload NOT confirmed. Leave any partial folder unchanged.
 ) else (
-  echo [MOUNT COPY PASS] Google remote state and download still unverified.
+  echo [EXIT 0 ONLY] Verify actual P0_G_MOUNT_COPY_HASH_VERIFIED=23 and P0_G_MOUNT_COPY_COMPLETE=true above.
+  echo Without BOTH P0 lines, count as NOT COPIED. Google remote still unverified.
 )
 echo.
 echo Send only P0_ result lines; do NOT send password, config or archive.
