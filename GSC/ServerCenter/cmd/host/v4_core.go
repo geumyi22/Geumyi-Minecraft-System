@@ -167,6 +167,7 @@ func registerV4Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v4/network/player-location", loopbackOnly(apiV4PlayerLocation))
 	mux.HandleFunc("/api/v4/network/server-state", loopbackOnly(apiV4NetworkServerState))
 	mux.HandleFunc("/api/v4/network/entry-status", requireAuth(apiV4NetworkEntryStatus))
+	mux.HandleFunc("/api/v4/velocity/status", requireAuth(apiV4VelocityStatus))
 	mux.HandleFunc("/api/v4/inventory", requireAuth(apiV4Inventory))
 	mux.HandleFunc("/api/v4/companion/sync", requireAuth(apiV4CompanionSync))
 	mux.HandleFunc("/api/v4/maintain/toggle", requireAuth(apiV4MaintainToggle))
