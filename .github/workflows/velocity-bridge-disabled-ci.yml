@@ -83,3 +83,12 @@ jobs:
             throw 'synthetic fingerprint collector contract failed'
           }
           Write-Host 'Read-only synthetic version collector 3/3 PASS (NOT REAL HOST)'
+      - name: Attach operator-only read-only version kit (not a release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-Velocity-Compatibility-READ-ONLY
+          path: |
+            tools/velocity/Run_Velocity_Compatibility_READ_ONLY.cmd
+            tools/velocity/Velocity_Compatibility_READ_ONLY.ps1
+          if-no-files-found: error
+          retention-days: 7
