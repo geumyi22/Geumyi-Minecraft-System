@@ -136,16 +136,13 @@ func apiV4VelocityControlPreflight(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 	defer cancel()
-	cmd := velocityInventoryCommand(ctx)
-	raw, err := cmd.Output()
-	if err != nil {
-		// Keep system error text and paths private.
-		http.Error(w, "Velocity read-only process inventory unavailable", http.StatusServiceUnavailable)
+	info, err := queryVelocityReadOnlyInventory(ctx)
+	if errors.Is(err, errVelocityReadOnlyBusy) {
+		http.Error(w, "Velocity read-only inspection busy", http.StatusTooManyRequests)
 		return
 	}
-	info, err := decodeVelocityInventory(raw)
 	if err != nil {
-		http.Error(w, "Velocity preflight inventory invalid", http.StatusBadGateway)
+		http.Error(w, "Velocity preflight inventory unavailable or invalid", http.StatusServiceUnavailable)
 		return
 	}
 	var tcpPort, udpPort int
