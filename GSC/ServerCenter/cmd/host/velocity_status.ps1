@@ -102,7 +102,7 @@ foreach ($item in $out) {
 }
 if (@($udpUnique | Select-Object -Unique).Count -ne 3) { $allLeafOwners = $false }
 if ($allLeafOwners) {
-  foreach ($item in $out) { $item.udp_owner_matches_velocity_child = $true }
+  foreach ($item in $out) { $item['udp_owner_matches_velocity_child'] = $true }
 }
 [ordered]@{
   schema=1; read_only=$true; process_pair_census_consistent=[bool]$pairConsistent
