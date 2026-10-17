@@ -67,10 +67,20 @@ func decodeVelocityInventory(raw []byte) (velocityInventory, error) {
 			item.JavaPort != expected[i].tcp || item.BedrockPort != expected[i].udp {
 			return inventory, errors.New("unexpected Velocity inventory target")
 		}
+		if item.UDPOwnerMatchesVelocityChild && !inventory.UDPThreeUniqueChildOwners {
+			return inventory, errors.New("Velocity child owner claimed without fleet census")
+		}
+		if item.Status == "tcp_inventory_missing_udp_child_verified" &&
+			(!inventory.UDPThreeUniqueChildOwners || !item.UDPOwnerMatchesVelocityChild ||
+			 !item.BedrockListening || item.JavaListening ||
+			 !item.TaskPresent || !item.TaskMatchesBaseline || item.TaskState != "Running") {
+			return inventory, errors.New("inconsistent TCP telemetry gap evidence")
+		}
 		switch item.Status {
 		case "task_missing_or_duplicate", "task_config_drift", "offline_or_starting",
 			"ports_ready_owner_unverified", "ports_partial_or_conflicting", "unverified",
-			"task_not_running_unverified", "socket_inventory_missing":
+			"task_not_running_unverified", "socket_inventory_missing",
+			"tcp_inventory_missing_udp_visible", "tcp_inventory_missing_udp_child_verified":
 		default:
 			return inventory, errors.New("unexpected Velocity inventory state")
 		}
