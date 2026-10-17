@@ -214,3 +214,14 @@
 - 다음 독립 검증 작업은 Google Drive 웹 다운로드 ZIP을 **해제하거나 기존 백업/서버/클라우드에 쓰지 않고** ZIP의 23개 암호문을 원본 P0 로컬 암호문과 SHA256 모두 비교하고, ZIP 안의 파일을 직접 AES-256-GCM으로 재복호화 인증하는 것. 암호 입력/인증은 서버 PC 로컬에서만 처리하고 키/평문은 GitHub/채팅에 공유하지 않는다.
 - 프로토타입 `p0_google_web_download_verify.go`는 Go1.23.2 Linux 로컬 `go build`, `go vet`, Python AESGCM로 생성한 동일 형식 **정확히 81,413바이트 가짜 백업 ZIP의 flat/nested 2형태 정상 복호화 PASS**. 틀린 암호, 타이퍼/변조, 추가·누락·중복, 트래버설, 다운로드 폴더 이탈, 로컬 원본 변경은 FAIL CLOSED. Windows/amd64 cross-compile 성공; **Windows 운영 PC에서 실 ZIP을 실행한 것은 아님**.
 - 독립 웹 ZIP 검증 PASS가 실제 호스트에서 확인되어도 **실제 설정 파일 평문 추출, 별도 격리 머신에서 서비스 기동 및 월드/플러그인 P1 백업, Stable 릴리스**는 별도 미완료 게이트 유지.
+
+## 2026-10-17 P0 격리 임시 평문 복원 리허설 — 명시 승인 및 안전 게이트
+
+- 사용자: Google Drive 웹 ZIP 23개, AES-GCM 20개, 다운로드본 독립 검증 `P0_WEB_DOWNLOADED_ZIP_VERIFY_PASS` / `P0_ZIP_CIPHERTEXT_SHA256_MATCH=23` / `P0_WEB_ZIP_AES_GCM_DECRYPT_VERIFIED=20` / `P0_EXTRACTED_PLAINTEXT_FILES=0` / `P0_LIVE_SERVICE_RESTORE_VERIFIED=false` / `P0_STABLE_RELEASE_ALLOWED=false`를 운영자 Windows PC 출력으로 제출.
+- 사용자 `ㅇㅇ` 승인: **실제 서버와 격리된 보호된 임시 로컬 폴더에 P0 파일을 잠시 복원해 파일별 읽기·SHA256 검사 후 임시 평문 안전 정리**. **운영 설정 적용/재시작/중지, 기존 다른 백업 삭제, Stable 릴리스, PR 병합은 미승인**.
+- 격리 복원 Go 시험 구현: Google 웹 ZIP 23개 암호문을 기존 로컬 암호화본과 전부 비교하고, AES-256-GCM 20개를 복호화해 새 임시 폴더의 원래 상대경로에 `O_EXCL`로 쓰고 즉시 디스크에서 재읽기 SHA256 검증 후 생성한 항목만 비재귀 명시 목록으로 제거. 프로세스 실패 중단에도 `defer` 정리. 클라우드/원본 서버 원본에는 쓰지 않음.
+- 합성 테스트(`go build`, `go vet`, Windows/amd64 크로스빌드)에서 81,413바이트 가짜 암호화 백업 flat/nested ZIP의 20개 복원·디스크 재읽기·파일/디렉터리 정리 PASS. 잘못된 암호, 변경된 암호문, 23개 외 파일, ZIP 트래버설, 중복, 다운로드 경로 이탈, 원본 변경, 비어 있지 않은 타깃은 거부; **여러 파일 복원 뒤 프록시 공유키 그룹 불일치로 중단해도 임시 평문 정리됨**을 합성 테스트로 확인.
+- Windows 대상 보호 조건: 사용자가 오프라인 복구 암호를 로컬 화면에서만 입력, 로컬 `%LOCALAPPDATA%` 직속 새 난수 폴더에 Windows SID 현재 사용자 + SYSTEM 외 접근 거부 ACL 생성 (상속 해제). 실행 종료 후 PowerShell이 전용 폴더만 검사 후 삭제하고 삭제 검증이 안 되면 PASS 금지. **SSD 삭제는 물리적 보안 소거가 아니며 백그라운드 AV/페이지파일/크래시덤프 사본은 보장하지 않는다.**
+- **실제 Windows PS5.1 ACL 생성/삭제는 아직 운영 PC에서 확인하지 않았다**. 먼저 별도 `Geumyi-Day12-P0-ISOLATED-ACL-DRYRUN-v1.zip`의 **빈 임시 폴더만** 생성·삭제하는 사전검사 PASS를 사용자에게 요청. 사전검사 도구 ZIP에는 **Go 복원 실행 바이너리를 포함하지 않으므로** 실설정 평문 쓰기는 불가능.
+- **현재 단계는 실서버 임시 복원 PASS 아님**. 리허설은 Windows ACL 사전검사 PASS 이후 안전 게이트를 통과해야 실제 실행 ZIP을 인계한다.
+
