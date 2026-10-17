@@ -78,6 +78,7 @@ foreach ($item in $items) {
   elseif ($taskState -ne 'Running') { $state = 'task_not_running_unverified' }
   elseif ($tcp.Count -eq 0 -and $udp.Count -eq 0) { $state = 'socket_inventory_missing' }
   elseif ($tcp.Count -eq 0 -and $udp.Count -gt 0) { $state = 'tcp_inventory_missing_udp_visible' }
+  elseif ($udp.Count -eq 0 -and $tcp.Count -gt 0) { $state = 'udp_inventory_missing_tcp_visible' }
   elseif ($ownersMatch) { $state = 'ports_ready_owner_unverified' }
   else { $state = 'ports_partial_or_conflicting' }
   $out += [ordered]@{
