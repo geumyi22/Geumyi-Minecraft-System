@@ -1,0 +1,141 @@
+name: Day12 P0 Independent Offline Verify
+
+on:
+  pull_request:
+    paths:
+      - 'tools/day12/cloud/p0_offline_archive_verify.go'
+      - 'tools/day12/cloud/Test_P0_Offline_Verify_Interop_CI.ps1'
+      - 'tools/day12/cloud/Day12_P0_Offline_Verify_READ_ONLY.ps1'
+      - 'tools/day12/cloud/RUN_Day12_P0_Offline_Verify_READ_ONLY.cmd'
+      - 'tools/day12/cloud/README-Day12-P0-OFFLINE-VERIFY-KO.txt'
+      - '.github/workflows/day12-p0-independent-offline-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  disposable-interop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.x'
+          cache: false
+      - name: Go source parse/format/vet
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $p='tools/day12/cloud/p0_offline_archive_verify.go'
+          $source=Get-Content -LiteralPath $p -Raw -Encoding UTF8
+          foreach($guard in @('LOCAL_PRIVATE_ARCHIVE_ONLY','ARCHIVE_OUTSIDE_VERIFIED_PRIVATE_STAGING',
+            'AEAD_AUTHENTICATION_FAILED','P0_TOTAL_SIZE_LIMIT_EXCEEDED',
+            'MANIFEST_EXACT_FILE_CONTRACT_FAILED','CAPTURED_THREE_PROXY_KEYS_DIFFER',
+            'P0_OFFLINE_VERIFY_PASS','P0_PLAINTEXT_FILES_WRITTEN=false',
+            'P0_APPLICATION_RESTORE_NOT_VERIFIED')){
+            if(-not $source.Contains($guard)){throw ('OFFLINE_VERIFIER_GUARD_MISSING_'+$guard)}
+          }
+          if($source -match '(?i)net/http|exec\.Command|os\.WriteFile|os\.Create\(|os\.Remove'){
+            throw 'UNEXPECTED_VERIFIER_NETWORK_OR_DISK_WRITE_OPCODE'
+          }
+          & gofmt -w $p
+          if($LASTEXITCODE -ne 0){throw 'OFFLINE_VERIFIER_PARSE_FAILED'}
+          $env:GO111MODULE='off'
+          & go vet $p
+          if($LASTEXITCODE -ne 0){throw 'OFFLINE_VERIFIER_GO_VET_FAILED'}
+          $global:LASTEXITCODE=0
+      - name: Synthetic writer to separate verifier interoperability
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          & pwsh -NoProfile -File tools/day12/cloud/Test_P0_Offline_Verify_Interop_CI.ps1
+          if($LASTEXITCODE -ne 0){throw 'DISPOSABLE_INTEROP_TEST_FAILED'}
+          $global:LASTEXITCODE=0
+      - name: Scope declaration
+        shell: pwsh
+        run: |
+          @'
+          20 synthetic local inputs only; no live servers or cloud access.
+          Independent reader validates existing archive in memory and writes
+          no recovered plaintext files; must reject wrong password, tamper,
+          truncated or extra item; the original encrypted fixture remains intact.
+          Production backup freshness, cloud upload/download and service boot
+          restore remain UNKNOWN.
+          '@ >> $env:GITHUB_STEP_SUMMARY
+
+  windows-operator-kit:
+    needs: disposable-interop
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.x'
+          cache: false
+      - name: Parse operator PowerShell and confirm no extraction
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $p='tools/day12/cloud/Day12_P0_Offline_Verify_READ_ONLY.ps1'
+          $tok=$null;$err=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p).Path,[ref]$tok,[ref]$err)
+          if(@($err).Count){throw 'OFFLINE_VERIFY_OPERATOR_PS_PARSE_FAILED'}
+          $s=Get-Content -LiteralPath $p -Raw -Encoding UTF8
+          foreach($needle in @('Read-Host','-AsSecureString','LOCAL_CAPTURE_VERIFIED.txt',
+            'Geumyi-P0-Encrypted-Staging','P0_OFFLINE_VERIFY_PASS','--verify')){
+            if(-not $s.Contains($needle)){throw ('MISSING_SAFE_OPERATOR_GUARD_'+$needle)}
+          }
+          if($s -match '(?i)Set-Content|WriteAllBytes|Copy-Item|Remove-Item|Start-Process|Get-ScheduledTask|Invoke-WebRequest'){
+            throw 'OFFLINE_OPERATOR_FORBIDDEN_OPCODE'
+          }
+      - name: Build and package exact Windows read-only kit
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP ('p0-offline-readonly-'+[guid]::NewGuid().ToString('N'))
+          [void](New-Item -ItemType Directory -Path $dir)
+          $env:GOOS='windows';$env:GOARCH='amd64';$env:CGO_ENABLED='0'
+          $bin=Join-Path $dir 'p0-offline-verify.exe'
+          & go build -trimpath -ldflags="-s -w" -o $bin tools/day12/cloud/p0_offline_archive_verify.go
+          if($LASTEXITCODE -ne 0){throw 'OFFLINE_WINDOWS_BINARY_BUILD_FAILED'}
+          $names=@('Day12_P0_Offline_Verify_READ_ONLY.ps1',
+            'RUN_Day12_P0_Offline_Verify_READ_ONLY.cmd',
+            'README-Day12-P0-OFFLINE-VERIFY-KO.txt')
+          foreach($n in $names){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12/cloud' $n) -Destination $dir
+          }
+          $sha='${{ github.event.pull_request.head.sha || github.sha }}'
+          $meta=[ordered]@{tool='DAY12_P0_OFFLINE_VERIFY_READ_ONLY_V1';
+            source_head=$sha;tests='SYNTHETIC_WINDOWS_AND_LINUX';
+            no_plaintext_files=$true;no_cloud_upload=$true;files=@()}
+          foreach($file in @(Get-ChildItem -LiteralPath $dir -File)){
+            $meta.files+=@{name=$file.Name;sha256=(Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
+          }
+          $meta|ConvertTo-Json -Depth 7|Set-Content -LiteralPath (Join-Path $dir 'BUILD-INFO-P0-OFFLINE-VERIFY.json') -Encoding UTF8
+          $output='Geumyi-Day12-P0-OFFLINE-VERIFY-READ-ONLY-v1.zip'
+          Compress-Archive -Path (Join-Path $dir '*') -DestinationPath $output -ErrorAction Stop
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $z=[IO.Compression.ZipFile]::OpenRead((Resolve-Path $output).Path)
+          try {
+            $got=@($z.Entries|ForEach-Object{$_.FullName}|Sort-Object)
+            $want=@('p0-offline-verify.exe','BUILD-INFO-P0-OFFLINE-VERIFY.json')+$names
+            if(Compare-Object $got @($want|Sort-Object)){throw 'OFFLINE_KIT_INVENTORY_MISMATCH'}
+          } finally {$z.Dispose()}
+          Write-Host ('OFFLINE_VERIFY_ZIP_SHA256='+(Get-FileHash -LiteralPath $output -Algorithm SHA256).Hash.ToLowerInvariant())
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-p0-independent-offline-verify-v1
+          path: Geumyi-Day12-P0-OFFLINE-VERIFY-READ-ONLY-v1.zip
+          if-no-files-found: error
+          retention-days: 30

@@ -11,6 +11,7 @@ $ErrorActionPreference="Stop"
 $phase="12.7-offline-start-readiness"
 $target="playground"
 $base="http://127.0.0.1:8790"
+$supportedHostVersions=@("4.3.8","4.5.1")
 $now=(Get-Date).ToString("o")
 if(-not $OutputDir){
   $OutputDir=Join-Path ([Environment]::GetFolderPath("Desktop")) (
@@ -31,9 +32,9 @@ function Is-ProtectedFullBackup([object]$b) {
 function Evaluate([object]$Snapshot,[object]$Fleet,[object]$Players,[object]$Backups,[bool]$HostRunning){
   $issues=New-Object System.Collections.ArrayList
   if(-not $HostRunning){[void]$issues.Add("HOST_SERVICE_NOT_RUNNING")}
-  if($null -eq $Snapshot -or
-     [string](Value $Snapshot "gsc_version" "") -ne "4.3.8"){
-    [void]$issues.Add("HOST_VERSION_NOT_CONFIRMED_4_3_8")
+  $reportedHostVersion=[string](Value $Snapshot "gsc_version" "")
+  if($reportedHostVersion -notin $supportedHostVersions){
+    [void]$issues.Add("HOST_VERSION_UNSUPPORTED_OR_UNVERIFIED")
   }
   $jobs=Value $Snapshot "active_jobs" $null
   if($null -eq $jobs -or [int]$jobs -ne 0){[void]$issues.Add("ACTIVE_JOBS_PRESENT_OR_UNKNOWN")}
@@ -73,7 +74,10 @@ function Evaluate([object]$Snapshot,[object]$Fleet,[object]$Players,[object]$Bac
     result=$(if($noIssues){"PRECHECK_GUARDS_MET_NO_TEST_PERFORMED"}else{"BLOCKED_NEEDS_SAFETY_REVIEW"})
     reasons=@($issues)
     host_service_running=$HostRunning
-    expected_host_version_confirmed=([string](Value $Snapshot "gsc_version" "") -eq "4.3.8")
+    host_version_supported=($reportedHostVersion -in $supportedHostVersions)
+    host_version_label=$(if($reportedHostVersion -in $supportedHostVersions){$reportedHostVersion}else{"UNVERIFIED_OR_UNSUPPORTED"})
+    accepted_host_version_family="4.3.8_OR_4.5.1"
+    expected_host_version_confirmed=($reportedHostVersion -in $supportedHostVersions)
     active_jobs_zero=($null -ne $jobs -and [int]$jobs -eq 0)
     target_profile_unique=($targetProfiles.Count -eq 1)
     target_online=$online
@@ -105,7 +109,8 @@ function Save-Report([object]$Review,[bool]$SyntheticFlag){
     stable_release_allowed=$false
     remarks=@(
       "A readiness result is not evidence of real offline startup or Geyser/Paper behavior.",
-      "GSC snapshot, update fleet, target online player count and full backup are queried using local authenticated policy GET only.",
+      "GSC snapshot, update fleet, target online player count and full backup are queried using local read-only GET only. If GSC is configured to require credentials for localhost reads, HTTP 401 is reported as blocked; no secrets are requested.",
+      "An actual host startup is not triggered by this readiness check; managed updater policy remains a hard stop unless separately staged and rollback-tested.",
       "No API credentials or response bodies, hostnames, IP addresses, backup filenames, player identities or PIDs are exported.",
       "A managed updater may change plugins on a future startup even when current update status is current.",
       "Never disable network adapters or alter firewall/ACL to force an outage as part of this preflight.",
@@ -160,6 +165,14 @@ if($Synthetic){
   }
   if((Evaluate $snap $fleet $players $backup $false).result -ne "BLOCKED_NEEDS_SAFETY_REVIEW"){
     throw "SYNTHETIC_HOST_SERVICE_FALSE_READY"
+  }
+  $newVersion=Evaluate ([pscustomobject]@{gsc_version="4.5.1";active_jobs=0}) $fleet $players $backup $true
+  $unknownVersion=Evaluate ([pscustomobject]@{gsc_version="5.99.99";active_jobs=0}) $fleet $players $backup $true
+  if($newVersion.result -ne "PRECHECK_GUARDS_MET_NO_TEST_PERFORMED" -or
+     -not $newVersion.host_version_supported -or
+     $unknownVersion.result -ne "BLOCKED_NEEDS_SAFETY_REVIEW" -or
+     $unknownVersion.host_version_supported){
+    throw "SYNTHETIC_HOST_VERSION_ALLOWLIST_REGRESSION"
   }
   $report=Evaluate $snap $fleet $players $backup $true
   Save-Report $report $true

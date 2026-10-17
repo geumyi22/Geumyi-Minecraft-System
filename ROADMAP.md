@@ -1,5 +1,7 @@
 # Geumyi Minecraft System — 작업 로드맵
 
+> **2026-10-13 최신 운영·개발 분리:** [Day1~12 상세 통합 현황](docs/PROJECT-DAY1-12-MASTER-STATUS-20261013.md) · [저장소 지도](docs/REPOSITORY-MAP-20261013.md) · [Day12 최종 Stable 진행](docs/day12/DAY12-STABLE-FAST-TRACK-20261013.md). Day12 **소규모 운영 마감**과 **최종 자동 서명 Stable 검증 미완료**는 양립합니다. 현재 Other Paper는 운영자가 **의도적으로 OFFLINE**이라고 확인했습니다. 과거 Day10 Other E2E PASS가 지금 ONLINE임을 의미하지는 않습니다.
+
 기준일: 2026-10-11 (Day 12 종료 상태 갱신)
 
 > **일차 번호와 상태의 단일 기준은 [DAY-TIMELINE.md](DAY-TIMELINE.md)입니다.**

@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"geumyi/servercenter/internal/localsession"
 	"geumyi/servercenter/internal/securestore"
 	"io"
 	"net"
@@ -184,6 +185,7 @@ var (
 	clientUpdateApplyMu  sync.Mutex
 	clientUpdateApplying bool
 	cfgPath, localURL    string
+	clientGate           *localsession.Gate
 	mainHWND, iconH      uintptr
 	lastTrayOpen         time.Time
 	clientHTTPServer     *http.Server
@@ -224,10 +226,16 @@ func main() {
 	cfg = loadClientConfig(cfgPath)
 	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", localPort))
 	if err != nil {
-		openAppWindow(fmt.Sprintf("http://127.0.0.1:%d/", localPort))
+		// Another Client instance owns the UI port: ask it to open a window
+		// (it mints the session launch code). Fall back to the plain URL,
+		// which shows the "open from tray" page if no session exists yet.
+		if !signalRunningClientOpenWindow() {
+			openAppWindow(fmt.Sprintf("http://127.0.0.1:%d/", localPort))
+		}
 		return
 	}
 	localURL = fmt.Sprintf("http://127.0.0.1:%d", localPort)
+	clientGate = localsession.New(localPort, "/client/open-window")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveDashboard)
 	mux.HandleFunc("/client/config", clientConfigAPI)
@@ -239,8 +247,12 @@ func main() {
 		_, _ = w.Write(appIcon)
 	})
 	mux.HandleFunc("/api/", proxyAPI)
+	mux.HandleFunc("/client/open-window", clientOpenWindowAPI)
 	clientHTTPServer = &http.Server{
-		Handler:           mux,
+		// Session gate: only windows this Client opened (launch code -> HttpOnly
+		// SameSite=Strict cookie) may use the token-carrying /api proxy and
+		// /client/config. Host header and Origin are also enforced.
+		Handler:           clientGate.Wrap(mux),
 		ReadHeaderTimeout: 5 * time.Second,
 		IdleTimeout:       30 * time.Second,
 		MaxHeaderBytes:    1 << 20,
@@ -847,6 +859,8 @@ func proxyAPI(w http.ResponseWriter, r *http.Request) {
 	orig := p.Director
 	p.Director = func(req *http.Request) {
 		orig(req)
+		// The local session cookie never leaves this PC.
+		localsession.StripForUpstream(req.Header)
 		if cfg.Token != "" {
 			req.Header.Set("Authorization", "Bearer "+cfg.Token)
 		}
@@ -1132,7 +1146,33 @@ func openDashboard(section string) {
 	if section == "" {
 		section = "dashboard"
 	}
-	openAppWindow(localURL + "/#" + section)
+	if clientGate == nil {
+		openAppWindow(localURL + "/#" + section)
+		return
+	}
+	openAppWindow(clientGate.LaunchURL(section))
+}
+
+// clientOpenWindowAPI lets a second Client instance (a local program, no Origin)
+// ask this one to open a dashboard window. The launch code goes straight to the
+// browser command line and is never returned to the caller.
+func clientOpenWindowAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "POST required", http.StatusMethodNotAllowed)
+		return
+	}
+	go openDashboard("dashboard")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func signalRunningClientOpenWindow() bool {
+	c := &http.Client{Timeout: 3 * time.Second}
+	resp, err := c.Post(fmt.Sprintf("http://127.0.0.1:%d/client/open-window", localPort), "application/json", strings.NewReader("{}"))
+	if err != nil {
+		return false
+	}
+	_ = resp.Body.Close()
+	return resp.StatusCode == http.StatusNoContent
 }
 func openAppWindow(u string) {
 	candidates := []string{filepath.Join(os.Getenv("ProgramFiles(x86)"), "Microsoft", "Edge", "Application", "msedge.exe"), filepath.Join(os.Getenv("ProgramFiles"), "Microsoft", "Edge", "Application", "msedge.exe")}

@@ -1,0 +1,64 @@
+name: Day12 Cloud Disposable Encryption and Restore Proof
+
+on:
+  pull_request:
+    paths:
+      - 'tools/day12/cloud/disposable_crypto_roundtrip.go'
+      - '.github/workflows/day12-cloud-disposable-encryption-restore.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-encrypted-chunk-roundtrip:
+    name: Synthetic-only authenticated chunks / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.x'
+          cache: false
+      - name: Refuse production arguments and run disposable crypto/restore fixtures
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tool = 'tools/day12/cloud/disposable_crypto_roundtrip.go'
+          if(-not (Test-Path -LiteralPath $tool)){throw 'MISSING_DISPOSABLE_FIXTURE'}
+          $source = Get-Content -LiteralPath $tool -Raw -Encoding UTF8
+          foreach($marker in @(
+              'os.MkdirTemp', 'DISPOSABLE_FIXTURE_REFUSES_ARGUMENTS_OR_OPERATOR_PATHS',
+              'no_cloud_upload=true', 'no_production_source_read=true',
+              'CIPHERTEXT_TAMPER','TRUNCATION','MISSING_PART','WRONG_KEY',
+              'MANIFEST_TAMPER','TRAVERSAL','EXTRA_PART')){
+            if(-not $source.Contains($marker)){throw ('FIXTURE_GUARD_MISSING_'+$marker)}
+          }
+          $output = @(& go run $tool)
+          if($LASTEXITCODE -ne 0 -or
+            ($output | Out-String) -notmatch '^DAY12_CRYPTO_DISPOSABLE_ROUNDTRIP_PASS'){
+            $output | ForEach-Object {Write-Host $_}
+            throw 'AUTHENTICATED_CHUNK_RESTORE_FIXTURE_FAILED'
+          }
+          $output | ForEach-Object {Write-Host $_}
+          $global:LASTEXITCODE = 0
+      - name: Record scope — never claim live or cloud evidence
+        shell: pwsh
+        run: |
+          @'
+          ## Day12 disposable authenticated encrypted-archive evidence
+          - Synthetic input only; random ephemeral fixture key; no user data, Minecraft world, GSC configuration or credential read
+          - Bounded AES-256-GCM chunks and domain-separated HMAC authenticated manifest verified
+          - Original bytes reconstructed from encrypted parts
+          - Corrupted/truncated/missing/extra part, wrong key, tampered manifest and traversal path rejected
+          - All test data generated under OS disposable temp and cleaned up
+          - **Not proven**: live world consistency, production backup, Google Drive/OneDrive upload/remote download, actual cloud quota, operator key recovery, restoration of a real Paper/GSC service
+          - No permission to update Final Stable release gates
+          '@ >> $env:GITHUB_STEP_SUMMARY

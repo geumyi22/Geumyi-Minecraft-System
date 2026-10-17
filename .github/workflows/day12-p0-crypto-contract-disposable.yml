@@ -1,0 +1,73 @@
+name: Day12 P0 Crypto Contract Disposable
+
+on:
+  pull_request:
+    paths:
+      - 'tools/day12/cloud/disposable_crypto_roundtrip.go'
+      - 'tools/day12/cloud/p0_crypto_contract_disposable.go'
+      - '.github/workflows/day12-p0-crypto-contract-disposable.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-p0-only:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.x'
+          cache: false
+      - name: P0 file-selection/secret guard and fake encrypted restore
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $base='tools/day12/cloud'
+          $fixture=Join-Path $base 'disposable_crypto_roundtrip.go'
+          $contract=Join-Path $base 'p0_crypto_contract_disposable.go'
+          foreach($file in @($fixture,$contract)){
+            if(-not(Test-Path -LiteralPath $file)){throw 'P0_FIXTURE_MISSING'}
+          }
+          $source=Get-Content -LiteralPath $contract -Raw -Encoding UTF8
+          foreach($needle in @(
+            '//go:build ignore','allowedP0Name','validateP0Input',
+            'cross-proxy key mismatch','P0_NEGATIVE_CASE_ACCEPTED',
+            'DAY12_P0_CRYPTO_CONTRACT_DISPOSABLE_PASS',
+            'no_real_source_access=true','no_cloud_upload=true',
+            'no_operator_secrets=true','no_production_backup=true')){
+            if(-not $source.Contains($needle)){throw ('P0_FIXTURE_GUARD_MISSING_'+$needle)}
+          }
+          $out=@(& go run $fixture $contract)
+          if($LASTEXITCODE -ne 0){
+            $out|ForEach-Object {Write-Host $_}
+            throw 'P0_GO_DISPOSABLE_FAILED'
+          }
+          $txt=$out -join [Environment]::NewLine
+          if($txt -notmatch 'DAY12_P0_CRYPTO_CONTRACT_DISPOSABLE_PASS' -or
+             $txt -notmatch 'DAY12_CRYPTO_DISPOSABLE_ROUNDTRIP_PASS'){
+            throw 'P0_CI_SUCCESS_MARKERS_MISSING'
+          }
+          $out|ForEach-Object {Write-Host $_}
+          $global:LASTEXITCODE=0
+      - name: Explicitly deny production/cloud claims
+        shell: pwsh
+        run: |
+          @'
+          Day12 P0 synthetic contract: 4 fake Paper server.properties,
+          3 fake Velocity config+forwarding/floodgate keys and 1 fake GSC config.
+          Test also includes missing/mismatched keys, disallowed world files,
+          traversal, symlink extraction, tamper/wrong-key/extra-part cases.
+          This is NOT a real encrypted production backup, Windows operator backup
+          tool, Google Drive upload, independent download, or live restore.
+          Real OneDrive source reads and dynamic P0 app-consistency remain unapproved.
+          Stable release gates unchanged.
+          '@ >> $env:GITHUB_STEP_SUMMARY

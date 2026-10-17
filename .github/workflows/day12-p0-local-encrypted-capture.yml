@@ -1,0 +1,159 @@
+name: Day12 P0 Local Encrypted Capture
+
+on:
+  pull_request:
+    paths:
+      - 'tools/day12/cloud/p0_local_encrypted_capture.go'
+      - 'tools/day12/cloud/Day12_P0_Local_Encrypted_Capture.ps1'
+      - 'tools/day12/cloud/RUN_Day12_P0_Local_Encrypted_Capture.cmd'
+      - 'tools/day12/cloud/README-Day12-P0-LOCAL-ENCRYPTED-CAPTURE-KO.txt'
+      - '.github/workflows/day12-p0-local-encrypted-capture.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-crypto:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.x'
+          cache: false
+      - name: Format and static source security checks
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $p='tools/day12/cloud/p0_local_encrypted_capture.go'
+          $src=Get-Content -LiteralPath $p -Raw -Encoding UTF8
+          foreach($needle in @('P0_EXACT_SET_REQUIRED','P0_UNSAFE_OR_DUPLICATE_NAME',
+            'P0_SOURCE_ABSOLUTE_PATH_REQUIRED','RECOVERY_PASSPHRASE_LENGTH_REJECTED',
+            'SOURCE_CHANGED_DURING_READ','SOURCE_FILE_NOT_REGULAR_OR_MISSING',
+            'DESTINATION_OUTSIDE_FIXED_LOCAL_STAGING','SOURCE_READ_FAILED_OR_OVERSIZED',
+            'LOCAL_CAPTURE_VERIFIED.txt','CIPHERTEXT_AUTH_FAILED',
+            'no_cloud_upload=true','no_operator_source_read=true')){
+            if(-not $src.Contains($needle)){throw ('MISSING_P0_GUARD_'+$needle)}
+          }
+          if($src -match 'http\.|net/http|exec\.Command|os\.RemoveAll\(req\.Dest'){
+            throw 'UNEXPECTED_PRODUCTION_NETWORK_OR_CLEANUP_CODE'
+          }
+          & gofmt -w $p
+          if($LASTEXITCODE -ne 0){throw 'GO_FORMAT_OR_PARSE_FAILED'}
+          $global:LASTEXITCODE=0
+      - name: Run disposable exact-source AES-GCM capture and restore
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $p='tools/day12/cloud/p0_local_encrypted_capture.go'
+          $run=@(& go run $p --fixture)
+          if($LASTEXITCODE -ne 0 -or ($run|Out-String) -notmatch 'DAY12_P0_LOCAL_CAPTURE_DISPOSABLE_PASS'){
+            $run|ForEach-Object{Write-Host $_}
+            throw 'P0_LOCAL_AESGCM_FIXTURE_FAILED'
+          }
+          $run|ForEach-Object{Write-Host $_}
+          $global:LASTEXITCODE=0
+      - name: Run Go vet on standalone fixture file
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $env:GO111MODULE='off'
+          & go vet tools/day12/cloud/p0_local_encrypted_capture.go
+          if($LASTEXITCODE -ne 0){throw 'P0_VET_FAILED'}
+          $global:LASTEXITCODE=0
+      - name: Restrict CI claims
+        shell: pwsh
+        run: |
+          @'
+          Synthetic P0 source and fake passwords only.
+          Windows and Linux disposable round-trip does not imply production approval.
+          The real operator capture is LOCAL ONLY, no Google upload.
+          No actual OneDrive content read, production P0 backup, provider verification,
+          actual password recovery or service boot restore was performed by CI.
+          '@ >> $env:GITHUB_STEP_SUMMARY
+
+  package-windows:
+    needs: synthetic-crypto
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.x'
+          cache: false
+      - name: PowerShell parse and source boundary checks
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $base='tools/day12/cloud'
+          foreach($name in @('Day12_Cloud_Recovery_Preflight_READ_ONLY.ps1',
+            'Day12_Cloud_Recovery_Plan_READ_ONLY.ps1',
+            'Day12_P0_Local_Encrypted_Capture.ps1')){
+            $p=Join-Path $base $name
+            $tokens=$null;$errors=$null
+            [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $p).Path,[ref]$tokens,[ref]$errors)
+            if(@($errors).Count){throw ('P0_PS_PARSE_FAILED_'+$name)}
+          }
+          $script=Get-Content -LiteralPath (Join-Path $base 'Day12_P0_Local_Encrypted_Capture.ps1') -Raw
+          foreach($needle in @('Read-Host','-AsSecureString','Report-LocationIsSeparate',
+            'Get-PrivateSourceRecords','Get-ScheduledTask','Private-PathInside',
+            'Get-OneDriveCandidates','SOURCE_SELECTED_CONSENT',
+            'SOURCE_SELECTED_CONSENT')){
+            if(-not $script.Contains($needle)){throw ('P0_WRAPPER_GUARD_MISSING_'+$needle)}
+          }
+      - name: Build reproducible operator executable and exact bundle
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $source='tools/day12/cloud'
+          $dir=Join-Path $env:RUNNER_TEMP ('P0-Local-'+[guid]::NewGuid().ToString('N'))
+          [void](New-Item -ItemType Directory -Path $dir)
+          $env:GOOS='windows';$env:GOARCH='amd64';$env:CGO_ENABLED='0'
+          $exe=Join-Path $dir 'p0-local-capture.exe'
+          & go build -trimpath -ldflags="-s -w" -o $exe (Join-Path $source 'p0_local_encrypted_capture.go')
+          if($LASTEXITCODE -ne 0){throw 'P0_WINDOWS_GO_BUILD_FAILED'}
+          foreach($n in @(
+            'Day12_Cloud_Recovery_Preflight_READ_ONLY.ps1',
+            'Day12_Cloud_Recovery_Plan_READ_ONLY.ps1',
+            'Day12_P0_Local_Encrypted_Capture.ps1',
+            'RUN_Day12_P0_Local_Encrypted_Capture.cmd',
+            'README-Day12-P0-LOCAL-ENCRYPTED-CAPTURE-KO.txt')){
+            Copy-Item -LiteralPath (Join-Path $source $n) -Destination $dir -ErrorAction Stop
+          }
+          $ref = '${{ github.event.pull_request.head.sha || github.sha }}'
+          $build=[ordered]@{
+            label='DAY12_P0_LOCAL_ENCRYPTED_CAPTURE_OPERATOR'
+            git_head=$ref
+            no_cloud_upload=$true
+            no_production_ci_test=$true
+            files=@()
+          }
+          foreach($f in @(Get-ChildItem -LiteralPath $dir -File)){
+            $build.files+=@{name=$f.Name;sha256=(Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
+          }
+          $build|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $dir 'BUILD-INFO-P0-LOCAL.json') -Encoding UTF8
+          Compress-Archive -Path (Join-Path $dir '*') -DestinationPath 'Geumyi-Day12-P0-LOCAL-ENCRYPTED-v1.zip'
+          # Verify exact package inventory and fail on unexpected output.
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=[IO.Compression.ZipFile]::OpenRead((Resolve-Path 'Geumyi-Day12-P0-LOCAL-ENCRYPTED-v1.zip').Path)
+          try {
+            $actual=@($zip.Entries|ForEach-Object{$_.FullName})
+            if(@($actual).Count -ne 7){throw 'P0_OPERATOR_BUNDLE_COUNT_INVALID'}
+          } finally {$zip.Dispose()}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-p0-local-encrypted-v1
+          path: Geumyi-Day12-P0-LOCAL-ENCRYPTED-v1.zip
+          if-no-files-found: error
+          retention-days: 30

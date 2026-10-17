@@ -1,5 +1,7 @@
 # Day 12.7 — Controlled offline known-good startup: approved PRECHECK only
 
+> **2026-10-13 23:23 KST 최신 실서버 결과:** [GSC 4.5.1 오프라인 기동 사전검사](DAY12-PHASE7-LIVE-READINESS-20261013-2323.md)에서 Host RUNNING, 놀이터 ONLINE, 0 players/0 jobs 확인. **안전 차단 2건**: 자동 업데이트 정책이 hold/manual이라고 확인되지 않음, 보호·검증된 놀이터 full 백업이 해당 API에서 확인되지 않음. Golden 백업 실존 부정 아님. 실제 기동·네트워크 차단 수행하지 않았으며 동일 사전검사 재실행을 요청하지 않습니다. 아래 2026-10-10의 단일 원인 사례는 당시의 기록으로 보존합니다.
+
 ## Intent and consent
 
 Operator replied `dd` to a proposal to **prepare and execute a safety-bounded Day12.7 offline-start test** with Golden 4/4 protection. The answer supports **preparing the test** and a read-only live readiness precheck. It is not an instruction to cut every user's Internet access, modify Windows Firewall/ACL, reinstall GSC, shut down all four servers, or overwrite backup/world files without a narrower execution design.

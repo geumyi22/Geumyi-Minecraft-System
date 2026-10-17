@@ -1,8 +1,17 @@
 # Geumyi Minecraft System
 
+> **2026-10-16 최신 다음 단계:** [**Day12 최단 마감 작업/담당표**](docs/day12/DAY12-NEXT-ACTIONS-20261016.md) · [**실제 v5 복구 위치 계획**](docs/day12/DAY12-CLOUD-RECOVERY-PLAN-V5-20261015.md). Wild/놀이터/로비 경로 3/3 및 후보 경로 비중복 *메타데이터*까지 확인. **실제 백업·클라우드 업로드·복원 0건**이고 최종 서명 Stable은 엄격한 실환경 게이트 때문에 차단 중입니다. 이전에 통과한 8시간 실서버 모니터와 Native 6/6 검사는 반복하지 않습니다.
+
+> **현재 상태 · 2026-10-13:** [**Day 1~12 상세 통합 현황**](docs/PROJECT-DAY1-12-MASTER-STATUS-20261013.md) · [**저장소 지도/워크플로 분류**](docs/REPOSITORY-MAP-20261013.md) · [**Day12 단계별 문서**](docs/day12/INDEX.md) · [**정식 Stable 최단 경로**](docs/day12/DAY12-STABLE-FAST-TRACK-20261013.md). 기존 Day 1~11은 완료, Day 12는 **소규모 운영 수락과 엄격한 최종 서명 Stable 검증을 별도 판정**합니다. **Other Paper는 운영자 확인으로 의도적 OFFLINE**이며 Velocity 25567 프런트엔드의 개폐와 구분합니다. 이 문서의 역사적 E2E는 **오늘 실호스트 모든 서버 ONLINE**이라는 뜻이 아닙니다.
+
+
 > **프로젝트 종료 정리 (2026-10-11):** 일반 기능 개발과 반복 테스트는 소규모 서버 운영 기준으로 마감했습니다. GitHub/PC 정리 기록과 유지할 복구 자산은 [PROJECT-CLOSEOUT-2026-10-11.md](PROJECT-CLOSEOUT-2026-10-11.md)에 있습니다. 정식 Stable 릴리즈의 엄격한 보안 게이트는 아직 통과하지 않았습니다.
 
 **최신 수동 설치 패키지:** [GSC 4.5.1 / GSCM 1.5.1+151 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) (2026-10-11 공개, GitHub Latest). 마지막 실제 운영 기기 확인은 GSC 4.3.8 / GSCM 1.1.5+117이며, 자동 Stable 배포용 서명 manifest는 별도입니다.
+
+**새 백업/복구 설계 (2026-10-14):** 사용자가 Google Drive **2TB**와 OneDrive **1TB** 계정에 서버 PC에서 로그인되어 있다고 확인했습니다. 기존 서버 파일 백업은 저장공간 때문에 삭제됐으므로 [**이중 클라우드 복구 계획**](docs/day12/DAY12-DUAL-CLOUD-RECOVERY-PLAN-20261014.md)과 [READ-ONLY 사전검사 도구](tools/day12/cloud/)로 실제 서버 경로/동기화 위치를 먼저 확인합니다. 클라우드 구독은 **백업 생성·업로드·복원 완료의 증거가 아닙니다.** 월드 데이터나 인증 자산을 무조건 동기화하지 않고, 실제 복원 증명 전까지 최종 서명 Stable은 차단합니다.
+
+**최종 서명 Stable을 위한 한 번에 끝내는 계획:** [Day12 Stable Fast Track](docs/day12/DAY12-STABLE-FAST-TRACK-20261013.md). 이미 공개한 수동 Stable 패키지는 유지하고, 필수 실환경 보안·오프라인 기동·서명 Canary 롤백 검증만 구분합니다. Draft PR #53의 미병합 보안 변경은 기존 Stable 릴리즈에 포함되지 않습니다.
 
 GSC 4.5.1 및 GSCM 1.5.1+151 Stable 수동 설치 빌드 대상의 소스·복구 근거·CI·리소스팩을 모은 저장소입니다. **원본 그대로 회수한 소스와 바이너리 기준으로 재구성한 소스를 구분해서 기록합니다.**
 

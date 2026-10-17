@@ -1,5 +1,17 @@
 # Day 12 — 문서 모음
 
+**지금 무엇부터 할까? (2026-10-16)** [**Day12 최단 안전 마감 순서·운영자/AI 담당표**](DAY12-NEXT-ACTIONS-20261016.md). **1순위 실제 복구 가능 백업** → 12.7·12.11·12.5·12.10 잔여 정책 검토 → 최종 서명 Stable. 기존 v5/8h/Native 6/6 검사는 반복하지 않습니다. 이하 2026-10-14 v3 문구는 **그때의 역사적 결과**이고 최신 경로 상태가 아닙니다.
+
+**최신 개발 진행 (2026-10-15):** [실제 PC에서 확인된 v5 백업 대상·정합성 계획](DAY12-CLOUD-RECOVERY-PLAN-V5-20261015.md) — 서버 경로 3/3, 기타 OFFLINE, Google·OneDrive·로컬 작업 후보 **각 1곳씩 계획만 생성**·메타데이터상 비중복, 실제 업로드/백업/복원은 **0건**. [**일회용 암호화·다중 서버 구조 복원 CI 2/2 PASS**](DAY12-CLOUD-DISPOSABLE-CRYPTO-RESTORE-20261015.md) — 가짜 데이터만 사용하고 실제 월드·클라우드·운영 설정을 건드리지 않았습니다. 2026-10-14의 v3 조회 기록은 **이전 상태**이며 재실행할 필요가 없습니다. PR #53 Draft·최종 서명 Stable 차단 유지.
+
+**현재 운영·마감 기준 (2026-10-13):** [Day1~12 상세 현황](../PROJECT-DAY1-12-MASTER-STATUS-20261013.md) · [저장소 지도](../REPOSITORY-MAP-20261013.md). Other Paper는 **의도적 OFFLINE**이므로 Velocity 25567을 Other Paper 실동작 증거로 쓰지 않습니다. `Day12-REPO-PROGRESS.md`와 이하 보고서의 이전 상태는 그 날짜의 역사 기록입니다.
+
+**2026-10-13 빠른 Stable 마감 계획:** [DAY12-STABLE-FAST-TRACK-20261013.md](DAY12-STABLE-FAST-TRACK-20261013.md) — 기존 수동 Stable 릴리즈와 엄격한 최종 서명 Stable의 차이, 남은 실제 보안/복구/Canary 게이트, 중복 검사 방지.
+
+**2026-10-14 실제 서버 클라우드 사전검사:** [결과/원인/안전한 다음 단계](DAY12-CLOUD-PREFLIGHT-REAL-RESULT-20261014.md). Google Drive·OneDrive 앱은 모두 실행, Google Drive 폴더 검사상 접근 확인, **OneDrive 폴더 미선택 및 실제 서버 루트 0/3**으로 백업 생성은 차단. [v3 원인 분리 읽기 전용 도구](../../tools/day12/cloud/)는 GSC localhost GET 경로 해석과 OneDrive 명시적 환경 폴더 확인을 추가했습니다. 아직 클라우드 업로드나 복원은 실행하지 않았습니다.
+
+**2026-10-14 클라우드 백업 복구 준비:** [Google Drive 2TB + OneDrive 1TB 이중 클라우드 계획](DAY12-DUAL-CLOUD-RECOVERY-PLAN-20261014.md) · [Windows 서버 PC READ-ONLY 사전 검사 소스](../../tools/day12/cloud/). 서버 백업 실제 생성, 원격 업로드·암호화·복원은 아직 미실행이며, 기타 Paper는 OFFLINE 유지. 현재 저장된 과거 Golden 4/4와 GSC 백업 UI의 현재 목록을 혼동하지 않습니다.
+
 2026-10-11 기준: 기존 Day 12 상세 보고서 65개를 분야·단계별 폴더로 정리했습니다. 원본 파일 내용은 보존되며 파일 이름도 바꾸지 않았습니다. 새로운 프로젝트 상태는 [루트 README](../../README.md)와 [최종 종료 보고서](../../PROJECT-CLOSEOUT-2026-10-11.md)를 참고하세요.
 
 ## operations
@@ -29,6 +41,8 @@
 
 ## phases/phase-05
 
+- **[2026-10-13 12.5 유효 ACL·방화벽·무백업 마감 판단](phases/phase-05/DAY12-PHASE5-NO-BACKUP-SECURITY-DISPOSITION-20261013.md)** — 별도 표준 사용자 부재, 상속 쓰기 ACE 및 광범위 Allow 후보, 복구 불가 위험. 보안 strict gate 미통과.
+
 - [DAY12-PHASE5-FOCUSED-SECURITY-TRIAGE-20261011.md](phases/phase-05/DAY12-PHASE5-FOCUSED-SECURITY-TRIAGE-20261011.md)
 - [DAY12-PHASE5-LIVE-FOCUSED-SCOPE-RESULT-20261011.md](phases/phase-05/DAY12-PHASE5-LIVE-FOCUSED-SCOPE-RESULT-20261011.md)
 - [DAY12-PHASE5-RULE-IDENTITY-LIVE-RESULT-20261011.md](phases/phase-05/DAY12-PHASE5-RULE-IDENTITY-LIVE-RESULT-20261011.md)
@@ -42,6 +56,8 @@
 - [DAY12-PHASE6-RELEASE-CHAIN-REVIEW-20261011.md](phases/phase-06/DAY12-PHASE6-RELEASE-CHAIN-REVIEW-20261011.md)
 
 ## phases/phase-07
+
+- **[DAY12-PHASE7-LIVE-READINESS-20261013-2323.md](phases/phase-07/DAY12-PHASE7-LIVE-READINESS-20261013-2323.md)** — 실제 GSC 4.5.1/놀이터 0명·0작업 확인, 자동 업데이트 정책 + protected verified full 백업 두 조건 미확증. 운영 기동 테스트 미실행.
 
 - [DAY12-PHASE7-DISPOSABLE-SANDBOX-PLAN-20261010.md](phases/phase-07/DAY12-PHASE7-DISPOSABLE-SANDBOX-PLAN-20261010.md)
 - [DAY12-PHASE7-GSC-PAPER-DISPOSABLE-OFFLINE-SOURCE-RESULT-20261010.md](phases/phase-07/DAY12-PHASE7-GSC-PAPER-DISPOSABLE-OFFLINE-SOURCE-RESULT-20261010.md)
@@ -64,6 +80,8 @@
 
 ## phases/phase-11
 
+- **[2026-10-13 12.11 서명 GSC 4.5.1 / 무백업 Canary 검토](phases/phase-11/DAY12-PHASE11-NO-BACKUP-CANARY-REVIEW-20261013.md)** — 공개 서명 Beta 서명/변조거부 CI, 실제 Canary 롤백은 아직 미검증. 운영 서버 전체 백업 삭제 상태에서 실서버 변경 금지.
+
 - [DAY12-PHASE11-BEDROCK-PROXY-PACKS-FIX.md](phases/phase-11/DAY12-PHASE11-BEDROCK-PROXY-PACKS-FIX.md)
 - [DAY12-PHASE11-DISPOSABLE-RECOVERY-20261011.md](phases/phase-11/DAY12-PHASE11-DISPOSABLE-RECOVERY-20261011.md)
 - [DAY12-PHASE11-OPERATOR-15-OF-18-DISPOSITION-20261011.md](phases/phase-11/DAY12-PHASE11-OPERATOR-15-OF-18-DISPOSITION-20261011.md)
@@ -71,6 +89,7 @@
 
 ## phases/phase-12
 
+- **[DAY12-PHASE12-INSTRUMENTED-LIVE-SOAK-20261013.md](phases/phase-12/DAY12-PHASE12-INSTRUMENTED-LIVE-SOAK-20261013.md)** — 실제 서버 8시간·97샘플·관측 오류 0·프로세스 교체 0, **범위 한정 PASS**. 기타 Paper 의도적 OFFLINE과 Velocity 25567 프록시 구분; 최종 Stable 게이트는 별개.
 - [DAY12-PHASE12-CONTINUOUS-SOAK-RUNBOOK.md](phases/phase-12/DAY12-PHASE12-CONTINUOUS-SOAK-RUNBOOK.md)
 - [DAY12-PHASE12-OPERATOR-SOAK-ACCEPTANCE-20261011.md](phases/phase-12/DAY12-PHASE12-OPERATOR-SOAK-ACCEPTANCE-20261011.md)
 

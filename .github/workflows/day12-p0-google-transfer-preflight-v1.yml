@@ -1,0 +1,61 @@
+name: Day12 P0 Google Transfer Preflight V1
+
+on:
+  pull_request:
+    paths:
+      - 'tools/day12/cloud/Day12_P0_Google_Transfer_Preflight_READ_ONLY.ps1'
+      - 'tools/day12/cloud/Test_Day12_P0_Google_Transfer_Preflight_V1.ps1'
+      - '.github/workflows/day12-p0-google-transfer-preflight-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-windows-readonly:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Source syntax and fixture
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $base='tools/day12/cloud'
+          foreach($n in @('Day12_P0_Google_Transfer_Preflight_READ_ONLY.ps1','Test_Day12_P0_Google_Transfer_Preflight_V1.ps1')){
+            $tok=$null;$err=$null
+            [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path (Join-Path $base $n)).Path,[ref]$tok,[ref]$err)
+            if(@($err).Count){throw 'P0_GOOGLE_PREFLIGHT_PARSE_ERROR'}
+          }
+          foreach($engine in @('powershell.exe','pwsh')){
+            $out=@(& $engine -NoProfile -NonInteractive -File (Join-Path $base 'Test_Day12_P0_Google_Transfer_Preflight_V1.ps1'))
+            if($LASTEXITCODE -ne 0 -or ($out|Out-String) -notmatch 'P0_GOOGLE_TRANSFER_PREFLIGHT_SYNTHETIC_PASS'){
+              throw 'P0_SYNTHETIC_PRECHECK_FAILED'
+            }
+          }
+          Write-Host 'P0_GOOGLE_PREFLIGHT_WINDOWS_DUAL_ENGINE_PASS'
+      - name: Package read-only preflight
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP 'p0-google-readonly'
+          [void](New-Item -ItemType Directory -Path $dir)
+          $names=@('Day12_P0_Google_Transfer_Preflight_READ_ONLY.ps1',
+            'RUN_Day12_P0_Google_Transfer_Preflight_READ_ONLY.cmd',
+            'README-Day12-P0-GOOGLE-TRANSFER-PREFLIGHT-KO.txt')
+          foreach($name in $names){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12/cloud' $name) -Destination $dir -ErrorAction Stop
+          }
+          $info=[ordered]@{source_head='${{ github.event.pull_request.head.sha || github.sha }}';read_only=$true;files=@()}
+          foreach($entry in @(Get-ChildItem -LiteralPath $dir -File)){
+            $info.files+=@{name=$entry.Name;sha256=(Get-FileHash -LiteralPath $entry.FullName -Algorithm SHA256).Hash.ToLowerInvariant()}
+          }
+          $info|ConvertTo-Json -Depth 5|Set-Content -LiteralPath (Join-Path $dir 'BUILD-INFO-P0-GOOGLE-PREFLIGHT.json')
+          Compress-Archive -Path (Join-Path $dir '*') -DestinationPath 'Geumyi-Day12-P0-GOOGLE-PREFLIGHT-READ-ONLY-v1.zip'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-p0-google-preflight-readonly-v1
+          path: Geumyi-Day12-P0-GOOGLE-PREFLIGHT-READ-ONLY-v1.zip
+          if-no-files-found: error
