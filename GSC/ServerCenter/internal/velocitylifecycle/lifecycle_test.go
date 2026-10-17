@@ -51,24 +51,16 @@ func TestAllNineTargetActionSimulationsWithoutLiveCapability(t *testing.T) {
 			t.Run(target+"/"+string(action), func(t *testing.T) {
 				p := newFixturePlan(t, target, action)
 				requirePhase(t, p, Preflight)
-				p = Advance(p, goodEvidence(target, 1), testNow)
-				if action == Start {
-					requirePhase(t, p, AwaitStart)
-				} else {
-					requirePhase(t, p, AwaitShutdown)
+				expected := map[Action][]Phase{
+					Start: {AwaitStart, AwaitHealthy, Complete},
+					Stop: {AwaitShutdown, AwaitStopped, Complete},
+					Restart: {AwaitShutdown, AwaitStopped, AwaitStart, AwaitHealthy, Complete},
+				}[action]
+				for i, want := range expected {
+					p = Advance(p, goodEvidence(target, uint64(i+1)), testNow.Add(time.Duration(i)*time.Second))
+					requirePhase(t, p, want)
 				}
-				next := goodEvidence(target, 2)
-				p = Advance(p, next, testNow.Add(time.Second))
-				if action == Stop {
-					requirePhase(t, p, Complete)
-				} else if action == Start {
-					requirePhase(t, p, Complete)
-				} else {
-					requirePhase(t, p, AwaitStart)
-					p = Advance(p, goodEvidence(target, 3), testNow.Add(2*time.Second))
-					requirePhase(t, p, Complete)
-				}
-				same := Advance(p, goodEvidence(target, 100), testNow.Add(3*time.Second))
+				same := Advance(p, goodEvidence(target, 100), testNow.Add(time.Minute))
 				if !reflect.DeepEqual(p, same) {
 					t.Fatal("terminal state changed after unexpected event")
 				}
@@ -145,28 +137,82 @@ func TestStopRequiresPlayerQuietAndAuthenticatedBridge(t *testing.T) {
 	}
 }
 
-func TestGracefulShutdownMustEndExactGeneration(t *testing.T) {
-	for _, m := range []struct {
+func TestGracefulShutdownAckIsNotProofOfProcessExit(t *testing.T) {
+	for _, mutation := range []struct {
 		name string
 		fn func(*Evidence)
 	}{
 		{"players_appeared", func(e *Evidence) { e.PlayersExactlyZeroVerified = false }},
 		{"bridge_unavailable", func(e *Evidence) { e.GracefulBridgeAuthenticated = false }},
-		{"no_ack", func(e *Evidence) { e.GracefulShutdownAcknowledged = false }},
-		{"child_still_alive", func(e *Evidence) { e.TargetProcessFamilyAbsentVerified = false }},
-		{"ports_not_independently_free", func(e *Evidence) { e.PublicTCPAndUDPFreeIndependentlyVerified = false }},
-		{"different_stopped_process_generation", func(e *Evidence) { e.StoppedGeneration = "unrelated-java" }},
+		{"ack_missing", func(e *Evidence) { e.GracefulShutdownAcknowledged = false }},
+		{"ack_for_wrong_generation", func(e *Evidence) { e.CurrentGeneration = "unrelated-java" }},
 	} {
-		t.Run(m.name, func(t *testing.T) {
+		t.Run(mutation.name, func(t *testing.T) {
 			for _, a := range []Action{Stop, Restart} {
 				p := Advance(newFixturePlan(t, "wild", a), goodEvidence("wild", 1), testNow)
 				requirePhase(t, p, AwaitShutdown)
 				e := goodEvidence("wild", 2)
-				m.fn(&e)
+				mutation.fn(&e)
 				p = Advance(p, e, testNow.Add(time.Second))
 				requirePhase(t, p, Blocked)
 			}
 		})
+	}
+	for _, a := range []Action{Stop, Restart} {
+		p := Advance(newFixturePlan(t, "wild", a), goodEvidence("wild", 1), testNow)
+		e := goodEvidence("wild", 2)
+		e.TargetProcessFamilyAbsentVerified = false
+		e.PublicTCPAndUDPFreeIndependentlyVerified = false
+		p = Advance(p, e, testNow.Add(time.Second))
+		requirePhase(t, p, AwaitStopped) // ACK alone advances only to WAIT_FOR_EXIT.
+	}
+}
+
+func TestStoppedProcessMustMatchOldGenerationAndBothPorts(t *testing.T) {
+	for _, mutation := range []struct {
+		name string
+		fn func(*Evidence)
+	}{
+		{"child_still_alive", func(e *Evidence) { e.TargetProcessFamilyAbsentVerified = false }},
+		{"ports_not_independently_free", func(e *Evidence) { e.PublicTCPAndUDPFreeIndependentlyVerified = false }},
+		{"different_stopped_process_generation", func(e *Evidence) { e.StoppedGeneration = "unrelated-java" }},
+	} {
+		t.Run(mutation.name, func(t *testing.T) {
+			for _, a := range []Action{Stop, Restart} {
+				p := Advance(newFixturePlan(t, "wild", a), goodEvidence("wild", 1), testNow)
+				p = Advance(p, goodEvidence("wild", 2), testNow.Add(time.Second))
+				requirePhase(t, p, AwaitStopped)
+				e := goodEvidence("wild", 3)
+				mutation.fn(&e)
+				p = Advance(p, e, testNow.Add(2*time.Second))
+				requirePhase(t, p, Blocked)
+			}
+		})
+	}
+}
+
+func TestStartReceiptIsNotProofOfNewHealthyJvm(t *testing.T) {
+	for _, action := range []Action{Start, Restart} {
+		p := newFixturePlan(t, "wild", action)
+		seq := uint64(1)
+		p = Advance(p, goodEvidence("wild", seq), testNow)
+		if action == Restart {
+			p = Advance(p, goodEvidence("wild", 2), testNow.Add(time.Second))
+			p = Advance(p, goodEvidence("wild", 3), testNow.Add(2*time.Second))
+			seq = 4
+		} else {
+			seq = 2
+		}
+		requirePhase(t, p, AwaitStart)
+		noReceipt := goodEvidence("wild", seq)
+		noReceipt.SchedulerStartReceiptVerified = false
+		requirePhase(t, Advance(p, noReceipt, testNow.Add(3*time.Second)), Blocked)
+		receiptOnly := goodEvidence("wild", seq)
+		receiptOnly.FreshProcessPairVerified = false
+		receiptOnly.JavaTCPResponding = false
+		receiptOnly.BedrockRaknetPong = false
+		p = Advance(p, receiptOnly, testNow.Add(3*time.Second))
+		requirePhase(t, p, AwaitHealthy)
 	}
 }
 
@@ -175,7 +221,6 @@ func TestRestartNeedsNewJVMGenerationAndApplicationHealth(t *testing.T) {
 		name string
 		fn func(*Evidence)
 	}{
-		{"start_not_attested", func(e *Evidence) { e.SchedulerStartReceiptVerified = false }},
 		{"new_process_missing", func(e *Evidence) { e.FreshProcessPairVerified = false }},
 		{"same_legacy_generation", func(e *Evidence) { e.NewGeneration = e.CurrentGeneration }},
 		{"empty_generation", func(e *Evidence) { e.NewGeneration = "" }},
@@ -184,12 +229,14 @@ func TestRestartNeedsNewJVMGenerationAndApplicationHealth(t *testing.T) {
 		{"another_proxy_changed", func(e *Evidence) { e.SiblingProxyGenerationsUnchanged = false }},
 	} {
 		t.Run(m.name, func(t *testing.T) {
-			p := Advance(newFixturePlan(t, "wild", Restart), goodEvidence("wild", 1), testNow)
-			p = Advance(p, goodEvidence("wild", 2), testNow.Add(time.Second))
-			requirePhase(t, p, AwaitStart)
-			e := goodEvidence("wild", 3)
+			p := newFixturePlan(t, "wild", Restart)
+			for i:=1;i<=4;i++ {
+				p = Advance(p, goodEvidence("wild", uint64(i)), testNow.Add(time.Duration(i)*time.Second))
+			}
+			requirePhase(t, p, AwaitHealthy)
+			e := goodEvidence("wild", 5)
 			m.fn(&e)
-			p = Advance(p, e, testNow.Add(2*time.Second))
+			p = Advance(p, e, testNow.Add(5*time.Second))
 			requirePhase(t, p, Blocked)
 		})
 	}
