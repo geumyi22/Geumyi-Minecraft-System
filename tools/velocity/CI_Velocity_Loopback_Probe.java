@@ -115,10 +115,26 @@ public final class CI_Velocity_Loopback_Probe {
     public static void main(String[] args) throws Exception {
         if (args.length != 0) throw new IllegalArgumentException("No override arguments permitted");
         InetAddress loopback = InetAddress.getByName("127.0.0.1");
-        javaStatus(loopback);
-        System.out.println("DISPOSABLE_JAVA_STATUS_RESPONSE=PASS");
-        bedrockRaknetPong(loopback);
-        System.out.println("DISPOSABLE_BEDROCK_RAKNET_PONG=PASS");
+        boolean javaVerified = false;
+        boolean raknetVerified = false;
+        try {
+            javaStatus(loopback);
+            javaVerified = true;
+            System.out.println("DISPOSABLE_JAVA_STATUS_RESPONSE=PASS");
+        } catch (Exception ex) {
+            // Never print exception message, file path, IP, config or stack trace.
+            System.out.println("DISPOSABLE_JAVA_ERROR_CLASS=" + ex.getClass().getSimpleName());
+        }
+        try {
+            bedrockRaknetPong(loopback);
+            raknetVerified = true;
+            System.out.println("DISPOSABLE_BEDROCK_RAKNET_PONG=PASS");
+        } catch (Exception ex) {
+            System.out.println("DISPOSABLE_RAKNET_ERROR_CLASS=" + ex.getClass().getSimpleName());
+        }
         System.out.println("NO_CLIENT_LOGIN_OR_LOBBY_TRANSFER_VERIFIED");
+        if (!javaVerified || !raknetVerified) {
+            System.exit(2); // Only the short-lived CI probe, not the proxy JVM.
+        }
     }
 }
