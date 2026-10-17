@@ -191,8 +191,15 @@ def run(plugin: pathlib.Path, profile: str) -> None:
                 "raknet_pong": "DISPOSABLE_BEDROCK_RAKNET_PONG=PASS" in attempt.stdout,
             }
             if attempt.returncode != 0 or not all(protocol.values()):
+                # Only whitelisted exception-class identifiers, not raw logs,
+                # untrusted exception text or generated plugin configuration.
+                classes = re.findall(
+                    r"DISPOSABLE_(?:JAVA|RAKNET)_ERROR_CLASS=[A-Za-z]{3,48}",
+                    attempt.stdout,
+                )
                 print("DISPOSABLE ENDPOINTS UNVERIFIED:", protocol,
-                      "probe_exit:", attempt.returncode, file=sys.stderr)
+                      "probe_exit:", attempt.returncode,
+                      "classes:", classes[:2], file=sys.stderr)
                 raise RuntimeError("loopback Java status/RakNet response test failed")
         finally:
             # Only this script's uniquely named disposable CI container.
