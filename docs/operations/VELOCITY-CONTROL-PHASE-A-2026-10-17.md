@@ -38,6 +38,14 @@ A reliable control implementation must first establish:
 5. **Operational protection**: player-aware warnings, in-flight operation lock, exception handling and bounded timeout, exact task/PID scoping, backups/rollback where relevant, and an operator-confirmed live test. Never auto-start intentionally OFFLINE Other backend or change Paper.
 6. **Security**: authenticated Host routes; explicit action confirmation and role policy; no proxy secrets or reusable token exposed; 403/409 on unapproved actions.
 
+## Read-only Windows fixture and real-host handoff (not yet performed)
+
+- `tools/velocity/Velocity_Inventory_Mock_CI.ps1` executes six synthetic cases using **in-memory mock cmdlets** under the existing System CI Windows PowerShell 5.1 job. A passing fixture **does not** verify the owner's actual scheduled tasks or ports.
+- After its exact-head CI passes and a human reviews the kit, the real server operator can check out the **specific PR #55 branch** on their own Windows server PC and run `tools/velocity/Run_Velocity_Inventory_OnHost_READ_ONLY.cmd`. Its companion `tools/velocity/Velocity_Inventory_OnHost_READ_ONLY.ps1` invokes the same status probe bundled into the intended Host code, then creates a **sanitized JSON report under Desktop/Geumyi-Velocity-ReadOnly-Reports**. That desktop report is the only intentional local file creation. Never publish the full Win32_Process inventory or script exception strings.
+- This collector **does not need or install a new GSC version**. No existing Host/Paper/Velocity/Task Scheduler state is modified, and no process is stopped. It does not independently verify live Java/RakNet player connectivity or exact scheduled-task-to-process identity.
+- Possible status `INVENTORY_CAPTURED_UNVERIFIED` means only a structurally acceptable sample; `INVENTORY_NOT_VERIFIED` means the capture was blocked or malformed. Neither is a Stable gate PASS. Report the redacted JSON, not logs or secrets.
+- **Do not run arbitrary remote script URLs or PowerShell copied from comments.** Use the version-pinned reviewed PR tree and verify that CI/review has completed before the operator run.
+
 ## Validation / blockers
 
 - [ ] Go Host + Windows build tests (from Draft PR CI)
