@@ -1,12 +1,12 @@
 @echo off
 setlocal EnableExtensions DisableDelayedExpansion
-title Geumyi Day12 P0 Encrypted-Only Google Drive Copy
+title Geumyi Day12 P0 Google Mirror Encrypted Copy V2
 cd /d "%~dp0"
 echo ==========================================================
-echo Geumyi P0 ENCRYPTED-ONLY copy to selected Google My Drive.
+echo Geumyi P0 encrypted-only copy to verified Google MIRROR folder.
 echo 23 archive entries. NO plaintext, no world, no restart.
 echo New destination only. Never deletes or overwrites files.
-echo G: hash verification DOES NOT PROVE remote upload completion.
+echo C: mirror local hash DOES NOT PROVE remote sync completion.
 echo ==========================================================
 if not exist "%~dp0Day12_P0_Google_Encrypted_Copy.ps1" (
   echo [BLOCKED] Missing exact encrypted-copy PowerShell tool.
@@ -23,7 +23,7 @@ set "RET=%ERRORLEVEL%"
 if not "%RET%"=="0" (
   echo [BLOCKED] Cloud upload NOT confirmed. Leave any partial folder unchanged.
 ) else (
-  echo [EXIT 0 ONLY] Verify actual P0_G_MOUNT_COPY_HASH_VERIFIED=23 and P0_G_MOUNT_COPY_COMPLETE=true above.
+  echo [EXIT 0 ONLY] Verify actual P0_GOOGLE_MIRROR_COPY_HASH_VERIFIED=23 and P0_GOOGLE_MIRROR_COPY_COMPLETE=true above.
   echo Without BOTH P0 lines, count as NOT COPIED. Google remote still unverified.
 )
 echo.
