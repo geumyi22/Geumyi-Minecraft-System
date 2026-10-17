@@ -48,6 +48,34 @@ jobs:
           if($src -match '(?i)Remove-Item|Stop-Process|Restart-Service|Stop-Service|Set-Content|Invoke-RestMethod|Invoke-WebRequest|git push'){
             throw 'PRODUCTION_UPLOAD_TOOL_FORBIDDEN_ACTION'
           }
+      - name: Regression - production entrypoint must not silently return zero
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $scriptPath=(Resolve-Path 'tools/day12/cloud/Day12_P0_Google_Encrypted_Copy.ps1').Path
+          $source=Get-Content -LiteralPath $scriptPath -Raw -Encoding UTF8
+          if(-not $source.Contains('$script:P0_Copy_EntryMode') -or
+             -not $source.Contains('P0_GOOGLE_COPY_ENTRYPOINT_STARTED')){
+            throw 'REAL_ENTRYPOINT_EARLY_RETURN_GUARD_ABSENT'
+          }
+          foreach($engine in @('powershell.exe','pwsh')){
+            # Use an intentionally nonexistent temp LOCALAPPDATA. Real backup/G: is NEVER accessed.
+            $original=$env:LOCALAPPDATA
+            try{
+              $env:LOCALAPPDATA=Join-Path $env:RUNNER_TEMP ('p0-no-real-backup-'+[guid]::NewGuid().ToString('N'))
+              $seen=@(& $engine -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $scriptPath 2>&1)
+              $exitCode=$LASTEXITCODE
+              $msg=$seen|Out-String
+              if($exitCode -eq 0 -or
+                 $msg -notmatch 'P0_GOOGLE_COPY_ENTRYPOINT_STARTED' -or
+                 $msg -notmatch 'P0_GOOGLE_COPY_FAILED_OR_INCOMPLETE' -or
+                 $msg -match 'P0_G_MOUNT_COPY_COMPLETE=true'){
+                throw ('SILENT_SUCCESS_WITHOUT_FILE_COPY_'+$engine)
+              }
+              Write-Host ('NO_SILENT_SUCCESS_REGRESSION_PASS_'+$engine)
+            } finally {$env:LOCALAPPDATA=$original}
+          }
+          $global:LASTEXITCODE=0
       - name: Copy simulation in Windows PowerShell 5.1 and 7
         shell: pwsh
         run: |
