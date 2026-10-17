@@ -77,6 +77,7 @@ foreach ($item in $items) {
   elseif (-not $taskMatches) { $state = 'task_config_drift' }
   elseif ($taskState -ne 'Running') { $state = 'task_not_running_unverified' }
   elseif ($tcp.Count -eq 0 -and $udp.Count -eq 0) { $state = 'socket_inventory_missing' }
+  elseif ($tcp.Count -eq 0 -and $udp.Count -gt 0) { $state = 'tcp_inventory_missing_udp_visible' }
   elseif ($ownersMatch) { $state = 'ports_ready_owner_unverified' }
   else { $state = 'ports_partial_or_conflicting' }
   $out += [ordered]@{
@@ -102,7 +103,15 @@ foreach ($item in $out) {
 }
 if (@($udpUnique | Select-Object -Unique).Count -ne 3) { $allLeafOwners = $false }
 if ($allLeafOwners) {
-  foreach ($item in $out) { $item['udp_owner_matches_velocity_child'] = $true }
+  foreach ($item in $out) {
+    $item['udp_owner_matches_velocity_child'] = $true
+    # Historical actual-server report 2026-10-17: TCP provider returned no
+    # rows, while all 3 running tasks and 3 unique UDP child JVM owners matched.
+    # This is a *telemetry gap*, not a port collision or an OFFLINE diagnosis.
+    if ($item['status'] -eq 'tcp_inventory_missing_udp_visible') {
+      $item['status'] = 'tcp_inventory_missing_udp_child_verified'
+    }
+  }
 }
 [ordered]@{
   schema=1; read_only=$true; process_pair_census_consistent=[bool]$pairConsistent
