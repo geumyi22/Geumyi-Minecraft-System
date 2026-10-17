@@ -30,12 +30,12 @@ Source: `tools/velocity/CI_Velocity420_Geyser_Floodgate_Smoke.py`, in the PR #58
 
 1. Download official pinned JARs into a new private temporary folder on the **GitHub-hosted runner**; reject mismatching SHA-256 or size, and apply download budgets.
 2. Copy the CI-built no-op Geumyi plugin beside public Geyser and Floodgate JARs; **no copying from a real server**.
-3. Launch the test proxy inside a disposable **Docker `--network none` container**, with all capabilities dropped, nonprivileged runner UID/GID, no privilege elevation, bounded process/memory/CPU resources, and **only that private temporary folder mounted**.
-4. Check log markers for the three plugin IDs loading and the disabled Geumyi Bridge initialization. Raw log, generated Floodgate keys, working paths and player information are **not published**.
+3. Generate Geyser's *CI-only* default configuration using an ephemeral Docker `--network none` container. For an offline **unauthenticated RakNet PONG-only** check, require exactly one generated `validate-bedrock-login: true` field, change it to `false` **only in this disposable generated file**, then start the tested proxy on a unique Docker `--internal` network (no external route or published ports). Keep all capabilities dropped, nonprivileged runner UID/GID, bounded resources and **only the private temporary folder mounted**. This switch is NOT safe for any real server and cannot validate Xbox/player login or Floodgate authenticated gameplay.
+4. Check plugin initialization markers; then **require a real Java server-list STATUS reply over TCP 25565 and RakNet unconnected PONG with echoed timestamp and magic over UDP 19132**, both from a fixed-loopback probe executed inside the same isolated test container. A plugin discovery marker alone is insufficient. Raw logs, generated Floodgate keys, working paths and any player information are **not published**.
 5. On timeout/error, fail closed; clean up **only the uniquely named CI-owned container and its temporary folder**. Any unsuccessful prerequisite is a blocker, not a fallback to real host.
-6. This test is **plugin-initialization compatibility evidence only**, not a full Geyser/Floodgate functional handshake. With `--network none`, there can be no external backend, player or real Minecraft login and no real operational task-scheduler interaction.
+6. This test validates **plugin startup and two unauthenticated server-status protocols only**, not Java/Bedrock login, resource packs, proxy-to-backend forwarding, Floodgate authentication or a live Task Scheduler. The test container's unique `--internal` bridge allows its own loopback packets but has no external network routing or published ports; the operator's server is never involved.
 
-The initial isolated CI attempt failed due to a test-runner bind-mount ownership mismatch (container process could not read the test JAR); matching the ephemeral runner UID/GID fixed this, without changing the user server or relaxing network isolation. The subsequent coexistence test passed.
+The initial CI bind-mount ownership mismatch was corrected with the CI runner UID/GID. Later, a strict RakNet protocol check exposed a **test-only offline initialization prerequisite**: upstream `GeyserImpl.initialize()` calls `EncryptionUtils.getMojangPublicKey()` before `startInstance()` and returns early if that lookup fails while `validateBedrockLogin=true`. An isolated network cannot fetch that key. The workaround is scoped to an **unreachable, entirely temporary CI config and unauthenticated PONG-only test**. The real server's security controls and configuration are unchanged. Disabling Bedrock login validation on a reachable production proxy would be dangerous and is **strictly prohibited**.
 
 ## Read-only authenticated localhost IPC **fixture** (not deployed bridge)
 
@@ -63,6 +63,15 @@ Exact code+documentation head before this record was `c4011e95dda90440a4dc6faebc
 
 The same workflow's Windows read-only fixture, local-only HMAC status IPC and API 4.2.1-SNAPSHOT tests were also green. Concurrent Day12 SBOM and Synthetic DR jobs passed. **This is a reproducible CI bootstrap observation, NOT live Bedrock Java login, resource pack handling, player auth, proxy-to-backend forwarding, maintenance or process lifecycle evidence.**
 
+## Strict Java STATUS + Bedrock RakNet PONG CI result (2026-10-18 KST)
+
+Source head `4848d2e2d1707a680f621c2126af87041f45d11b`, workflow `39049747331`, Java 25/26 build job `117445726413` **PASS**. The logs independently contain the following markers for **each** of the two SHA-256-pinned profiles:
+
+- `operator`: official Velocity 4.2.0/30 + exact operator Geyser 2.11.3/1251 + Floodgate 2.2.5/141 + inert Bridge; **Java STATUS TCP 25565 PASS** and **RakNet unconnected PONG UDP 19132 PASS**
+- `reference`: official Velocity 4.2.0/30 + newer Geyser 2.12.0/1263 + Floodgate 2.2.5/141 + inert Bridge; **Java STATUS TCP 25565 PASS** and **RakNet unconnected PONG UDP 19132 PASS**
+
+The initial UDP timeout was traced to **Mojang public-key startup dependency** in the deliberately offline sandbox; not to an on-host outage or an inherently incompatible Geyser/Velocity version. The Docker fixture generates and modifies only its own private Geyser config before launching a second disposable JVM with external networking disabled, no published ports and no player sessions. The generated Floodgate keys and raw config contents are not emitted. This test **cannot prove Bedrock authentication**, Java/Bedrock full E2E, connected players, backend forwarding, or compatibility with the operator's actual runtime config.
+
 ## Next gates before any release or live controls
 
 - [x] SHA-256 attestation of operator-provided **Velocity 4.2.0 Build 30** JARs
@@ -72,7 +81,8 @@ The same workflow's Windows read-only fixture, local-only HMAC status IPC and AP
 - [x] One-shot signed localhost **read-only test fixture** (Go/Java/Python canonical vector); rejects all lifecycle verbs
 - [x] Match all six inspected Geyser/Floodgate JAR hashes to official **Geyser 2.11.3 Build 1251 / Floodgate 2.2.5 Build 141** artifact identities (loaded runtime still unverified)
 - [x] **Operator-matched Geyser 2.11.3 Build 1251** disposable SHA-pinned co-load smoke PASS; **newer reference Geyser 2.12.0 Build 1263** co-load smoke independently PASS (GitHub run `39044496861`, job `117430424981`, source commit `c4011e95dda90440a4dc6faebca0f6691d557246`)
-- [ ] Disposable Java+Bedrock **client E2E** with backend, credentials policy and resource-pack transfer
+- [x] Disposable operator-exact and reference profiles: **strict Java server-list STATUS + Bedrock RakNet unconnected PONG**, verified in CI with fixed loopback ports and test-only offline config
+- [ ] Full Java+Bedrock **client login E2E** with backend, authenticated accounts, credentials policy and resource-pack transfer (not covered by status/ping)
 - [ ] Restricted authenticated production GSC↔Velocity **broker/plugin** design, independent security review and Windows OS peer identity ACLs (not implemented)
 - [ ] Prove actual Day10 task-to-process ownership plus scheduler auto-restart semantics on disposable Windows VM
 - [ ] Graceful zero-player shutdown in disposable VM (never `Stop-Process -Force` as normal stop), including negative player-present case and rollback
