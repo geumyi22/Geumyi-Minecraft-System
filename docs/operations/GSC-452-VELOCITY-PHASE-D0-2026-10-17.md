@@ -31,7 +31,7 @@ From the sanitized operator-supplied JSON `Velocity-Compatibility-READ-ONLY-2026
 | playground | yes / yes | `4.2.0` | `26.0.2.0` | same SHA-256 | 42,163,652 |
 | other | yes / yes | `4.2.0` | `26.0.2.0` | same SHA-256 | 42,163,652 |
 
-`host_state_changed=false`, `velocity_jar_or_config_changed=false`, **`runtime_api_compatibility_verified=false`**. These hints do not attest the current in-memory Java runtime major, runtime API linkage or whether the scheduled tasks own the specific Java executables. The observed equal SHA-256 proves the three inspected JAR files have the same SHA-256 value; it does **not** prove official build provenance or clean plugin compatibility. Do not publish the operator's private path or full host inventory.
+`host_state_changed=false`, `velocity_jar_or_config_changed=false`, **`runtime_api_compatibility_verified=false`**. These hints do not attest the current in-memory Java runtime major, runtime API linkage or whether the scheduled tasks own the specific Java executables. **Official origin cross-check completed:** PaperMC Fill API's Velocity `4.2.0` Build **#30** (published 2026-09-14; source commit `c10b49255447694ad42c3c189d7a3f4ee3e73e5e`) reports the **exact same SHA-256 and 42,163,652-byte file size** for `velocity-4.2.0-30.jar`. All three inspected JAR bytes thus match the checksum/size of the official published binary (assuming SHA-256 integrity). **This authenticates the artifact identity far more strongly than a manifest hint, but still does not attest the currently loaded JVM memory, code linkage or disabled bridge runtime loading.** Source: https://fill.papermc.io/v3/projects/velocity/versions/4.2.0/builds . Do not publish the operator's private path or full host inventory.
 
 Official public references: [Velocity 4.2.0 release](https://papermc.io/downloads/velocity), [Velocity API 4.2.0 Javadocs](https://jd.papermc.io/velocity/4.2.0/index.html), [current plugin development guide](https://docs.papermc.io/velocity/dev/creating-your-first-plugin/).
 
@@ -43,7 +43,7 @@ Earlier operator-supplied read-only JSON confirmed the wild/playground/other tas
 
 ## Why current production deployment is blocked
 
-1. Sanitized installed JAR and Java executable version hints have been collected; independently establish the effective running JVM major, official JAR provenance, bytecode linkage and actual API binary compatibility. Manifest/executable hints alone are insufficient.
+1. Sanitized installed JAR and Java executable version hints have been collected; independently establish the effective running JVM major, bytecode linkage and actual API binary compatibility; official Velocity JAR artifact identity (4.2.0 Build #30) has been cross-checked by SHA-256/size, but loaded runtime is not attested. Manifest/executable hints alone are insufficient.
 2. Plugin binary must pass isolated compatibility smoke on the **matching Velocity runtime build** in a disposable VM or container. Geyser/Floodgate, auth, Lobby, Java/Bedrock clients, and performance must not regress.
 3. A future bridge needs per-instance OS-protected keys, authenticated loopback/named-pipe transport, local identity attestation, explicit operator approval, player-aware graceful shutdown, scheduler auto-restart interaction and no replay. The Stage C Go state machine must still be kept fail-closed.
 4. A separate, operator-approved maintenance deployment/recovery plan is mandatory. Source CI green does not clear strict Stable gates.
