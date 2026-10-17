@@ -87,6 +87,10 @@ def run(plugin: pathlib.Path) -> None:
         invocation = [
             docker, "run", "--rm", "--name", container_name,
             "--network", "none",
+            # Docker bind mount preserves host runner UID/GID. The temporary
+            # directory is 0700: matching the invoking runner avoids both
+            # world-readable credentials and Java "unable to access jarfile".
+            "--user", f"{os.getuid()}:{os.getgid()}",
             "--cap-drop", "ALL",
             "--security-opt", "no-new-privileges",
             "--pids-limit", "128",
