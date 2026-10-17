@@ -109,6 +109,32 @@ def test_only_socket_present(docker: str, container: str, udp_port: int) -> bool
     )
 
 
+def test_only_udp_ports(docker: str, container: str) -> list[int]:
+    # Only numeric UDP port identifiers in the disposable namespace,
+    # never local/remote addresses, PIDs, credentials or raw proc text.
+    result = subprocess.run(
+        [docker, "exec", container, "cat", "/proc/net/udp", "/proc/net/udp6"],
+        capture_output=True, text=True, timeout=7,
+    )
+    if result.returncode != 0:
+        return []
+    ports = set()
+    for line in result.stdout.splitlines():
+        cells = line.split()
+        if len(cells) < 2 or not cells[0].endswith(":"):
+            continue
+        last = cells[1].rsplit(":", 1)
+        if len(last) != 2:
+            continue
+        try:
+            port = int(last[1], 16)
+        except ValueError:
+            continue
+        if 0 < port < 65536:
+            ports.add(port)
+    return sorted(ports)[:16]
+
+
 def run(plugin: pathlib.Path, profile: str) -> None:
     if profile not in GEYSER_PROFILES:
         raise ValueError("unknown pinned Geyser compatibility profile")
@@ -294,6 +320,8 @@ def run(plugin: pathlib.Path, profile: str) -> None:
                           r"(?i)(failed to bind|address already in use|"
                           r"could not bind|unable to bind)", combined
                       )),
+                      "ci_only_udp_bound_port_numbers",
+                      test_only_udp_ports(docker, container_name) if still_running else [],
                       "classes:", classes[:2], file=sys.stderr)
                 raise RuntimeError("loopback Java status/RakNet response test failed")
         finally:
