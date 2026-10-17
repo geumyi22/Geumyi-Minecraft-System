@@ -160,7 +160,7 @@ async function loadUpdates(){
             </select><div class="small">Stable: 운영 · Beta: 기능 검증 · Canary: 초기 실험. 상속 시 전체 설정을 따릅니다.</div></div>
           </div>
           <div>
-            <div class="field"><label>Release Pin (비우면 해제)</label><input id="upPin_${key}" value="${esc(pin)}" placeholder="예: day11-stable-..."></div>
+            <div class="field"><label>Release Pin (비우면 해제)</label><input id="upPin_${key}" value="${esc(pin)}" data-original-pin="${esc(pin)}" placeholder="예: day11-stable-..."></div>
             <div class="small">Pin은 해당 release의 서명된 manifest만 허용합니다. 정책 저장만으로 서버는 재시작되지 않습니다.</div>
           </div>
         </div>
@@ -182,7 +182,7 @@ async function loadUpdates(){
       </div>
       <div class="form-grid" style="margin-top:10px">
         <div>
-          <label class="check"><input id="updateEnabled" type="checkbox" ${u.enabled?'checked':''}> 다음 서버 시작 전 관리형 업데이트</label>
+          <label class="check"><input id="updateEnabled" type="checkbox" data-original-enabled="${u.enabled?'true':'false'}" ${u.enabled?'checked':''}> 다음 서버 시작 전 관리형 업데이트</label>
           <div class="field"><label>기본 Release 채널</label><select id="updateChannel" data-original-channel="${esc(u.channel||'stable')}">
             <option value="stable" ${u.channel==='stable'?'selected':''}>Stable · 운영용 (기본)</option>
             <option value="beta" ${u.channel==='beta'?'selected':''}>Beta · 기능 검증용</option>
@@ -257,7 +257,7 @@ async function saveServerUpdatePolicy(id,key){
     };
     const selectedChannel=$('upChannel_'+key);
     const effective=body.channel==='inherit'?selectedChannel.dataset.inheritedChannel:body.channel;
-    const changed=body.channel!==selectedChannel.dataset.originalChannel || body.policy!==selectedChannel.dataset.originalPolicy;
+    const changed=body.channel!==selectedChannel.dataset.originalChannel || body.policy!==selectedChannel.dataset.originalPolicy || body.pin!==$('upPin_'+key).dataset.originalPin;
     if(changed && (effective==='beta'||effective==='canary')){
       if(!confirm('이 서버의 유효 채널을 '+effective.toUpperCase()+'로 설정합니다.\n검증 전 실서버 자동 적용에 적합하지 않은 시험 채널입니다.\n설정 저장만으로 서버는 재시작하지 않습니다. 계속할까요?'))return;
     }
@@ -462,7 +462,9 @@ async function saveUpdateSettings(){
   try{
     const selected=$('updateChannel');
     const channel=selected.value;
-    if(channel!==selected.dataset.originalChannel && (channel==='beta'||channel==='canary')){
+    const enabledField=$('updateEnabled');
+    const newlyEnabled=enabledField.checked && enabledField.dataset.originalEnabled !== 'true';
+    if((channel!==selected.dataset.originalChannel || newlyEnabled) && (channel==='beta'||channel==='canary')){
       if(!confirm('기본 릴리스 채널을 '+channel.toUpperCase()+'로 변경합니다.\n실험/검증용 채널이므로 실제 서버에 자동 적용하기 전에 위험과 복구 수단을 확인해야 합니다.\n채널 설정만으로 서버를 재시작하지 않습니다. 계속할까요?'))return;
     }
     let body={enabled:$('updateEnabled').checked,channel,repository:$('updateRepository').value.trim(),public_key_path:$('updatePublicKey').value.trim()};
