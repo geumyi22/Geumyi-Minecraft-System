@@ -18,7 +18,7 @@ Each is configured to run Java with `-Xms256M -Xmx512M -jar velocity.jar` from `
 - Fixed, allowlisted three task IDs and port pairs; no user-controlled task names or PowerShell argument interpolation.
 - Validate task presence, root path, SYSTEM principal, Java executable name, jar argument and working directory against expected Day10 shape. Report only booleans, task state and fixed ports; do not expose command lines, raw PIDs, tokens, paths or floodgate keys.
 - Inspect bound TCP and UDP owning PID sets; cross-reference a **read-only, in-memory Win32_Process census** for the historically observed three parent/child Velocity JVM pairs. Confirm UDP owners belong to three distinct child-process candidates. Command lines, process paths and PIDs remain private and are not returned by the endpoint. Even a valid three-pair census **does not prove which scheduled task owns which process**, Geyser RakNet readiness or player Lobby access.
-- **Missing Windows socket rows are not OFFLINE proof.** Day12 real reports recorded functioning Java/RakNet with empty TCP provider results. Display `socket_inventory_missing` as inconclusive, not stopped or offline.
+- **Missing Windows socket rows are not OFFLINE proof.** Day12 real reports recorded functioning Java/RakNet with empty TCP provider results. Distinguish `socket_inventory_missing` (both providers empty), `tcp_inventory_missing_udp_visible` (TCP unavailable, UDP present but unverified), and `tcp_inventory_missing_udp_child_verified` (TCP unavailable, unique UDP child JVMs and task shapes verified). None means an actual Minecraft Java TCP failure or a successful Lobby connection.
 - Unknown, missing or duplicate tasks, missing/partially owned ports and read errors **fail closed** into warning/unknown. No restart or self-healing side effects.
 - `POST/PUT/DELETE` returns HTTP 405. The Servers page only provides a **read-only refresh**.
 - Separate Host tests enforce exact three target IDs and fixed TCP/UDP mappings and forbid mutation methods.
@@ -40,7 +40,7 @@ A reliable control implementation must first establish:
 
 ## Read-only Windows fixture and real-host handoff (not yet performed)
 
-- `tools/velocity/Velocity_Inventory_Mock_CI.ps1` executes six synthetic cases using **in-memory mock cmdlets** under the existing System CI Windows PowerShell 5.1 job. A passing fixture **does not** verify the owner's actual scheduled tasks or ports.
+- `tools/velocity/Velocity_Inventory_Mock_CI.ps1` executes nine synthetic cases using **in-memory mock cmdlets** under the existing System CI Windows PowerShell 5.1 job. A passing fixture **does not** verify the owner's actual scheduled tasks or ports.
 - After its exact-head CI passes and a human reviews the kit, the real server operator can check out the **specific PR #55 branch** on their own Windows server PC and run `tools/velocity/Run_Velocity_Inventory_OnHost_READ_ONLY.cmd`. Its companion `tools/velocity/Velocity_Inventory_OnHost_READ_ONLY.ps1` invokes the same status probe bundled into the intended Host code, then creates a **sanitized JSON report under Desktop/Geumyi-Velocity-ReadOnly-Reports**. That desktop report is the only intentional local file creation. Never publish the full Win32_Process inventory or script exception strings.
 - This collector **does not need or install a new GSC version**. No existing Host/Paper/Velocity/Task Scheduler state is modified, and no process is stopped. It does not independently verify live Java/RakNet player connectivity or exact scheduled-task-to-process identity.
 - Possible status `INVENTORY_CAPTURED_UNVERIFIED` means only a structurally acceptable sample; `INVENTORY_NOT_VERIFIED` means the capture was blocked or malformed. Neither is a Stable gate PASS. Report the redacted JSON, not logs or secrets.
@@ -48,9 +48,10 @@ A reliable control implementation must first establish:
 
 ## Validation / blockers
 
-- [ ] Go Host + Windows build tests (from Draft PR CI)
-- [ ] Windows PowerShell 5.1 non-production task-mock/synthetic smoke
-- [ ] Read-only actual on-host three-task/process-pair/ports capture, contrasted with Java and RakNet app-layer probes
+- [ ] Updated exact-head Go Host + Windows CI (previous revision passed; new code requires fresh run)
+- [ ] Updated PowerShell 5.1 nine-case Windows in-memory fixture (previous six-case revision passed)
+- [x] First real-host read-only three-task/process-pair/ports sample, 2026-10-17 21:06 KST. All three tasks: present / matching baseline / Running. Three-parent and three-child JVM census: consistent. Three distinct UDP child-port owner associations: consistent. **TCP socket provider returned no rows on all three**, so previous status falsely suggested an ownership conflict. The sanitized sample does not establish exact Task Scheduler process identity or Java/RakNet E2E. Updated state naming is a telemetry-gap distinction, not a new health attestation.
+- [ ] Read-only app-layer Java TCP and Bedrock RakNet probes using the existing `GET /api/v4/network/entry-status` route, now displayed separately in the Servers UI when available. Port replies do not verify Lobby/player E2E.
 - [ ] GSC desktop UI smoke for read-only states
 - [ ] Independent review of task-identity assumptions
 - [ ] Only after a safe, tested graceful shutdown path exists: implement explicit control actions in a **separate** PR
