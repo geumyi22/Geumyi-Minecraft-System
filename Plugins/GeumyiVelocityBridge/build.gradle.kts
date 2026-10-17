@@ -15,6 +15,7 @@ dependencies {
     // verified match to the installed Geumyi Velocity runtime.
     compileOnly("com.velocitypowered:velocity-api:4.2.1-SNAPSHOT")
     annotationProcessor("com.velocitypowered:velocity-api:4.2.1-SNAPSHOT")
+    testImplementation("com.velocitypowered:velocity-api:4.2.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
