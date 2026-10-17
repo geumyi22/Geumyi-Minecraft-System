@@ -101,6 +101,29 @@ func velocityInventoryCommand(ctx context.Context) *exec.Cmd {
 	return exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded)
 }
 
+// Bound potentially slow PowerShell/CIM reads so repeated authenticated GETs
+// cannot launch unbounded inspection processes on the production host.
+var velocityReadOnlyProbeGate = make(chan struct{}, 1)
+var errVelocityReadOnlyBusy = errors.New("Velocity inspection already in progress")
+var errVelocityReadOnlyUnavailable = errors.New("Velocity read-only probe unavailable")
+
+func queryVelocityReadOnlyInventory(ctx context.Context) (velocityInventory, error) {
+	select {
+	case velocityReadOnlyProbeGate <- struct{}{}:
+		defer func() { <-velocityReadOnlyProbeGate }()
+	case <-ctx.Done():
+		return velocityInventory{}, errVelocityReadOnlyUnavailable
+	default:
+		return velocityInventory{}, errVelocityReadOnlyBusy
+	}
+	out, err := velocityInventoryCommand(ctx).Output()
+	if err != nil {
+		// Never propagate PowerShell errors, paths or command lines to API.
+		return velocityInventory{}, errVelocityReadOnlyUnavailable
+	}
+	return decodeVelocityInventory(out)
+}
+
 // apiV4VelocityStatus supports GET only. It deliberately does not expose
 // Stop-ScheduledTask, task creation, forced process termination, or restart.
 func apiV4VelocityStatus(w http.ResponseWriter, r *http.Request) {
@@ -116,18 +139,13 @@ func apiV4VelocityStatus(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	// The context kills the PowerShell inspection subprocess on timeout;
 	// it does not affect Velocity or its scheduler tasks.
-	cmd := velocityInventoryCommand(ctx)
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	out, err := cmd.Output()
-	if err != nil {
-		// Do not expose PowerShell diagnostic text: it may contain system paths.
-		http.Error(w, "Velocity read-only inventory unavailable", http.StatusServiceUnavailable)
+	info, err := queryVelocityReadOnlyInventory(ctx)
+	if errors.Is(err, errVelocityReadOnlyBusy) {
+		http.Error(w, "Velocity read-only inspection busy", http.StatusTooManyRequests)
 		return
 	}
-	info, err := decodeVelocityInventory(out)
 	if err != nil {
-		http.Error(w, "Velocity inventory could not be verified", http.StatusBadGateway)
+		http.Error(w, "Velocity read-only inventory unavailable or invalid", http.StatusServiceUnavailable)
 		return
 	}
 	writeJSON(w, info)
