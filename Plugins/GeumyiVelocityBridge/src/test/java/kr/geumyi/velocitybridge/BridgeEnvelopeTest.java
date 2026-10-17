@@ -71,7 +71,7 @@ class BridgeEnvelopeTest {
         assertThrows(IllegalArgumentException.class, () ->
             BridgeEnvelope.issue(key(), "all", "status", GENERATION, NOW, new SecureRandom()));
         assertThrows(IllegalArgumentException.class, () ->
-            BridgeEnvelope.issue(key(), "wild", "status", "invalid_generation", NOW, new SecureRandom()));
+            BridgeEnvelope.issue(key(), "wild", "status", "invalid/generation", NOW, new SecureRandom()));
         assertThrows(IllegalArgumentException.class, () ->
             new BridgeEnvelope.Verifier(new byte[16]));
     }
