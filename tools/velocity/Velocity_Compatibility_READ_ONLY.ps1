@@ -25,9 +25,10 @@ function VersionField([string]$manifest) {
     # JAR manifests may contain folded continuation lines; return only known
     # manifest metadata, never arbitrary lines or filesystem locations.
     if ([string]::IsNullOrWhiteSpace($manifest)) { return 'UNKNOWN' }
-    $unfolded = ($manifest -replace '\r?\n ', '')
+    $normalized = $manifest -replace '\r\n?', [string][char]10
+    $unfolded = $normalized -replace '\n ', ''
     foreach ($name in @('Implementation-Version','Bundle-Version','Specification-Version')) {
-        $matches = [regex]::Matches($unfolded, '(?im)^' + [regex]::Escape($name) + ':\s*([^\r\n]+)$')
+        $matches = [regex]::Matches($unfolded, '(?m)^' + [regex]::Escape($name) + ':[ \t]*([^\r\n]+)$')
         if ($matches.Count -eq 1) {
             $value = $matches[0].Groups[1].Value.Trim()
             if ($value.Length -le 96 -and $value -match '^[a-zA-Z0-9+._\-]+$') { return $value }
