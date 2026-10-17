@@ -9,6 +9,7 @@ No synthetic startup log is accepted as full player E2E or production safety.
 from __future__ import annotations
 
 import hashlib
+import os
 import pathlib
 import re
 import shutil
@@ -80,8 +81,11 @@ def run(plugin: pathlib.Path) -> None:
         shutil.copyfile(plugin, root / "plugins" / "geumyi-velocity-bridge-disabled.jar")
         # Docker isolated bridge: no host plugin path, no production mounts,
         # no outgoing network and no privileged OS capabilities.
+        # Name is randomized and scoped to this runner; only this container
+        # can be removed in finally, including if Docker client times out.
+        container_name = "gsc452-coexistence-" + os.urandom(8).hex()
         invocation = [
-            docker, "run", "--rm",
+            docker, "run", "--rm", "--name", container_name,
             "--network", "none",
             "--cap-drop", "ALL",
             "--security-opt", "no-new-privileges",
@@ -94,13 +98,18 @@ def run(plugin: pathlib.Path) -> None:
             "java", "-Xms128M", "-Xmx640M", "-jar", "velocity-4.2.0-30.jar",
         ]
         try:
-            p = subprocess.run(invocation, capture_output=True, text=True, timeout=65)
-            combined = p.stdout[-300000:] + p.stderr[-300000:]
-        except subprocess.TimeoutExpired as ex:
-            # Docker may remain alive if client is killed: unique label +
-            # forced bounded cleanup below ensures only this CI-owned container.
-            combined = (ex.stdout or b"").decode("utf8", errors="replace") if isinstance(ex.stdout, bytes) else (ex.stdout or "")
-            combined += (ex.stderr or b"").decode("utf8", errors="replace") if isinstance(ex.stderr, bytes) else (ex.stderr or "")
+            try:
+                p = subprocess.run(invocation, capture_output=True, text=True, timeout=65)
+                combined = p.stdout[-300000:] + p.stderr[-300000:]
+            except subprocess.TimeoutExpired as ex:
+                combined = (ex.stdout or b"").decode("utf8", errors="replace") if isinstance(ex.stdout, bytes) else (ex.stdout or "")
+                combined += (ex.stderr or b"").decode("utf8", errors="replace") if isinstance(ex.stderr, bytes) else (ex.stderr or "")
+        finally:
+            subprocess.run(
+                [docker, "rm", "-f", container_name],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                timeout=15, check=False,
+            )
         # Do not echo runtime log, generated Floodgate keys, user names, paths.
         ready = {
             "bridge": BRIDGE_MARKER in combined,
