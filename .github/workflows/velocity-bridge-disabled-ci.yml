@@ -93,6 +93,21 @@ jobs:
           plugin_jar=$(find Plugins/GeumyiVelocityBridge/build/libs -maxdepth 1 -name '*.jar' | head -n1)
           test -n "$plugin_jar"
           python3 tools/velocity/CI_Velocity420_Disabled_Runtime_Smoke.py "$plugin_jar"
+      - name: Select Java 26 for separate disposable official 4.2.0 smoke
+        if: matrix.velocity_api == '4.2.0'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '26'
+      - name: Validate Java 26 disabled plugin loading with same pinned binary
+        if: matrix.velocity_api == '4.2.0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          java -version 2>&1 | grep -E 'version "26([.]|")'
+          plugin_jar=$(find Plugins/GeumyiVelocityBridge/build/libs -maxdepth 1 -name '*.jar' | head -n1)
+          test -n "$plugin_jar"
+          python3 tools/velocity/CI_Velocity420_Disabled_Runtime_Smoke.py "$plugin_jar"
 
   velocity-compatibility-synthetic:
     name: Windows version fingerprint collector synthetic (NO LIVE TASKS)
