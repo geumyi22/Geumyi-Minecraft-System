@@ -80,7 +80,8 @@ func decodeVelocityInventory(raw []byte) (velocityInventory, error) {
 		case "task_missing_or_duplicate", "task_config_drift", "offline_or_starting",
 			"ports_ready_owner_unverified", "ports_partial_or_conflicting", "unverified",
 			"task_not_running_unverified", "socket_inventory_missing",
-			"tcp_inventory_missing_udp_visible", "tcp_inventory_missing_udp_child_verified":
+			"tcp_inventory_missing_udp_visible", "tcp_inventory_missing_udp_child_verified",
+			"udp_inventory_missing_tcp_visible":
 		default:
 			return inventory, errors.New("unexpected Velocity inventory state")
 		}
