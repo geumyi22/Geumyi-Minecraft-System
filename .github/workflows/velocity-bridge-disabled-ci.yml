@@ -38,19 +38,26 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('Plugins/GeumyiVelocityBridge/src/main/java/kr/geumyi/velocitybridge/GeumyiVelocityBridge.java')
-          source=p.read_text()
+          root=Path('Plugins/GeumyiVelocityBridge/src/main/java')
+          sources=list(root.rglob('*.java'))
+          entry=root/'kr/geumyi/velocitybridge/GeumyiVelocityBridge.java'
+          if len(sources)!=2 or not entry.exists():
+            raise SystemExit('unexpected active bridge source added without security review')
           forbidden=[
             '.shutdown(', '.getScheduler(', '.getCommandManager(', '.getEventManager(',
             'ServerSocket', 'Socket(', 'HttpServer', 'HttpClient', 'DatagramSocket',
             'Files.write', 'ProcessBuilder', 'Runtime.getRuntime()', 'System.exit(',
+            'registerCommand(', '.register(', 'ProxyServer.shutdown(',
           ]
-          for item in forbidden:
-            if item in source:
-              raise SystemExit(f'unsafe production action in plugin entrypoint: {item}')
+          for p in sources:
+            source=p.read_text()
+            for item in forbidden:
+              if item in source:
+                raise SystemExit(f'active lifecycle/IPC action forbidden in {p.name}: {item}')
+          source=entry.read_text()
           if '@Plugin(' not in source or 'onInitialize(ProxyInitializeEvent event)' not in source:
             raise SystemExit('not a recognized no-op Velocity plugin')
-          print('No active management bridge or lifecycle actions in entrypoint')
+          print('All two main Java sources verified inert (static check only)')
           PY
       - name: Compile offline prototype and run Java tests
         run: gradle -p Plugins/GeumyiVelocityBridge clean test jar -PvelocityApiVersion=${{ matrix.velocity_api }} --no-daemon --stacktrace
@@ -62,6 +69,20 @@ jobs:
           test -n "$jarfile"
           jar tf "$jarfile" | grep -Fx 'velocity-plugin.json'
           jar tf "$jarfile" | grep -Fx 'kr/geumyi/velocitybridge/GeumyiVelocityBridge.class'
+          python3 - "$jarfile" <<'PY'
+          import sys,zipfile,struct
+          with zipfile.ZipFile(sys.argv[1]) as z:
+            classes=[n for n in z.namelist() if n.endswith('.class')]
+            if not classes: raise SystemExit('jar contains no plugin classes')
+            for name in classes:
+              header=z.read(name)[:8]
+              if len(header)!=8 or header[:4]!=bytes.fromhex('cafebabe'):
+                raise SystemExit('bad class file: '+name)
+              major=struct.unpack('>H',header[6:8])[0]
+              if major>69:
+                raise SystemExit(f'{name} requires Java newer than 25: {major}')
+            print(f'{len(classes)} plugin classes target Java 25 or older. Java 26 load remains untested.')
+          PY
           echo "Isolated ${{ matrix.velocity_api }} class and metadata built (NOT installed or deployed)."
 
   velocity-compatibility-synthetic:
