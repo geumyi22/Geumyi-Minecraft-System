@@ -6,11 +6,11 @@ $ErrorActionPreference='Stop'
 . (Join-Path $PSScriptRoot 'Day12_P0_Google_Encrypted_Copy.ps1') -FunctionsOnly
 
 $root=Join-Path $env:TEMP ('p0-google-mirror-fixture-'+[guid]::NewGuid().ToString('N'))
-$home=Join-Path $root 'synthetic-profile'
-$mirror=Join-Path $home '내 드라이브'
-$other=Join-Path $home 'My Drive'
+$fixtureProfile=Join-Path $root 'synthetic-profile'
+$mirror=Join-Path $fixtureProfile '내 드라이브'
+$other=Join-Path $fixtureProfile 'My Drive'
 $fakeG=Join-Path $root 'synthetic-G-root'
-foreach($p in @($home,$mirror,$other,$fakeG)){
+foreach($p in @($fixtureProfile,$mirror,$other,$fakeG)){
   [void](New-Item -ItemType Directory -Path $p -Force)
 }
 $shell=New-Object -ComObject WScript.Shell
@@ -18,16 +18,16 @@ $linkFile=Join-Path $fakeG '내 드라이브.lnk'
 $link=$shell.CreateShortcut($linkFile)
 $link.TargetPath=$mirror
 $link.Save()
-if(-not (P0-CheckMirrorParent $mirror $home $fakeG)){
+if(-not (P0-CheckMirrorParent $mirror $fixtureProfile $fakeG)){
   throw 'VALID_SYNTHETIC_MIRROR_SHORTCUT_REJECTED'
 }
-if(P0-CheckMirrorParent $other $home $fakeG){
+if(P0-CheckMirrorParent $other $fixtureProfile $fakeG){
   throw 'SIBLING_LOCAL_FOLDER_MUST_NOT_BE_ACCEPTED'
 }
-if(P0-CheckMirrorParent $home $home $fakeG){
+if(P0-CheckMirrorParent $fixtureProfile $fixtureProfile $fakeG){
   throw 'HOME_ROOT_MUST_NOT_BE_ACCEPTED'
 }
-if(P0-CheckMirrorParent $fakeG $home $fakeG){
+if(P0-CheckMirrorParent $fakeG $fixtureProfile $fakeG){
   throw 'FAKE_G_ROOT_MUST_NOT_BE_ACCEPTED'
 }
 # Shortcut target drift must cause immediate rejection before copy.
@@ -36,7 +36,7 @@ $target=Join-Path $root 'other-target'
 $link=$shell.CreateShortcut($linkFile)
 $link.TargetPath=$target
 $link.Save()
-if(P0-CheckMirrorParent $mirror $home $fakeG){
+if(P0-CheckMirrorParent $mirror $fixtureProfile $fakeG){
   throw 'SHORTCUT_TARGET_MISMATCH_NOT_REJECTED'
 }
 Write-Host 'P0_GOOGLE_MIRROR_SHORTCUT_SYNTHETIC_PASS'
