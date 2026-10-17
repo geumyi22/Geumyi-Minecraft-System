@@ -30,7 +30,7 @@ func TestDay10SchedulerRestartHazardIsDetectedWithoutLiveApproval(t *testing.T) 
 			a,err:=InspectSchedulerXML(id,[]byte(schedulerFixture(id)))
 			if err!=nil { t.Fatal(err) }
 			if !a.ReadOnly || a.Schema!=1 || a.Target!=id ||
-				!a.SYSTEMPrincipal || !a.SingleExecExpected ||
+				!a.SYSTEMPrincipal || !a.SingleExecExpected || !a.MultipleInstancePolicySafe ||
 				!a.AutoRestartEnabled || a.RestartCount!=999 ||
 				a.RestartPolicyUnverified || a.SafeToStart || a.SafeToStop || a.SafeToRestart {
 				t.Fatalf("auto-restarting SYSTEM task incorrectly marked as safe: %+v",a)
@@ -51,6 +51,14 @@ func TestSchedulerMutationDoesNotPermitLifecycle(t *testing.T) {
 		{"powershell_action",func(s string)string{return strings.Replace(s,"java.exe","powershell.exe",1)},"action"},
 		{"wrong_jar",func(s string)string{return strings.Replace(s,"velocity.jar","unrelated.jar",1)},"action"},
 		{"wrong_directory",func(s string)string{return strings.Replace(s,"FourServer\\wild","FourServer\\other",1)},"action"},
+		{"unc_executable",func(s string)string{return strings.Replace(s,"C:\\Program Files\\Java\\java.exe","\\\\server\\share\\java.exe",1)},"action"},
+		{"relative_executable",func(s string)string{return strings.Replace(s,"C:\\Program Files\\Java\\java.exe","relative\\java.exe",1)},"action"},
+		{"directory_suffix_only",func(s string)string{return strings.Replace(s,"C:\\ProgramData\\GeumyiServerCenter\\Network\\FourServer\\wild","C:\\Unrelated\\FourServer\\wild",1)},"action"},
+		{"duplicate_jar_switch",func(s string)string{return strings.Replace(s,"nogui","-jar other.jar nogui",1)},"action"},
+		{"unc_working_dir",func(s string)string{return strings.Replace(s,"C:\\ProgramData\\GeumyiServerCenter\\Network\\FourServer\\wild","\\\\host\\programdata\\geumyiservercenter\\network\\fourserver\\wild",1)},"action"},
+		{"multiple_instance_parallel",func(s string)string{return strings.Replace(s,"<MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>","<MultipleInstancesPolicy>Parallel</MultipleInstancesPolicy>",1)},"multiple"},
+		{"multiple_instance_stop_existing",func(s string)string{return strings.Replace(s,"<MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>","<MultipleInstancesPolicy>StopExisting</MultipleInstancesPolicy>",1)},"multiple"},
+		{"missing_instance_policy",func(s string)string{return strings.Replace(s,"<MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>","",1)},"multiple"},
 		{"extra_shell_action",func(s string)string{return strings.Replace(s,"</Exec></Actions>","</Exec><ComHandler><ClassId>{0000}</ClassId></ComHandler></Actions>",1)},"action"},
 		{"wrong_identity",func(s string)string{return strings.Replace(s,"S-1-5-18","S-1-5-21-1234",1)},"principal"},
 		{"missing_restart_count",func(s string)string{return strings.Replace(s,"<Count>999</Count>","",1)},"unknown"},
@@ -68,6 +76,8 @@ func TestSchedulerMutationDoesNotPermitLifecycle(t *testing.T) {
 				if a.SingleExecExpected {t.Fatalf("untrusted action accepted: %+v",a)}
 			case "principal":
 				if a.SYSTEMPrincipal {t.Fatalf("wrong principal accepted: %+v",a)}
+			case "multiple":
+				if a.MultipleInstancePolicySafe {t.Fatalf("unsafe or missing instance policy accepted: %+v",a)}
 			case "unknown":
 				if !a.RestartPolicyUnverified {t.Fatalf("unknown scheduler restart risk accepted: %+v",a)}
 			case "zero":
