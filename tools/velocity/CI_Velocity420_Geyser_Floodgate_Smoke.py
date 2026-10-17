@@ -78,6 +78,37 @@ def regex_loaded(text: str, plugin_id: str) -> bool:
     return bool(re.search(r"(?i)\bloaded plugin\b[^\r\n]*\b" + re.escape(plugin_id) + r"\b", text))
 
 
+def test_only_transport_hint(root: pathlib.Path) -> str:
+    # Private disposable configuration generated during THIS CI run only.
+    # Return a fixed enum, never YAML content, credentials or file paths.
+    config = root / "plugins" / "Geyser-Velocity" / "config.yml"
+    if not config.is_file() or config.stat().st_size > 262144:
+        return "config_missing_or_oversized"
+    content = config.read_text(encoding="utf8", errors="replace")
+    matches = re.findall(
+        r"(?im)^\s{2,6}transport:\s*(nethernet|raknet|both)\s*(?:#.*)?$",
+        content,
+    )
+    return matches[0].lower() if len(matches) == 1 else "transport_not_attested"
+
+
+def test_only_socket_present(docker: str, container: str, udp_port: int) -> bool:
+    # Linux /proc inspection INSIDE the isolated Docker container. No PID,
+    # raw socket address, config, path or content is emitted to CI logs.
+    result = subprocess.run(
+        [docker, "exec", container, "cat", "/proc/net/udp", "/proc/net/udp6"],
+        capture_output=True, text=True, timeout=7,
+    )
+    if result.returncode != 0:
+        return False
+    token = f":{udp_port:04X}"
+    return any(
+        token in line.split()[1].upper()
+        for line in result.stdout.splitlines()
+        if len(line.split()) >= 2 and line.split()[0].endswith(":")
+    )
+
+
 def run(plugin: pathlib.Path, profile: str) -> None:
     if profile not in GEYSER_PROFILES:
         raise ValueError("unknown pinned Geyser compatibility profile")
@@ -241,6 +272,10 @@ def run(plugin: pathlib.Path, profile: str) -> None:
                 print("DISPOSABLE ENDPOINTS UNVERIFIED:", protocol,
                       "probe_exit:", attempt.returncode,
                       "jvm_still_running:", still_running,
+                      "ci_generated_geyser_transport": test_only_transport_hint(root),
+                      "udp_19132_bound_in_container": test_only_socket_present(
+                          docker, container_name, 19132
+                      ) if still_running else False,
                       "classes:", classes[:2], file=sys.stderr)
                 raise RuntimeError("loopback Java status/RakNet response test failed")
         finally:
