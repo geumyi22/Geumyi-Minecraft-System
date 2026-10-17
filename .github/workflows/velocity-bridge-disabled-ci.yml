@@ -139,6 +139,8 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m py_compile tools/velocity/CI_Velocity_Localhost_ReadOnly_IPC.py
+          python3 -m py_compile tools/velocity/CI_Velocity420_Geyser_Floodgate_Smoke.py
+          python3 -m py_compile tools/velocity/CI_Velocity420_Disabled_Runtime_Smoke.py
           python3 tools/velocity/CI_Velocity_Localhost_ReadOnly_IPC.py
 
   velocity-compatibility-synthetic:
