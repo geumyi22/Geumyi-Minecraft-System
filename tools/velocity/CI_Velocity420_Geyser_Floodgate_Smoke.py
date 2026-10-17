@@ -2,8 +2,9 @@
 """NO-PRODUCTION GitHub CI: SHA-pinned Velocity+Geyser+Floodgate coexistence.
 
 Downloads only officially published SHA-pinned artifacts, then runs them
-together with the disabled Geumyi bridge inside a Docker container that has
-NO NETWORK, NO privileges, NO host-server volumes, and temporary storage.
+together with the disabled Geumyi bridge inside a Docker container on a unique --internal bridge with NO
+external network route, NO published ports, NO privileges, NO host-server
+volumes and temporary storage. The bridge is deleted after every run.
 No synthetic startup log is accepted as full player E2E or production safety.
 """
 from __future__ import annotations
@@ -115,9 +116,20 @@ def run(plugin: pathlib.Path, profile: str) -> None:
         # Name is randomized and scoped to this runner; only this container
         # can be removed in finally, including if Docker client times out.
         container_name = "gsc452-coexistence-" + os.urandom(8).hex()
+        network_name = "gsc452-internal-" + os.urandom(8).hex()
+        # A Docker 'none' namespace may not have usable 127.0.0.1. For
+        # application-layer loopback packet tests, use a UNIQUE Docker bridge
+        # with --internal (no external routing) and NO published host ports.
+        created = subprocess.run(
+            [docker, "network", "create", "--driver", "bridge",
+             "--internal", "--label", "geumyi.gsc452=ci-test", network_name],
+            capture_output=True, text=True, timeout=15,
+        )
+        if created.returncode != 0:
+            raise RuntimeError("cannot create disposable internal-only CI network")
         invocation = [
             docker, "run", "-d", "--rm", "--name", container_name,
-            "--network", "none",
+            "--network", network_name,
             # Docker bind mount preserves host runner UID/GID. The temporary
             # directory is 0700: matching the invoking runner avoids both
             # world-readable credentials and Java "unable to access jarfile".
@@ -208,13 +220,18 @@ def run(plugin: pathlib.Path, profile: str) -> None:
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 timeout=15, check=False,
             )
+            subprocess.run(
+                [docker, "network", "rm", network_name],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                timeout=15, check=False,
+            )
         print(
             "ISOLATED COEXISTENCE STARTUP PASS: profile=" + profile
             + ", SHA256-pinned Velocity 4.2.0/30 + Geyser " + version + "/" + build
             + " + Floodgate 2.2.5/141 + disabled Geumyi bridge."
         )
         print("ISOLATED PUBLIC ENDPOINT PROBES PASS: Java status 25577 and RakNet unconnected PONG 19132, no login.")
-        print("No external network or production resources. No player login, resourcepack or stop/restart test.")
+        print("Internal-only disposable CI network, no published host ports or production resources. No player login/resourcepack/stop-restart test.")
 
 
 if __name__ == "__main__":
