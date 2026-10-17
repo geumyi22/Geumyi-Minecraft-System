@@ -13,11 +13,17 @@ $fakeG=Join-Path $root 'synthetic-G-root'
 foreach($p in @($fixtureProfile,$mirror,$other,$fakeG)){
   [void](New-Item -ItemType Directory -Path $p -Force)
 }
+Write-Host 'SYNTHETIC_STEP_FOLDERS_CREATED'
 $shell=New-Object -ComObject WScript.Shell
+Write-Host 'SYNTHETIC_STEP_COM_CREATED'
 $linkFile=Join-Path $fakeG '내 드라이브.lnk'
 $link=$shell.CreateShortcut($linkFile)
+Write-Host 'SYNTHETIC_STEP_SHORTCUT_OBJECT_CREATED'
 $link.TargetPath=$mirror
+Write-Host 'SYNTHETIC_STEP_TARGET_SET'
 $link.Save()
+Write-Host 'SYNTHETIC_STEP_SHORTCUT_SAVED'
+Write-Host 'SYNTHETIC_STEP_BEFORE_VALIDATION'
 if(-not (P0-CheckMirrorParent $mirror $fixtureProfile $fakeG)){
   throw 'VALID_SYNTHETIC_MIRROR_SHORTCUT_REJECTED'
 }
