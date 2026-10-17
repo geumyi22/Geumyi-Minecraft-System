@@ -174,3 +174,10 @@
 - 수정: 보조 스크립트 import 전에 호출 모드 `$script:P0_Copy_EntryMode`를 별도 보존, 운영 진입 시 `P0_GOOGLE_COPY_ENTRYPOINT_STARTED` 출력. CMD 파일은 종료코드 0만으로 `[MOUNT COPY PASS]`를 표시하지 않으며 **해시 검증·복사 완료 두 P0 상태 줄**이 없으면 성공으로 처리하지 말라고 안내한다.
 - Windows PowerShell 5.1/7 자동화에서 **실제 메인 엔트리포인트를 빈 `LOCALAPPDATA`로 실행해** 실패 코드·진입 메시지를 반환하고 성공을 거짓 보고하지 않는 회귀 테스트를 추가. 이 테스트는 G:와 실제 서버/OneDrive를 만지지 않는다.
 - **현재 현장 G: 복사 증거 없음, Google 클라우드 원격 저장/재다운로드 미확인.** 기존 암호화 로컬 백업 20개/23개 항목·81,413바이트 및 이전 독립 AES-GCM PASS는 유효한 관측으로 유지. 이전 ZIP 재실행 금지; 수정 CI PASS·새 ZIP 검증 후에만 진행한다.
+
+### 수정된 운영 ZIP 빌드 및 CI 증거
+
+- **[GitHub Actions #38997640572](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38997640572)**: 신규 `Regression - production entrypoint must not silently return zero` Windows 회귀 테스트 SUCCESS; `Copy simulation in Windows PowerShell 5.1 and 7` SUCCESS; `Build and verify exact operator ZIP` SUCCESS.
+- 수정 운영 아티팩트: `Geumyi-Day12-P0-GOOGLE-ENCRYPTED-COPY-FIXED-v1.1.zip`, **9,224 bytes**, SHA256 `df58b97059d2633b2a56e905aaca05b0c3e1c6ebf1470bd74a8e1d6445d3b34b`. 중첩 CI 아티팩트에서 내부 ZIP 추출, 5개 엔트리 이름 및 BUILD-INFO 기록 4개 페이로드 SHA256 일치 독립 확인.
+- 이전 `[MOUNT COPY PASS]`만 보였던 **결함이 있는 ZIP은 폐기/재실행 금지**. 사용자가 기존 로컬 암호화 P0 아카이브를 재생성하지 않고 새 ZIP에서 기존 23개 암호문만 G: 신규 폴더에 복사하는 단계로 재진입해야 한다.
+- 수정본의 실서버 Google 복사 PASS가 아직 수신되지 않았으므로 실제 원격 업로드/재다운로드 검증은 모두 미완료. `P0_G_MOUNT_COPY_HASH_VERIFIED=23`과 `P0_G_MOUNT_COPY_COMPLETE=true` 두 출력이 없으면 PASS 아님.
