@@ -86,7 +86,7 @@ foreach($id in $names) {
             }else{'UNVERIFIED'}
             $actions=@($task.Actions)
             $workingDir=[string]$env:ProgramData
-            $expectedDir=Join-Path (Join-Path (Join-Path $workingDir 'GeumyiServerCenter\Network\FourServer') $id) ''
+            $expectedDir=Join-Path (Join-Path $workingDir 'GeumyiServerCenter\Network\FourServer') $id
             if($actions.Count -eq 1){
                 $a=$actions[0]
                 $entry.task_definition_matches_expected=(
