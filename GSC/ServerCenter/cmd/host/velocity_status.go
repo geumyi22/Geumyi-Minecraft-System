@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os/exec"
 	"runtime"
-	"strings"
 	"time"
 	"unicode/utf16"
 )
@@ -70,7 +69,7 @@ func decodeVelocityInventory(raw []byte) (velocityInventory, error) {
 	return inventory, nil
 }
 
-func velocityInventoryCommand() *exec.Cmd {
+func velocityInventoryCommand(ctx context.Context) *exec.Cmd {
 	// The script is compiled into GSC. No user-provided values enter PowerShell,
 	// and no script is written to or executed from a writable temp folder.
 	runes := utf16.Encode([]rune(velocityStatusPS))
@@ -79,7 +78,7 @@ func velocityInventoryCommand() *exec.Cmd {
 		wide[i*2], wide[i*2+1] = byte(v), byte(v>>8)
 	}
 	encoded := base64.StdEncoding.EncodeToString(wide)
-	return exec.Command("powershell.exe", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded)
+	return exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded)
 }
 
 // apiV4VelocityStatus supports GET only. It deliberately does not expose
@@ -95,10 +94,9 @@ func apiV4VelocityStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 	defer cancel()
-	cmd := velocityInventoryCommand()
-	// CommandContext timeout is enforced by an explicit child process kill
-	// on cancellation; never apply it to the target Velocity processes.
-	cmd = exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
+	// The context kills the PowerShell inspection subprocess on timeout;
+	// it does not affect Velocity or its scheduler tasks.
+	cmd := velocityInventoryCommand(ctx)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	out, err := cmd.Output()
@@ -115,5 +113,3 @@ func apiV4VelocityStatus(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, info)
 }
 
-// Avoid accidental misuse of the embedded script in other callers.
-var _ = strings.TrimSpace
