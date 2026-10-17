@@ -35,7 +35,7 @@ From the sanitized operator-supplied JSON `Velocity-Compatibility-READ-ONLY-2026
 
 Official public references: [Velocity 4.2.0 release](https://papermc.io/downloads/velocity), [Velocity API 4.2.0 Javadocs](https://jd.papermc.io/velocity/4.2.0/index.html), [current plugin development guide](https://docs.papermc.io/velocity/dev/creating-your-first-plugin/).
 
-**New gate:** compile the disabled plugin source against 4.2.0 and 4.2.1-SNAPSHOT independently; use Java 25 toolchain to emit Java 25-compatible class files that Java 26 can nominally load. Actual matching-JAR runtime smoke on a disposable test proxy is still required, and **no production JAR or plugin should be installed, replaced or restarted**.
+**Completed isolated CI gates:** both API 4.2.0 and 4.2.1-SNAPSHOT compile/test with JDK 25; plugin classes verified to target Java 25 or older; an official Velocity 4.2.0 Build #30 download is pinned by the SHA-256 and 42,163,652-byte size above, then run in a disposable GitHub Actions directory. The disabled bridge emitted its initialization marker on **Java 25** and separately on **Java 26**. The test kills only its own CI-created disposable subprocess and cleans up its isolated folder. This demonstrates *basic plugin initialization only*—not active GSC command transport, Geyser/Floodgate coexistence, connected players, task ownership, exact Java 26.0.2 patch-level compatibility, or operational shutdown/restart safety. **No production JAR/plugin should be installed, replaced or restarted.**
 
 ## Evidence known before this phase
 
@@ -44,7 +44,7 @@ Earlier operator-supplied read-only JSON confirmed the wild/playground/other tas
 ## Why current production deployment is blocked
 
 1. Sanitized installed JAR and Java executable version hints have been collected; independently establish the effective running JVM major, bytecode linkage and actual API binary compatibility; official Velocity JAR artifact identity (4.2.0 Build #30) has been cross-checked by SHA-256/size, but loaded runtime is not attested. Manifest/executable hints alone are insufficient.
-2. Plugin binary must pass isolated compatibility smoke on the **matching Velocity runtime build** in a disposable VM or container. Geyser/Floodgate, auth, Lobby, Java/Bedrock clients, and performance must not regress.
+2. A basic disabled-plugin loading smoke against the **official matching Velocity 4.2.0 Build #30 on Java 25 and Java 26** has passed in disposable CI. Still required: disposable *full-stack* Geyser/Floodgate coexistence, authenticated local IPC security/identity, task scheduler lifecycle, auth/Lobby, real Java/Bedrock client testing and performance regression checks. Do not treat the basic shell load as full functional E2E.
 3. A future bridge needs per-instance OS-protected keys, authenticated loopback/named-pipe transport, local identity attestation, explicit operator approval, player-aware graceful shutdown, scheduler auto-restart interaction and no replay. The Stage C Go state machine must still be kept fail-closed.
 4. A separate, operator-approved maintenance deployment/recovery plan is mandatory. Source CI green does not clear strict Stable gates.
 
