@@ -20,20 +20,41 @@ function P0-ExpectedCipherNames {
   return $names
 }
 
-function P0-CheckGoogleMyDriveParent([string]$Candidate) {
-  if([string]::IsNullOrWhiteSpace($Candidate)){return $false}
+function P0-CheckMirrorParent(
+  [string]$Candidate,
+  [string]$ProfileRoot,
+  [string]$ShortcutRoot
+) {
+  # Mirrored Google Drive: G: has a shortcut to the real local My Drive folder.
+  # The shortcut TARGET must resolve to the exact selected user-profile folder.
+  # No heuristic acceptance of arbitrary C: paths or cloud sync claims.
+  if([string]::IsNullOrWhiteSpace($Candidate) -or
+     [string]::IsNullOrWhiteSpace($ProfileRoot) -or
+     [string]::IsNullOrWhiteSpace($ShortcutRoot)){return $false}
   try {
     $full=[IO.Path]::GetFullPath($Candidate).TrimEnd('\')
-    $mount=[IO.Path]::GetPathRoot($full)
-    if($mount -ine 'G:\'){return $false}
-    if([IO.Path]::GetDirectoryName($full).TrimEnd('\') -ine 'G:'){return $false}
+    $home=[IO.Path]::GetFullPath($ProfileRoot).TrimEnd('\')
+    if([IO.Path]::GetDirectoryName($full) -ine $home){return $false}
     $leaf=[IO.Path]::GetFileName($full)
-    if($leaf -notin @('My Drive','내 드라이브')){return $false}
-    $drive=Get-Item -LiteralPath 'G:\' -Force -ErrorAction Stop
-    $parent=Get-Item -LiteralPath $full -Force -ErrorAction Stop
-    if(-not $drive.PSIsContainer -or -not $parent.PSIsContainer){return $false}
-    if((([long]$parent.Attributes -band 0x00000400) -ne 0)){return $false}
-    return $true
+    if($leaf -cnotin @('My Drive','내 드라이브')){return $false}
+    foreach($p in @($home,$full)){
+      $item=Get-Item -LiteralPath $p -Force -ErrorAction Stop
+      if(-not $item.PSIsContainer -or
+        (([long]$item.Attributes -band 0x00441400) -ne 0)){return $false}
+    }
+    $root=Get-Item -LiteralPath $ShortcutRoot -Force -ErrorAction Stop
+    if(-not $root.PSIsContainer){return $false}
+    $links=@(Get-ChildItem -LiteralPath $ShortcutRoot -File -Force -ErrorAction Stop |
+      Where-Object{$_.Extension -ieq '.lnk' -and
+                   $_.BaseName -in @('My Drive','내 드라이브')})
+    if($links.Count -ne 1){return $false}
+    $link=$links[0]
+    if((([long]$link.Attributes -band 0x00000400) -ne 0)){return $false}
+    $shell=New-Object -ComObject WScript.Shell
+    $target=$shell.CreateShortcut($link.FullName).TargetPath
+    if([string]::IsNullOrWhiteSpace($target)){return $false}
+    $resolved=[IO.Path]::GetFullPath($target).TrimEnd('\')
+    return $resolved.Equals($full,[StringComparison]::OrdinalIgnoreCase)
   } catch {return $false}
 }
 
@@ -87,8 +108,8 @@ function P0-ExactCipherInventory([string]$Folder) {
 
 function P0-CopyCipherSet([string]$Source,[string]$GoogleParent,[string]$Leaf) {
   # Caller verifies source is the approved latest local capture and GoogleParent
-  # is the real G:\My Drive or G:\내 드라이브 mount; this helper is testable
-  # with synthetic temporary parents only.
+  # is an EXACT shortcut-verified mirrored My Drive folder, not an arbitrary
+  # local directory. Tested using a disposable synthetic .lnk target.
   if($Leaf -notmatch '^Geumyi-P0-Encrypted-Config-[0-9]{8}-[0-9]{6}-[a-f0-9]{16}$'){
     P0-Refuse 'NEW_LEAF_NAME_INVALID'
   }
@@ -164,24 +185,26 @@ try {
     P0-Refuse 'ARCHIVE_IDENTITY_SIZE_CHANGED'
   }
   Write-Host '======================================================'
-  Write-Host 'Geumyi Day12 P0 - upload ENCRYPTED existing files only'
+  Write-Host 'Geumyi Day12 P0 - copy ENCRYPTED files to verified mirror only'
   Write-Host '23 encrypted-backup entries. Exact local total: 81413 bytes.'
   Write-Host 'NO server/OneDrive source reads, no plaintext, no backup deletion.'
-  Write-Host 'A G: mounted copy is NOT proof of Google remote sync.'
+  Write-Host 'A mirrored local copy is NOT proof of Google remote sync.'
   Write-Host '======================================================'
-  Write-Host 'Open Windows Explorer -> G: -> My Drive / 내 드라이브.'
-  Write-Host 'Confirm it belongs to your intended Google account.'
-  $google=(Read-Host 'Paste EXISTING G:\My Drive or G:\내 드라이브 path').Trim().Trim('"')
-  if(-not(P0-CheckGoogleMyDriveParent $google)){
-    P0-Refuse 'GOOGLE_MYDRIVE_PATH_NOT_VERIFIED'
+  Write-Host 'Google Drive MIRROR mode is confirmed by operator.'
+  Write-Host 'G: contains a My Drive SHORTCUT to a local user-profile folder.'
+  Write-Host 'Only the local folder matching that G: shortcut is accepted.'
+  Write-Host 'Check the signed-in Google account in Drive for desktop.'
+  $google=(Read-Host 'Paste the LOCAL mirrored My Drive folder path (C: user profile)').Trim().Trim('"')
+  if(-not(P0-CheckMirrorParent $google $env:USERPROFILE 'G:\')){
+    P0-Refuse 'GOOGLE_MIRROR_SHORTCUT_TARGET_NOT_VERIFIED'
   }
   $approval=Read-Host 'Type GOOGLE_P0_ENCRYPTED_UPLOAD_APPROVED to copy 23 encrypted entries'
   if($approval -cne 'GOOGLE_P0_ENCRYPTED_UPLOAD_APPROVED'){
     P0-Refuse 'OPERATOR_CONFIRMATION_REFUSED'
   }
   # After confirmation, repeat exact source and Google-parent checks.
-  if(-not(P0-CheckGoogleMyDriveParent $google)){
-    P0-Refuse 'GOOGLE_PARENT_CHANGED'
+  if(-not(P0-CheckMirrorParent $google $env:USERPROFILE 'G:\')){
+    P0-Refuse 'GOOGLE_MIRROR_SHORTCUT_CHANGED'
   }
   $current=Inspect-P0EncryptedLocal $source
   if($current.local_archive_state -ne 'LOCAL_P0_ENCRYPTED_SET_METADATA_COMPLETE' -or
@@ -191,13 +214,13 @@ try {
   $leaf='Geumyi-P0-Encrypted-Config-'+(Get-Date -Format 'yyyyMMdd-HHmmss')+'-'+
     ([guid]::NewGuid().ToString('N').Substring(0,16))
   $out=P0-CopyCipherSet $source $google $leaf
-  Write-Host 'P0_G_MOUNT_COPY_HASH_VERIFIED=23'
-  Write-Host ('P0_G_MOUNT_COPY_BYTES='+$out.bytes)
-  Write-Host ('P0_G_MOUNT_NEW_FOLDER_NAME='+$out.leaf)
-  Write-Host 'P0_G_MOUNT_COPY_COMPLETE=true'
+  Write-Host 'P0_GOOGLE_MIRROR_COPY_HASH_VERIFIED=23'
+  Write-Host ('P0_GOOGLE_MIRROR_COPY_BYTES='+$out.bytes)
+  Write-Host ('P0_GOOGLE_MIRROR_NEW_FOLDER_NAME='+$out.leaf)
+  Write-Host 'P0_GOOGLE_MIRROR_COPY_COMPLETE=true'
   Write-Host 'P0_GOOGLE_REMOTE_UPLOAD_VERIFIED=false'
   Write-Host 'P0_INDEPENDENT_WEB_DOWNLOAD_VERIFIED=false'
-  Write-Host 'P0_ORIGINAL_SOURCE_OR_SERVERS_CHANGED=false'
+  Write-Host 'P0_SOURCE_WRITE_PERFORMED=false'
   Write-Host 'P0_STABLE_RELEASE_ALLOWED=false'
   Write-Host 'SEND_ONLY: the P0_ status lines. NEVER send recovery keys or backup files.'
 } catch {
