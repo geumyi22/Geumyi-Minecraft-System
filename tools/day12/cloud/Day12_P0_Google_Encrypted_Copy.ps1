@@ -6,6 +6,10 @@ $ErrorActionPreference='Stop'
 # Copies only existing ENCRYPTED P0 archive entries from local staging to a
 # NEW Google Drive mounted directory. Cloud sync is asynchronous; success is
 # NOT remote upload proof. Never touches Paper, GSC, OneDrive or plaintext.
+# Preserve our entry-point mode before dot-sourcing a helper that has the SAME
+# parameter name. Dot sourcing can bind the helper's -FunctionsOnly switch in
+# the caller scope, making a production invocation silently exit code 0.
+$script:P0_Copy_EntryMode = -not [bool]$FunctionsOnly
 . (Join-Path $PSScriptRoot 'Day12_P0_Google_Transfer_Preflight_READ_ONLY.ps1') -FunctionsOnly
 
 function P0-Refuse([string]$Code) {throw ('P0_GOOGLE_COPY_'+$Code)}
@@ -131,7 +135,8 @@ function P0-CopyCipherSet([string]$Source,[string]$GoogleParent,[string]$Leaf) {
   }
 }
 
-if($FunctionsOnly){return}
+if(-not $script:P0_Copy_EntryMode){return}
+Write-Host 'P0_GOOGLE_COPY_ENTRYPOINT_STARTED'
 
 try {
   if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){
