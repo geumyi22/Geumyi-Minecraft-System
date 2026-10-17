@@ -39,7 +39,8 @@ jobs:
           }
           $src=Get-Content -LiteralPath (Join-Path $base 'Day12_P0_Google_Encrypted_Copy.ps1') -Raw
           foreach($expected in @('P0-CopyCipherFile','P0-CopyCipherSet',
-            'P0-CheckMirrorParent','P0-ExactCipherInventory',
+            'P0-CheckMirrorParent','P0-MirrorCandidateUnderProfile',
+            'P0-PathIdentical','P0-ExactCipherInventory',
             'P0_GOOGLE_REMOTE_UPLOAD_VERIFIED=false',
             'P0_INDEPENDENT_WEB_DOWNLOAD_VERIFIED=false',
             'GOOGLE_P0_ENCRYPTED_UPLOAD_APPROVED',
@@ -103,7 +104,7 @@ jobs:
             $global:LASTEXITCODE=0
             $r=@(& $engine -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $fixture)
             if($LASTEXITCODE -ne 0 -or
-              ($r|Out-String) -notmatch 'P0_GOOGLE_MIRROR_SHORTCUT_SYNTHETIC_PASS'){
+              ($r|Out-String) -notmatch 'P0_GOOGLE_MIRROR_VALIDATION_SYNTHETIC_PASS'){
               $r|ForEach-Object{Write-Host $_}
               throw ('GOOGLE_MIRROR_SHORTCUT_REGRESSION_FAILED_'+$engine)
             }
