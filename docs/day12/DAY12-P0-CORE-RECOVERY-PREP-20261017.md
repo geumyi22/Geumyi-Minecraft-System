@@ -186,15 +186,23 @@
 
 - 운영자가 탐색기 스크린샷으로 `Google Drive (G:)` 루트의 `내 드라이브`가 **바로 가기**인 것을 보여 주었고, 이를 열었을 때 Windows 사용자 프로필의 별도 C: `내 드라이브` 폴더로 이동하는 상태를 확인했다. Google Drive for desktop 환경설정에서 **파일 미러링 선택 및 해당 C: 폴더 연결**을 운영자가 명시 확인했다.
 - 기존 전송 프로그램은 G: 하위 실제 디렉터리만 허용했기 때문에 `P0_GOOGLE_COPY_GOOGLE_MYDRIVE_PATH_NOT_VERIFIED`로 **파일 복사 전에 안전 차단**되었다. 이는 업로드 성공이 아니며 이전 `P0_OFFLINE_VERIFY_PASS`와 별개다.
-- 신규 미러링 전용 동작: 프로필 직속 `My Drive`/`내 드라이브` 폴더만 후보로 받고, 운영자 G: 루트의 대응 `.lnk` 바로 가기 대상 경로를 Windows Shell API로 해석하여 해당 C: 후보의 정규화 절대경로와 **실제로 일치**할 때만 신규 폴더로 23개 암호화 설정 백업 항목을 복사한다. 단순 C: 경로 문자열 확인만으로 업로드 성공을 주장하지 않는다.
+- 신규 미러링 전용 동작: 프로필 직속 `My Drive`/`내 드라이브` 폴더만 후보로 받고, 운영자 G: 루트의 대응 `.lnk` 바로 가기 대상 경로를 Windows Shell.Application API(Unicode)로 해석하여 해당 C: 후보의 정규화 절대경로와 **실제로 일치**할 때만 신규 폴더로 23개 암호화 설정 백업 항목을 복사한다. 단순 C: 경로 문자열 확인만으로 업로드 성공을 주장하지 않는다.
 - G: 원격 DriveFS와 C: 로컬 미러 폴더의 모델은 다르다. C: 미러 폴더에 있는 복사본의 SHA-256이 일치해도 **Google 원격 서버 업로드 완료·계정 독립 식별·다운로드 복구 가능성은 별도 검증**한다.
 - Windows PowerShell 5.1/7 가짜 파일 및 가짜 `.lnk` 대상 동등성 테스트를 합성 CI에 추가. 실제 Google 계정/원본 서버/기존 로컬 P0 아카이브를 테스트에 사용하지 않는다. 이전 v1.1 업로드 도구는 재실행하지 않는다.
 
 ## 2026-10-17 Google Drive 미러링용 암호문 전송 도구 V2
 
 - 사용자 실호스트에서 Google Drive for desktop의 **내 드라이브 파일 미러링**과 C: 사용자 프로필 아래 실제 미러링 폴더 일치를 재확인했다. G: 루트 항목은 파일 본체가 아니라 해당 미러 폴더로 이동하는 바로 가기.
-- 수정 코드는 반드시 `P0-CheckMirrorParent(C:입력경로, USERPROFILE, G:)`를 수행한다. 대상은 사용자 프로필 직속 `내 드라이브` 또는 `My Drive`라는 이름의 *정규 디렉터리*이고, G: 루트의 동명 `.lnk` 바로 가기를 Windows Shell COM을 통해 해석한 **TargetPath가 입력 폴더와 정확히 같아야** 한다.
+- 수정 코드는 반드시 `P0-CheckMirrorParent(C:입력경로, USERPROFILE, G:)`를 수행한다. 대상은 사용자 프로필 직속 `내 드라이브` 또는 `My Drive`라는 이름의 *정규 디렉터리*이고, G: 루트의 동명 `.lnk` 바로 가기를 Windows Shell.Application COM(Unicode)을 통해 해석한 **TargetPath가 입력 폴더와 정확히 같아야** 한다.
 - 미러링 폴더가 아니거나 바로 가기 대상이 바뀌면 파일을 한 개도 쓰기 전에 `P0_GOOGLE_COPY_GOOGLE_MIRROR_SHORTCUT_TARGET_NOT_VERIFIED` 또는 `P0_GOOGLE_COPY_GOOGLE_MIRROR_SHORTCUT_CHANGED`로 중단한다.
 - 복사는 확인된 C: 미러링 폴더에 새 고유 하위 디렉터리 하나를 생성하고 기존 암호화 P0 23개 파일(81,413바이트)을 SHA-256 전후 대조하여 복사한다. 로컬 P0 기존 파일은 읽기만 하고 삭제·덮어쓰기·복구 암호 노출·OneDrive 원본 접근 없음.
 - 출력 `P0_GOOGLE_MIRROR_COPY_HASH_VERIFIED=23`와 `P0_GOOGLE_MIRROR_COPY_COMPLETE=true`는 **C: 미러링 로컬 복사의 완료**만 의미한다. Google 원격 업로드 성공은 비동기 별도 단계(웹 확인 + 실제 원격 사본 별도 다운로드 + 격리 AES-GCM 확인)까지 미확인으로 유지.
 - 테스트에 가짜 C: 미러링 폴더와 G: 대신 쓰는 임시 폴더, 임시 `.lnk`를 생성해 PowerShell 5.1/7에서 링크 일치와 불일치 거부를 검증한다. 실제 클라우드 계정이나 서버 파일은 CI에서 읽지 않는다.
+
+### Google Drive 미러링 V2 검증 통과 — 운영자용 ZIP
+
+- Google Drive 대상 확인은 한글 경로 호환성 문제가 있는 `WScript.Shell.CreateShortcut()`를 **운영 코드에서는 사용하지 않고**, Windows `Shell.Application` Unicode Shell Namespace의 `System.Link.TargetParsingPath`/ShellLink Target Path를 통해 수행한다. 실제 C: 사용자 프로필 직속 미러링 폴더와 G:의 동명 .lnk 대상이 정규화된 절대 경로 기준으로 일치해야 함.
+- CI [#39004962644](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/39004962644): Windows PowerShell 5.1 및 7의 23개 암호문 가짜 복사·SHA-256 검증, 신규 폴더 덮어쓰기 거부, 엔트리포인트 거짓 성공 방지, Unicode(한글) 바로 가기 인식·잘못된 대상 거부, 오퍼레이터 ZIP 빌드 **모두 PASS**.
+- 운영 ZIP `Geumyi-Day12-P0-GOOGLE-MIRROR-ENCRYPTED-COPY-v2.zip`: **9,703 bytes**, SHA-256 `f7e79078cb0f3a93708724f02d659645d6e1e127848d7beadf1474a97890c789`. Github Actions artifact에서 안쪽 ZIP을 실제 추출했고, 다섯 파일 중 네 페이로드의 SHA-256이 `BUILD-INFO-P0-GOOGLE-COPY.json` 기록과 정확히 일치함. 빌드 source HEAD `9d76fc18d5f0dd314346cc235399de20f5dd1acd`.
+- 실제 Windows 호스트에서 C: 미러 폴더 입력·신규 암호문 23개 복사와 검증 결과는 **아직 수신되지 않음**. C: 미러 폴더에 복사되었다 하더라도 Google 웹 계정의 원격 업로드 완료·독립 다운로드 재검증과 실서버 서비스 복원은 별도 게이트로 유지한다.
+- 기존 v1.1/이전 G: 전용 ZIP은 재실행 금지. 운영자에게 v2만 배포하고 `P0_GOOGLE_MIRROR_COPY_HASH_VERIFIED=23`, `P0_GOOGLE_MIRROR_COPY_COMPLETE=true` 두 줄을 확인받는다.
