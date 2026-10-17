@@ -14,9 +14,13 @@ permissions:
 
 jobs:
   velocity-api-synthetic:
-    name: Velocity 4.2.1 API prototype (NOT production compatibility)
+    name: Velocity API ${{ matrix.velocity_api }} compile-only (NO DEPLOY)
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        velocity_api: ['4.2.0', '4.2.1-SNAPSHOT']
     steps:
       - name: Checkout exact proposal
         uses: actions/checkout@v4
@@ -49,7 +53,7 @@ jobs:
           print('No active management bridge or lifecycle actions in entrypoint')
           PY
       - name: Compile offline prototype and run Java tests
-        run: gradle -p Plugins/GeumyiVelocityBridge clean test jar --no-daemon --stacktrace
+        run: gradle -p Plugins/GeumyiVelocityBridge clean test jar -PvelocityApiVersion=${{ matrix.velocity_api }} --no-daemon --stacktrace
       - name: Verify generated Velocity plugin metadata
         shell: bash
         run: |
@@ -58,7 +62,7 @@ jobs:
           test -n "$jarfile"
           jar tf "$jarfile" | grep -Fx 'velocity-plugin.json'
           jar tf "$jarfile" | grep -Fx 'kr/geumyi/velocitybridge/GeumyiVelocityBridge.class'
-          echo "Standalone jar build verified; artifact not published or installed."
+          echo "Isolated ${{ matrix.velocity_api }} class and metadata built (NOT installed or deployed)."
 
   velocity-compatibility-synthetic:
     name: Windows version fingerprint collector synthetic (NO LIVE TASKS)
