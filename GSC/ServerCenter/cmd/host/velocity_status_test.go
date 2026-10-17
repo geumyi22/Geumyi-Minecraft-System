@@ -32,6 +32,9 @@ func TestVelocityInventoryRejectsMissingOrInventedTargets(t *testing.T) {
 		{"duplicate-id", func(p *velocityInventory) { p.Proxies[1].ID = "wild" }},
 		{"wrong-port", func(p *velocityInventory) { p.Proxies[0].BedrockPort = 19133 }},
 		{"unexpected-state", func(p *velocityInventory) { p.Proxies[2].Status = "ONLINE" }},
+		{"false-identity-proof", func(p *velocityInventory) { p.TaskProcessIdentityVerified = true }},
+		{"false-game-e2e-proof", func(p *velocityInventory) { p.LiveJavaRaknetE2EVerified = true }},
+		{"impossible-udp-pair", func(p *velocityInventory) { p.UDPThreeUniqueChildOwners = true }},
 		{"unknown-schema", func(p *velocityInventory) { p.Schema = 2 }},
 	}
 	body, _ := json.Marshal(valid)
