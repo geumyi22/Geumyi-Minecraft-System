@@ -25,3 +25,9 @@ The matching Ed25519 public key is configured on the GSC host. Never fetch the v
 ## Channels
 
 `stable`, `beta`, and `canary` are encoded in the signed manifest. Per-server pin/hold policy is a later operations-UX layer; Day 8 establishes the signed release source and next-start updater foundation.
+
+## Strict release-channel policy
+
+GSC Stable/Beta/Canary roles, promotion gates, prerequisite signatures, manual Stable vs signed Stable distinction, and rollback/compatibility rules are documented in [GSC release channel policy](../docs/operations/GSC-RELEASE-CHANNEL-POLICY.md).
+
+**Stable requires an independently trusted Ed25519-signed deployment-stable.json + .sig and matching checksums; a manually published Stable installer is not enough to enable signed self-update.** Publishing, signing, promoting and applying are separate operations, not implied by selecting a channel.
