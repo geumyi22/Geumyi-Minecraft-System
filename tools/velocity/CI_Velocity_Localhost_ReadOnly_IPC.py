@@ -181,9 +181,9 @@ def main():
             assert exchange(server, altered).get("error") == "rejected", "generation tamper accepted"
             # Reject duplicate JSON property ambiguity and oversize frames.
             valid = signed(TARGET, "status", now)
-            duplicate = json.dumps(valid, separators=(",", ":"))[:-1] + ',"target":"wild"}' + "\\n"
+            duplicate = json.dumps(valid, separators=(",", ":"))[:-1] + ',"target":"wild"}' + "\n"
             assert exchange_raw(server, duplicate.encode()).get("error") == "rejected", "duplicate JSON key accepted"
-            oversized = b"{" + b" " * MAX_FRAME + b"}\\n"
+            oversized = b"{" + b" " * MAX_FRAME + b"}\n"
             assert exchange_raw(server, oversized).get("error") == "invalid_frame", "large frame accepted"
             wrong_type = signed(TARGET, "status", now)
             wrong_type["version"] = True
