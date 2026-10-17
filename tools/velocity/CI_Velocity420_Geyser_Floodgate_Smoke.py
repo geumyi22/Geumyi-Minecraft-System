@@ -169,6 +169,66 @@ def test_only_udp_ports(docker: str, container: str) -> list[int]:
     return sorted(ports)[:16]
 
 
+def prepare_disposable_offline_raknet_config(docker: str, root: pathlib.Path) -> None:
+    """Generate Geyser defaults, then alter ONLY CI's disposable config.
+
+    Geyser.initialize() requests Mojang's Xbox auth public key BEFORE the
+    RakNet listener starts when validate-bedrock-login=true. This completely
+    network-isolated test only checks the unauthenticated status-ping protocol,
+    NEVER player login or auth, and does not publish any container ports.
+    Do not call this helper with real-server data or any operator file.
+    """
+    conf = root / "plugins" / "Geyser-Velocity" / "config.yml"
+    name = "gsc452-config-" + os.urandom(8).hex()
+    invocation = [
+        docker, "run", "-d", "--rm", "--name", name,
+        "--network", "none",
+        "--user", f"{os.getuid()}:{os.getgid()}",
+        "--cap-drop", "ALL",
+        "--security-opt", "no-new-privileges",
+        "--pids-limit", "128",
+        "--memory", "2g",
+        "--cpus", "2",
+        "--mount", f"type=bind,src={root},dst=/work",
+        "--workdir", "/work",
+        "eclipse-temurin:26-jre",
+        "java", "-DgeyserTransport=raknet", "-Xms128M", "-Xmx640M",
+        "-jar", "velocity-4.2.0-30.jar",
+    ]
+    try:
+        started = subprocess.run(
+            invocation, capture_output=True, text=True, timeout=25,
+        )
+        if started.returncode != 0:
+            raise RuntimeError("CI-only default-config generation container failed")
+        deadline = time.monotonic() + 25
+        while time.monotonic() < deadline:
+            if conf.is_file() and 0 < conf.stat().st_size <= 262144:
+                generated = conf.read_text(encoding="utf8", errors="replace")
+                if "validate-bedrock-login:" in generated:
+                    break
+            time.sleep(0.4)
+        else:
+            raise RuntimeError("CI-only default Geyser config did not appear")
+    finally:
+        subprocess.run(
+            [docker, "rm", "-f", name],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            timeout=15, check=False,
+        )
+    # Strictly require exactly ONE default-true authentication setting.
+    # The only permitted replacement is in this brand-new temporary folder
+    # with no public ports/external network. No general config merge or
+    # world/player/production configuration changes are supported.
+    pattern = re.compile(r"(?m)^([ \t]+validate-bedrock-login:[ \t]*)true([ \t]*(?:#.*)?)$")
+    generated = conf.read_text(encoding="utf8")
+    if len(pattern.findall(generated)) != 1:
+        raise RuntimeError("CI-only Geyser auth gate not uniquely identified; no override applied")
+    modified = pattern.sub(r"\g<1>false\g<2>", generated, count=1)
+    conf.write_text(modified, encoding="utf8")
+    print("CI_OFFLINE_RAKNET_ONLY_AUTH_DISABLED=TRUE (no players, no external network, test-generated config only)")
+
+
 def run(plugin: pathlib.Path, profile: str) -> None:
     if profile not in GEYSER_PROFILES:
         raise ValueError("unknown pinned Geyser compatibility profile")
@@ -195,6 +255,10 @@ def run(plugin: pathlib.Path, profile: str) -> None:
         shutil.copyfile(plugin, root / "plugins" / "geumyi-velocity-bridge-disabled.jar")
         # Compile a CI-only fixed-loopback protocol probe to Java 26 bytecode.
         # It runs inside the SAME network-disabled test namespace as Velocity.
+        # Isolated preflight generates a default config without ever exposing
+        # the test JVM to external network/host ports. Authentication is
+        # strictly disabled for local, unauthenticated PONG protocol only.
+        prepare_disposable_offline_raknet_config(docker, root)
         probe_dir = root / "probes"
         probe_dir.mkdir()
         subprocess.run(
