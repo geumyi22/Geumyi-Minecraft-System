@@ -5,6 +5,7 @@ on:
     paths:
       - 'tools/day12/cloud/Day12_P0_Google_Encrypted_Copy.ps1'
       - 'tools/day12/cloud/Test_Day12_P0_Google_Encrypted_Copy_V1.ps1'
+      - 'tools/day12/cloud/Test_Day12_P0_Google_Mirror_Validation_V2.ps1'
       - 'tools/day12/cloud/RUN_Day12_P0_Google_Encrypted_Copy.cmd'
       - 'tools/day12/cloud/README-Day12-P0-GOOGLE-ENCRYPTED-COPY-KO.txt'
       - '.github/workflows/day12-p0-google-encrypted-copy-v1.yml'
@@ -28,7 +29,8 @@ jobs:
           $base='tools/day12/cloud'
           foreach($n in @('Day12_P0_Google_Encrypted_Copy.ps1',
             'Day12_P0_Google_Transfer_Preflight_READ_ONLY.ps1',
-            'Test_Day12_P0_Google_Encrypted_Copy_V1.ps1')){
+            'Test_Day12_P0_Google_Encrypted_Copy_V1.ps1',
+            'Test_Day12_P0_Google_Mirror_Validation_V2.ps1')){
             $tokens=$null;$errors=$null
             [void][Management.Automation.Language.Parser]::ParseFile(
               (Resolve-Path (Join-Path $base $n)).Path,
@@ -37,12 +39,12 @@ jobs:
           }
           $src=Get-Content -LiteralPath (Join-Path $base 'Day12_P0_Google_Encrypted_Copy.ps1') -Raw
           foreach($expected in @('P0-CopyCipherFile','P0-CopyCipherSet',
-            'P0-CheckGoogleMyDriveParent','P0-ExactCipherInventory',
+            'P0-CheckMirrorParent','P0-ExactCipherInventory',
             'P0_GOOGLE_REMOTE_UPLOAD_VERIFIED=false',
             'P0_INDEPENDENT_WEB_DOWNLOAD_VERIFIED=false',
             'GOOGLE_P0_ENCRYPTED_UPLOAD_APPROVED',
             'FileMode]::CreateNew','Get-FileHash','81413',
-            'P0_G_MOUNT_COPY_HASH_VERIFIED=23')){
+            'P0_GOOGLE_MIRROR_COPY_HASH_VERIFIED=23')){
             if(-not $src.Contains($expected)){throw ('P0_COPY_REQUIRED_GUARD_MISSING_'+$expected)}
           }
           if($src -match '(?i)Remove-Item|Stop-Process|Restart-Service|Stop-Service|Set-Content|Invoke-RestMethod|Invoke-WebRequest|git push'){
@@ -92,6 +94,22 @@ jobs:
             $result|ForEach-Object{Write-Host $_}
           }
           $global:LASTEXITCODE=0
+      - name: Google mirror shortcut validation - PowerShell 5.1 and 7
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $fixture='tools/day12/cloud/Test_Day12_P0_Google_Mirror_Validation_V2.ps1'
+          foreach($engine in @('powershell.exe','pwsh')){
+            $global:LASTEXITCODE=0
+            $r=@(& $engine -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $fixture)
+            if($LASTEXITCODE -ne 0 -or
+              ($r|Out-String) -notmatch 'P0_GOOGLE_MIRROR_SHORTCUT_SYNTHETIC_PASS'){
+              $r|ForEach-Object{Write-Host $_}
+              throw ('GOOGLE_MIRROR_SHORTCUT_REGRESSION_FAILED_'+$engine)
+            }
+            $r|ForEach-Object{Write-Host $_}
+          }
+          $global:LASTEXITCODE=0
       - name: Build and verify exact operator ZIP
         shell: pwsh
         run: |
@@ -107,7 +125,7 @@ jobs:
             Copy-Item -LiteralPath (Join-Path 'tools/day12/cloud' $name) -Destination $dir -ErrorAction Stop
           }
           $metadata=[ordered]@{
-            label='DAY12_P0_ENCRYPTED_ONLY_GOOGLE_G_COPY_V1'
+            label='DAY12_P0_ENCRYPTED_ONLY_GOOGLE_MIRROR_COPY_V2'
             git_head='${{ github.event.pull_request.head.sha || github.sha }}'
             synthetic_ci_only=$true
             uploads_remotely_confirmed=$false
@@ -121,7 +139,7 @@ jobs:
             }
           }
           $metadata|ConvertTo-Json -Depth 7|Set-Content -LiteralPath (Join-Path $dir 'BUILD-INFO-P0-GOOGLE-COPY.json') -Encoding UTF8
-          $zip='Geumyi-Day12-P0-GOOGLE-ENCRYPTED-COPY-v1.zip'
+          $zip='Geumyi-Day12-P0-GOOGLE-MIRROR-ENCRYPTED-COPY-v2.zip'
           Compress-Archive -Path (Join-Path $dir '*') -DestinationPath $zip -ErrorAction Stop
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           $read=[IO.Compression.ZipFile]::OpenRead((Resolve-Path $zip).Path)
@@ -133,8 +151,8 @@ jobs:
           Write-Host ('P0_GOOGLE_CIPHER_COPY_ZIP_SHA256='+(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant())
       - uses: actions/upload-artifact@v7
         with:
-          name: day12-p0-google-encrypted-copy-v1
-          path: Geumyi-Day12-P0-GOOGLE-ENCRYPTED-COPY-v1.zip
+          name: day12-p0-google-mirror-encrypted-copy-v2
+          path: Geumyi-Day12-P0-GOOGLE-MIRROR-ENCRYPTED-COPY-v2.zip
           if-no-files-found: error
           retention-days: 30
       - name: Explicit CI limitation
@@ -143,7 +161,7 @@ jobs:
           @'
           SYNTHETIC TESTS ONLY. No real G: mount, no Google account identity,
           no provider upload/download or remote storage confirmation.
-          On the operator host, mounted-G copy is a provider staging step;
+          On the operator host, mirrored-folder copy is a provider staging step;
           independent Google web download and AES-GCM verification remain required.
           Existing local encrypted backup and live server data remain unchanged.
           '@ >> $env:GITHUB_STEP_SUMMARY
