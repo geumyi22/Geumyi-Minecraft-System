@@ -10,13 +10,13 @@ func fixtureFleet() ([]ProxySnapshot,time.Time) {
  now:=time.Date(2026,10,18,3,0,0,0,time.UTC)
  return []ProxySnapshot{
   {Target:"wild",ObservedAt:now,TaskDefinitionMatches:true,TaskToParentIndependentlyAttested:true,
-   ParentPID:101,ChildPID:102,ChildParentPID:101,UDPOwnerPID:102,TCPOwnerPID:102,TCPInventoryPresent:true,
+   ParentPID:101,ChildPID:102,ChildParentPID:101,UDPOwnerPID:102,TCPOwnerPID:102,TCPInventoryPresent:true,ObservedJavaPort:25565,ObservedBedrockPort:19132,
    VelocitySHA256:velocity420Build30SHA,JavaStatusResponded:true,BedrockRaknetPong:true},
   {Target:"playground",ObservedAt:now,TaskDefinitionMatches:true,TaskToParentIndependentlyAttested:true,
-   ParentPID:201,ChildPID:202,ChildParentPID:201,UDPOwnerPID:202,TCPOwnerPID:202,TCPInventoryPresent:true,
+   ParentPID:201,ChildPID:202,ChildParentPID:201,UDPOwnerPID:202,TCPOwnerPID:202,TCPInventoryPresent:true,ObservedJavaPort:25566,ObservedBedrockPort:19133,
    VelocitySHA256:velocity420Build30SHA,JavaStatusResponded:true,BedrockRaknetPong:true},
   {Target:"other",ObservedAt:now,TaskDefinitionMatches:true,TaskToParentIndependentlyAttested:true,
-   ParentPID:301,ChildPID:302,ChildParentPID:301,UDPOwnerPID:302,TCPOwnerPID:302,TCPInventoryPresent:true,
+   ParentPID:301,ChildPID:302,ChildParentPID:301,UDPOwnerPID:302,TCPOwnerPID:302,TCPInventoryPresent:true,ObservedJavaPort:25567,ObservedBedrockPort:19134,
    VelocitySHA256:velocity420Build30SHA,JavaStatusResponded:true,BedrockRaknetPong:true},
  },now
 }
@@ -63,6 +63,8 @@ func TestFleetRejectsContradictoryOwnershipAndStaleSignals(t *testing.T) {
   {"task_not_correlated",func(s *[]ProxySnapshot,_ *time.Time){(*s)[0].TaskToParentIndependentlyAttested=false},"task_to_parent_identity_unverified"},
   {"task_definition_drift",func(s *[]ProxySnapshot,_ *time.Time){(*s)[0].TaskDefinitionMatches=false},"task_to_parent_identity_unverified"},
   {"wrong_jar",func(s *[]ProxySnapshot,_ *time.Time){(*s)[0].VelocitySHA256=strings.Repeat("a",64)},"jar_artifact_not_matching_reference"},
+  {"wrong_java_port",func(s *[]ProxySnapshot,_ *time.Time){(*s)[0].ObservedJavaPort=25566},"incorrect_proxy_endpoint_port"},
+  {"wrong_bedrock_port",func(s *[]ProxySnapshot,_ *time.Time){(*s)[0].ObservedBedrockPort=19133},"incorrect_proxy_endpoint_port"},
   {"absent_java_app_probe",func(s *[]ProxySnapshot,_ *time.Time){(*s)[0].JavaStatusResponded=false},"java_application_status_unverified"},
   {"absent_raknet",func(s *[]ProxySnapshot,_ *time.Time){(*s)[0].BedrockRaknetPong=false},"bedrock_raknet_unverified"},
   {"tcp_owner_conflict",func(s *[]ProxySnapshot,_ *time.Time){(*s)[0].TCPOwnerPID=333},"tcp_owner_conflict"},
@@ -102,5 +104,16 @@ func TestIncompleteOrForgedFleetNeverBecomesHealthy(t *testing.T) {
     }
    }
   })
+ }
+}
+
+
+func TestFleetRawPIDsNeverSerializedEvenOnDirectSnapshotMarshal(t *testing.T) {
+ ss,_:=fixtureFleet()
+ b,err:=json.Marshal(ss);if err!=nil{t.Fatal(err)}
+ for _,field:=range []string{"ParentPID","ChildPID","ChildParentPID","UDPOwnerPID","TCPOwnerPID"} {
+  if strings.Contains(string(b),"\""+field+"\"") {
+   t.Fatalf("raw in-memory PID leaked via snapshot JSON: %s",field)
+  }
  }
 }
