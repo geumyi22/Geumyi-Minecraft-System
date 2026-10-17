@@ -20,9 +20,13 @@ var velocityStatusPS string
 // velocityInventory contains only task and socket summary flags. No credentials,
 // process command lines, filesystem paths or raw identifiers are returned.
 type velocityInventory struct {
-	Schema   int                   `json:"schema"`
-	ReadOnly bool                  `json:"read_only"`
-	Proxies  []velocityProxyStatus `json:"proxies"`
+	Schema                     int                   `json:"schema"`
+	ReadOnly                   bool                  `json:"read_only"`
+	ProcessPairCensusConsistent bool               `json:"process_pair_census_consistent"`
+	UDPThreeUniqueChildOwners bool                 `json:"udp_three_unique_child_owners"`
+	TaskProcessIdentityVerified bool               `json:"task_process_identity_verified"`
+	LiveJavaRaknetE2EVerified bool                 `json:"live_java_raknet_e2e_verified"`
+	Proxies                    []velocityProxyStatus `json:"proxies"`
 }
 
 type velocityProxyStatus struct {
@@ -35,6 +39,7 @@ type velocityProxyStatus struct {
 	JavaListening       bool   `json:"java_listening"`
 	BedrockListening    bool   `json:"bedrock_listening"`
 	PortOwnerConsistent bool   `json:"port_owner_consistent"`
+	UDPOwnerMatchesVelocityChild bool `json:"udp_owner_matches_velocity_child"`
 	Status              string `json:"status"`
 }
 
@@ -43,7 +48,10 @@ func decodeVelocityInventory(raw []byte) (velocityInventory, error) {
 	if len(raw) > (1 << 20) || json.Unmarshal(bytes.TrimSpace(raw), &inventory) != nil {
 		return inventory, errors.New("invalid Velocity inventory JSON")
 	}
-	if inventory.Schema != 1 || !inventory.ReadOnly || len(inventory.Proxies) != 3 {
+	if inventory.Schema != 1 || !inventory.ReadOnly || len(inventory.Proxies) != 3 ||
+		inventory.TaskProcessIdentityVerified || inventory.LiveJavaRaknetE2EVerified ||
+		(inventory.UDPThreeUniqueChildOwners && !inventory.ProcessPairCensusConsistent) {
+		// The read-only phase must never assert full task-to-process identity or real E2E.
 		return inventory, errors.New("unexpected Velocity inventory schema")
 	}
 	expected := []struct {
@@ -61,7 +69,8 @@ func decodeVelocityInventory(raw []byte) (velocityInventory, error) {
 		}
 		switch item.Status {
 		case "task_missing_or_duplicate", "task_config_drift", "offline_or_starting",
-			"ports_ready_owner_unverified", "ports_partial_or_conflicting", "unverified":
+			"ports_ready_owner_unverified", "ports_partial_or_conflicting", "unverified",
+			"task_not_running_unverified", "socket_inventory_missing":
 		default:
 			return inventory, errors.New("unexpected Velocity inventory state")
 		}
