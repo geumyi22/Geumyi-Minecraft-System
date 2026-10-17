@@ -116,6 +116,18 @@ def exchange(server: FixtureServer, envelope: dict) -> dict:
 
 
 def main():
+    # Cross-language binding: the same fixed wire vector is covered by
+    # Java PR #58 and Go PR #57. Never use this known key in production.
+    vector = dict(
+        version=1, target="wild", operation="status",
+        generation="parent-100-child-101",
+        nonce="A" * 32, issued_unix=1792267200, expires_unix=1792267220
+    )
+    assert len(canon(vector)) == 118
+    assert hmac.new(bytes(range(32)), canon(vector), hashlib.sha256).hexdigest() == (
+        "1488217fd43660a2e0810dc60caf3f93d89d4ba4bb9b4920967f42d31fff70c5"
+    ), "Go/Java/Python wire canonicalization drift"
+
     with FixtureServer() as server:
         assert server.server_address[0] == "127.0.0.1" and server.server_address[1] != 0
         worker = threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True)
