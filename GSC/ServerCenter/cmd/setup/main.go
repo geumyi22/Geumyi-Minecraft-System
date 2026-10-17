@@ -961,7 +961,7 @@ func defaultUpdateConfig(dataDir string) UpdateConfig {
 	return UpdateConfig{
 		Enabled:        false,
 		Repository:     "geumyi22/Geumyi-Minecraft-System",
-		Channel:        "canary",
+		Channel:        "stable",
 		PublicKeyPath:  filepath.Join(dataDir, "deployment-public.pem"),
 		TimeoutSeconds: 12,
 	}
@@ -973,7 +973,7 @@ func normalizeUpdateConfig(c UpdateConfig, dataDir string) UpdateConfig {
 	}
 	c.Channel = strings.ToLower(strings.TrimSpace(c.Channel))
 	if c.Channel != "stable" && c.Channel != "beta" && c.Channel != "canary" {
-		c.Channel = "canary"
+		c.Channel = "stable"
 	}
 	if strings.TrimSpace(c.PublicKeyPath) == "" {
 		c.PublicKeyPath = filepath.Join(dataDir, "deployment-public.pem")
