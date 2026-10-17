@@ -128,3 +128,39 @@ func TestBridgeBoundedReplayLedgerBlocksOverflow(t *testing.T) {
 		t.Fatal("expired nonce entries were not collected")
 	}
 }
+
+
+// Test vector shared with the GSC v4.5.2 Canary Java disabled plugin prototype
+// (PR #58). It is generated from the agreed big-endian, length-prefixed
+// canonical encoding, not from a live production key.
+func TestGoJavaHMACGoldenVector(t *testing.T) {
+	key := make([]byte, 32)
+	for i := range key {
+		key[i] = byte(i)
+	}
+	e := Envelope{
+		Version: 1,
+		Target: "wild",
+		Operation: "status",
+		Generation: "parent-100-child-101",
+		Nonce: strings.Repeat("A", 32),
+		IssuedUnix: 1792267200,
+		ExpiresUnix: 1792267220,
+	}
+	want := "1488217fd43660a2e0810dc60caf3f93d89d4ba4bb9b4920967f42d31fff70c5"
+	if len(canonical(e)) != 118 {
+		t.Fatalf("canonical size mismatch: %d", len(canonical(e)))
+	}
+	if got := macFor(key, e); got != want {
+		t.Fatalf("cross-language HMAC vector mismatch: %s", got)
+	}
+	e.MAC = want
+	v, err := NewVerifier(key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Unix(1792267200, 0)
+	if err := v.VerifyOnce(e, "wild", "status", e.Generation, now); err != nil {
+		t.Fatalf("expected Java-compatible signature accepted: %v", err)
+	}
+}
