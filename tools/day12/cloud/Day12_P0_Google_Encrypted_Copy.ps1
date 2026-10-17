@@ -33,11 +33,11 @@ function P0-CheckMirrorParent(
      [string]::IsNullOrWhiteSpace($ShortcutRoot)){return $false}
   try {
     $full=[IO.Path]::GetFullPath($Candidate).TrimEnd('\')
-    $home=[IO.Path]::GetFullPath($ProfileRoot).TrimEnd('\')
-    if([IO.Path]::GetDirectoryName($full) -ine $home){return $false}
+    $profilePath=[IO.Path]::GetFullPath($ProfileRoot).TrimEnd('\')
+    if([IO.Path]::GetDirectoryName($full) -ine $profilePath){return $false}
     $leaf=[IO.Path]::GetFileName($full)
     if($leaf -cnotin @('My Drive','내 드라이브')){return $false}
-    foreach($p in @($home,$full)){
+    foreach($p in @($profilePath,$full)){
       $item=Get-Item -LiteralPath $p -Force -ErrorAction Stop
       if(-not $item.PSIsContainer -or
         (([long]$item.Attributes -band 0x00441400) -ne 0)){return $false}
