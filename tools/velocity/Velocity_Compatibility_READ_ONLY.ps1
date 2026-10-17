@@ -160,6 +160,14 @@ Write-Host 'Only share this JSON file. Do NOT share velocity.jar, forwarding sec
 }
 
 if ($Synthetic) {
+    $sampleManifest = "Manifest-Version: 1.0`r`nImplementation-Version: 4.2.1`r`n"
+    if ((VersionField $sampleManifest) -cne '4.2.1') {
+        throw 'SYNTHETIC_MANIFEST_VERSION_PARSE_FAILED'
+    }
+    $foldedManifest = "Implementation-Version: 4.2.`r`n 1`r`n"
+    if ((VersionField $foldedManifest) -cne '4.2.1') {
+        throw 'SYNTHETIC_MANIFEST_CONTINUATION_PARSE_FAILED'
+    }
     foreach ($id in $ids) {
         $report.instances += [ordered]@{
             id=$id; task_present=$true; task_matches_expected_jar_path=$true
