@@ -1,0 +1,120 @@
+# PowerShell 5.1 CI: disposable in-memory fixtures only. No operating-system queries.
+$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+$probe=Join-Path $PSScriptRoot '..\..\GSC\ServerCenter\cmd\host\velocity_status.ps1'
+$probe=(Resolve-Path -LiteralPath $probe -ErrorAction Stop).Path
+$tokens=$null; $errors=$null
+[void][System.Management.Automation.Language.Parser]::ParseFile($probe,[ref]$tokens,[ref]$errors)
+if(@($errors).Count -gt 0){throw 'Velocity probe failed Windows PowerShell parser'}
+
+$global:velocityFixtureMode = 'healthy'
+$global:velocityFixtureRoot = Join-Path $env:ProgramData 'GeumyiServerCenter\Network\FourServer'
+function Get-CimInstance {
+  [CmdletBinding()]
+  param([string]$ClassName,[string]$Filter)
+  if($ClassName -ne 'Win32_Process'){throw 'unexpected CIM class'}
+  $rows=@()
+  foreach($i in 0..2){
+    $parent=4100+($i*10);$child=$parent+1
+    $rows+= [pscustomobject]@{Name='java.exe';ProcessId=$parent;ParentProcessId=500;CommandLine='java.exe -Xmx512M -jar velocity.jar'}
+    if($global:velocityFixtureMode -ne 'orphan' -or $i -ne 1){
+      $rows+= [pscustomobject]@{Name='java.exe';ProcessId=$child;ParentProcessId=$parent;CommandLine='java.exe -Xmx512M -jar velocity.jar'}
+    }
+  }
+  return @($rows)
+}
+function Get-ScheduledTask {
+  [CmdletBinding()]
+  param([string]$TaskName)
+  if($global:velocityFixtureMode -eq 'missing_task' -and $TaskName -like '*wild'){return}
+  $id=$TaskName -replace '^Geumyi Day10 Velocity ',''
+  if($id -notin @('wild','playground','other')){throw 'unexpected fixture task'}
+  $dir=Join-Path $global:velocityFixtureRoot $id
+  if($global:velocityFixtureMode -eq 'drift' -and $id -eq 'wild'){$dir=Join-Path $global:velocityFixtureRoot 'WRONG'}
+  return [pscustomobject]@{
+    TaskPath='\';State=$(if($global:velocityFixtureMode -eq 'task_stopped' -and $id -eq 'wild'){'Ready'}else{'Running'});Principal=[pscustomobject]@{UserId='SYSTEM'}
+    Actions=@([pscustomobject]@{
+      Execute='C:\Windows\System32\java.exe'
+      WorkingDirectory=$dir
+      Arguments='-Xms256M -Xmx512M -jar velocity.jar'
+    })
+  }
+}
+function Get-NetTCPConnection {
+  [CmdletBinding()]
+  param([int]$LocalPort,[string]$State)
+  if($State -ne 'Listen' -or $LocalPort -notin @(25565,25566,25567)){throw 'unexpected TCP request'}
+  if($global:velocityFixtureMode -in @('tcp_missing','all_sockets_missing')){return}
+  $id=$LocalPort-25565
+  return [pscustomobject]@{OwningProcess=(4101+$id*10)}
+}
+function Get-NetUDPEndpoint {
+  [CmdletBinding()]
+  param([int]$LocalPort)
+  if($LocalPort -notin @(19132,19133,19134)){throw 'unexpected UDP request'}
+  if($global:velocityFixtureMode -in @('all_sockets_missing','udp_missing')){return}
+  $id=$LocalPort-19132
+  if($global:velocityFixtureMode -eq 'udp_wrong_child' -and $id -eq 1) {
+    return [pscustomobject]@{OwningProcess=9911}
+  }
+  return [pscustomobject]@{OwningProcess=(4101+$id*10)}
+}
+
+function Probe([string]$mode){
+  $global:velocityFixtureMode=$mode
+  $raw=@(& $probe)
+  if($raw.Count -ne 1){throw "Unexpected stdout count for $mode"}
+  $json=([string]$raw[0] | ConvertFrom-Json -ErrorAction Stop)
+  if(-not [bool]$json.read_only -or [int]$json.schema -ne 1 -or @($json.proxies).Count -ne 3){
+    throw "Invalid schema for $mode"
+  }
+  if([bool]$json.task_process_identity_verified -or [bool]$json.live_java_raknet_e2e_verified){
+    throw "False production process/E2E proof for $mode"
+  }
+  if([string]$raw[0] -match '(?i)CommandLine|WorkingDirectory|ProcessId|C:\\Windows|4101|4111|4121'){
+    throw "Private process metadata leaked for $mode"
+  }
+  return $json
+}
+
+$good=Probe 'healthy'
+if(-not [bool]$good.process_pair_census_consistent -or -not [bool]$good.udp_three_unique_child_owners){
+  throw 'Healthy six-process topology was not detected'
+}
+if(@($good.proxies|Where-Object {$_.status -ne 'ports_ready_owner_unverified'}).Count -ne 0){
+  throw 'Healthy fixture did not report bounded port status'
+}
+$tcpMissing=Probe 'tcp_missing'
+if(@($tcpMissing.proxies|Where-Object {
+  $_.status -ne 'tcp_inventory_missing_udp_child_verified' -or
+  $_.java_listening -or -not $_.bedrock_listening -or
+  -not $_.udp_owner_matches_velocity_child -or $_.port_owner_consistent
+}).Count -ne 0){
+  throw 'Missing TCP + validated UDP child must show inconclusive telemetry, not conflict or ONLINE'
+}
+$socketsMissing=Probe 'all_sockets_missing'
+if(@($socketsMissing.proxies|Where-Object {$_.status -ne 'socket_inventory_missing'}).Count -ne 0){
+  throw 'Missing TCP and UDP provider rows must be UNVERIFIED, not OFFLINE'
+}
+$missing=Probe 'missing_task'
+if([string]$missing.proxies[0].status -ne 'task_missing_or_duplicate'){throw 'Missing task was not detected'}
+$drift=Probe 'drift'
+if([string]$drift.proxies[0].status -ne 'task_config_drift'){throw 'Task action path drift was not detected'}
+$udpMissing=Probe 'udp_missing'
+if(@($udpMissing.proxies|Where-Object {$_.status -ne 'udp_inventory_missing_tcp_visible'}).Count -ne 0){
+  throw 'Missing UDP provider rows must not be called a PID conflict or ONLINE'
+}
+$wrongChild=Probe 'udp_wrong_child'
+if([bool]$wrongChild.udp_three_unique_child_owners -or
+  @($wrongChild.proxies|Where-Object {$_.udp_owner_matches_velocity_child}).Count -ne 0){
+  throw 'Foreign UDP child ownership was accepted as a valid three-pair mapping'
+}
+$stopped=Probe 'task_stopped'
+if([string]$stopped.proxies[0].status -ne 'task_not_running_unverified'){
+  throw 'A stopped task cannot claim expected task readiness'
+}
+$orphan=Probe 'orphan'
+if([bool]$orphan.process_pair_census_consistent -or [bool]$orphan.udp_three_unique_child_owners){
+  throw 'Orphan process wrongly accepted'
+}
+Write-Host 'VELOCITY_READ_ONLY_WINDOWS_FIXTURE_PASS: 9 cases; no real processes, tasks, ports, or files changed.'

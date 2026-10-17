@@ -67,6 +67,10 @@ jobs:
       - name: Run GSC tests
         working-directory: GSC/ServerCenter
         run: go test ./...
+      - name: Velocity read-only Windows PowerShell 5.1 fixture
+        shell: powershell
+        run: |
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/velocity/Velocity_Inventory_Mock_CI.ps1
 
   statusagent:
     name: StatusAgent 0.5.4 / build
