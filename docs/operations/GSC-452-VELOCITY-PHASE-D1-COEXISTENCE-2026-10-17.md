@@ -54,6 +54,15 @@ Two adjacent files `tools/velocity/Run_GeyserFloodgate_READ_ONLY.cmd` and `tools
 
 Ambiguous duplicates and missing directories are classified as **loading unverified**, never as clean compatibility. The inspector does not look up Java classloaders, check server logs or load plugins; it cannot attest which JAR is currently running. It creates one sanitized JSON on the operator's Desktop and changes no server task/JAR/config. A Windows CI `-Synthetic` execution checks report shape and rejects duplicate/unrelated test names entirely in memory. GitHub Actions attaches the two-file kit as **`GSC452-GeyserFloodgate-READ-ONLY`** only after the job succeeds. The operator must share **only the sanitized JSON**.
 
+## Operator-exact runtime smoke CI result (2026-10-18 KST)
+
+Exact code+documentation head before this record was `c4011e95dda90440a4dc6faebca0f6691d557246`. GitHub Actions workflow `39044496861`, Velocity API 4.2.0 job `117430424981`, recorded BOTH of the following **separate PASS markers**:
+
+- `profile=operator`: Velocity **4.2.0/30** + Geyser **2.11.3/1251** + Floodgate **2.2.5/141** + inert Geumyi bridge, with published file digest+expected byte size validated
+- `profile=reference`: Velocity **4.2.0/30** + Geyser **2.12.0/1263** + Floodgate **2.2.5/141** + inert Geumyi bridge, with published hashes validated
+
+The same workflow's Windows read-only fixture, local-only HMAC status IPC and API 4.2.1-SNAPSHOT tests were also green. Concurrent Day12 SBOM and Synthetic DR jobs passed. **This is a reproducible CI bootstrap observation, NOT live Bedrock Java login, resource pack handling, player auth, proxy-to-backend forwarding, maintenance or process lifecycle evidence.**
+
 ## Next gates before any release or live controls
 
 - [x] SHA-256 attestation of operator-provided **Velocity 4.2.0 Build 30** JARs
@@ -62,7 +71,7 @@ Ambiguous duplicates and missing directories are classified as **loading unverif
 - [x] Disposable **public** Geyser/Floodgate plus disabled bridge plugin co-loading (network-isolated)
 - [x] One-shot signed localhost **read-only test fixture** (Go/Java/Python canonical vector); rejects all lifecycle verbs
 - [x] Match all six inspected Geyser/Floodgate JAR hashes to official **Geyser 2.11.3 Build 1251 / Floodgate 2.2.5 Build 141** artifact identities (loaded runtime still unverified)
-- [ ] Confirm the **operator-matched** SHA-pinned 2.11.3/1251 disposable co-load smoke passes exact-head CI (new comparison job)
+- [x] **Operator-matched Geyser 2.11.3 Build 1251** disposable SHA-pinned co-load smoke PASS; **newer reference Geyser 2.12.0 Build 1263** co-load smoke independently PASS (GitHub run `39044496861`, job `117430424981`, source commit `c4011e95dda90440a4dc6faebca0f6691d557246`)
 - [ ] Disposable Java+Bedrock **client E2E** with backend, credentials policy and resource-pack transfer
 - [ ] Restricted authenticated production GSC↔Velocity **broker/plugin** design, independent security review and Windows OS peer identity ACLs (not implemented)
 - [ ] Prove actual Day10 task-to-process ownership plus scheduler auto-restart semantics on disposable Windows VM
