@@ -256,7 +256,7 @@ def run(plugin: pathlib.Path, profile: str) -> None:
             + ", SHA256-pinned Velocity 4.2.0/30 + Geyser " + version + "/" + build
             + " + Floodgate 2.2.5/141 + disabled Geumyi bridge."
         )
-        print("ISOLATED PUBLIC ENDPOINT PROBES PASS: Java status 25577 and RakNet unconnected PONG 19132, no login.")
+        print("ISOLATED LOOPBACK ENDPOINT PROBES PASS: Java status 25565 and RakNet unconnected PONG 19132, no login.")
         print("Internal-only disposable CI network, no published host ports or production resources. No player login/resourcepack/stop-restart test.")
 
 
