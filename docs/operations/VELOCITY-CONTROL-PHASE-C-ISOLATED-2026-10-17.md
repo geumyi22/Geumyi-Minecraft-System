@@ -13,9 +13,9 @@
 
 1. `GSC/ServerCenter/internal/velocitylifecycle/lifecycle.go`
    - Only three allowlisted proxy IDs and three actions (start, stop, restart).
-   - Deterministic, in-memory simulation stages `preflight`, `await_graceful_shutdown`, `await_verified_start`, `simulation_complete`, `blocked`.
+   - Deterministic, in-memory simulation stages `preflight` → `await_graceful_shutdown` (**ACK only**) → `await_process_stopped` (**old JVM and ports actually gone**) → `await_start_receipt` (**scheduler ACK only**) → `await_new_process_healthy` (**new pair and Java/RakNet actually responding**) → `simulation_complete` or terminal `blocked`. Start/stop omit the irrelevant stages.
    - Guards: named target, operator approval and maintenance window, authentic task fingerprint / process lineage, safe scheduled-task restart policy, no duplicate JVM family, unaffected sibling proxies, audit availability, zero verified players for stop/restart, authenticated graceful shutdown bridge, old process generation gone, **independently proven** free Java TCP + Bedrock UDP ports, a distinct newly attested process pair, and new Java TCP / real RakNet replies.
-   - Every stage is order-bound to a simulation ticket, sequence and deadline. Missing, out-of-order or conflicting evidence blocks permanently.
+   - Every stage is order-bound to a simulation ticket, sequence and deadline. Missing, out-of-order or conflicting evidence blocks permanently. **Shutdown ACK never counts as JVM exit, and start receipt never counts as Java/RakNet readiness.**
    - `LiveAuthorized` is **always false**, even for complete simulations. There is no command execution, HTTP route, PowerShell, Scheduled Task, file, network or server mutation.
 2. `GSC/ServerCenter/internal/velocitybridge/auth.go`
    - Independent versioned HMAC-SHA256 envelope prototype for a **future loopback/named-pipe bridge**: exact proxy, exact operation, process generation, random nonce, issued time, <=20 s lifetime.
