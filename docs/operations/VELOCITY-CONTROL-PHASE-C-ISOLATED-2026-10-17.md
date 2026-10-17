@@ -25,6 +25,14 @@
    - This HMAC prototype **does not substitute for user authorization, local IPC peer attestation, player-count proofs or task-owner verification.** A future secure broker must source keys from protected per-proxy OS secrets and prove peer identity before accepting messages.
 3. Automated tests: nine target/action happy-path simulations always `LiveAuthorized=false`; missing approval, player present, unsafe scheduler, wrong task, sibling drift, missing old process, empty Windows port provider, same-generation restarts, unhealthy Java/RakNet, timeout, replay and forged HMAC/cross-proxy scopes reject; concurrent replays accept exactly once.
 
+## Phase C supplementary synthetic Windows Task Scheduler definition assessment
+
+Added `internal/velocitylifecycle/scheduler_policy.go` and its table-driven tests. The pure Go parser accepts at most 64 KiB of **caller-supplied synthetic XML bytes** in the official Windows Task Scheduler namespace, with no `os`, `os/exec`, Task Scheduler APIs, process enumeration, file reads, filesystem writes or network calls.
+
+The parser checks only structural assertions: exact `wild|playground|other` proxy target, one Windows `Exec` action with `java.exe`, relative `-jar velocity.jar` and matching directory suffix; SYSTEM/service-account principal; `RestartOnFailure.Count`, including an explicit **999 attempts** hazard. It identifies unknown/ambiguous/malformed definitions as unverified. Every resulting `safe_to_start`, `safe_to_stop`, and `safe_to_restart` field is **unconditionally false**. A task XML definition cannot prove that the task spawned a particular live JVM, a player's absence, a graceful plugin control bridge, that a child exited, or that a stop will persist despite automatic restart.
+
+Negative regression fixtures include mismatched target directory, PowerShell/foreign Java action, additional COM action, wrong principal, missing/malformed restart count, empty input, unknown proxy ID, fake XML namespace and oversized payload. This is an isolated verification of guard logic and **does not read the user's Windows Task Scheduler**.
+
 ## Full control still blocked — Phase D prerequisites
 
 - [ ] Independently reviewed plugin source compatible with **exact installed Velocity version**; no broad console command relay. Official Velocity plugin API supports `ProxyServer.shutdown()`, but no such plugin is built or installed here.
