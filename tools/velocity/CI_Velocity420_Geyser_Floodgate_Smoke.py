@@ -190,6 +190,24 @@ def run(plugin: pathlib.Path, profile: str) -> None:
                       "error_classes:", classes, file=sys.stderr)
                 raise RuntimeError("disposable plugins did not all initialize")
 
+            running = subprocess.run(
+                [docker, "inspect", "--format", "{{.State.Running}}", container_name],
+                capture_output=True, text=True, timeout=6,
+            )
+            if running.returncode != 0 or running.stdout.strip() != "true":
+                diagnostics = {
+                    "server_stopped_after_plugin_init": True,
+                    "configuration_error": bool(re.search(
+                        r"(?i)(invalid config|configuration error|failed to load config|configuration could not)", combined)),
+                    "binding_error": bool(re.search(
+                        r"(?i)(failed to bind|could not bind|address already in use)", combined)),
+                    "missing_secret_file": bool(re.search(
+                        r"(?i)(forwarding.secret|secret file)", combined)),
+                    "startup_exception_present": bool(re.search(r"(?i)(exception|error)", combined)),
+                }
+                print("DISPOSABLE PROXY EXITED BEFORE NETWORK PROBE:", diagnostics, file=sys.stderr)
+                raise RuntimeError("proxy initialization marker does not prove active JVM")
+
             # Execute probe from the SAME isolated Java container. No port is
             # published and no real user/backend address is accepted.
             attempt = subprocess.run(
@@ -203,6 +221,13 @@ def run(plugin: pathlib.Path, profile: str) -> None:
                 "raknet_pong": "DISPOSABLE_BEDROCK_RAKNET_PONG=PASS" in attempt.stdout,
             }
             if attempt.returncode != 0 or not all(protocol.values()):
+                # Distinguish an alive-but-unbound proxy from a container that
+                # exited during the probe. Never print raw JVM/plugin logs.
+                after = subprocess.run(
+                    [docker, "inspect", "--format", "{{.State.Running}}", container_name],
+                    capture_output=True, text=True, timeout=6,
+                )
+                still_running = after.returncode == 0 and after.stdout.strip() == "true"
                 # Only whitelisted exception-class identifiers, not raw logs,
                 # untrusted exception text or generated plugin configuration.
                 classes = re.findall(
@@ -211,6 +236,7 @@ def run(plugin: pathlib.Path, profile: str) -> None:
                 )
                 print("DISPOSABLE ENDPOINTS UNVERIFIED:", protocol,
                       "probe_exit:", attempt.returncode,
+                      "jvm_still_running:", still_running,
                       "classes:", classes[:2], file=sys.stderr)
                 raise RuntimeError("loopback Java status/RakNet response test failed")
         finally:
