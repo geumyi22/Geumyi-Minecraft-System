@@ -6,6 +6,7 @@ on:
     paths:
       - 'Plugins/GeumyiVelocityBridge/**'
       - 'tools/velocity/Velocity_Compatibility_READ_ONLY.ps1'
+      - 'tools/velocity/CI_Velocity420_Disabled_Runtime_Smoke.py'
       - '.github/workflows/velocity-bridge-disabled-ci.yml'
   workflow_dispatch:
 
@@ -84,6 +85,14 @@ jobs:
             print(f'{len(classes)} plugin classes target Java 25 or older. Java 26 load remains untested.')
           PY
           echo "Isolated ${{ matrix.velocity_api }} class and metadata built (NOT installed or deployed)."
+      - name: Run SHA-pinned official 4.2.0 in disposable CI folder (NO PRODUCTION)
+        if: matrix.velocity_api == '4.2.0'
+        shell: bash
+        run: |
+          set -euo pipefail
+          plugin_jar=$(find Plugins/GeumyiVelocityBridge/build/libs -maxdepth 1 -name '*.jar' | head -n1)
+          test -n "$plugin_jar"
+          python3 tools/velocity/CI_Velocity420_Disabled_Runtime_Smoke.py "$plugin_jar"
 
   velocity-compatibility-synthetic:
     name: Windows version fingerprint collector synthetic (NO LIVE TASKS)
