@@ -74,6 +74,7 @@ async function loadVelocityStatus(){
       probeResult.data.endpoints.length===3 ? probeResult.data.endpoints : null;
     const evidence='Java 부모·자식 3쌍: '+(data.process_pair_census_consistent?'구조 일치':'검증 불가')+' · UDP 자식 소유자: '+(data.udp_three_unique_child_owners?'3개 구별됨':'불완전/미확인')+' · 작업별 실제 소유권 및 인게임 접속은 미검증';
     const rows=data.proxies.map(p=>{
+      if(!['wild','playground','other'].includes(p.id))throw Error('알 수 없는 Velocity 프록시 대상');
       const matching=entries?.filter(e=>e.id===p.id && e.java_tcp===p.java_port && e.bedrock_udp===p.bedrock_port);
       const layer=matching?.length===1?matching[0]:null;
       const applicationLine=layer
@@ -99,9 +100,9 @@ async function loadVelocityStatus(){
         </div>
         ${applicationLine}<div class="small">포트 응답이나 같은 PID는 Velocity 정체성·로비 접속을 증명하지 않습니다. 변경 작업은 비활성화되어 있습니다.</div>
         <div class="actions">
-          <button onclick="checkVelocityControl(${JSON.stringify(p.id)},'start')">시작 사전점검</button>
-          <button onclick="checkVelocityControl(${JSON.stringify(p.id)},'stop')">중지 사전점검</button>
-          <button onclick="checkVelocityControl(${JSON.stringify(p.id)},'restart')">재시작 사전점검</button>
+          <button onclick="checkVelocityControl('${p.id}','start')">시작 사전점검</button>
+          <button onclick="checkVelocityControl('${p.id}','stop')">중지 사전점검</button>
+          <button onclick="checkVelocityControl('${p.id}','restart')">재시작 사전점검</button>
         </div>
       </div>`;
     }).join('');
