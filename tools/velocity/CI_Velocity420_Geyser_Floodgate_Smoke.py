@@ -142,7 +142,11 @@ def run(plugin: pathlib.Path, profile: str) -> None:
             "--mount", f"type=bind,src={root},dst=/work",
             "--workdir", "/work",
             "eclipse-temurin:26-jre",
-            "java", "-Xms128M", "-Xmx640M", "-jar", "velocity-4.2.0-30.jar",
+            # Official Geyser test-only JVM override: enable RakNet rather
+            # than its default NetherNet transport. The user's GSC screenshot
+            # separately observed RakNet PONGs, but no user config is imported.
+            "java", "-DgeyserTransport=raknet", "-Xms128M", "-Xmx640M",
+            "-jar", "velocity-4.2.0-30.jar",
         ]
         combined = ""
         ready = {"bridge": False, "geyser": False, "floodgate": False}
