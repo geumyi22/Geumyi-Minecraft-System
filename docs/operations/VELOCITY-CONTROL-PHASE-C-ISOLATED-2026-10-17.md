@@ -33,6 +33,28 @@ The parser checks only structural assertions: exact `wild|playground|other` prox
 
 Negative regression fixtures include mismatched target directory, PowerShell/foreign Java action, additional COM action, wrong principal, missing/malformed restart count, empty input, unknown proxy ID, fake XML namespace and oversized payload. This is an isolated verification of guard logic and **does not read the user's Windows Task Scheduler**.
 
+## Phase C supplementary three-proxy evidence fusion (simulation only)
+
+Added `internal/velocitylifecycle/fleet_preflight.go` and table-driven Go tests. They accept **only caller-provided synthetic observations** and do not access the Windows process table, task scheduler, network, filesystem, world or GSC APIs.
+
+The checker expects precisely three fresh, distinct `wild`, `playground` and `other` snapshots, with expected endpoint pairs `25565/19132`, `25566/19133` and `25567/19134`. Each supplied snapshot must identify a consistent parent/child relationship, independent task-to-parent correlation flag, UDP ownership by the child, independently responding Java server-list status and Bedrock RakNet PONG. If a Windows TCP socket inventory is positively present, its owner must match the target child JVM; if that inventory is *missing*, the checker distinguishes a **telemetry gap** from an application outage only when an independent Java application response exists. This preserves the real operator's earlier 6/6 Java/Bedrock endpoint observations without reinterpreting missing `Get-NetTCPConnection` entries as proof that a port is free.
+
+Reference artifact identity is restricted to PaperMC's **Velocity 4.2.0 Build 30** SHA-256 value recorded earlier, not the latest mutable version. Cross-proxy JVM PID collisions (including parent-to-other-child collisions), wrong ports, wrong UDP/TCP owners, task definition changes, missing independent task/PID attestation, missing Java or RakNet replies, stale or future timestamps, duplicate/missing/unknown proxies and JAR hash drift all fail closed. Raw PIDs are omitted from diagnostic results and are explicitly excluded from the snapshot's JSON representation.
+
+**Critical trust boundary:** even when all *synthetic* checks are coherent, the result remains `source_verified=false` and `safe_to_execute=false`. A caller-supplied PID and a copied SHA are not provenance proofs. This policy is NOT wired to a production controller, cannot authenticate a Windows task, and cannot issue any task or Velocity operation. It also has no player/session authorization, maintenance-window authorization, peer identity or operator grants. The corresponding Go tests exercise valid correlation and adversarial input; they are not live preflight evidence.
+
+## Required bridge-to-runtime architecture before any future operational attempt
+
+1. **Immutable operator authorization:** verify a locally authenticated GSC operator with an explicit per-proxy action, short-lived maintenance window, one-time challenge and action confirmation; no unattended remote kill capability.
+2. **OS-authenticated local peer:** constrain to a Windows named pipe with an allowlisted SID/ACL or equivalent OS-backed peer identity. Bind the per-proxy session to a fresh child JVM generation; loopback TCP alone does not prove peer identity.
+3. **Controlled secret management:** independent random per-proxy HMAC keys stored outside repo and protected by OS ACL/DPAPI, expiry/rotation and replay prevention across bridge restarts. Never include a forwarding secret or Floodgate key in this channel.
+4. **Player-aware lifecycle:** prove player count exactly zero immediately before graceful shutdown; reject if clients appear, authentication is uncertain, or requests race with generation changes. Ensure warning/countdown policy is operator-approved.
+5. **Verified scheduler semantics:** correlate the exact Day10 Windows Task Scheduler instance with parent and child process tokens, verify restart-on-failure policy and explicit stop suppression, then independently prove both process absence and port release. A plugin shutdown ACK is not proof of process exit.
+6. **Post-start independent checks:** verify genuinely new JVM parent/child generation plus Java status and RakNet packets for the correct proxy without interpreting missing TCP provider rows as a healthy or stopped process; test remaining two sibling proxy generations unchanged.
+7. **Disposable Windows VM rehearsal:** test real Task Scheduler auto-restart races, orphaned child JVMs, wrong owners, slow startup, player-present declines, expired requests, rollback and crash recovery before any live maintenance. No real test data or backed-up worlds may be mutated as a shortcut.
+
+Until these have independently verifiable implementations and security review, **no Canary/Stable release may advertise functional Velocity stop/restart support**. A green isolated simulation is not an OS operation permit.
+
 ## Full control still blocked — Phase D prerequisites
 
 - [ ] Independently reviewed plugin source compatible with **exact installed Velocity version**; no broad console command relay. Official Velocity plugin API supports `ProxyServer.shutdown()`, but no such plugin is built or installed here.
