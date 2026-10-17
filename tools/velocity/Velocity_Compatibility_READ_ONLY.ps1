@@ -58,6 +58,107 @@ function JarVersionHint([string]$jar) {
     }
 }
 
+
+function JavaVersionHint([int]$udpPort) {
+    # Read only; no process start/stop. Never return PID or executable path.
+    try {
+        $owners = @(Get-NetUDPEndpoint -LocalPort $udpPort -ErrorAction SilentlyContinue |
+            Where-Object { [int]$_.OwningProcess -gt 0 } |
+            Select-Object -ExpandProperty OwningProcess -Unique)
+        if ($owners.Count -ne 1) { return 'UNKNOWN' }
+        $proc = @(Get-CimInstance Win32_Process -Filter ('ProcessId=' + [int]$owners[0]) -ErrorAction SilentlyContinue)
+        if ($proc.Count -ne 1 -or [string]$proc[0].Name -notin @('java.exe','javaw.exe')) {
+            return 'UNKNOWN'
+        }
+        $path = [string]$proc[0].ExecutablePath
+        if ([string]::IsNullOrWhiteSpace($path) -or
+            -not (Test-Path -LiteralPath $path -PathType Leaf)) { return 'UNKNOWN' }
+        $version = [string][Diagnostics.FileVersionInfo]::GetVersionInfo($path).ProductVersion
+        if ($version.Length -gt 0 -and $version.Length -le 64 -and
+            $version -match '^[0-9][0-9a-zA-Z_.+ \-]*
+    foreach ($id in $ids) {
+        $report.instances += [ordered]@{
+            id=$id; task_present=$true; task_matches_expected_jar_path=$true
+            velocity_jar_present=$true; velocity_jar_sha256=('0'*64)
+            velocity_jar_bytes=123456
+            manifest_version_hint='UNKNOWN'; java_binary_version_hint='UNKNOWN'
+        }
+    }
+    $report.result = 'SYNTHETIC_STRUCTURE_PASS_NOT_LIVE'
+    $report | ConvertTo-Json -Depth 6 -Compress
+    exit 0
+}
+
+$proxyRoot = Join-Path $env:ProgramData 'GeumyiServerCenter\Network\FourServer'
+foreach ($id in $ids) {
+    $name = 'Geumyi Day10 Velocity ' + $id
+    $expectedDir = Join-Path $proxyRoot $id
+    $jar = Join-Path $expectedDir 'velocity.jar'
+    $task = @(Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue)
+    $singleTask = $task.Count -eq 1
+    $taskMatches = $false
+    if ($singleTask) {
+        $actions = @($task[0].Actions)
+        if ($actions.Count -eq 1) {
+            $a = $actions[0]
+            $taskMatches = (
+                ([string]$task[0].TaskPath -eq '\') -and
+                ([string]$a.WorkingDirectory).TrimEnd('\') -ieq $expectedDir.TrimEnd('\') -and
+                ([IO.Path]::GetFileName([string]$a.Execute) -ieq 'java.exe') -and
+                ([string]$a.Arguments -match '(?i)(?:^|\s)-jar\s+(?:"velocity\.jar"|velocity\.jar)(?:\s|$)')
+            )
+        }
+    }
+    $present = Test-Path -LiteralPath $jar -PathType Leaf
+    $sha = ''
+    $size = 0
+    $hint = 'UNKNOWN'
+    $javaHint = JavaVersionHint ([int](19132 + [array]::IndexOf($ids, $id)))
+    if ($taskMatches -and $present) {
+        try {
+            $file = Get-Item -LiteralPath $jar -ErrorAction Stop
+            if ($file.Length -gt 0 -and $file.Length -lt 1073741824) {
+                $size = [int64]$file.Length
+                $sha = (Get-FileHash -LiteralPath $jar -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+                $hint = JarVersionHint $jar
+            }
+        } catch {
+            # Fail closed without exporting Windows error messages or paths.
+            $sha = ''; $size = 0; $hint = 'UNKNOWN'
+        }
+    }
+    $report.instances += [ordered]@{
+        id=$id
+        task_present=[bool]$singleTask
+        task_matches_expected_jar_path=[bool]$taskMatches
+        velocity_jar_present=[bool]$present
+        velocity_jar_sha256=[string]$sha
+        velocity_jar_bytes=[int64]$size
+        manifest_version_hint=[string]$hint
+        java_binary_version_hint=[string]$javaHint
+    }
+}
+if ($report.instances.Count -eq 3 -and
+    @($report.instances | Where-Object { -not $_.task_matches_expected_jar_path -or -not $_.velocity_jar_sha256 }).Count -eq 0) {
+    $report.result = 'ARTIFACT_FINGERPRINTS_CAPTURED_VERSION_UNVERIFIED'
+}
+if ([string]::IsNullOrWhiteSpace($OutputDir)) {
+    $desktop = [Environment]::GetFolderPath('DesktopDirectory')
+    if ([string]::IsNullOrWhiteSpace($desktop)) { throw 'DESKTOP_UNAVAILABLE_NO_STATE_CHANGE' }
+    $OutputDir = Join-Path $desktop 'Geumyi-Velocity-ReadOnly-Reports'
+}
+[void](New-Item -ItemType Directory -Path $OutputDir -Force)
+$outFile = Join-Path $OutputDir ('Velocity-Compatibility-READ-ONLY-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.json')
+$report | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $outFile -Encoding UTF8
+Write-Host 'READ ONLY completed; no Java, scheduled task, proxy, network or world modification.'
+Write-Host ('Result: ' + $report.result)
+Write-Host ('Sanitized report: ' + $outFile)
+Write-Host 'Only share this JSON file. Do NOT share velocity.jar, forwarding secrets, or logs.'
+) { return $version }
+    } catch {}
+    return 'UNKNOWN'
+}
+
 if ($Synthetic) {
     foreach ($id in $ids) {
         $report.instances += [ordered]@{
