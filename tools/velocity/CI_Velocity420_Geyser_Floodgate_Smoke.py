@@ -265,9 +265,14 @@ def run(plugin: pathlib.Path, profile: str) -> None:
                     "floodgate": regex_loaded(combined, "floodgate"),
                 }
                 if all(ready.values()):
-                    # Let the same JVM finish any asynchronous socket binds.
-                    time.sleep(1.5)
-                    break
+                    # "Loaded plugin" refers to Velocity's metadata discovery,
+                    # NOT Geyser's completed bootstrap. In a network-isolated
+                    # JVM, dependency checks and asynchronous initialization
+                    # may take substantially longer than 1.5 seconds.
+                    # Require the UDP socket before proceeding to RakNet PONG.
+                    if test_only_socket_present(docker, container_name, 19132):
+                        time.sleep(0.5)
+                        break
                 inspect = subprocess.run(
                     [docker, "inspect", "--format", "{{.State.Running}}", container_name],
                     capture_output=True, text=True, timeout=6,
