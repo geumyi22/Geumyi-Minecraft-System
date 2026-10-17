@@ -12,6 +12,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import socket
 import socketserver
 import struct
@@ -45,16 +46,22 @@ def signed(target: str, operation: str, now: int) -> dict:
     return env
 
 
-def verify(env: dict, now: int, seen: set[str]) -> bool:
+def verify(env: dict, now: int, seen: dict[str, int]) -> bool:
     try:
         if set(env) != {
             "version", "target", "operation", "generation", "nonce",
             "issued_unix", "expires_unix", "mac"
         }:
             return False
-        if env["version"] != 1 or env["target"] != TARGET or env["operation"] != "status":
+        if type(env["version"]) is not int or env["version"] != 1:
             return False
-        if env["generation"] != GEN or not isinstance(env["nonce"], str) or len(env["nonce"]) != 32:
+        if type(env["target"]) is not str or type(env["operation"]) is not str:
+            return False
+        if env["target"] != TARGET or env["operation"] != "status":
+            return False
+        if env["generation"] != GEN or type(env["nonce"]) is not str or not re.fullmatch(r"[A-Za-z0-9_-]{32}", env["nonce"]):
+            return False
+        if type(env["mac"]) is not str or not re.fullmatch(r"[0-9a-f]{64}", env["mac"]):
             return False
         if type(env["issued_unix"]) is not int or type(env["expires_unix"]) is not int:
             return False
@@ -67,10 +74,14 @@ def verify(env: dict, now: int, seen: set[str]) -> bool:
             mac, hmac.new(KEY, canon(env), hashlib.sha256).digest()
         ):
             return False
+        # Expired entries must not permanently exhaust the read-only fixture.
+        for nonce, expiry in list(seen.items()):
+            if expiry <= now:
+                del seen[nonce]
         nonce = env["nonce"]
         if nonce in seen or len(seen) >= 128:
             return False
-        seen.add(nonce)
+        seen[nonce] = env["expires_unix"]
         return True
     except (ValueError, TypeError, KeyError, UnicodeEncodeError, struct.error):
         return False
@@ -78,13 +89,25 @@ def verify(env: dict, now: int, seen: set[str]) -> bool:
 
 class Handler(socketserver.StreamRequestHandler):
     def handle(self):
+        # Avoid slow clients holding mock fixture threads indefinitely.
+        self.request.settimeout(2.5)
+        try:
+            frame = self.rfile.readline(MAX_FRAME + 1)
+        except (socket.timeout, OSError):
+            return
         # Strict one-frame limit, no unauthenticated command data returned.
-        frame = self.rfile.readline(MAX_FRAME + 1)
         if not frame.endswith(b"\n") or len(frame) > MAX_FRAME:
             self.wfile.write(b'{"read_only":true,"safe_to_execute":false,"error":"invalid_frame"}\n')
             return
         try:
-            body = json.loads(frame)
+            def reject_duplicate_keys(pairs):
+                value = {}
+                for key, field in pairs:
+                    if key in value:
+                        raise ValueError("duplicate JSON property")
+                    value[key] = field
+                return value
+            body = json.loads(frame, object_pairs_hook=reject_duplicate_keys)
             if type(body) is not dict:
                 raise ValueError("request must be object")
         except (ValueError, UnicodeError):
@@ -103,7 +126,14 @@ class FixtureServer(socketserver.ThreadingTCPServer):
     def __init__(self):
         super().__init__(("127.0.0.1", 0), Handler, bind_and_activate=True)
         self.guard = threading.Lock()
-        self.seen = set()
+        self.seen = {}
+
+
+def exchange_raw(server: FixtureServer, payload: bytes) -> dict:
+    with socket.create_connection(("127.0.0.1", server.server_address[1]), timeout=3) as sock:
+        sock.settimeout(3)
+        sock.sendall(payload)
+        return json.loads(sock.makefile("rb").readline(MAX_FRAME))
 
 
 def exchange(server: FixtureServer, envelope: dict) -> dict:
@@ -149,7 +179,27 @@ def main():
             altered = signed(TARGET, "status", now)
             altered["generation"] = "parent-900-child-901"
             assert exchange(server, altered).get("error") == "rejected", "generation tamper accepted"
-            print("CI LOCALHOST READ-ONLY IPC CONTRACT PASS: signed status only; replay/forgery/cross-proxy/stale and all lifecycle verbs denied.")
+            # Reject duplicate JSON property ambiguity and oversize frames.
+            valid = signed(TARGET, "status", now)
+            duplicate = json.dumps(valid, separators=(",", ":"))[:-1] + ',"target":"wild"}' + "\\n"
+            assert exchange_raw(server, duplicate.encode()).get("error") == "rejected", "duplicate JSON key accepted"
+            oversized = b"{" + b" " * MAX_FRAME + b"}\\n"
+            assert exchange_raw(server, oversized).get("error") == "invalid_frame", "large frame accepted"
+            wrong_type = signed(TARGET, "status", now)
+            wrong_type["version"] = True
+            assert exchange(server, wrong_type).get("error") == "rejected", "bool spoofed numeric version"
+            bad_nonce = signed(TARGET, "status", now)
+            bad_nonce["nonce"] = "!" * 32
+            assert exchange(server, bad_nonce).get("error") == "rejected", "invalid nonce alphabet"
+            # Under concurrent requests, the ledger permits the same signed
+            # status nonce once and once only, despite multiple worker threads.
+            from concurrent.futures import ThreadPoolExecutor
+            race = signed(TARGET, "status", now)
+            with ThreadPoolExecutor(max_workers=12) as pool:
+                responses = list(pool.map(lambda _: exchange(server, race), range(24)))
+            assert sum(item == SAFE_REPLY for item in responses) == 1, "parallel replay accepted"
+            assert all(item == SAFE_REPLY or item.get("error") == "rejected" for item in responses)
+            print("CI LOCALHOST READ-ONLY IPC CONTRACT PASS: signed status only; replay/forgery/cross-proxy/stale, JSON duplicates/size/type/concurrent replays and lifecycle verbs all denied.")
         finally:
             server.shutdown()
             worker.join(timeout=5)
