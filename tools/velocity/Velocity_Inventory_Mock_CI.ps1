@@ -101,8 +101,8 @@ if([string]$missing.proxies[0].status -ne 'task_missing_or_duplicate'){throw 'Mi
 $drift=Probe 'drift'
 if([string]$drift.proxies[0].status -ne 'task_config_drift'){throw 'Task action path drift was not detected'}
 $udpMissing=Probe 'udp_missing'
-if(@($udpMissing.proxies|Where-Object {$_.status -ne 'ports_partial_or_conflicting'}).Count -ne 0){
-  throw 'Missing UDP with observed TCP must not be considered ready'
+if(@($udpMissing.proxies|Where-Object {$_.status -ne 'udp_inventory_missing_tcp_visible'}).Count -ne 0){
+  throw 'Missing UDP provider rows must not be called a PID conflict or ONLINE'
 }
 $wrongChild=Probe 'udp_wrong_child'
 if([bool]$wrongChild.udp_three_unique_child_owners -or
