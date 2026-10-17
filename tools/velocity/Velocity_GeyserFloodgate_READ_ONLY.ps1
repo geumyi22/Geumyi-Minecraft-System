@@ -52,6 +52,22 @@ function JarStatus([object[]]$files,[string]$name) {
     return $item
 }
 if($Synthetic){
+    # Check filename allowlisting and ambiguous-JAR detection entirely in
+    # memory. Never touch disk, Get-FileHash or actual Windows plugins.
+    $dup=@(
+        [pscustomobject]@{Name='Geyser-Velocity.jar';Length=[int64]123;FullName='unused'}
+        [pscustomobject]@{Name='Geyser-Velocity-test.jar';Length=[int64]123;FullName='unused'}
+    )
+    $duplicateResult=JarStatus $dup 'geyser'
+    if($duplicateResult.result -ne 'MULTIPLE_JARS_LOADING_UNVERIFIED' -or
+        $duplicateResult.candidate_count -ne 2){
+        throw 'SYNTHETIC_DUPLICATE_JARS_NOT_BLOCKED'
+    }
+    $unrelated=JarStatus $dup 'floodgate'
+    if($unrelated.result -ne 'NOT_FOUND_OR_UNVERIFIED' -or
+        $unrelated.candidate_count -ne 0){
+        throw 'SYNTHETIC_NONMATCHING_PLUGIN_NOT_FILTERED'
+    }
     foreach($id in $ids){
         $sample=@()
         foreach($kind in @('geyser','floodgate')){
