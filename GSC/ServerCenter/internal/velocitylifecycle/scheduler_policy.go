@@ -18,6 +18,7 @@ type SchedulerAssessment struct {
 	SingleExecExpected bool `json:"single_exec_expected"`
 	SYSTEMPrincipal bool `json:"system_principal"`
 	AutoRestartEnabled bool `json:"auto_restart_enabled"`
+	MultipleInstancePolicySafe bool `json:"multiple_instance_policy_safe"`
 	RestartCount int `json:"restart_count"`
 	RestartPolicyUnverified bool `json:"restart_policy_unverified"`
 	SafeToStart bool `json:"safe_to_start"`
@@ -75,13 +76,27 @@ func InspectSchedulerXML(target string, contents []byte) (SchedulerAssessment, e
 		action := task.Actions.Items[0]
 		dir := strings.ToLower(strings.ReplaceAll(strings.TrimSpace(action.WorkingDirectory), "/", "\\"))
 		command := strings.ToLower(strings.ReplaceAll(strings.TrimSpace(action.Command), "/", "\\"))
+		expectedDir := "\\programdata\\geumyiservercenter\\network\\fourserver\\" + target
+		absoluteDrive := regexp.MustCompile(`^[a-z]:\\`)
+		// A filename suffix alone is insufficient: a UNC share, relative
+		// folder or unrelated matching suffix must fail closed.
+		directoryMatches := (absoluteDrive.MatchString(dir) && strings.HasSuffix(dir, expectedDir)) ||
+			dir == "%programdata%\\geumyiservercenter\\network\\fourserver\\"+target
+		jarFlags := regexp.MustCompile(`(?i)(?:^|\s)-jar(?:\s|$)`).FindAllStringIndex(action.Arguments,-1)
 		out.SingleExecExpected = action.XMLName.Local == "Exec" &&
-			strings.HasSuffix(command, "\\java.exe") &&
-			strings.HasSuffix(dir, "\\"+target) &&
+			absoluteDrive.MatchString(command) && strings.HasSuffix(command, "\\java.exe") &&
+			!strings.Contains(command, "..") &&
+			directoryMatches && !strings.Contains(dir, "..") &&
+			len(jarFlags) == 1 &&
 			velocityJarArgument.MatchString(action.Arguments)
 	}
 	if !out.SingleExecExpected {
 		out.Reasons = append(out.Reasons,"task_definition_action_not_trusted")
+	}
+	out.MultipleInstancePolicySafe = strings.EqualFold(
+		strings.TrimSpace(task.Settings.MultipleInstancesPolicy),"IgnoreNew")
+	if !out.MultipleInstancePolicySafe {
+		out.Reasons=append(out.Reasons,"task_multiple_instance_policy_unsafe_or_missing")
 	}
 	if len(task.Principals.Items) == 1 {
 		principal:=task.Principals.Items[0]
