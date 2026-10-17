@@ -57,6 +57,59 @@ func TestVelocityInventoryRejectsMissingOrInventedTargets(t *testing.T) {
 	}
 }
 
+
+func TestVelocityInventoryOctober17TcpGapCanBeRepresentedWithoutClaimingE2E(t *testing.T) {
+	// Redacted real-host 2026-10-17 sample: three tasks Running and matching;
+	// three UDP owners are unique Velocity children; TCP provider returned no
+	// rows. This is not proof that TCP is down.
+	info := sampleVelocityInventory()
+	info.ProcessPairCensusConsistent = true
+	info.UDPThreeUniqueChildOwners = true
+	for i := range info.Proxies {
+		item := &info.Proxies[i]
+		item.TaskPresent = true
+		item.TaskMatchesBaseline = true
+		item.TaskState = "Running"
+		item.JavaListening = false
+		item.BedrockListening = true
+		item.PortOwnerConsistent = false
+		item.UDPOwnerMatchesVelocityChild = true
+		item.Status = "tcp_inventory_missing_udp_child_verified"
+	}
+	body, err := json.Marshal(info)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := decodeVelocityInventory(body)
+	if err != nil {
+		t.Fatalf("historical TCP-telemetry-gap inventory rejected: %v", err)
+	}
+	if got.TaskProcessIdentityVerified || got.LiveJavaRaknetE2EVerified {
+		t.Fatal("telemetry gap fabricated process identity or real client E2E")
+	}
+	for _, mutation := range []struct {
+		name string
+		mutate func(*velocityInventory)
+	}{
+		{"no-child-proof", func(v *velocityInventory) { v.Proxies[0].UDPOwnerMatchesVelocityChild = false }},
+		{"no-census", func(v *velocityInventory) { v.UDPThreeUniqueChildOwners = false }},
+		{"unexpected-TCP", func(v *velocityInventory) { v.Proxies[0].JavaListening = true }},
+		{"no-UDP", func(v *velocityInventory) { v.Proxies[0].BedrockListening = false }},
+		{"task-drift", func(v *velocityInventory) { v.Proxies[0].TaskMatchesBaseline = false }},
+		{"task-stopped", func(v *velocityInventory) { v.Proxies[0].TaskState = "Ready" }},
+	} {
+		t.Run(mutation.name, func(t *testing.T) {
+			modified := got
+			modified.Proxies = append([]velocityProxyStatus(nil), got.Proxies...)
+			mutation.mutate(&modified)
+			raw, _ := json.Marshal(modified)
+			if _, err := decodeVelocityInventory(raw); err == nil {
+				t.Fatal("inconsistent TCP-gap evidence was accepted")
+			}
+		})
+	}
+}
+
 func TestVelocityStatusEndpointIsGETOnlyAndDoesNotOfferProcessActions(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodDelete} {
 		req := httptest.NewRequest(method, "/api/v4/velocity/status", strings.NewReader(`{"action":"restart"}`))
