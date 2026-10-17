@@ -63,10 +63,23 @@ async function loadVelocityStatus(){
     unverified:'확인되지 않음'
   };
   try{
-    const data=await req('/api/v4/velocity/status');
+    const [data,probeResult]=await Promise.all([
+      req('/api/v4/velocity/status'),
+      req('/api/v4/network/entry-status').then(x=>({ok:true,data:x})).catch(()=>({ok:false}))
+    ]);
     if(data.read_only!==true || data.schema!==1 || !Array.isArray(data.proxies) || data.proxies.length!==3)throw Error('프록시 상태 응답을 검증할 수 없습니다');
+    const entries=probeResult.ok && probeResult.data?.schema===1 &&
+      probeResult.data?.live_e2e_verified===false && Array.isArray(probeResult.data?.endpoints) &&
+      probeResult.data.endpoints.length===3 ? probeResult.data.endpoints : null;
     const evidence='Java 부모·자식 3쌍: '+(data.process_pair_census_consistent?'구조 일치':'검증 불가')+' · UDP 자식 소유자: '+(data.udp_three_unique_child_owners?'3개 구별됨':'불완전/미확인')+' · 작업별 실제 소유권 및 인게임 접속은 미검증';
     const rows=data.proxies.map(p=>{
+      const matching=entries?.filter(e=>e.id===p.id && e.java_tcp===p.java_port && e.bedrock_udp===p.bedrock_port);
+      const layer=matching?.length===1?matching[0]:null;
+      const applicationLine=layer
+        ?'<div class="small">실시간 응답 확인: Java TCP '+(layer.java_responding?'응답':'미응답')+
+          ' · Bedrock RakNet '+(layer.bedrock_raknet_pong?'PONG':'미응답')+
+          ' (소켓 소유권·로비 접속 증명 아님)</div>'
+        :'<div class="small">실시간 Java/RakNet 응답은 확인하지 못했습니다.</div>';
       const hardMismatch=['task_missing_or_duplicate','task_config_drift','ports_partial_or_conflicting'].includes(p.status);
       const stateClass=hardMismatch?'bad':'warn';
       const tcpDetail=p.status.startsWith('tcp_inventory_missing') || p.status==='socket_inventory_missing'
@@ -80,7 +93,7 @@ async function loadVelocityStatus(){
           ${tcpDetail}
           ${serviceChip('Bedrock UDP 소켓 '+p.bedrock_port,!!p.bedrock_listening)}
         </div>
-        <div class="small">포트 응답이나 같은 PID는 Velocity 정체성·로비 접속을 증명하지 않습니다. 변경 작업은 비활성화되어 있습니다.</div>
+        ${applicationLine}<div class="small">포트 응답이나 같은 PID는 Velocity 정체성·로비 접속을 증명하지 않습니다. 변경 작업은 비활성화되어 있습니다.</div>
       </div>`;
     }).join('');
     host.innerHTML='<div class="card full"><div class="row spread"><div><div class="title">🌐 Velocity 프록시 ×3</div><div class="small">읽기 전용 · Windows 작업 스케줄러/리스너 · 강제 종료 없음</div></div><button onclick="loadVelocityStatus()">↻ 상태 다시 검사</button></div><div class="notice">'+esc(evidence)+'<br>Windows TCP 소켓 조회가 누락되어도 실제 서버가 정상일 수 있습니다. UDP 포트·자식 JVM 정합도 인게임 접속을 증명하지 않습니다. 실제 Java·Bedrock 응답은 별도 검증 대상입니다. 시작·중지·재시작 기능은 안전성 검증 전까지 비활성화합니다.</div></div>'+rows;
