@@ -76,8 +76,8 @@ async function loadVelocityStatus(){
       const matching=entries?.filter(e=>e.id===p.id && e.java_tcp===p.java_port && e.bedrock_udp===p.bedrock_port);
       const layer=matching?.length===1?matching[0]:null;
       const applicationLine=layer
-        ?'<div class="small">실시간 응답 확인: Java TCP '+(layer.java_responding?'응답':'미응답')+
-          ' · Bedrock RakNet '+(layer.bedrock_raknet_pong?'PONG':'미응답')+
+        ?'<div class="small">실시간 응답 확인: Java TCP '+(layer.java_responding===true?'응답':'미응답')+
+          ' · Bedrock RakNet '+(layer.bedrock_raknet_pong===true?'PONG':'미응답')+
           ' (소켓 소유권·로비 접속 증명 아님)</div>'
         :'<div class="small">실시간 Java/RakNet 응답은 확인하지 못했습니다.</div>';
       const hardMismatch=['task_missing_or_duplicate','task_config_drift','ports_partial_or_conflicting'].includes(p.status);
