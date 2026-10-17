@@ -157,7 +157,7 @@ func defaultUpdateConfig(dataRoot string) UpdateConfig {
 	return UpdateConfig{
 		Enabled:        false,
 		Repository:     "geumyi22/Geumyi-Minecraft-System",
-		Channel:        "canary",
+		Channel:        "stable",
 		PublicKeyPath:  filepath.Join(dataRoot, "deployment-public.pem"),
 		TimeoutSeconds: 12,
 	}
@@ -172,7 +172,7 @@ func normalizeUpdateConfig(c UpdateConfig) UpdateConfig {
 	switch c.Channel {
 	case "stable", "beta", "canary":
 	default:
-		c.Channel = "canary"
+		c.Channel = "stable"
 	}
 	c.PublicKeyPath = strings.TrimSpace(os.ExpandEnv(c.PublicKeyPath))
 	if c.TimeoutSeconds < 3 || c.TimeoutSeconds > 60 {
@@ -258,6 +258,9 @@ func publicUpdateConfig(c Config) map[string]any {
 		"enabled": u.Enabled,
 		"repository": u.Repository,
 		"channel": u.Channel,
+		"recommended_channel": "stable",
+		"channels": gscReleaseChannelCatalog(),
+		"channel_selection_only": true,
 		"public_key_path": u.PublicKeyPath,
 		"timeout_seconds": u.TimeoutSeconds,
 		"github_authenticated": strings.TrimSpace(c.GitHubToken) != "",
