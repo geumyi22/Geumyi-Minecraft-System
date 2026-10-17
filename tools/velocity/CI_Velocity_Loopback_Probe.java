@@ -20,7 +20,7 @@ public final class CI_Velocity_Loopback_Probe {
         (byte)0xfe, (byte)0xfe, (byte)0xfd, (byte)0xfd,
         (byte)0xfd, (byte)0xfd, 0x12, 0x34, 0x56, 0x78
     };
-    private static final int JAVA_PORT = 25577; // isolated stock Velocity default
+    private static final int JAVA_PORT = 25565; // Velocity 4.2.0 stock default
     private static final int BEDROCK_PORT = 19132; // isolated Geyser default
 
     private CI_Velocity_Loopback_Probe() {}
@@ -50,7 +50,7 @@ public final class CI_Velocity_Loopback_Probe {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             // Minecraft Java HANDSHAKING -> STATUS, no LOGIN packet.
             // Handshake: packet id 0, protocol 767, host 127.0.0.1,
-            // default isolated proxy port 25577, next state=1 (STATUS).
+            // default isolated proxy port 25565, next state=1 (STATUS).
             byte[] host = "127.0.0.1".getBytes(StandardCharsets.US_ASCII);
             java.io.ByteArrayOutputStream packetBytes = new java.io.ByteArrayOutputStream();
             DataOutputStream packet = new DataOutputStream(packetBytes);
