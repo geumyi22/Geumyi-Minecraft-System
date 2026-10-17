@@ -67,6 +67,9 @@ jobs:
       - name: Run GSC tests
         working-directory: GSC/ServerCenter
         run: go test ./...
+      - name: Race-check isolated Velocity lifecycle and message authentication
+        working-directory: GSC/ServerCenter
+        run: go test -race ./internal/velocitylifecycle ./internal/velocitybridge
 
   statusagent:
     name: StatusAgent 0.5.4 / build
