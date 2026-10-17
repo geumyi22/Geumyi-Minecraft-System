@@ -19,6 +19,7 @@
 - `.github/workflows/velocity-bridge-disabled-ci.yml` is a PR-gated isolated compile/test job. A successful build is **not** evidence that the production server uses the same JVM/API version or that a future bridge is safe to install.
 - `tools/velocity/Velocity_Compatibility_READ_ONLY.ps1` can collect **sanitized** SHA-256 fingerprints, manifest version hints and executable product-version hints for UDP socket owners for the three expected Day10 task-associated `velocity.jar` files. It only reads JAR/task metadata and UDP socket owner Java executable file-version metadata in memory; paths and PIDs are not exported. Its default output is a JSON report on Desktop; it does not run Java, change processes/tasks, install any file or read forwarding secrets. A manifest or Java executable hint might be `UNKNOWN`, including on a valid runtime; an executable file-version hint does not prove the effective classloader/runtime JVM version. In all cases `runtime_api_compatibility_verified=false`.
 - Windows CI exercises `-Synthetic` mode, not real operator tasks or private files.
+- Once CI is green, the Windows job attaches `GSC452-Velocity-Compatibility-READ-ONLY` containing exactly the CMD launcher and PS1 inspector. This is a **CI diagnostic kit**, not a release package or GSC v4.5.2 installer. Extract both files together, double-click the CMD only when an operator is ready to perform a read-only version check, and return only the sanitized Desktop JSON.
 
 ## Evidence known before this phase
 
