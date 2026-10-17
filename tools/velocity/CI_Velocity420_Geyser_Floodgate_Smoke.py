@@ -28,12 +28,7 @@ ARTIFACTS = {
         42_163_652,
         80 * 1024 * 1024,
     ),
-    "Geyser-Velocity.jar": (
-        "https://download.geysermc.org/v2/projects/geyser/versions/2.12.0/builds/1263/downloads/velocity",
-        "f04cb787529b731ed5a1ab4797ee49bb5192c9ccec5217bfed2f368723036043",
-        None,
-        90 * 1024 * 1024,
-    ),
+
     "floodgate-velocity.jar": (
         "https://download.geysermc.org/v2/projects/floodgate/versions/2.2.5/builds/141/downloads/velocity",
         "649835022de37ff09255fc626d4bfe7bc2a3b926d07b0dfaf1f51e12bf37001d",
@@ -41,6 +36,22 @@ ARTIFACTS = {
         30 * 1024 * 1024,
     ),
 }
+# The production-match profile reproduces the exact *published JAR builds*
+# identified from the operator's sanitized SHA-256 report. The newer profile
+# is a separately labelled reference, NOT the deployed server's version.
+GEYSER_PROFILES = {
+    "operator": (
+        "2.11.3", "1251",
+        "dd963f2123704b89c47d3775b908b189b8174b1650008c51d37b1026d6dd928e",
+        48_674_589,
+    ),
+    "reference": (
+        "2.12.0", "1263",
+        "f04cb787529b731ed5a1ab4797ee49bb5192c9ccec5217bfed2f368723036043",
+        None,
+    ),
+}
+
 BRIDGE_MARKER = "Geumyi Velocity Bridge development shell loaded"
 
 
@@ -66,7 +77,9 @@ def regex_loaded(text: str, plugin_id: str) -> bool:
     return bool(re.search(r"(?i)\bloaded plugin\b[^\r\n]*\b" + re.escape(plugin_id) + r"\b", text))
 
 
-def run(plugin: pathlib.Path) -> None:
+def run(plugin: pathlib.Path, profile: str) -> None:
+    if profile not in GEYSER_PROFILES:
+        raise ValueError("unknown pinned Geyser compatibility profile")
     if plugin.suffix != ".jar" or not plugin.is_file() or plugin.stat().st_size < 100:
         raise RuntimeError("missing CI-built disabled bridge JAR")
     docker = shutil.which("docker")
@@ -74,7 +87,16 @@ def run(plugin: pathlib.Path) -> None:
         raise RuntimeError("Docker unavailable; do not run on production host as fallback")
     with tempfile.TemporaryDirectory(prefix="gsc452-geyser-floodgate-isolated-") as directory:
         root = pathlib.Path(directory)
-        for name, (url, sha, length, maximum) in ARTIFACTS.items():
+        version, build, geyser_sha, geyser_length = GEYSER_PROFILES[profile]
+        artifacts = {
+            **ARTIFACTS,
+            "Geyser-Velocity.jar": (
+                "https://download.geysermc.org/v2/projects/geyser/versions/"
+                + version + "/builds/" + build + "/downloads/velocity",
+                geyser_sha, geyser_length, 90 * 1024 * 1024,
+            ),
+        }
+        for name, (url, sha, length, maximum) in artifacts.items():
             dest = root / name if name.startswith("velocity-") else root / "plugins" / name
             dest.parent.mkdir(parents=True, exist_ok=True)
             download_pinned(dest, url, sha, length, maximum)
@@ -143,11 +165,18 @@ def run(plugin: pathlib.Path) -> None:
                   "error_categories:", patterns,
                   file=sys.stderr)
             raise RuntimeError("test bootstrap did not confirm every plugin; production remains blocked")
-        print("ISOLATED COEXISTENCE STARTUP PASS: SHA256-pinned Velocity 4.2.0 + Geyser 2.12.0/1263 + Floodgate 2.2.5/141 + disabled Geumyi bridge.")
+        print(
+            "ISOLATED COEXISTENCE STARTUP PASS: profile=" + profile
+            + ", SHA256-pinned Velocity 4.2.0/30 + Geyser " + version + "/" + build
+            + " + Floodgate 2.2.5/141 + disabled Geumyi bridge."
+        )
         print("No external network or production resources. No player login, resourcepack or stop/restart test.")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        raise SystemExit("CI-only: python3 CI_Velocity420_Geyser_Floodgate_Smoke.py <disabled-plugin.jar>")
-    run(pathlib.Path(sys.argv[1]))
+    if len(sys.argv) != 3 or sys.argv[2] not in GEYSER_PROFILES:
+        raise SystemExit(
+            "CI-only: python3 CI_Velocity420_Geyser_Floodgate_Smoke.py "
+            "<disabled-plugin.jar> <operator|reference>"
+        )
+    run(pathlib.Path(sys.argv[1]), sys.argv[2])
