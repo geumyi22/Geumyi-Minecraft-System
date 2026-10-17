@@ -20,28 +20,48 @@ function P0-ExpectedCipherNames {
   return $names
 }
 
+function P0-MirrorCandidateUnderProfile([string]$Candidate,[string]$ProfileRoot) {
+  try {
+    if([string]::IsNullOrWhiteSpace($Candidate) -or
+       [string]::IsNullOrWhiteSpace($ProfileRoot)){return $false}
+    $candidatePath=[IO.Path]::GetFullPath($Candidate).TrimEnd('\')
+    $profilePath=[IO.Path]::GetFullPath($ProfileRoot).TrimEnd('\')
+    if([IO.Path]::GetDirectoryName($candidatePath) -ine $profilePath){
+      return $false
+    }
+    $leaf=[IO.Path]::GetFileName($candidatePath)
+    if($leaf -cnotin @('My Drive','내 드라이브')){return $false}
+    foreach($p in @($profilePath,$candidatePath)){
+      $item=Get-Item -LiteralPath $p -Force -ErrorAction Stop
+      if(-not $item.PSIsContainer -or
+         (([long]$item.Attributes -band 0x00441400) -ne 0)){
+        return $false
+      }
+    }
+    return $true
+  } catch {return $false}
+}
+
+function P0-PathIdentical([string]$First,[string]$Second) {
+  try {
+    if(-not $First -or -not $Second){return $false}
+    $a=[IO.Path]::GetFullPath($First).TrimEnd('\')
+    $b=[IO.Path]::GetFullPath($Second).TrimEnd('\')
+    return $a.Equals($b,[StringComparison]::OrdinalIgnoreCase)
+  } catch {return $false}
+}
+
 function P0-CheckMirrorParent(
   [string]$Candidate,
   [string]$ProfileRoot,
   [string]$ShortcutRoot
 ) {
-  # Mirrored Google Drive: G: has a shortcut to the real local My Drive folder.
-  # The shortcut TARGET must resolve to the exact selected user-profile folder.
-  # No heuristic acceptance of arbitrary C: paths or cloud sync claims.
-  if([string]::IsNullOrWhiteSpace($Candidate) -or
-     [string]::IsNullOrWhiteSpace($ProfileRoot) -or
-     [string]::IsNullOrWhiteSpace($ShortcutRoot)){return $false}
+  # Google Drive desktop mirror mode: G: contains an OS Shell Link whose
+  # target must resolve to the EXISTING matching C: user-profile mirror.
+  # WScript.Shell only READS the existing provider link, never creates it.
+  if(-not(P0-MirrorCandidateUnderProfile $Candidate $ProfileRoot)){return $false}
+  if([string]::IsNullOrWhiteSpace($ShortcutRoot)){return $false}
   try {
-    $full=[IO.Path]::GetFullPath($Candidate).TrimEnd('\')
-    $profilePath=[IO.Path]::GetFullPath($ProfileRoot).TrimEnd('\')
-    if([IO.Path]::GetDirectoryName($full) -ine $profilePath){return $false}
-    $leaf=[IO.Path]::GetFileName($full)
-    if($leaf -cnotin @('My Drive','내 드라이브')){return $false}
-    foreach($p in @($profilePath,$full)){
-      $item=Get-Item -LiteralPath $p -Force -ErrorAction Stop
-      if(-not $item.PSIsContainer -or
-        (([long]$item.Attributes -band 0x00441400) -ne 0)){return $false}
-    }
     $root=Get-Item -LiteralPath $ShortcutRoot -Force -ErrorAction Stop
     if(-not $root.PSIsContainer){return $false}
     $links=@(Get-ChildItem -LiteralPath $ShortcutRoot -File -Force -ErrorAction Stop |
@@ -52,9 +72,7 @@ function P0-CheckMirrorParent(
     if((([long]$link.Attributes -band 0x00000400) -ne 0)){return $false}
     $shell=New-Object -ComObject WScript.Shell
     $target=$shell.CreateShortcut($link.FullName).TargetPath
-    if([string]::IsNullOrWhiteSpace($target)){return $false}
-    $resolved=[IO.Path]::GetFullPath($target).TrimEnd('\')
-    return $resolved.Equals($full,[StringComparison]::OrdinalIgnoreCase)
+    return (P0-PathIdentical $target $Candidate)
   } catch {return $false}
 }
 
