@@ -138,7 +138,8 @@ async function checkVelocityControl(id,action){
   };
   try{
     const result=await req('/api/v4/velocity/preflight?id='+encodeURIComponent(id)+'&action='+encodeURIComponent(action));
-    if(result.schema!==1 || result.read_only!==true || result.safe_to_execute!==false ||
+    if(result.target!==id || result.action!==action ||
+      result.schema!==1 || result.read_only!==true || result.safe_to_execute!==false ||
       result.decision!=='blocked' || result.operator_approval_captured!==false ||
       result.live_client_e2e_verified!==false || !Array.isArray(result.reasons)){
       throw Error('사전점검이 안전 차단 상태임을 확인하지 못했습니다');
