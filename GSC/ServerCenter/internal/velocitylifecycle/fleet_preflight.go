@@ -7,7 +7,7 @@ import (
 )
 
 // These are artifact identities observed from the operator's sanitized,
- // read-only fingerprints, NOT proof of the binaries currently in JVM memory.
+// read-only fingerprints, NOT proof of the binaries currently in JVM memory.
 const velocity420Build30SHA = "35a5596a5468a035d8a32c8de5ebb0dc6b8d8f0cc3ff5169d514aca762af8aa8"
 
 // ProxySnapshot is synthetic, in-memory input ONLY. The package neither
@@ -18,11 +18,13 @@ type ProxySnapshot struct {
 	ObservedAt time.Time
 	TaskDefinitionMatches bool
 	TaskToParentIndependentlyAttested bool
-	ParentPID int
-	ChildPID int
-	ChildParentPID int
-	UDPOwnerPID int
-	TCPOwnerPID int
+	ParentPID int `json:"-"`
+	ChildPID int `json:"-"`
+	ChildParentPID int `json:"-"`
+	UDPOwnerPID int `json:"-"`
+	TCPOwnerPID int `json:"-"`
+	ObservedJavaPort int
+	ObservedBedrockPort int
 	TCPInventoryPresent bool
 	JavaStatusResponded bool
 	BedrockRaknetPong bool
@@ -108,7 +110,10 @@ func InspectProxyFleet(snapshots []ProxySnapshot, now time.Time) FleetFinding {
 		}
 		if !present { out.Proxies = append(out.Proxies, f); continue }
 		javaPort, udpPort := proxyPorts(target)
-		if javaPort == 0 || udpPort == 0 { f.Reasons=append(f.Reasons,"target_not_allowed") }
+		if javaPort == 0 || udpPort == 0 ||
+			s.ObservedJavaPort != javaPort || s.ObservedBedrockPort != udpPort {
+			f.Reasons=append(f.Reasons,"incorrect_proxy_endpoint_port")
+		}
 		// Real source timestamps must be fresh; future timestamps also fail.
 		if now.IsZero() || s.ObservedAt.IsZero() || s.ObservedAt.After(now) ||
 			now.Sub(s.ObservedAt) > 30*time.Second {
