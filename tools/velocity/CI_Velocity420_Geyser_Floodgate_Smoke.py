@@ -109,6 +109,40 @@ def test_only_socket_present(docker: str, container: str, udp_port: int) -> bool
     )
 
 
+def test_only_generated_bedrock_config(root: pathlib.Path) -> dict[str, object]:
+    # Only parse the CI-created plugin config; never use a real server config.
+    # Emit permitted fixed numeric/boolean fields, not text or file contents.
+    file = root / "plugins" / "Geyser-Velocity" / "config.yml"
+    answer = {"found": False, "port": None, "raknet_port": None,
+              "clone_remote_port": None}
+    if not file.is_file() or file.stat().st_size > 262144:
+        return answer
+    answer["found"] = True
+    content = file.read_text(encoding="utf8", errors="replace")
+    # Only YAML scalars in the CI-generated "bedrock:" section.
+    block = re.search(r"(?ms)^bedrock:\s*\n((?:^[ \t]+[^\n]*\n|^\s*\n)*)", content)
+    if not block:
+        return answer
+    for key, label in (
+        ("port", "port"),
+        ("raknet-port", "raknet_port"),
+        ("clone-remote-port", "clone_remote_port"),
+    ):
+        pattern = r"(?m)^\s{2,8}" + re.escape(key) + r":\s*([^\r\n#]+)"
+        found = re.search(pattern, block.group(1))
+        if not found:
+            continue
+        raw = found.group(1).strip()
+        if label == "clone_remote_port":
+            if raw in ("true", "false"):
+                answer[label] = raw == "true"
+        elif raw.isdecimal():
+            number = int(raw)
+            if 0 <= number <= 65535:
+                answer[label] = number
+    return answer
+
+
 def test_only_udp_ports(docker: str, container: str) -> list[int]:
     # Only numeric UDP port identifiers in the disposable namespace,
     # never local/remote addresses, PIDs, credentials or raw proc text.
@@ -322,6 +356,9 @@ def run(plugin: pathlib.Path, profile: str) -> None:
                       )),
                       "ci_only_udp_bound_port_numbers",
                       test_only_udp_ports(docker, container_name) if still_running else [],
+                      "geyser_transport_property_processed",
+                      "Transport set from system property: raknet" in combined,
+                      "geyser_ci_config", test_only_generated_bedrock_config(root),
                       "classes:", classes[:2], file=sys.stderr)
                 raise RuntimeError("loopback Java status/RakNet response test failed")
         finally:
