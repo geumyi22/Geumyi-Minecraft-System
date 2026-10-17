@@ -152,15 +152,15 @@ async function loadUpdates(){
               <option value="hold" ${policy==='hold'?'selected':''}>보류</option>
               <option value="manual" ${policy==='manual'?'selected':''}>수동</option>
             </select></div>
-            <div class="field"><label>채널</label><select id="upChannel_${key}">
-              <option value="inherit" ${channel==='inherit'?'selected':''}>전체 설정 상속 (${esc(u.channel||'canary')})</option>
-              <option value="stable" ${channel==='stable'?'selected':''}>Stable</option>
-              <option value="beta" ${channel==='beta'?'selected':''}>Beta</option>
-              <option value="canary" ${channel==='canary'?'selected':''}>Canary</option>
-            </select></div>
+            <div class="field"><label>릴리스 채널</label><select id="upChannel_${key}" data-original-channel="${esc(channel)}" data-original-policy="${esc(policy)}" data-inherited-channel="${esc(u.channel||'stable')}">
+              <option value="inherit" ${channel==='inherit'?'selected':''}>전체 설정 상속 (${esc(u.channel||'stable')})</option>
+              <option value="stable" ${channel==='stable'?'selected':''}>Stable · 운영용</option>
+              <option value="beta" ${channel==='beta'?'selected':''}>Beta · 기능 검증용</option>
+              <option value="canary" ${channel==='canary'?'selected':''}>Canary · 초기 실험용</option>
+            </select><div class="small">Stable: 운영 · Beta: 기능 검증 · Canary: 초기 실험. 상속 시 전체 설정을 따릅니다.</div></div>
           </div>
           <div>
-            <div class="field"><label>Release Pin (비우면 해제)</label><input id="upPin_${key}" value="${esc(pin)}" placeholder="예: day11-stable-..."></div>
+            <div class="field"><label>Release Pin (비우면 해제)</label><input id="upPin_${key}" value="${esc(pin)}" data-original-pin="${esc(pin)}" placeholder="예: day11-stable-..."></div>
             <div class="small">Pin은 해당 release의 서명된 manifest만 허용합니다. 정책 저장만으로 서버는 재시작되지 않습니다.</div>
           </div>
         </div>
@@ -182,11 +182,11 @@ async function loadUpdates(){
       </div>
       <div class="form-grid" style="margin-top:10px">
         <div>
-          <label class="check"><input id="updateEnabled" type="checkbox" ${u.enabled?'checked':''}> 다음 서버 시작 전 관리형 업데이트</label>
-          <div class="field"><label>기본 Release 채널</label><select id="updateChannel">
-            <option value="canary" ${u.channel==='canary'?'selected':''}>Canary</option>
-            <option value="beta" ${u.channel==='beta'?'selected':''}>Beta</option>
-            <option value="stable" ${u.channel==='stable'?'selected':''}>Stable</option>
+          <label class="check"><input id="updateEnabled" type="checkbox" data-original-enabled="${u.enabled?'true':'false'}" ${u.enabled?'checked':''}> 다음 서버 시작 전 관리형 업데이트</label>
+          <div class="field"><label>기본 Release 채널</label><select id="updateChannel" data-original-channel="${esc(u.channel||'stable')}">
+            <option value="stable" ${u.channel==='stable'?'selected':''}>Stable · 운영용 (기본)</option>
+            <option value="beta" ${u.channel==='beta'?'selected':''}>Beta · 기능 검증용</option>
+            <option value="canary" ${u.channel==='canary'?'selected':''}>Canary · 초기 실험용</option>
           </select></div>
         </div>
         <div>
@@ -197,7 +197,7 @@ async function loadUpdates(){
           <div class="field"><label>Trusted Ed25519 public key</label><input id="updatePublicKey" value="${esc(u.public_key_path||'')}"></div>
         </div>
       </div>
-      <div class="notice">서버별 채널/Pin은 기본 채널 위에 적용됩니다. 외부 프록시 구성요소와 Paper는 별도 안전 정책으로 관리합니다.</div>
+      <div class="notice">Stable은 신규 설정의 기본 채널입니다. Beta/Canary는 명시적으로 선택하는 시험 채널이며 실제 운영 서버에는 검증 없이 적용하면 안 됩니다. 기존에 저장된 채널은 자동으로 변경하지 않습니다.<br>서버별 채널/Pin은 기본 채널보다 우선하지만 서명·해시·호환성 검증을 우회하지 않습니다. GitHub의 수동 설치 Stable 라벨과 엄격한 자동 Stable 배포 승인은 별개입니다. 외부 프록시와 Paper는 별도 정책으로 관리합니다.</div>
     </div>`+renderCanaryRollout(rollout)+cards+renderUpdateNotifications(notices)+
       '<div id="gscClientUpdateEntry" class="card full"><div class="title">이 PC GSC Client 업데이트 확인 중...</div></div>'+
       '<div id="gscHostUpdateEntry" class="card full"><div class="title">서버 PC GSC Host 업데이트 확인 중...</div></div>'+
@@ -255,6 +255,12 @@ async function saveServerUpdatePolicy(id,key){
       channel:$('upChannel_'+key).value,
       pin:$('upPin_'+key).value.trim()
     };
+    const selectedChannel=$('upChannel_'+key);
+    const effective=body.channel==='inherit'?selectedChannel.dataset.inheritedChannel:body.channel;
+    const changed=body.channel!==selectedChannel.dataset.originalChannel || body.policy!==selectedChannel.dataset.originalPolicy || body.pin!==$('upPin_'+key).dataset.originalPin;
+    if(changed && (effective==='beta'||effective==='canary')){
+      if(!confirm('이 서버의 유효 채널을 '+effective.toUpperCase()+'로 설정합니다.\n검증 전 실서버 자동 적용에 적합하지 않은 시험 채널입니다.\n설정 저장만으로 서버는 재시작하지 않습니다. 계속할까요?'))return;
+    }
     const result=await req('/api/v4/update/policy',{method:'POST',body:JSON.stringify(body)});
     toast('서버 업데이트 정책 저장 완료 · '+(result.effective_channel||body.channel)+(body.pin?' · Pin '+body.pin:''));
     loadUpdates();
@@ -452,7 +458,22 @@ async function loadNetworkEntryStatus(){
     if($('networkEntry'))$('networkEntry').innerHTML='<div class="title">Java / Bedrock 공개 포트 응답</div>'+items+'<div class="small">포트 응답은 프록시 소유 여부나 로비 실접속(E2E)을 검증하지 않습니다.</div>';
   }catch(e){if($('networkEntry'))$('networkEntry').textContent='네트워크 상태를 확인하지 못했습니다: '+koMessage(e.message)}
 }
-async function saveUpdateSettings(){try{let body={enabled:$('updateEnabled').checked,channel:$('updateChannel').value,repository:$('updateRepository').value.trim(),public_key_path:$('updatePublicKey').value.trim()};let token=$('updateGithubToken')?.value.trim()||'';if(token)body.github_token=token;await req('/api/v4/update/settings',{method:'POST',body:JSON.stringify(body)});toast('업데이트 설정 저장 완료');loadUpdates()}catch(e){toast(e.message,true)}}
+async function saveUpdateSettings(){
+  try{
+    const selected=$('updateChannel');
+    const channel=selected.value;
+    const enabledField=$('updateEnabled');
+    const newlyEnabled=enabledField.checked && enabledField.dataset.originalEnabled !== 'true';
+    if((channel!==selected.dataset.originalChannel || newlyEnabled) && (channel==='beta'||channel==='canary')){
+      if(!confirm('기본 릴리스 채널을 '+channel.toUpperCase()+'로 변경합니다.\n실험/검증용 채널이므로 실제 서버에 자동 적용하기 전에 위험과 복구 수단을 확인해야 합니다.\n채널 설정만으로 서버를 재시작하지 않습니다. 계속할까요?'))return;
+    }
+    let body={enabled:$('updateEnabled').checked,channel,repository:$('updateRepository').value.trim(),public_key_path:$('updatePublicKey').value.trim()};
+    let token=$('updateGithubToken')?.value.trim()||'';
+    if(token)body.github_token=token;
+    await req('/api/v4/update/settings',{method:'POST',body:JSON.stringify(body)});
+    toast('업데이트 설정 저장 완료');loadUpdates();
+  }catch(e){toast(e.message,true)}
+}
 async function clearGitHubAuth(){if(!confirm('저장된 GitHub API 인증 토큰을 삭제할까요? 이후 익명 API 제한을 사용합니다.'))return;try{await req('/api/v4/update/settings',{method:'POST',body:JSON.stringify({clear_github_token:true})});toast('GitHub API 인증을 해제했습니다.');loadUpdates()}catch(e){toast(e.message,true)}}
 async function checkUpdate(id){try{toast('서명된 Release 확인 중...');let x=await req('/api/v4/update/check',{method:'POST',body:JSON.stringify({id})});toast(x.message||'확인 완료');loadUpdates()}catch(e){toast(e.message,true);loadUpdates()}}
 async function loadAutomations(){try{let x=await req('/api/v4/automations'),a=x.automations||[];$('automationList').innerHTML=`<table class="table"><tr><th>이름</th><th>서버</th><th>동작</th><th>시간</th><th>최근 결과</th><th></th></tr>${a.map(v=>`<tr><td>${esc(v.name)}</td><td>${esc(v.server_id)}</td><td>${esc(({restart:'재시작',stop:'정상 종료',backup:'백업'}[v.action]||koMessage(v.action)))}</td><td>${esc(v.time)}</td><td>${esc(koMessage(v.last_result||'-'))}</td><td><button onclick="runAutomation('${esc(v.id)}')">지금 실행</button> <button class="danger" onclick="deleteAutomation('${esc(v.id)}')">삭제</button></td></tr>`).join('')}</table>`}catch(e){$('automationList').innerHTML=`<div class="badtext">${esc(e.message)}</div>`}}async function addAutomation(){let a={server_id:$('autoServer').value,action:$('autoAction').value,time:$('autoTime').value,backup_scope:$('autoScope').value,enabled:true,name:$('autoAction').selectedOptions[0].text+' · '+$('autoTime').value};try{await req('/api/v4/automations',{method:'POST',body:JSON.stringify({action:'upsert',automation:a})});toast('자동화 추가 완료');loadAutomations()}catch(e){toast(e.message,true)}}async function deleteAutomation(id){if(!confirm('자동화를 삭제할까요?'))return;try{await req('/api/v4/automations',{method:'POST',body:JSON.stringify({action:'delete',id})});loadAutomations()}catch(e){toast(e.message,true)}}async function runAutomation(id){try{let x=await req('/api/v4/automations',{method:'POST',body:JSON.stringify({action:'run',id})});toast(x.result||'실행됨');loadAutomations()}catch(e){toast(e.message,true)}}

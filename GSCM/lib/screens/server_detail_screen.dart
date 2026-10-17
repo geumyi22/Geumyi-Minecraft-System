@@ -336,6 +336,8 @@ class _UpdateSectionState extends State<_UpdateSection> {
     if (!const {'managed', 'hold', 'manual'}.contains(policy)) policy = 'managed';
     var channel = (status['configured_channel']?.toString() ?? 'inherit').toLowerCase();
     if (!const {'inherit', 'stable', 'beta', 'canary'}.contains(channel)) channel = 'inherit';
+    final initialPolicy = policy;
+    final initialChannel = channel;
     final pin = TextEditingController(text: status['pin']?.toString() ?? '');
 
     final accepted = await showDialog<bool>(
@@ -364,9 +366,9 @@ class _UpdateSectionState extends State<_UpdateSection> {
                       decoration: const InputDecoration(labelText: 'Release 채널'),
                       items: const [
                         DropdownMenuItem(value: 'inherit', child: Text('전체 설정 상속')),
-                        DropdownMenuItem(value: 'stable', child: Text('Stable')),
-                        DropdownMenuItem(value: 'beta', child: Text('Beta')),
-                        DropdownMenuItem(value: 'canary', child: Text('Canary')),
+                        DropdownMenuItem(value: 'stable', child: Text('Stable · 운영용')),
+                        DropdownMenuItem(value: 'beta', child: Text('Beta · 기능 검증용')),
+                        DropdownMenuItem(value: 'canary', child: Text('Canary · 초기 실험용')),
                       ],
                       onChanged: (v) => setLocal(() => channel = v ?? channel),
                     ),
@@ -379,7 +381,7 @@ class _UpdateSectionState extends State<_UpdateSection> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text('정책 저장만으로 서버를 재시작하지 않습니다. Pin은 해당 Release의 서명된 manifest만 허용합니다.'),
+                    const Text('Stable은 운영용, Beta는 기능 검증용, Canary는 초기 실험용입니다. 기존 채널은 자동으로 변경되지 않으며, 정책 저장만으로 서버를 재시작하지 않습니다. Pin도 서명·해시 검증을 우회하지 않습니다.'),
                   ],
                 ),
               ),
@@ -395,6 +397,28 @@ class _UpdateSectionState extends State<_UpdateSection> {
     if (!accepted) {
       pin.dispose();
       return;
+    }
+    if ((channel == 'beta' || channel == 'canary') &&
+        (channel != initialChannel || policy != initialPolicy)) {
+      if (!mounted) {
+        pin.dispose();
+        return;
+      }
+      final riskConfirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text('${channel.toUpperCase()} 시험 채널 확인'),
+          content: const Text('이 채널은 실험 또는 기능 검증용입니다. 실제 운영 서버에 적용하기 전 검증 결과와 복구 방법을 확인해야 합니다. 정책 저장만으로 서버가 재시작되지는 않습니다.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('취소')),
+            FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('설정 저장')),
+          ],
+        ),
+      ) ?? false;
+      if (!riskConfirmed || !mounted) {
+        pin.dispose();
+        return;
+      }
     }
     final pinValue = pin.text.trim();
     pin.dispose();
