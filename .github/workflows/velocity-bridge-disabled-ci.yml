@@ -1,0 +1,60 @@
+name: GSC v4.5.2 Canary Velocity Plugin Prototype CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'Plugins/GeumyiVelocityBridge/**'
+      - '.github/workflows/velocity-bridge-disabled-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  velocity-api-synthetic:
+    name: Velocity 4.2.1 API prototype (NOT production compatibility)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact proposal
+        uses: actions/checkout@v4
+      - name: JDK 25 compile target from PaperMC docs
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Gradle setup
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.2.0'
+      - name: Fail closed against runtime bridge activity
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('Plugins/GeumyiVelocityBridge/src/main/java/kr/geumyi/velocitybridge/GeumyiVelocityBridge.java')
+          source=p.read_text()
+          forbidden=[
+            '.shutdown(', '.getScheduler(', '.getCommandManager(', '.getEventManager(',
+            'ServerSocket', 'Socket(', 'HttpServer', 'HttpClient', 'DatagramSocket',
+            'Files.write', 'ProcessBuilder', 'Runtime.getRuntime()', 'System.exit(',
+          ]
+          for item in forbidden:
+            if item in source:
+              raise SystemExit(f'unsafe production action in plugin entrypoint: {item}')
+          if '@Plugin(' not in source or 'onInitialize(ProxyInitializeEvent event)' not in source:
+            raise SystemExit('not a recognized no-op Velocity plugin')
+          print('No active management bridge or lifecycle actions in entrypoint')
+          PY
+      - name: Compile offline prototype and run Java tests
+        run: gradle -p Plugins/GeumyiVelocityBridge clean test jar --no-daemon --stacktrace
+      - name: Verify generated Velocity plugin metadata
+        shell: bash
+        run: |
+          set -eu
+          jarfile=$(find Plugins/GeumyiVelocityBridge/build/libs -name '*.jar' | head -n1)
+          test -n "$jarfile"
+          jar tf "$jarfile" | grep -Fx 'velocity-plugin.json'
+          jar tf "$jarfile" | grep -Fx 'kr/geumyi/velocitybridge/GeumyiVelocityBridge.class'
+          echo "Standalone jar build verified; artifact not published or installed."
