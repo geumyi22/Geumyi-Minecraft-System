@@ -23,7 +23,9 @@ type Phase string
 const (
 	Preflight      Phase = "preflight"
 	AwaitShutdown  Phase = "await_graceful_shutdown"
-	AwaitStart     Phase = "await_verified_start"
+	AwaitStopped   Phase = "await_process_stopped"
+	AwaitStart     Phase = "await_start_receipt"
+	AwaitHealthy   Phase = "await_new_process_healthy"
 	Complete       Phase = "simulation_complete"
 	Blocked        Phase = "blocked"
 )
@@ -112,7 +114,8 @@ func Advance(p Plan, e Evidence, now time.Time) Plan {
 	}
 	if !validTarget(p.Target) || !validAction(p.Action) ||
 		!ticketPattern.MatchString(p.Ticket) || p.ExpiresAt.IsZero() ||
-		(p.Phase != Preflight && p.Phase != AwaitShutdown && p.Phase != AwaitStart) {
+		(p.Phase != Preflight && p.Phase != AwaitShutdown &&
+			p.Phase != AwaitStopped && p.Phase != AwaitStart && p.Phase != AwaitHealthy) {
 		return block(p, "invalid_simulation_plan")
 	}
 	if !now.Before(p.ExpiresAt) {
@@ -151,12 +154,18 @@ func Advance(p Plan, e Evidence, now time.Time) Plan {
 			p.Phase = AwaitShutdown
 		}
 	case AwaitShutdown:
+		// A graceful bridge ACK is NOT evidence that either JVM process exited.
 		if !e.PlayersExactlyZeroVerified || !e.GracefulBridgeAuthenticated ||
 			!e.GracefulShutdownAcknowledged ||
-			!e.TargetProcessFamilyAbsentVerified ||
+			e.CurrentGeneration != p.OldGeneration {
+			return block(p, "graceful_shutdown_ack_unverified")
+		}
+		p.Phase = AwaitStopped
+	case AwaitStopped:
+		if !e.TargetProcessFamilyAbsentVerified ||
 			!e.PublicTCPAndUDPFreeIndependentlyVerified ||
 			e.StoppedGeneration != p.OldGeneration {
-			return block(p, "graceful_shutdown_or_stopped_generation_unverified")
+			return block(p, "old_process_and_ports_not_verified_stopped")
 		}
 		if p.Action == Stop {
 			p.Phase = Complete
@@ -164,9 +173,14 @@ func Advance(p Plan, e Evidence, now time.Time) Plan {
 			p.Phase = AwaitStart
 		}
 	case AwaitStart:
-		if !e.SchedulerStartReceiptVerified || !e.FreshProcessPairVerified ||
-			!e.JavaTCPResponding || !e.BedrockRaknetPong ||
-			strings.TrimSpace(e.NewGeneration) == "" ||
+		// An acknowledged task start is NOT proof of a healthy Velocity/Geyser.
+		if !e.SchedulerStartReceiptVerified {
+			return block(p, "scheduled_task_start_receipt_unverified")
+		}
+		p.Phase = AwaitHealthy
+	case AwaitHealthy:
+		if !e.FreshProcessPairVerified || !e.JavaTCPResponding ||
+			!e.BedrockRaknetPong || strings.TrimSpace(e.NewGeneration) == "" ||
 			(p.Action == Restart && e.NewGeneration == p.OldGeneration) {
 			return block(p, "fresh_process_or_application_health_unverified")
 		}
