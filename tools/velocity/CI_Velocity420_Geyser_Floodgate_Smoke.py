@@ -97,9 +97,11 @@ def run(plugin: pathlib.Path) -> None:
             "eclipse-temurin:26-jre",
             "java", "-Xms128M", "-Xmx640M", "-jar", "velocity-4.2.0-30.jar",
         ]
+        docker_exit = "timeout"
         try:
             try:
                 p = subprocess.run(invocation, capture_output=True, text=True, timeout=65)
+                docker_exit = str(p.returncode)
                 combined = p.stdout[-300000:] + p.stderr[-300000:]
             except subprocess.TimeoutExpired as ex:
                 combined = (ex.stdout or b"").decode("utf8", errors="replace") if isinstance(ex.stdout, bytes) else (ex.stdout or "")
@@ -117,7 +119,25 @@ def run(plugin: pathlib.Path) -> None:
             "floodgate": regex_loaded(combined, "floodgate"),
         }
         if not all(ready.values()):
-            print("ISOLATED COEXISTENCE NOT VERIFIED:", ready, file=sys.stderr)
+            # Sanitize CI diagnostics: do not print generated Floodgate key
+            # material, plugin configs, file paths, IPs or raw JVM logs.
+            classes = sorted(set(re.findall(
+                r"\b[A-Z][A-Za-z0-9]*(?:Exception|Error)\b", combined
+            )))[:10]
+            patterns = {
+                "docker_daemon_error": "Error response from daemon" in combined,
+                "missing_image": "Unable to find image" in combined,
+                "java_access_error": "Unable to access jarfile" in combined,
+                "failed_plugin": bool(re.search(r"(?i)(failed to load|could not load|plugin load failed)", combined)),
+                "bind_error": bool(re.search(r"(?i)(failed to bind|address already in use)", combined)),
+                "missing_network": bool(re.search(r"(?i)(unknownhostexception|network is unreachable)", combined)),
+            }
+            print("ISOLATED COEXISTENCE NOT VERIFIED:", ready,
+                  "docker_exit:", docker_exit,
+                  "log_bytes:", len(combined),
+                  "error_classes:", classes,
+                  "error_categories:", patterns,
+                  file=sys.stderr)
             raise RuntimeError("test bootstrap did not confirm every plugin; production remains blocked")
         print("ISOLATED COEXISTENCE STARTUP PASS: SHA256-pinned Velocity 4.2.0 + Geyser 2.12.0/1263 + Floodgate 2.2.5/141 + disabled Geumyi bridge.")
         print("No external network or production resources. No player login, resourcepack or stop/restart test.")
