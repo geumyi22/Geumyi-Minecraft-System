@@ -41,6 +41,12 @@ Source: `tools/velocity/CI_Velocity_Localhost_ReadOnly_IPC.py`. It binds only to
 
 **IMPORTANT:** Although this demonstrates a local-only transport test and verifies compatible message signing, the *future* production IPC must still satisfy OS peer identity/ACL, per-proxy OS-protected key storage and rotation, request authorization tied to authenticated GSC operator session, key zeroization/replay persistence across restarts, rate limiting, player-count gate, operator maintenance window, audit trail, and exact task↔JVM identity. A random in-memory CI test key and localhost binding alone do not authenticate a real operator or a real Velocity process.
 
+## Prepared operator Geyser/Floodgate inventory (not executed on real server)
+
+Two adjacent files `tools/velocity/Run_GeyserFloodgate_READ_ONLY.cmd` and `tools/velocity/Velocity_GeyserFloodgate_READ_ONLY.ps1` inspect **only** `%ProgramData%\GeumyiServerCenter\Network\FourServer\{wild|playground|other}\plugins\*.jar`, matching exact `Geyser-Velocity[-suffix].jar` and `floodgate-velocity[-suffix].jar` names. The report contains only known proxy IDs, plugin-kind labels, candidate count, SHA-256 and JAR file size, with **no absolute paths, usernames, PID, Floodgate `key.pem`, YAML, secret or command line**.
+
+Ambiguous duplicates and missing directories are classified as **loading unverified**, never as clean compatibility. The inspector does not look up Java classloaders, check server logs or load plugins; it cannot attest which JAR is currently running. It creates one sanitized JSON on the operator's Desktop and changes no server task/JAR/config. A Windows CI `-Synthetic` execution checks report shape and rejects duplicate/unrelated test names entirely in memory. GitHub Actions attaches the two-file kit as **`GSC452-GeyserFloodgate-READ-ONLY`** only after the job succeeds. The operator must share **only the sanitized JSON**.
+
 ## Next gates before any release or live controls
 
 - [x] SHA-256 attestation of operator-provided **Velocity 4.2.0 Build 30** JARs
