@@ -276,6 +276,24 @@ def run(plugin: pathlib.Path, profile: str) -> None:
                       "udp_19132_bound_in_container", test_only_socket_present(
                           docker, container_name, 19132
                       ) if still_running else False,
+                      "udp_19133_bound_in_container", test_only_socket_present(
+                          docker, container_name, 19133
+                      ) if still_running else False,
+                      "udp_25565_bound_in_container", test_only_socket_present(
+                          docker, container_name, 25565
+                      ) if still_running else False,
+                      "geyser_startup_error_seen", bool(re.search(
+                          r"(?i)(geyser[^\r\n]{0,100}(failed|error|cannot|unable)|"
+                          r"(failed|error|cannot|unable)[^\r\n]{0,100}geyser)", combined
+                      )),
+                      "network_or_fetch_error_seen", bool(re.search(
+                          r"(?i)(network is unreachable|unknownhostexception|"
+                          r"failed to download|unable to download|could not fetch)", combined
+                      )),
+                      "binding_error_seen", bool(re.search(
+                          r"(?i)(failed to bind|address already in use|"
+                          r"could not bind|unable to bind)", combined
+                      )),
                       "classes:", classes[:2], file=sys.stderr)
                 raise RuntimeError("loopback Java status/RakNet response test failed")
         finally:
