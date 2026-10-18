@@ -45,6 +45,44 @@ func TestWindowsPeerSIDRequiresPinnedExpectedPrincipal(t *testing.T) {
     if p.SameWindowsPrincipal(sid){t.Fatal("closed process proof reused")}
 }
 
+func TestProtectedPipeDACLOnlyPinnedWindowsAccounts(t *testing.T){
+    token,err:=syscall.OpenCurrentProcessToken()
+    if err!=nil{t.Fatal(err)}
+    defer token.Close()
+    u,err:=token.GetTokenUser()
+    if err!=nil||u.User.Sid==nil{t.Fatal("no current account SID")}
+    sid,err:=u.User.Sid.String()
+    if err!=nil{t.Fatal(err)}
+    acl,err:=NewRestrictivePipeACL([]string{sid})
+    if err!=nil{t.Fatalf("single-account DACL creation failed: %v",err)}
+    if attr:=acl.Attributes();attr==nil||attr.SecurityDescriptor==0||attr.InheritHandle!=0{
+        t.Fatal("native security attributes missing or inheritable")
+    }
+    if err:=acl.Close();err!=nil{t.Fatal(err)}
+    if acl.Attributes()!=nil{t.Fatal("closed DACL reused")}
+    if err:=acl.Close();err!=nil{t.Fatal("nonidempotent DACL close")}
+    for _,tc:=range []struct{name string; sids []string}{
+        {"none",nil},
+        {"duplicates",[]string{sid,sid}},
+        {"group-everyone",[]string{"S-1-1-0"}},
+        {"group-authenticated-users",[]string{"S-1-5-11"}},
+        {"group-administrators",[]string{"S-1-5-32-544"}},
+        {"group-users",[]string{"S-1-5-32-545"}},
+        {"anonymous",[]string{"S-1-5-7"}},
+        {"malformed",[]string{"D:P(A;;GA;;;WD)"}},
+        {"whitespace",[]string{" "+sid}},
+        {"too-many",[]string{sid,"S-1-5-18","S-1-5-19"}},
+    }{
+        t.Run(tc.name,func(t *testing.T){
+            acl,err:=NewRestrictivePipeACL(tc.sids)
+            if err==nil{
+                acl.Close()
+                t.Fatal("unsafe/broad pipe allowlist accepted")
+            }
+        })
+    }
+}
+
 func TestWindowsPipeClientProbeRejectsInvalidHandles(t *testing.T){
     for _,handle:=range []uintptr{0,^uintptr(0)}{
         p,err:=ObserveConnectedPipeClient(handle)
