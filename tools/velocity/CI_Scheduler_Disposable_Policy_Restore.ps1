@@ -25,9 +25,16 @@ function AssertSafeTask([string]$id){
         throw 'non-disposable task name rejected'
     }
     $t=GetTestTask $id
-    if ($null -eq $t -or [string]$t.State -ne 'Disabled' -or
-        @($t.Triggers).Count -ne 0 -or @($t.Actions).Count -ne 1) {
-        throw 'CI task not disabled, missing or has unexpected trigger/action'
+    if($null -eq $t){throw 'Unique disposable CI task not found'}
+    # A @($null) PowerShell array can have Count=1. Exclude null objects
+    # explicitly before assessing the trigger-free task.
+    $triggerCount=@($t.Triggers | Where-Object { $null -ne $_ }).Count
+    $actionCount=@($t.Actions | Where-Object { $null -ne $_ }).Count
+    $disabled=[string]$t.State -eq 'Disabled'
+    if(-not $disabled -or $triggerCount -ne 0 -or $actionCount -ne 1){
+        Write-Host ('CI_ONLY_DISPOSABLE_SHAPE disabled='+$disabled+
+            ' trigger_count='+$triggerCount+' action_count='+$actionCount)
+        throw 'CI task not disabled or unexpected trigger/action'
     }
     return $t
 }
