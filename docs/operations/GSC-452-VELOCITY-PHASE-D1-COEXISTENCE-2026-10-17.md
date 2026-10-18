@@ -142,3 +142,20 @@ Windows CI runs **three in-memory synthetic cases** (positive engine-PID hint, n
 - [ ] Human approved maintenance window, GSCM compatibility/security gate, real in-game smoke and explicit `v4.5.2-canary` promotion
 
 No source in this phase enables `ProxyServer.shutdown()`, live HTTP mutating API, control plugin socket, automatic server upgrade, or production start/stop/restart. **Leave PR #54, #55, #57, #58 Draft and unmerged; protect `main`, GSC v4.5.1 Stable, current Releases, proxy/Paper processes, worlds/backups/firewall/ACL.**
+
+## 2026-10-18 18:20 KST — COM Task instance observation (live READ ONLY)
+
+The operator ran the approved Task Scheduler COM read-only kit on the real Windows server PC and shared only `Velocity-TaskInstance-COM-READ-ONLY-20261018-182023.json` (collected `2026-10-18T09:20:18.9662913Z`). The result is `TASK_INSTANCE_HINTS_UNVERIFIED_NO_GO`. `synthetic=false`, `read_only=true`, `source_authenticated=false`, `live_control_authorized=false`, and all server/task/event-log mutation and elevation flags are false.
+
+| Proxy | Task state | Visible task instances | Engine PID present/visible | Engine PID = Java parent | Independent UDP→child→parent hint | Trusted process control |
+|---|---|---:|---|---|---|---|
+| wild | Running | 1 | yes/yes | true | true | **NO-GO** |
+| playground | Running | 1 | yes/yes | true | true | **NO-GO** |
+| other | Running | 1 | yes/yes | true | true | **NO-GO** |
+
+All three reported `engine_pid_matches_udp_java_child=false`, consistent with the engine PID matching the Java parent instead of the child. All three report `reliable_task_to_jvm_identity_verified=false`, `safe_to_start=false`, `safe_to_stop=false`, `safe_to_restart=false`.
+
+**Interpretation:** unusually strong **concurrent process association hints** across all three known tasks, but not an independently authenticated task-to-JVM identity, not a way to prove the process will remain the same between observation and any future action, and not an actual Java+Bedrock login E2E. The Task Scheduler Operational channel remains disabled per the earlier report; this COM check succeeded without changing it. Do not ask the operator to repeat these collectors simply to make a status label change. Keep the Day10 `RestartOnFailure.Count=999` policy intact.
+
+**Next source-only work:** review these exact sanitized fields against fail-closed pure Go classification in Draft PR #57; independently test no-player gating, OS peer authorization, safe maintenance restore and synthetic negative cases before any real GSC control integration. No operator live maintenance is authorized by the COM result.
+
