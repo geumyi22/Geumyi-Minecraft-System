@@ -64,8 +64,20 @@ func TestWindowsDifferentProcessPipeAndSignedChallenge(t *testing.T){
     name:="\\\\.\\pipe\\GSC452-CI-CHALLENGE-"+hex.EncodeToString(id[:])
     namep,err:=syscall.UTF16PtrFromString(name)
     if err!=nil{t.Fatal(err)}
+    // CI-only strict DACL: no Everyone/default-readable pipe ACL.
+    token,err:=syscall.OpenCurrentProcessToken()
+    if err!=nil{t.Fatal(err)}
+    user,err:=token.GetTokenUser()
+    if err!=nil{token.Close();t.Fatal(err)}
+    sid,err:=user.User.Sid.String()
+    token.Close()
+    if err!=nil{t.Fatal(err)}
+    acl,err:=NewRestrictivePipeACL([]string{sid})
+    if err!=nil{t.Fatalf("CI pipe DACL failed: %v",err)}
+    defer acl.Close()
     raw,_,callerr:=createNamedPipeW.Call(uintptr(unsafe.Pointer(namep)),
-        pipeAccessDuplex,pipeRejectRemoteClients,1,4096,4096,0,0)
+        pipeAccessDuplex,pipeRejectRemoteClients,1,4096,4096,0,
+        uintptr(unsafe.Pointer(acl.Attributes())))
     if raw==0||raw==uintptr(syscall.InvalidHandle){
         t.Fatalf("test pipe creation failed: %v",callerr)
     }
@@ -103,13 +115,7 @@ func TestWindowsDifferentProcessPipeAndSignedChallenge(t *testing.T){
     if err!=nil||pid!=uint32(cmd.Process.Pid)||born==0||!proof.SameGeneration(pid,born){
         t.Fatal("kernel-assigned client PID/generation differed from child")
     }
-    token,err:=syscall.OpenCurrentProcessToken()
-    if err!=nil{t.Fatal(err)}
-    user,err:=token.GetTokenUser()
-    if err!=nil{token.Close();t.Fatal(err)}
-    sid,err:=user.User.Sid.String()
-    token.Close()
-    if err!=nil||!proof.SameWindowsPrincipal(sid)||proof.SameWindowsPrincipal(sid+"-other"){
+    if !proof.SameWindowsPrincipal(sid)||proof.SameWindowsPrincipal(sid+"-other"){
         t.Fatal("kernel account SID mismatch or forged SID accepted")
     }
 
