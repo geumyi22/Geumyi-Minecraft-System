@@ -24,6 +24,8 @@ func TestPhaseCModulesHaveNoLiveProcessOrNetworkImports(t *testing.T) {
 		filepath.Join(root, "task_instance_report.go"),
 		filepath.Join(root, "principal_scope_report.go"),
 		filepath.Join(root, "fleet_evidence.go"),
+		filepath.Join(root, "host_principal_report.go"),
+		filepath.Join(root, "fleet_host_evidence.go"),
 		filepath.Clean(filepath.Join(root, "..", "velocitybridge", "auth.go")),
 		filepath.Clean(filepath.Join(root, "..", "velocitybridge", "challenge.go")),
 		filepath.Clean(filepath.Join(root, "..", "velocitybridge", "frame.go")),
