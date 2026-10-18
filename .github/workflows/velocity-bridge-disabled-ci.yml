@@ -22,6 +22,7 @@ on:
       - 'tools/velocity/Velocity_GSC_HostPrincipal_READ_ONLY.ps1'
       - 'tools/velocity/Run_Velocity_GSC_HostPrincipal_READ_ONLY.cmd'
       - 'tools/velocity/Run_GeyserFloodgate_READ_ONLY.cmd'
+      - 'tools/velocity/ci/**'
       - '.github/workflows/velocity-bridge-disabled-ci.yml'
   workflow_dispatch:
 
@@ -29,6 +30,28 @@ permissions:
   contents: read
 
 jobs:
+  java-native-pipe-interoperability:
+    name: Windows JDK25 native pipe + protected DACL feasibility (CI ONLY)
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Compile and execute test-owned Java native Windows pipe client
+        shell: powershell
+        timeout-minutes: 3
+        run: |
+          $script='tools/velocity/ci/CI_JavaNativePipe_Interop.ps1'
+          $tokens=$null; $issues=$null
+          [void][Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $script),[ref]$tokens,[ref]$issues)
+          if(@($issues).Count -ne 0){throw 'CI-only Windows Java pipe feasibility fixture syntax invalid'}
+          & powershell.exe -NoProfile -NonInteractive -File $script
+          if($LASTEXITCODE -ne 0){throw 'Java native Win32 pipe feasibility unverified: fail closed'}
+
   velocity-api-synthetic:
     name: Velocity API ${{ matrix.velocity_api }} compile-only (NO DEPLOY)
     runs-on: ubuntu-latest
