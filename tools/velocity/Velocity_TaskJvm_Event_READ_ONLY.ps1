@@ -1,5 +1,11 @@
 [CmdletBinding()]
-param([switch]$Synthetic)
+param(
+ [switch]$Synthetic,
+ [ValidateSet('Normal','NoEvent')][string]$SyntheticCase='Normal'
+)
+if(-not $Synthetic -and $SyntheticCase -ne 'Normal'){
+ throw 'SyntheticCase requires Synthetic; no OS inspection permitted for test cases'
+}
 # GSC 4.5.2 Canary: strictly read-only Task Scheduler process-generation
 # correlation hints. Does NOT attest complete OS identity or authorize any
 # start, stop, restart, plugin control or maintenance action.
@@ -21,6 +27,10 @@ $report=[ordered]@{
  read_only=$true
  source_authenticated=$false
  live_control_authorized=$false
+ event_log_state='UNAVAILABLE'
+ event129_query_status='NOT_QUERIED'
+ event129_window_hours=48
+ event129_scan_capped=$false
  result='EVIDENCE_UNVERIFIED'
  instances=@()
 }
@@ -34,17 +44,23 @@ function NewFinding([string]$id){
   task_started_java_directly=$false
   single_java_child_found=$false
   udp_owner_correlates_with_child=$false
+  udp_java_pair_hint=$false # An independent process/UDP hint, NOT Task Scheduler identity
   reliable_task_to_jvm_identity_verified=$false
   live_control_authorized=$false
   result='NOT_ATTESTED'
  }
 }
 if($Synthetic){
+ $report.event_log_state='ENABLED'
+ $report.event129_query_status=if($SyntheticCase -eq 'NoEvent'){'NO_MATCHES_48H'}else{'HAS_EVENTS'}
  foreach($t in $targets){
   $x=NewFinding $t.id
   $x.task_running=$true
-  $x.task_event129_found=$true
-  $x.result='SYNTHETIC_EVENT_CANNOT_PROVE_IDENTITY'
+  $x.task_event129_found=$SyntheticCase -eq 'Normal'
+  $x.udp_java_pair_hint=$SyntheticCase -eq 'NoEvent'
+  $x.result=if($SyntheticCase -eq 'NoEvent'){
+   'SYNTHETIC_NO_EVENT_JAVA_PAIR_NEVER_ATTESTED'
+  }else{'SYNTHETIC_EVENT_CANNOT_PROVE_IDENTITY'}
   $report.instances+=$x
  }
  $report.result='SYNTHETIC_SHAPE_PASS_NEVER_LIVE'
@@ -52,15 +68,37 @@ if($Synthetic){
  exit 0
 }
 $eventList=@()
-try{
- # Only event ID 129 ("Created Task Process") is relevant. Do not enable
- # event logs, modify retention policies or output raw event payloads.
- $eventList=@(Get-WinEvent -FilterHashtable @{
-  LogName='Microsoft-Windows-TaskScheduler/Operational'
-  Id=129
-  StartTime=(Get-Date).AddDays(-2)
- } -MaxEvents 1200 -ErrorAction Stop)
-}catch{$eventList=@()}
+$logName='Microsoft-Windows-TaskScheduler/Operational'
+# Check metadata only; NEVER enable or configure the channel.
+try {
+ $cfg=Get-WinEvent -ListLog $logName -ErrorAction Stop
+ $report.event_log_state=if($cfg.IsEnabled){'ENABLED'}else{'DISABLED'}
+} catch {
+ $report.event_log_state='UNAVAILABLE'
+}
+if($report.event_log_state -eq 'DISABLED'){
+ $report.event129_query_status='LOG_DISABLED'
+}elseif($report.event_log_state -eq 'ENABLED'){
+ try {
+  # Only event 129 ("Created Task Process"), capped to the last 48 hours.
+  # Older/overwritten events and cap-limited rows do not prove task absence.
+  $eventList=@(Get-WinEvent -FilterHashtable @{
+   LogName=$logName
+   Id=129
+   StartTime=(Get-Date).AddHours(-48)
+  } -MaxEvents 1200 -ErrorAction Stop)
+  $report.event129_query_status=if($eventList.Count -gt 0){'HAS_EVENTS'}else{'NO_MATCHES_48H'}
+  $report.event129_scan_capped=$eventList.Count -ge 1200
+ }catch{
+  $eventList=@()
+  if([string]$_.FullyQualifiedErrorId -match 'NoMatchingEventsFound'){
+   $report.event129_query_status='NO_MATCHES_48H'
+  }else{
+   # No raw exception string is written (it might contain host metadata).
+   $report.event129_query_status='QUERY_FAILED'
+  }
+ }
+}
 $processes=@()
 try{$processes=@(Get-CimInstance -ClassName Win32_Process -ErrorAction Stop)}catch{$processes=@()}
 $udpRows=@()
@@ -72,6 +110,29 @@ foreach($t in $targets){
    Where-Object {[string]$_.TaskPath -eq '\'})
   $x.task_running=$task.Count -eq 1 -and [string]$task[0].State -eq 'Running'
  }catch{$x.task_running=$false}
+ # Event-independent LIVENESS HINT ONLY: find one UDP owner Java child
+ # with a Java parent. Never promote this to Task Scheduler PID attestation.
+ try {
+  $owners=@($udpRows|Where-Object {[int]$_.LocalPort -eq $t.udp})
+  if($owners.Count -eq 1 -and [int]$owners[0].OwningProcess -gt 0){
+   $childrenHint=@($processes|Where-Object {
+    [int]$_.ProcessId -eq [int]$owners[0].OwningProcess -and
+    [string]$_.Name -in @('java.exe','javaw.exe')
+   })
+   if($childrenHint.Count -eq 1 -and [int]$childrenHint[0].ParentProcessId -gt 0 -and
+      [int]$childrenHint[0].ParentProcessId -ne [int]$childrenHint[0].ProcessId){
+    $parentsHint=@($processes|Where-Object {
+     [int]$_.ProcessId -eq [int]$childrenHint[0].ParentProcessId -and
+     [string]$_.Name -in @('java.exe','javaw.exe')
+    })
+    if($parentsHint.Count -eq 1){
+     $parentCreated=[datetime]$parentsHint[0].CreationDate
+     $childCreated=[datetime]$childrenHint[0].CreationDate
+     $x.udp_java_pair_hint=$parentCreated -le $childCreated
+    }
+   }
+  }
+ }catch{$x.udp_java_pair_hint=$false}
  $events=@()
  foreach($evt in $eventList){
   try{
@@ -134,6 +195,8 @@ foreach($t in $targets){
   $x.task_started_java_directly -and $x.single_java_child_found -and
   $x.udp_owner_correlates_with_child){
   'EVENT_PID_AND_CHILD_UDP_CORRELATED_AUTH_UNVERIFIED'
+ }elseif($x.task_running -and -not $x.task_event129_found -and $x.udp_java_pair_hint){
+  'EVENT129_MISSING_JAVA_PAIR_ONLY_NO_GO'
  }else{'PROCESS_OR_TASK_EVENT_EVIDENCE_INCOMPLETE'}
  $report.instances += $x
 }
