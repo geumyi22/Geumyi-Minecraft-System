@@ -130,3 +130,27 @@ func MaintenanceNext(m MaintenanceLease, e MaintenanceObservation, at time.Time)
 	}
 	return m
 }
+
+
+// RecoverMaintenance models an out-of-band *verification* that the original
+// policy was restored after a simulated process crash or expired lease.
+// It never changes a task and never opens a live control permission. It must
+// remain usable even after lease expiration or a blocked transition.
+func RecoverMaintenance(m MaintenanceLease, e MaintenanceObservation) MaintenanceLease {
+	m.LiveAuthorized = false
+	if !validTarget(m.Target) || !ticketPattern.MatchString(m.Ticket) ||
+		e.Target != m.Target || e.Ticket != m.Ticket ||
+		!e.TaskIdentityVerified || !e.SiblingTasksUnchanged ||
+		!e.RestorationAck || !e.NoOrphanTaskProcesses ||
+		e.OriginalDigest != m.OriginalDigest ||
+		e.RestoredDigest != m.OriginalDigest ||
+		e.OriginalPolicy != m.OriginalPolicy ||
+		e.ActivePolicy != m.OriginalPolicy ||
+		e.OriginalRestarts != m.OriginalRestarts ||
+		e.ActiveRestarts != m.OriginalRestarts {
+		return maintenanceBlock(m, "recovery_original_state_not_proven")
+	}
+	m.Phase = MaintenanceRestored
+	m.BlockReason = ""
+	return m
+}
