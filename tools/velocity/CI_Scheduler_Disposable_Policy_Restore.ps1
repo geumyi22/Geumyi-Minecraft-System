@@ -41,19 +41,32 @@ function AssertSafeTask([string]$id){
 function GetTestPolicy([string]$id){
     $null=AssertSafeTask $id
     $xml=[xml](Export-ScheduledTask -TaskName $id -TaskPath '\' -ErrorAction Stop)
+    $restart=$xml.SelectSingleNode("//*[local-name()='RestartOnFailure']")
     $count=$xml.SelectSingleNode("//*[local-name()='RestartOnFailure']/*[local-name()='Count']")
     $mode=$xml.SelectSingleNode("//*[local-name()='MultipleInstancesPolicy']")
-    if($null -eq $count -or $null -eq $mode -or [string]$mode.InnerText -ne 'IgnoreNew'){
-        throw 'CI task policy missing or collision mode drifted'
+    if($null -eq $mode -or [string]$mode.InnerText -ne 'IgnoreNew'){
+        throw 'CI task collision policy missing or drifted'
     }
-    return [pscustomobject]@{XML=$xml;Count=[int]$count.InnerText}
+    if($null -ne $restart -and $null -eq $count){throw 'Incomplete CI task restart policy'}
+    $restarts=0
+    if($null -ne $count){$restarts=[int]$count.InnerText}
+    return [pscustomobject]@{XML=$xml;Count=$restarts}
 }
 function SetOnlyTestPolicy([string]$id,[xml]$xml,[int]$newCount){
     if($newCount -notin @(0,999)){throw 'only 0/999 synthetic counts are permitted'}
     $null=AssertSafeTask $id
-    $count=$xml.SelectSingleNode("//*[local-name()='RestartOnFailure']/*[local-name()='Count']")
-    if($null -eq $count){throw 'missing synthetic Count'}
-    $count.InnerText=[string]$newCount
+    $restart=$xml.SelectSingleNode("//*[local-name()='RestartOnFailure']")
+    if($newCount -eq 0){
+        # Windows Task Scheduler rejects a RestartOnFailure element whose
+        # Count is zero. Suppress the CI-only restart policy by removing that
+        # element, then later register the exact original XML with Count=999.
+        if($null -eq $restart){throw 'CI fixture missing original restart element'}
+        $null=$restart.ParentNode.RemoveChild($restart)
+    }else{
+        $count=$xml.SelectSingleNode("//*[local-name()='RestartOnFailure']/*[local-name()='Count']")
+        if($null -eq $count){throw 'original 999 restart field missing'}
+        $count.InnerText='999'
+    }
     Register-ScheduledTask -TaskName $id -TaskPath '\' -Xml $xml.OuterXml -Force -ErrorAction Stop | Out-Null
     Disable-ScheduledTask -TaskName $id -TaskPath '\' -ErrorAction Stop | Out-Null
     $check=GetTestPolicy $id
