@@ -34,8 +34,7 @@ type StopPermit struct {
  Target string
  OperatorApproved bool
  TaskMigrationCompleted bool
- NoPlayersVerified bool
- NewLoginsFenced bool
+ AcceptPlayerDisconnects bool
 }
 
 func validTarget(target string)bool {
@@ -125,7 +124,7 @@ func(c *Controller) OwnedPID()int{
 
 func verifyPermit(p StopPermit,target string)bool{
  return p.Target==target&&p.OperatorApproved&&p.TaskMigrationCompleted&&
-   p.NoPlayersVerified&&p.NewLoginsFenced
+   p.AcceptPlayerDisconnects
 }
 
 // GracefulStop sends the REAL Velocity console shutdown command to a process
@@ -133,7 +132,9 @@ func verifyPermit(p StopPermit,target string)bool{
 // process does not exit, leave it running: NEVER terminate Java forcibly.
 //
 // All permit booleans are untrusted inputs until the host provides a real
-// authenticated operator, live player/admission fence and scheduler cutover.
+// authenticated operator, explicit player-disconnect confirmation and
+// verified Scheduler-to-GSC ownership cutover. The official Velocity console
+// shutdown command gracefully disconnects players as part of normal exit.
 // This package is intentionally not exported through the GSC HTTP interface.
 func(c *Controller) GracefulStop(ctx context.Context,permit StopPermit)error{
  if c==nil||ctx==nil{return ErrNotOwned}
