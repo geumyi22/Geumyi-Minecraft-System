@@ -40,6 +40,46 @@ class BridgeEnvelopeTest {
     }
 
     @Test
+    void statusOnlyServerIssuedNonceMatchesExistingGoGoldenVector() {
+        BridgeEnvelope.Message signed = BridgeEnvelope.signIssuedStatusChallenge(
+            key(), "wild", GENERATION, "A".repeat(32),
+            1792267200L, 1792267220L);
+        assertEquals("status", signed.operation());
+        assertEquals(
+            "1488217fd43660a2e0810dc60caf3f93d89d4ba4bb9b4920967f42d31fff70c5",
+            signed.mac());
+        assertEquals(118, BridgeEnvelope.canonical(signed).length);
+        var verifier = new BridgeEnvelope.Verifier(key());
+        assertTrue(verifier.verifyOnce(signed,"wild","status",GENERATION,NOW));
+        assertFalse(verifier.verifyOnce(signed,"wild","status",GENERATION,NOW));
+    }
+
+    @Test
+    void statusOnlyIssuedSignerRejectsMutatedScopeOrNonces() {
+        assertThrows(IllegalArgumentException.class, () ->
+            BridgeEnvelope.signIssuedStatusChallenge(new byte[8],"wild",
+                GENERATION,"A".repeat(32),1792267200L,1792267220L));
+        assertThrows(IllegalArgumentException.class, () ->
+            BridgeEnvelope.signIssuedStatusChallenge(key(),"lobby",
+                GENERATION,"A".repeat(32),1792267200L,1792267220L));
+        assertThrows(IllegalArgumentException.class, () ->
+            BridgeEnvelope.signIssuedStatusChallenge(key(),"wild",
+                "wrong/generation","A".repeat(32),1792267200L,1792267220L));
+        assertThrows(IllegalArgumentException.class, () ->
+            BridgeEnvelope.signIssuedStatusChallenge(key(),"wild",
+                GENERATION,"?",1792267200L,1792267220L));
+        assertThrows(IllegalArgumentException.class, () ->
+            BridgeEnvelope.signIssuedStatusChallenge(key(),"wild",
+                GENERATION,"A".repeat(32),0,20));
+        assertThrows(IllegalArgumentException.class, () ->
+            BridgeEnvelope.signIssuedStatusChallenge(key(),"wild",
+                GENERATION,"A".repeat(32),1792267200L,1792267221L));
+        assertThrows(IllegalArgumentException.class, () ->
+            BridgeEnvelope.signIssuedStatusChallenge(key(),"wild",
+                GENERATION,"A".repeat(32),1792267200L,1792267200L));
+    }
+
+    @Test
     void rejectsCrossProxyActionGenerationAndTampering() {
         var valid = fixture();
         assertFalse(new BridgeEnvelope.Verifier(key()).verifyOnce(
