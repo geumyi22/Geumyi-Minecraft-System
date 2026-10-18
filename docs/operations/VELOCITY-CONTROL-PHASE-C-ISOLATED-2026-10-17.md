@@ -103,3 +103,12 @@ Until these have independently verifiable implementations and security review, *
 `go test ./...` from `GSC/ServerCenter` exercises both packages under the existing **System CI** (Windows). The new source files depend only on the Go standard library. **CI green is synthetic source evidence only**, not operational authorization.
 
 Do not merge into production or expose live Velocity lifecycle POST endpoints solely because these fixtures pass. Keep [issue #56](https://github.com/geumyi22/Geumyi-Minecraft-System/issues/56) open until Phase D gates are independently satisfied.
+
+## 2026-10-18 18:20 KST — Task Scheduler COM observation and fail-closed report review
+
+The host-provided sanitized `Velocity-TaskInstance-COM-READ-ONLY-20261018-182023.json` shows one visible COM task instance per known target (`wild`, `playground`, `other`) and `task_running=true` for all. All three have `engine_pid_present=true`, `engine_pid_visible_as_process=true`, `engine_pid_matches_java_parent=true`, `engine_pid_matches_udp_java_child=false`, `udp_java_pair_hint=true`, and `instance_to_jvm_suggestive=true`. No task, log, privilege or server changes were made according to the collector. Source is an operator-supplied read-only JSON; OS-authenticated provenance **not established**. All three retain `safe_to_start/stop/restart=false`. This is a correlation hint, not execution permission, and does not address `RestartOnFailure.Count=999` or missing player/session and plugin IPC gates.
+
+Added `GSC/ServerCenter/internal/velocitylifecycle/task_instance_report.go` and `task_instance_report_test.go`: strict, size-bounded, in-memory review of precisely this sanitized collector schema. It rejects duplicate JSON keys, unknown/duplicate targets, extra fields, inconsistent instance counts and EnginePID/Java hint combinations, mutated-host flags and forged authorization. Even the all-three-correlated path explicitly returns `SourceVerified=false`, `LiveControlAuthorized=false`, `safe_to_start/stop/restart=false`. It does **not** inspect Windows COM or grant runtime authority. Tests include one/zero/multiple visible instances, a simulated inaccessible COM source, contradictory cases, and forged safety flags.
+
+**Host requirements still pending:** trusted process-token/generation provenance, protected named-pipe peer identities, a real no-player gate, a bounded reversible scheduler maintenance controller, isolated OS-level reproduction of Task Scheduler restart behavior, and explicit operator approval. **NO MERGE / NO DEPLOY.**
+
