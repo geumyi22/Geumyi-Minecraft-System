@@ -241,10 +241,42 @@ jobs:
               throw 'Synthetic event record was promoted to execution proof'
             }
           }
+          if($result.event_log_state -ne 'ENABLED' -or
+            $result.event129_query_status -ne 'HAS_EVENTS' -or
+            $result.event129_window_hours -ne 48 -or
+            $result.event129_scan_capped -ne $false){
+            throw 'Synthetic event log diagnostics invalid'
+          }
           if($raw -match '(?i)parent_pid|child_pid|processid|commandline|executablepath'){
             throw 'Read-only synthetic JSON disclosed forbidden process metadata'
           }
-          Write-Host 'Task-JVM read-only event correlation fixture 3/3 PASS (NOT LIVE)'
+          # The operator's real 2026-10-18 sample had no Task Scheduler 129
+          # events. Even a healthy Java/UDP parent-child hint is NOT task
+          # identity proof or live authorization.
+          $missingRaw = (& powershell.exe -NoProfile -NonInteractive -File $file -Synthetic -SyntheticCase NoEvent | Out-String)
+          $missing = $missingRaw | ConvertFrom-Json
+          if($missing.synthetic -ne $true -or
+            $missing.event129_query_status -ne 'NO_MATCHES_48H' -or
+            @($missing.instances).Count -ne 3 -or
+            $missing.source_authenticated -ne $false -or
+            $missing.live_control_authorized -ne $false -or
+            $missing.task_state_modified -ne $false -or
+            $missing.audit_log_settings_changed -ne $false) {
+            throw 'No-event synthetic test promoted incomplete evidence'
+          }
+          foreach($entry in $missing.instances){
+            if($entry.task_event129_found -ne $false -or
+              $entry.udp_java_pair_hint -ne $true -or
+              $entry.reliable_task_to_jvm_identity_verified -ne $false -or
+              $entry.live_control_authorized -ne $false -or
+              $entry.result -ne 'SYNTHETIC_NO_EVENT_JAVA_PAIR_NEVER_ATTESTED') {
+              throw 'Healthy UDP/Java pair was falsely treated as task ownership'
+            }
+          }
+          if($missingRaw -match '(?i)parent_pid|child_pid|processid|commandline|executablepath'){
+            throw 'No-event synthetic JSON leaked process metadata'
+          }
+          Write-Host 'Task-JVM event and missing-event NO-GO fixtures PASS (NOT LIVE)'
       - name: Attach Task-JVM event correlation read-only kit
         uses: actions/upload-artifact@v4
         with:
