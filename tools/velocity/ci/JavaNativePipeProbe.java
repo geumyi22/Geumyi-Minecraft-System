@@ -26,10 +26,14 @@ public final class JavaNativePipeProbe {
             for (int i = 0; i < key.length; i++) key[i] = (byte) i;
             String nonce = "A".repeat(32);
             String generation = "parent-100-child-101";
-            BridgeEnvelope.Message signed = new BridgeEnvelope.Message(
-                1, "wild", "status", generation, nonce,
-                1792267200L, 1792267220L,
-                "1488217fd43660a2e0810dc60caf3f93d89d4ba4bb9b4920967f42d31fff70c5");
+            // Reconstruct the actual issued-status signer path using the
+            // synthetic server nonce, never a client-selected nonce.
+            BridgeEnvelope.Message signed = BridgeEnvelope.signIssuedStatusChallenge(
+                key, "wild", generation, nonce, 1792267200L, 1792267220L);
+            if (!signed.mac().equals(
+                    "1488217fd43660a2e0810dc60caf3f93d89d4ba4bb9b4920967f42d31fff70c5")) {
+                throw new IOException("Java signed issued status did not match Go HMAC");
+            }
             byte[] canonical = BridgeEnvelope.canonical(signed);
             final int length = pipe.readInt();
             if (length != canonical.length || length != 118 || length > 2048) {
