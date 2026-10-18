@@ -224,3 +224,43 @@ func apiV1VelocityManagedAction(w http.ResponseWriter,r *http.Request){
   "player_disconnect_approved":true,
  })
 }
+
+
+// Authenticated, sanitized, read-only presentation of the opted-in direct
+// ownership state. No process/JVM is started or stopped by this handler.
+func apiV1VelocityManagedStatus(w http.ResponseWriter,r *http.Request){
+ if r.Method!=http.MethodGet{
+  http.Error(w,"GET required",http.StatusMethodNotAllowed);return
+ }
+ enabled:=velocityCanaryEnabled()
+ type row struct{
+   Target string `json:"target"`
+   GSCManagedRunning bool `json:"gsc_managed_running"`
+   LegacyTaskDisabled bool `json:"legacy_task_disabled"`
+   CanStart bool `json:"can_start"`
+   CanStop bool `json:"can_stop"`
+   CanRestart bool `json:"can_restart"`
+ }
+ var tasks []row
+ states:=map[string]string{}
+ if enabled {states=observeVelocityTasks(r.Context())}
+ for _,target:=range []string{"wild","playground","other"}{
+  item:=row{Target:target,LegacyTaskDisabled:enabled&&states[target]=="Disabled"}
+  if enabled {
+   controller,e:=managedVelocityController(target)
+   if e==nil{item.GSCManagedRunning=controller.Running()}
+  }
+  // Actual action request performs additional operator, manifest/port
+  // preflight. A task being Disabled is not verified Java ownership.
+  item.CanStart=enabled&&item.LegacyTaskDisabled&&!item.GSCManagedRunning
+  item.CanStop=enabled&&item.LegacyTaskDisabled&&item.GSCManagedRunning
+  item.CanRestart=item.CanStop
+  tasks=append(tasks,item)
+ }
+ w.Header().Set("Cache-Control","no-store")
+ writeJSON(w,map[string]any{
+  "ok":true,"canary_enabled":enabled,
+  "read_only":true,"operator_confirmation_required":true,
+  "tasks":tasks,
+ })
+}
