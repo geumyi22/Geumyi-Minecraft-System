@@ -172,3 +172,24 @@ The optional `tools/velocity/Velocity_PrincipalScope_READ_ONLY.ps1` + adjacent C
 
 Provide only the sanitized `Velocity-PrincipalScope-READ-ONLY-*.json` after the new **Windows CI synthetic validation** passes; until then keep the kit source-only. The eventual Canary deployment remains separately gated by genuine Java-side plugin authentication, player-free admission fencing, bounded policy restoration, disposable VM exit/retry semantics and explicit operator approval. **NO-GO** on all real lifecycle actions.
 
+
+## 2026-10-19 02:09 KST — real Windows principal relationships (NO-GO)
+
+The operator executed the read-only principal-scope collector and shared **sanitized** `Velocity-PrincipalScope-READ-ONLY-20261019-020937.json` (UTC timestamp `2026-10-18T17:09:32.5056097+00:00`). The reported result is `THREE_PRINCIPAL_RELATIONSHIPS_CAPTURED_NOT_AUTHORIZED`, `synthetic=false`, `read_only=true`, `source_authenticated=false`, `live_control_authorized=false`; all task/server/ACL/audit-log mutation, DPAPI-access and elevation flags are false.
+
+| Target | Task Running | Task↔Java owner SID | Java parent↔child owner SID | Task↔interactive collector SID | Java↔interactive collector SID | Runtime task/JVM identity | DPAPI cross-principal compatibility |
+|---|---|---|---|---|---|---|---|
+| wild | yes | MATCH | MATCH | DIFFERENT | DIFFERENT | unverified | unverified |
+| playground | yes | MATCH | MATCH | DIFFERENT | DIFFERENT | unverified | unverified |
+| other | yes | MATCH | MATCH | DIFFERENT | DIFFERENT | unverified | unverified |
+
+**Consequences:** all three known Day10 Java parents and UDP-owning Java children report the same account as their respective scheduled task, but all differ from the *interactive diagnostic collector*. Do NOT assume GSC host executable itself runs as the collector account; this report does not inspect GSC's running process. Do NOT attempt to decrypt an interactive user's `dpapi-u:` blob under the task/Velocity account, silently fall back to `dpapi-m:` or plaintext, modify task security settings, impersonate another account, or request protected material. The current user-scope DPAPI key helpers in Draft PR #57 are **source-only single-principal primitives**, not a cross-principal distribution solution.
+
+**Decision: separate GSC runtime account identity, actual Velocity account identity and an explicit owner-verified per-proxy secret custody plan.** Prefer OS ACL-protected local named-pipe access and fresh process/creation-time attestation, with bounded challenge messages. Before any live use, the installed running GSC service's own SID must be independently authenticated (not inferred from an operator CMD window); a verified JVM/plugin key provision or an OS-authenticated, reviewable alternative must be designed and tested in disposable Windows environments. There is no authorized production stop/start/restart pathway.
+
+### Offline admission gate progress
+
+`Plugins/GeumyiVelocityBridge/src/main/java/kr/geumyi/velocitybridge/AdmissionFence.java` adds a **nonwired** admission-freeze and in-flight/unpublished-login model. It is not a registered Velocity event listener, performs zero plugin commands and never calls `ProxyServer.shutdown()`. JUnit tests simulate queued login, completed-but-not-published connection, zero online sessions, generation replay/cancellation and concurrent freeze; even a successful in-memory drain shape cannot authorize live stop. A real plugin must integrate with Velocity's supported login and disconnect events, independently authenticate the local GSC broker, drain already admitted players and atomically guard late arrivals before shutdown. This is a compatibility and concurrency modeling step only.
+
+**Next gates:** PR #57's strict read-only JSON review and negative tests; PR #58's Java admission model and Velocity API compilation; independent cross-principal IPC architecture and key custody; isolated Windows task and JVM lifecycle correctness under restart policy 999, plugin real player-free shutdown and actual Java/Bedrock login E2E. Preserve both Drafts and `main`.
+
