@@ -11,7 +11,6 @@ import (
  "context"
  "errors"
  "io"
- "os"
  "os/exec"
  "path/filepath"
  "sync"
@@ -170,7 +169,3 @@ func(c *Controller) Restart(ctx context.Context,permit StopPermit)error{
  return c.Start(spec)
 }
 
-// Identity and adopted-process protections are intentionally stricter than
-// Windows Task Scheduler's "Running" label. Operators must migrate tasks
-// explicitly before any actual Velocity process may be controlled here.
-var _ = os.ErrNotExist
