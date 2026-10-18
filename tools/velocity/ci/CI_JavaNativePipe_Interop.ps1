@@ -14,8 +14,12 @@ $server=$null
 $child=$null
 try {
  [void](New-Item -ItemType Directory -Path $temporary -Force)
- & javac -d $temporary $javaSource
- if($LASTEXITCODE -ne 0){throw 'Java 25 CI-only client compile failed'}
+ $bridgeSource=Join-Path $PSScriptRoot '../../../Plugins/GeumyiVelocityBridge/src/main/java/kr/geumyi/velocitybridge/BridgeEnvelope.java'
+ if(-not (Test-Path -LiteralPath $bridgeSource -PathType Leaf)){
+  throw 'Java offline BridgeEnvelope.java model missing'
+ }
+ & javac -d $temporary $javaSource $bridgeSource
+ if($LASTEXITCODE -ne 0){throw 'Java 25/BridgeEnvelope CI-only client compile failed'}
 
  # Explicitly protected DACL. No Everyone, Authenticated Users, Users or
  # administrative-group ACE. This allocates an ephemeral DACL in the runner.
@@ -46,7 +50,32 @@ try {
  # Real JDK RandomAccessFile readInt()/writeInt() interoperability.
  # This fixture proves the 4-byte big-endian frame shape, but deliberately
  # sends no JSON commands, credentials, player data or server controls.
- $request=[Text.Encoding]::ASCII.GetBytes('GSC452-CI-BOUND-FRAME-V1')
+ # Independent PowerShell construction of Go big-endian canonical
+ # fixture: version, four length-prefixed UTF-8 fields, issued/expires.
+ # All data below is an artificial cross-language golden TEST VECTOR.
+ function Append-I64BE([IO.MemoryStream]$buf,[long]$value){
+  [byte[]]$raw=[BitConverter]::GetBytes($value)
+  if([BitConverter]::IsLittleEndian){[Array]::Reverse($raw)}
+  $buf.Write($raw,0,$raw.Length)
+ }
+ function Append-UTF8([IO.MemoryStream]$buf,[string]$value){
+  [byte[]]$raw=[Text.Encoding]::UTF8.GetBytes($value)
+  Append-I64BE $buf ([long]$raw.Length)
+  $buf.Write($raw,0,$raw.Length)
+ }
+ $canonical=New-Object IO.MemoryStream
+ Append-I64BE $canonical 1
+ Append-UTF8 $canonical 'wild'
+ Append-UTF8 $canonical 'status'
+ Append-UTF8 $canonical 'parent-100-child-101'
+ Append-UTF8 $canonical ('A'*32)
+ Append-I64BE $canonical 1792267200
+ Append-I64BE $canonical 1792267220
+ [byte[]]$request=$canonical.ToArray()
+ $canonical.Dispose()
+ if($request.Length -ne 118){
+  throw 'Go/Java canonical test vector unexpectedly changed'
+ }
  $size=[BitConverter]::GetBytes([int]$request.Length)
  if([BitConverter]::IsLittleEndian){[Array]::Reverse($size)}
  $server.Write($size,0,$size.Length)
@@ -71,7 +100,7 @@ try {
  }
  $response=Read-Exactly $server $responseSize
  $actual=[Text.Encoding]::ASCII.GetString($response)
- if($actual -cne 'GSC452-CI-JAVA-FRAME-PASS'){
+ if($actual -cne 'GSC452-CI-JAVA-HMAC-PASS'){
   throw 'NO-GO: Java native pipe bounded response frame mismatch'
  }
  if(-not $child.WaitForExit(10000)){
@@ -106,7 +135,7 @@ try {
  if(-not [string]::IsNullOrWhiteSpace($observedStderr)){
   throw 'NO-GO: Java 25 native pipe CI client emitted an unexpected stderr diagnostic'
  }
- Write-Host 'CI PASS: Java 25 native Windows named pipe, same-account DACL, bounded big-endian two-way frame exchange'
+ Write-Host 'CI PASS: Java 25 named pipe, exact-SID DACL, bounded Go canonical frame and synthetic HMAC/replay rejection'
  Write-Host 'No production plugin, live process, key, Scheduled Task, player, ACL or service touched.'
 }finally {
  if($null -ne $server){$server.Dispose()}
