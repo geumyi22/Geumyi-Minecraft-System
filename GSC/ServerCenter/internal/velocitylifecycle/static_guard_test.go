@@ -29,6 +29,7 @@ func TestPhaseCModulesHaveNoLiveProcessOrNetworkImports(t *testing.T) {
 		filepath.Clean(filepath.Join(root, "..", "velocitybridge", "auth.go")),
 		filepath.Clean(filepath.Join(root, "..", "velocitybridge", "challenge.go")),
 		filepath.Clean(filepath.Join(root, "..", "velocitybridge", "frame.go")),
+		filepath.Clean(filepath.Join(root, "..", "velocitybridge", "status_exchange.go")),
 	}
 	forbidden := map[string]bool{
 		"os": true,
