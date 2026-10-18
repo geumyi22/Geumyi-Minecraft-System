@@ -43,10 +43,37 @@ try {
   throw 'NO-GO: Java 25 native RandomAccessFile did not connect to Windows pipe'
  }
  $server.EndWaitForConnection($connected)
- $server.WriteByte(0x41)
+ # Real JDK RandomAccessFile readInt()/writeInt() interoperability.
+ # This fixture proves the 4-byte big-endian frame shape, but deliberately
+ # sends no JSON commands, credentials, player data or server controls.
+ $request=[Text.Encoding]::ASCII.GetBytes('GSC452-CI-BOUND-FRAME-V1')
+ $size=[BitConverter]::GetBytes([int]$request.Length)
+ if([BitConverter]::IsLittleEndian){[Array]::Reverse($size)}
+ $server.Write($size,0,$size.Length)
+ $server.Write($request,0,$request.Length)
  $server.Flush()
- $received=$server.ReadByte()
- if($received -ne 0x42){throw 'NO-GO: Java native pipe response byte did not match'}
+ function Read-Exactly([IO.Stream]$inputStream,[int]$count){
+  if($count -le 0 -or $count -gt 2048){throw 'CI frame size out of range'}
+  $data=New-Object byte[] $count
+  $off=0
+  while($off -lt $count){
+   $n=$inputStream.Read($data,$off,$count-$off)
+   if($n -le 0){throw 'CI frame truncated or disconnected'}
+   $off+=$n
+  }
+  return ,$data
+ }
+ $header=Read-Exactly $server 4
+ if([BitConverter]::IsLittleEndian){[Array]::Reverse($header)}
+ $responseSize=[BitConverter]::ToInt32($header,0)
+ if($responseSize -le 0 -or $responseSize -gt 2048){
+  throw 'NO-GO: Java native pipe response frame length rejected'
+ }
+ $response=Read-Exactly $server $responseSize
+ $actual=[Text.Encoding]::ASCII.GetString($response)
+ if($actual -cne 'GSC452-CI-JAVA-FRAME-PASS'){
+  throw 'NO-GO: Java native pipe bounded response frame mismatch'
+ }
  if(-not $child.WaitForExit(10000)){
   throw 'NO-GO: disposable Java client did not exit after pipe handshake'
  }
@@ -76,7 +103,7 @@ try {
  if($result -notmatch 'GSC452_WINDOWS_JAVA_NATIVE_PIPE_BYTE_EXCHANGE_PASS'){
   throw 'NO-GO: Java native pipe client lacked success marker'
  }
- Write-Host 'CI PASS: Java 25 native Windows named pipe, same-account DACL, two-way byte exchange'
+ Write-Host 'CI PASS: Java 25 native Windows named pipe, same-account DACL, bounded big-endian two-way frame exchange'
  Write-Host 'No production plugin, live process, key, Scheduled Task, player, ACL or service touched.'
 }finally {
  if($null -ne $server){$server.Dispose()}
