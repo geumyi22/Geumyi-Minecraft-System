@@ -230,3 +230,8 @@ Use this proven **Java 25 ↔ Windows named-pipe byte-transport feasibility** on
 
 CI evidence: [Windows Java 25 authenticated golden-frame test](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/39151617393). PR #58 remains Draft / **NO CONTROL, NO DEPLOY**, and any eventually enabled named-pipe server must enforce kernel process identity and per-proxy authorization before accepting signed frames.
 
+## 2026-10-19 — Java exact server-issued status nonce signer (inert)
+
+The existing `BridgeEnvelope.java` gained **`signIssuedStatusChallenge`**, which requires a caller-supplied 32–64-character URL-safe nonce, explicit target in `wild/playground/other`, a valid JVM generation, 256-bit or stronger test key, and an issued/expires period of at most 20 seconds. The method **always signs `status`**; it has no switch for `prepare_shutdown` or `confirm_shutdown`. JUnit negative cases refuse unknown proxy, weak key, bad generation/nonce and invalid/oversized validity windows. Its deterministic MAC matches the prior Go canonical HMAC vector and the Win32 CI test now exercises this code path inside the test-owned Java 25 JVM.
+
+This is an **inert Java helper, not a registered listener, current GSC host client or real read-only plugin endpoint**. The test key and golden vector are synthetic only; real HMAC secret custody, OS peer identity and live runtime status payload remain unimplemented. A successful MAC and even read-only status must never enable actual start/stop/restart. CI checks continue to block network listeners, shutdown calls and event registration in the no-op plugin.
