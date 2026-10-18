@@ -18,9 +18,9 @@ try {
  if(-not (Test-Path -LiteralPath $bridgeSource -PathType Leaf)){
   throw 'Java offline BridgeEnvelope.java model missing'
  }
- $statusWireSource=Join-Path $PSScriptRoot '../../../Plugins/GeumyiVelocityBridge/src/main/java/kr/geumyi/velocitybridge/StatusOnlyWire.java'
- if(-not (Test-Path -LiteralPath $statusWireSource -PathType Leaf)){throw 'Java strict status-only codec missing'}
- & javac -d $temporary $javaSource $bridgeSource $statusWireSource
+ $wire=Join-Path $PSScriptRoot '../../../Plugins/GeumyiVelocityBridge/src/main/java/kr/geumyi/velocitybridge/StatusOnlyWire.java'
+ if(-not (Test-Path -LiteralPath $wire -PathType Leaf)){throw 'Status-only Java codec is missing'}
+ & javac -d $temporary $javaSource $bridgeSource $wire
  if($LASTEXITCODE -ne 0){throw 'Java 25/BridgeEnvelope CI-only client compile failed'}
 
  # Explicitly protected DACL. No Everyone, Authenticated Users, Users or
@@ -105,103 +105,51 @@ try {
  if($actual -cne 'GSC452-CI-JAVA-HMAC-PASS'){
   throw 'NO-GO: Java native pipe bounded response frame mismatch'
  }
- # CI-only dynamic Go-ordered JSON status challenge; no production keys.
- $random=New-Object byte[] 24
+ # Phase 2: synthetic, randomly issued Go-shaped strict status JSON frame.
+ $rnd=New-Object byte[] 24
  $rng=[Security.Cryptography.RandomNumberGenerator]::Create()
- try{$rng.GetBytes($random)}finally{$rng.Dispose()}
- $nonce=[Convert]::ToBase64String($random).TrimEnd('=').Replace('+','-').Replace('/','_')
+ try{$rng.GetBytes($rnd)}finally{$rng.Dispose()}
+ $nonce=[Convert]::ToBase64String($rnd).TrimEnd('=').Replace('+','-').Replace('/','_')
  $issued=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
  $expires=$issued+20
- $challenge='{"target":"wild","operation":"status","generation":"parent-100-child-101","nonce":"'+$nonce+'","issued_unix":'+[string]$issued+',"expires_unix":'+[string]$expires+'}'
- [byte[]]$body=[Text.Encoding]::ASCII.GetBytes($challenge)
- if($body.Length -gt 2048 -or $body.Length -eq 0){throw 'CI status challenge invalid length'}
- $head=[BitConverter]::GetBytes([int]$body.Length)
- if([BitConverter]::IsLittleEndian){[Array]::Reverse($head)}
- $server.Write($head,0,4)
- $server.Write($body,0,$body.Length)
+ $json='{"target":"wild","operation":"status","generation":"parent-100-child-101","nonce":"'+$nonce+'","issued_unix":'+[string]$issued+',"expires_unix":'+[string]$expires+'}'
+ [byte[]]$data=[Text.Encoding]::ASCII.GetBytes($json)
+ if($data.Length -lt 1 -or $data.Length -gt 2048){throw 'Bad challenge length'}
+ $header2=[BitConverter]::GetBytes([int]$data.Length)
+ if([BitConverter]::IsLittleEndian){[Array]::Reverse($header2)}
+ $server.Write($header2,0,4)
+ $server.Write($data,0,$data.Length)
  $server.Flush()
- $responseHeader=Read-Exactly $server 4
- if([BitConverter]::IsLittleEndian){[Array]::Reverse($responseHeader)}
- $responseCount=[BitConverter]::ToInt32($responseHeader,0)
- if($responseCount -lt 1 -or $responseCount -gt 2048){throw 'Invalid Java status response length'}
- $reply=Read-Exactly $server $responseCount
+ $replyHead=Read-Exactly $server 4
+ if([BitConverter]::IsLittleEndian){[Array]::Reverse($replyHead)}
+ $len=[BitConverter]::ToInt32($replyHead,0)
+ if($len -lt 1 -or $len -gt 2048){throw 'Bad status reply length'}
+ $reply=Read-Exactly $server $len
  $signed=[Text.Encoding]::ASCII.GetString($reply)|ConvertFrom-Json
+ $req=@('version','target','operation','generation','nonce','issued_unix','expires_unix','mac')
  $keys=@($signed.PSObject.Properties.Name)
- $required=@('version','target','operation','generation','nonce','issued_unix','expires_unix','mac')
- if($keys.Count -ne 8 -or @($required|Where-Object {$_ -notin $keys}).Count -ne 0){
-  throw 'Java response has unexpected schema fields'
+ if($keys.Count -ne 8 -or @($req|Where-Object {$_ -notin $keys}).Count -ne 0){throw 'Bad signed response shape'}
+ if($signed.version -ne 1 -or $signed.target -cne 'wild' -or $signed.operation -cne 'status' -or
+    $signed.generation -cne 'parent-100-child-101' -or $signed.nonce -cne $nonce -or
+    [long]$signed.issued_unix -ne $issued -or [long]$signed.expires_unix -ne $expires -or
+    $signed.mac.Length -ne 64 -or $signed.mac -match '[^0-9a-f]'){
+   throw 'Invalid Java status response scope or MAC shape'
  }
- if($signed.version -ne 1 -or $signed.target -cne 'wild' -or
-    $signed.operation -cne 'status' -or $signed.generation -cne 'parent-100-child-101' -or
-    $signed.nonce -cne $nonce -or [long]$signed.issued_unix -ne $issued -or
-    [long]$signed.expires_unix -ne $expires -or
-    $signed.mac -notmatch '^[0-9a-f]{64}
-  throw 'NO-GO: disposable Java client did not exit after pipe handshake'
- }
- $observedStdout=[string](Get-Content -LiteralPath $stdout -Raw -ErrorAction SilentlyContinue)
- $observedStderr=[string](Get-Content -LiteralPath $stderr -Raw -ErrorAction SilentlyContinue)
- Write-Host ('CI child exit code: '+[string]$child.ExitCode)
- Write-Host ('CI Java success marker present: '+[string]($observedStdout -match 'GSC452_WINDOWS_JAVA_NATIVE_PIPE_BYTE_EXCHANGE_PASS'))
- Write-Host ('CI Java stderr present: '+[string](-not [string]::IsNullOrWhiteSpace($observedStderr)))
- # GitHub Windows PowerShell 5.1 Start-Process may expose an empty
- # ExitCode even after WaitForExit succeeded. Null is not numeric failure.
- # Require the real Java success marker and absence of JVM stderr below;
- # an actual nonzero numeric exit code still fails closed.
- if($null -ne $child.ExitCode -and $child.ExitCode -ne 0){
-  $safeFailure=@(Get-Content -LiteralPath $stderr -ErrorAction SilentlyContinue |
-    Select-Object -First 6)
-  foreach($line in $safeFailure){
-   # CI fixture only; never disclose a literal runner temp path, pipe name,
-   # Windows account or accidental stacktrace file location.
-   $line=[string]$line -replace [regex]::Escape($temporary),'<CI_TEMP>'
-   $line=$line -replace [regex]::Escape($pipeName),'<CI_PIPE>'
-   $line=$line -replace '(?i)[A-Z]:\\[^\s:]+','<PATH>'
-   Write-Host ('Java CI-only error: '+$line)
-  }
-  throw 'NO-GO: disposable Java client exited unsuccessfully'
- }
- $result=(Get-Content -LiteralPath $stdout -Raw -ErrorAction SilentlyContinue)
- if($result -notmatch 'GSC452_WINDOWS_JAVA_NATIVE_PIPE_BYTE_EXCHANGE_PASS'){
-  throw 'NO-GO: Java native pipe client lacked success marker'
- }
- if(-not [string]::IsNullOrWhiteSpace($observedStderr)){
-  throw 'NO-GO: Java 25 native pipe CI client emitted an unexpected stderr diagnostic'
- }
- Write-Host 'CI PASS: Java 25 named pipe, exact-SID DACL, bounded Go canonical frame and synthetic HMAC/replay rejection'
- Write-Host 'No production plugin, live process, key, Scheduled Task, player, ACL or service touched.'
-}finally {
- if($null -ne $server){$server.Dispose()}
- if($null -ne $child){
-  try {
-   $child.Refresh()
-   if(-not $child.HasExited){$child.Kill();[void]$child.WaitForExit(5000)}
-  }catch{}
-  $child.Dispose()
- }
- Remove-Item -LiteralPath $temporary -Recurse -Force -ErrorAction SilentlyContinue
-}
-){
-  throw 'Java returned invalid status-only HMAC scope'
- }
- $canonicalReply=New-Object IO.MemoryStream
- Append-I64BE $canonicalReply 1
- Append-UTF8 $canonicalReply 'wild'
- Append-UTF8 $canonicalReply 'status'
- Append-UTF8 $canonicalReply 'parent-100-child-101'
- Append-UTF8 $canonicalReply $nonce
- Append-I64BE $canonicalReply $issued
- Append-I64BE $canonicalReply $expires
- $testKey=New-Object byte[] 32
- for($i=0;$i -lt 32;$i++){$testKey[$i]=[byte]$i}
- $hmac=[Security.Cryptography.HMACSHA256]::new($testKey)
- try{$expected=[BitConverter]::ToString($hmac.ComputeHash($canonicalReply.ToArray())).Replace('-','').ToLowerInvariant()}
- finally{
-  $hmac.Dispose()
-  $canonicalReply.Dispose()
-  [Array]::Clear($testKey,0,$testKey.Length)
- }
- if($signed.mac -cne $expected){throw 'Independent HMAC verification failed'}
- Write-Host 'CI PASS: random-issued status-only nonce and bounded Java JSON signature'
+ $canonical2=New-Object IO.MemoryStream
+ Append-I64BE $canonical2 1
+ Append-UTF8 $canonical2 'wild'
+ Append-UTF8 $canonical2 'status'
+ Append-UTF8 $canonical2 'parent-100-child-101'
+ Append-UTF8 $canonical2 $nonce
+ Append-I64BE $canonical2 $issued
+ Append-I64BE $canonical2 $expires
+ $key=New-Object byte[] 32
+ for($k=0;$k -lt 32;$k++){$key[$k]=[byte]$k}
+ $hmac=[Security.Cryptography.HMACSHA256]::new($key)
+ try{$expected=[BitConverter]::ToString($hmac.ComputeHash($canonical2.ToArray())).Replace('-','').ToLowerInvariant()}
+ finally{$canonical2.Dispose();$hmac.Dispose();[Array]::Clear($key,0,$key.Length)}
+ if($signed.mac -cne $expected){throw 'Go-canonical HMAC mismatch'}
+ Write-Host 'CI PASS: 1 fresh nonce and strict signed status-only JSON reply'
  if(-not $child.WaitForExit(10000)){
   throw 'NO-GO: disposable Java client did not exit after pipe handshake'
  }
