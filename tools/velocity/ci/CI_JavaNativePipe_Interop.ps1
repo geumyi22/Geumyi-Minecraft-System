@@ -55,7 +55,11 @@ try {
  Write-Host ('CI child exit code: '+[string]$child.ExitCode)
  Write-Host ('CI Java success marker present: '+[string]($observedStdout -match 'GSC452_WINDOWS_JAVA_NATIVE_PIPE_BYTE_EXCHANGE_PASS'))
  Write-Host ('CI Java stderr present: '+[string](-not [string]::IsNullOrWhiteSpace($observedStderr)))
- if($child.ExitCode -ne 0){
+ # GitHub Windows PowerShell 5.1 Start-Process may expose an empty
+ # ExitCode even after WaitForExit succeeded. Null is not numeric failure.
+ # Require the real Java success marker and absence of JVM stderr below;
+ # an actual nonzero numeric exit code still fails closed.
+ if($null -ne $child.ExitCode -and $child.ExitCode -ne 0){
   $safeFailure=@(Get-Content -LiteralPath $stderr -ErrorAction SilentlyContinue |
     Select-Object -First 6)
   foreach($line in $safeFailure){
