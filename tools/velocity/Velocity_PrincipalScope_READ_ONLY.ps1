@@ -56,10 +56,10 @@ function Resolve-IdentitySID([string]$identity){
  if([string]::IsNullOrWhiteSpace($identity)){return ''}
  try {
   if($identity -match '^S-1-(?:[0-9]+-)+[0-9]+$') {
-   $sid=New-Object System.Security.Principal.SecurityIdentifier($identity)
+   $sid=[System.Security.Principal.SecurityIdentifier]::new($identity)
    return [string]$sid.Value
   }
-  $account=New-Object System.Security.Principal.NTAccount($identity)
+  $account=[System.Security.Principal.NTAccount]::new($identity)
   return [string]$account.Translate([System.Security.Principal.SecurityIdentifier]).Value
  }catch{return ''}
 }
@@ -115,7 +115,7 @@ foreach($t in $targets){
   if($tasks.Count -eq 1){
    $x.task_running=[string]$tasks[0].State -eq 'Running'
    $taskSID=Resolve-IdentitySID ([string]$tasks[0].Principal.UserId)
-   $x.task_principal_resolved=-not [string]::IsNullOrWhiteSpace($taskSID)
+   $x.task_principal_resolved= -not ([string]::IsNullOrWhiteSpace($taskSID))
   }
  }catch{}
  $javaChildSID=''
@@ -143,7 +143,7 @@ foreach($t in $targets){
    }
   }
  }catch{}
- $x.udp_java_owner_resolved=-not [string]::IsNullOrWhiteSpace($javaChildSID)
+ $x.udp_java_owner_resolved= -not ([string]::IsNullOrWhiteSpace($javaChildSID))
  $x.java_parent_and_child_same_owner=Compare-Sids $javaParentSID $javaChildSID
  $x.task_principal_vs_udp_java_owner=Compare-Sids $taskSID $javaChildSID
  $x.task_principal_vs_collector=Compare-Sids $taskSID $collectorSid
