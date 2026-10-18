@@ -36,7 +36,7 @@ func helperSpec(t *testing.T,target string)Spec{
 }
 func allowStop(target string)StopPermit{
  return StopPermit{Target:target,OperatorApproved:true,
-  TaskMigrationCompleted:true,NoPlayersVerified:true,NewLoginsFenced:true}
+  TaskMigrationCompleted:true,AcceptPlayerDisconnects:true}
 }
 func ownedCleanup(t *testing.T,c *Controller){
  t.Helper()
@@ -63,15 +63,15 @@ func TestManagedProxyUsesRealConsoleShutdownWithoutForceKill(t *testing.T){
    if err:=c.Start(helperSpec(t,target));!errors.Is(err,ErrBusy){
      t.Fatalf("duplicate launched: %v",err)
    }
+   wrongTarget:="other"
+   if target=="other"{wrongTarget="wild"}
    for _,permit:=range []StopPermit{
     {Target:target},
-    {Target:target,OperatorApproved:true,TaskMigrationCompleted:true,NoPlayersVerified:true},
-    {Target:target,OperatorApproved:true,NoPlayersVerified:true,NewLoginsFenced:true},
-    {Target:"other",OperatorApproved:true,TaskMigrationCompleted:true,NoPlayersVerified:true,NewLoginsFenced:true},
+    {Target:target,OperatorApproved:true,TaskMigrationCompleted:true},
+    {Target:target,OperatorApproved:true,AcceptPlayerDisconnects:true},
+    {Target:target,TaskMigrationCompleted:true,AcceptPlayerDisconnects:true},
+    {Target:wrongTarget,OperatorApproved:true,TaskMigrationCompleted:true,AcceptPlayerDisconnects:true},
    }{
-    if target=="other" && permit.Target=="other"&&permit.OperatorApproved&&permit.TaskMigrationCompleted&&permit.NoPlayersVerified&&permit.NewLoginsFenced{
-      permit.Target="wild"
-    }
     if err:=c.GracefulStop(context.Background(),permit);!errors.Is(err,ErrPermit){
       t.Fatalf("incomplete permission accepted: %v",err)
     }
