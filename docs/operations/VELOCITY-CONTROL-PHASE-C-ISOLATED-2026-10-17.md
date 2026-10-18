@@ -43,6 +43,22 @@ Reference artifact identity is restricted to PaperMC's **Velocity 4.2.0 Build 30
 
 **Critical trust boundary:** even when all *synthetic* checks are coherent, the result remains `source_verified=false` and `safe_to_execute=false`. A caller-supplied PID and a copied SHA are not provenance proofs. This policy is NOT wired to a production controller, cannot authenticate a Windows task, and cannot issue any task or Velocity operation. It also has no player/session authorization, maintenance-window authorization, peer identity or operator grants. The corresponding Go tests exercise valid correlation and adversarial input; they are not live preflight evidence.
 
+## 2026-10-18 13:31 KST: operator task-policy capture and fail-closed JSON review
+
+The operator ran the read-only GSC v4.5.2 task-policy collector and shared **only** the sanitized `Velocity-TaskPolicy-READ-ONLY-20261018-133141.json` (collector timestamp 2026-10-18T04:31:38.2060047Z). It reports `synthetic=false`, `server_state_changed=false`, `scheduled_task_modified=false`, `read_only=true` and **`AUTO_RESTART_RISK_PRESENT_NO_GO`**.
+
+| Known proxy | Task present | Definition matches | State at capture | RestartOnFailure.Count | MultipleInstancesPolicy | Task→JVM ownership |
+| --- | --- | --- | --- | ---: | --- | --- |
+| wild | 1 | yes | Running | **999** | IgnoreNew | unverified |
+| playground | 1 | yes | Running | **999** | IgnoreNew | unverified |
+| other | 1 | yes | Running | **999** | IgnoreNew | unverified |
+
+**Meaning and limits:** each task definition allows up to 999 automatic restart attempts on configured failures. This is a **hazard** for a future graceful shutdown / maintenance controller, not proof that a clean exit currently triggers respawn. `IgnoreNew` controls overlapping task instances and does not disable restart-on-failure. **Do not infer the present process's generation, player count or task ownership** from this JSON; all three entries explicitly say `task_to_jvm_identity_verified=false` and `live_control_authorized=false`. No server task/process configuration should be changed solely to make the warning disappear; a durable solution must preserve intentional crash recovery outside an operator-approved maintenance window.
+
+New pure Go `task_policy_report.go` strictly decodes the **sanitized, operator-compatible report shape from caller-provided in-memory bytes**, without filesystem, subprocess or Windows APIs. The report must be non-synthetic, exact-schema, include exactly the three known targets, read-only/unchanged flags, one verified task definition each, and internally consistent restart counts and classification. Ambiguous duplicate JSON keys, extra fields, forged mutation flags, unknown targets, duplicate targets and contradictory nested/top-level results **fail closed**. Explicit count=0 is *still not live authorization*. Every returned entry has `safe_to_start=false`, `safe_to_stop=false`, `safe_to_restart=false`. The model deliberately does not authenticate the reporter or promote user-supplied status assertions to OS-originated evidence; no PID/task path/command line appears in the review.
+
+**Next necessary implementation gates (not performed):** independently prove exact task-to-process ownership and parent/child generation; design maintenance-scoped task-scheduler auto-restart suppression with time-bounded rollback and state restoration in a **disposable Windows VM**; review security/ACL/operator approvals; prove zero players immediately before any normal graceful shutdown; verify process absence and ports independently; test automatic crash recovery still works when *not* in maintenance. **No real task setting edit, JVM stop/start/restart, merge or Canary release is authorized.**
+
 ## Required bridge-to-runtime architecture before any future operational attempt
 
 1. **Immutable operator authorization:** verify a locally authenticated GSC operator with an explicit per-proxy action, short-lived maintenance window, one-time challenge and action confirmation; no unattended remote kill capability.
