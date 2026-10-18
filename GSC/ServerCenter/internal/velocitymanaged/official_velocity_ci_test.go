@@ -36,8 +36,10 @@ func TestOfficialVelocity420ManagedConsoleLifecycleCI(t *testing.T){
  })
  spec:=Spec{Target:"wild",Executable:java,
    Args:[]string{"-jar",jar},WorkingDirectory:root}
- ctx,cancel:=context.WithTimeout(context.Background(),25*time.Second)
- defer cancel()
+ // Do not confuse an already occupied port with the CI-owned JVM.
+ free,err:=net.Listen("tcp","127.0.0.1:25565")
+ if err!=nil{t.Fatalf("CI host port unavailable before start: %v",err)}
+ _=free.Close()
  if err:=c.Start(spec);err!=nil{t.Fatalf("disposable Velocity start: %v",err)}
  waitReady:=func()error{
    deadline:=time.Now().Add(35*time.Second)
@@ -52,6 +54,8 @@ func TestOfficialVelocity420ManagedConsoleLifecycleCI(t *testing.T){
  if err:=waitReady();err!=nil{t.Fatal(err)}
  old:=c.OwnedPID()
  if old<=0{t.Fatal("untracked official Velocity JVM")}
+ ctx,cancel:=context.WithTimeout(context.Background(),25*time.Second)
+ defer cancel()
  if err:=c.Restart(ctx,allowStop("wild"));err!=nil{
    t.Fatalf("official console shutdown/restart failed: %v",err)
  }
