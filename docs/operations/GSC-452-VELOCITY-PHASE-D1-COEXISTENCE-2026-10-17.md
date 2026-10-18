@@ -80,6 +80,24 @@ The main risk is a task configured to automatically relaunch a JVM after a grace
 
 GitHub Actions only runs the script in `-Synthetic` mode to classify three fake high-restart-count tasks in memory, then attaches the two-file diagnostic kit `GSC452-Velocity-TaskPolicy-READ-ONLY`. The operator may run the CMD on the **server PC** when requested and share only the sanitized Desktop JSON; never share exported full task XML, configuration files, Java command lines or credentials. **This is a read-only policy inquiry, not a maintenance action or Canary deployment**.
 
+## 2026-10-18 17:14 KST — real Task-JVM event report and diagnosis (NO-GO)
+
+The operator shared ONLY `Velocity-TaskJvm-READ-ONLY-20261018-171400.json` with collector timestamp `2026-10-18T08:13:56.3062097+00:00` (17:13:56 KST). `synthetic=false`, `read_only=true`, `server_state_changed=false`, `task_state_modified=false`, `audit_log_settings_changed=false`, `source_authenticated=false`, `live_control_authorized=false`.
+
+- Exactly three known Day10 scheduled tasks (wild, playground, other) each reported `task_running=true`.
+- For all three, `task_event129_found=false`; therefore every event/PID/time/child/UDP *correlation field* remained false. Overall `EVENT_OR_PROCESS_CORRELATION_INCOMPLETE`.
+- **This is missing evidence, not an observed Velocity outage, stopped JVM, unauthorized port ownership or proof of a broken Task Scheduler.** The earlier 3× Java TCP/Bedrock RakNet probes remain distinct prior observations; no new login or lifecycle probe was performed.
+- The first collector swallowed all `Get-WinEvent` errors and could not distinguish a disabled Operational channel, no matching 129 record in its 48-hour window, query permission/failure, event overwrite, or a 1,200-record cap. **No one should reboot proxies, enable event logging, force a new task start or change the task's `RestartOnFailure.Count=999` merely to generate missing records.**
+- This report is a *host-provided read-only observation*, not OS-authenticated proof of which scheduler instance owns which JVM. All 9 potential live start/stop/restart actions remain blocked.
+
+### Collector hardening after the report (Draft PR #58 ONLY)
+
+The next source revision stays read-only and preserves the report's existing `schema=1`, nine baseline safety booleans, the three fixed task IDs, and the top-level NO-GO result semantics. It adds a **sanitized** `event_log_state` (`ENABLED|DISABLED|UNAVAILABLE`), `event129_query_status` (`HAS_EVENTS|NO_MATCHES_48H|LOG_DISABLED|QUERY_FAILED|NOT_QUERIED`), fixed 48-hour window and scan-capped flag. This uses Microsoft's documented `Get-WinEvent -ListLog` read-only metadata API (https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.diagnostics/get-winevent?view=powershell-5.1), without `SaveChanges()` or channel settings changes.
+
+If Task Scheduler event 129 is unavailable, it separately checks an **unauthenticated, event-independent liveness hint**: exactly one owned UDP endpoint for the known Bedrock port, one matching Java child process, one Java parent and consistent creation-time order. `udp_java_pair_hint=true` does NOT mean Task Scheduler owns that process and never sets `reliable_task_to_jvm_identity_verified` or `live_control_authorized`. All raw PIDs, event XML, task commands, JVM paths, user names and secrets stay out of JSON.
+
+The Windows CI synthetic `-SyntheticCase NoEvent` must prove even an apparently healthy Java/UDP process hint cannot grant task attribution or lifecycle rights. **Do not request another server-PC run until the exact revised CI workflow passes and a new reviewed two-file artifact is produced.** All changes remain in Draft PR #58; no deployment, control endpoint, main merge, server changes or release promotion.
+
 ## Next gates before any release or live controls
 
 - [x] SHA-256 attestation of operator-provided **Velocity 4.2.0 Build 30** JARs
