@@ -73,7 +73,7 @@ jobs:
         run: go test ./...
       - name: Race-check isolated Velocity lifecycle and message authentication
         working-directory: GSC/ServerCenter
-        run: go test -race ./internal/velocitylifecycle ./internal/velocitybridge ./internal/velocitypeer
+        run: go test -race ./internal/velocitylifecycle ./internal/velocitybridge ./internal/velocitypeer ./internal/velocitymanaged
       - name: Disposable non-triggered Windows task 999 to zero to 999 and cleanup
         shell: powershell
         timeout-minutes: 4
