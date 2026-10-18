@@ -64,12 +64,8 @@ func ReviewFleetEvidence(taskPolicy,taskCOM,principalScope []byte)(FleetEvidence
         if p.Target!=target||c.Target!=target||s.Target!=target{
             return FleetEvidenceReview{},errors.New("fleet target order mismatch")
         }
-        // COM and SID scripts are independent, historical views. A mismatch
-        // between them is NOT repairable by assuming one report is current.
-        if c.TaskRunning!=p.AutomaticRestartConfigured && false {
-            // Intentionally NO inference from a Windows retry policy to the
-            // state of a running JVM; never use this path for authorization.
-        }
+        // A scheduler auto-restart POLICY does not prove a task is running.
+        // COM and SID scripts are historical views; neither attests runtime.
         if c.TaskRunning!=s.TaskRunning {
             return FleetEvidenceReview{},errors.New("task running reports contradict")
         }
