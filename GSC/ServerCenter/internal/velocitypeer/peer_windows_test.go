@@ -4,6 +4,7 @@ package velocitypeer
 
 import (
     "os"
+    "syscall"
     "testing"
 )
 
@@ -23,6 +24,25 @@ func TestPinProcessGenerationQueryOnly(t *testing.T){
     if p.StillAlive()||p.SameGeneration(pid,born){t.Fatal("closed proof used as active peer")}
     if _,_,err:=p.Reference();err==nil{t.Fatal("closed proof returned identity")}
     if err:=p.Close();err!=nil{t.Fatal("nonidempotent safe close")}
+}
+
+func TestWindowsPeerSIDRequiresPinnedExpectedPrincipal(t *testing.T) {
+    token,err:=syscall.OpenCurrentProcessToken()
+    if err!=nil{t.Fatalf("cannot query test process token: %v",err)}
+    defer token.Close()
+    u,err:=token.GetTokenUser()
+    if err!=nil||u==nil||u.User.Sid==nil{t.Fatal("cannot read test token user SID")}
+    sid,err:=u.User.Sid.String()
+    if err!=nil||len(sid)<5{t.Fatal("empty OS token SID")}
+    p,err:=pinPID(uint32(os.Getpid()))
+    if err!=nil{t.Fatal(err)}
+    if !p.SameWindowsPrincipal(sid){t.Fatal("matching kernel SID was not verified")}
+    if p.SameWindowsPrincipal(sid+"-999")||p.SameWindowsPrincipal("")||
+        p.SameWindowsPrincipal("S-1-0-0"){
+        t.Fatal("arbitrary Windows account accepted")
+    }
+    if err:=p.Close();err!=nil{t.Fatal(err)}
+    if p.SameWindowsPrincipal(sid){t.Fatal("closed process proof reused")}
 }
 
 func TestWindowsPipeClientProbeRejectsInvalidHandles(t *testing.T){
