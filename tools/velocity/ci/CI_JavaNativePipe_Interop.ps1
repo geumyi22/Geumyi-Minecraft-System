@@ -19,9 +19,7 @@ try {
   throw 'Java offline BridgeEnvelope.java model missing'
  }
  $statusWireSource=Join-Path $PSScriptRoot '../../../Plugins/GeumyiVelocityBridge/src/main/java/kr/geumyi/velocitybridge/StatusOnlyWire.java'
- if(-not (Test-Path -LiteralPath $statusWireSource -PathType Leaf)){
-  throw 'Java inert status-only codec source missing'
- }
+ if(-not (Test-Path -LiteralPath $statusWireSource -PathType Leaf)){throw 'Java strict status-only codec missing'}
  & javac -d $temporary $javaSource $bridgeSource $statusWireSource
  if($LASTEXITCODE -ne 0){throw 'Java 25/BridgeEnvelope CI-only client compile failed'}
 
@@ -107,45 +105,37 @@ try {
  if($actual -cne 'GSC452-CI-JAVA-HMAC-PASS'){
   throw 'NO-GO: Java native pipe bounded response frame mismatch'
  }
- # Phase 2: real-clock, independent, Go-ordered Challenge JSON on
- # the SAME explicitly protected test-only named pipe. No real GSC secrets.
+ # CI-only dynamic Go-ordered JSON status challenge; no production keys.
  $random=New-Object byte[] 24
- [Security.Cryptography.RandomNumberGenerator]::Fill($random)
+ $rng=[Security.Cryptography.RandomNumberGenerator]::Create()
+ try{$rng.GetBytes($random)}finally{$rng.Dispose()}
  $nonce=[Convert]::ToBase64String($random).TrimEnd('=').Replace('+','-').Replace('/','_')
  $issued=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
  $expires=$issued+20
- $challenge='{"target":"wild","operation":"status","generation":"parent-100-child-101","nonce":"'+
-  $nonce+'","issued_unix":'+[string]$issued+',"expires_unix":'+[string]$expires+'}'
- [byte[]]$requestJSON=[Text.Encoding]::ASCII.GetBytes($challenge)
- if($requestJSON.Length -gt 2048 -or $requestJSON.Length -le 0){
-  throw 'CI dynamic status challenge exceeded maximum frame size'
- }
- $lengthHeader=[BitConverter]::GetBytes([int]$requestJSON.Length)
- if([BitConverter]::IsLittleEndian){[Array]::Reverse($lengthHeader)}
- $server.Write($lengthHeader,0,4)
- $server.Write($requestJSON,0,$requestJSON.Length)
+ $challenge='{"target":"wild","operation":"status","generation":"parent-100-child-101","nonce":"'+$nonce+'","issued_unix":'+[string]$issued+',"expires_unix":'+[string]$expires+'}'
+ [byte[]]$body=[Text.Encoding]::ASCII.GetBytes($challenge)
+ if($body.Length -gt 2048 -or $body.Length -eq 0){throw 'CI status challenge invalid length'}
+ $head=[BitConverter]::GetBytes([int]$body.Length)
+ if([BitConverter]::IsLittleEndian){[Array]::Reverse($head)}
+ $server.Write($head,0,4)
+ $server.Write($body,0,$body.Length)
  $server.Flush()
- $replyHeader=Read-Exactly $server 4
- if([BitConverter]::IsLittleEndian){[Array]::Reverse($replyHeader)}
- $replySize=[BitConverter]::ToInt32($replyHeader,0)
- if($replySize -le 0 -or $replySize -gt 2048){
-  throw 'NO-GO: strict Java status JSON response frame size invalid'
- }
- $replyBody=Read-Exactly $server $replySize
- $replyText=[Text.Encoding]::ASCII.GetString($replyBody)
- $signed=$replyText|ConvertFrom-Json
- $names=@($signed.PSObject.Properties.Name)
+ $responseHeader=Read-Exactly $server 4
+ if([BitConverter]::IsLittleEndian){[Array]::Reverse($responseHeader)}
+ $responseCount=[BitConverter]::ToInt32($responseHeader,0)
+ if($responseCount -lt 1 -or $responseCount -gt 2048){throw 'Invalid Java status response length'}
+ $reply=Read-Exactly $server $responseCount
+ $signed=[Text.Encoding]::ASCII.GetString($reply)|ConvertFrom-Json
+ $keys=@($signed.PSObject.Properties.Name)
  $required=@('version','target','operation','generation','nonce','issued_unix','expires_unix','mac')
- if($names.Count -ne $required.Count -or
-   @($required|Where-Object {$_ -notin $names}).Count -ne 0){
-  throw 'NO-GO: Java signed reply contained unexpected JSON fields'
+ if($keys.Count -ne 8 -or @($required|Where-Object {$_ -notin $keys}).Count -ne 0){
+  throw 'Java response has unexpected schema fields'
  }
  if($signed.version -ne 1 -or $signed.target -cne 'wild' -or
-   $signed.operation -cne 'status' -or
-   $signed.generation -cne 'parent-100-child-101' -or
-   $signed.nonce -cne $nonce -or [long]$signed.issued_unix -ne $issued -or
-   [long]$signed.expires_unix -ne $expires -or
-   $signed.mac -notmatch '^[0-9a-f]{64}
+    $signed.operation -cne 'status' -or $signed.generation -cne 'parent-100-child-101' -or
+    $signed.nonce -cne $nonce -or [long]$signed.issued_unix -ne $issued -or
+    [long]$signed.expires_unix -ne $expires -or
+    $signed.mac -notmatch '^[0-9a-f]{64}
   throw 'NO-GO: disposable Java client did not exit after pipe handshake'
  }
  $observedStdout=[string](Get-Content -LiteralPath $stdout -Raw -ErrorAction SilentlyContinue)
@@ -191,7 +181,7 @@ try {
  Remove-Item -LiteralPath $temporary -Recurse -Force -ErrorAction SilentlyContinue
 }
 ){
-  throw 'NO-GO: wrong-scope/stale/unexpected Java status JSON envelope'
+  throw 'Java returned invalid status-only HMAC scope'
  }
  $canonicalReply=New-Object IO.MemoryStream
  Append-I64BE $canonicalReply 1
@@ -202,20 +192,16 @@ try {
  Append-I64BE $canonicalReply $issued
  Append-I64BE $canonicalReply $expires
  $testKey=New-Object byte[] 32
- for($n=0;$n -lt 32;$n++){$testKey[$n]=[byte]$n}
+ for($i=0;$i -lt 32;$i++){$testKey[$i]=[byte]$i}
  $hmac=[Security.Cryptography.HMACSHA256]::new($testKey)
- try{
-  $expected=[BitConverter]::ToString(
-   $hmac.ComputeHash($canonicalReply.ToArray())).Replace('-','').ToLowerInvariant()
- }finally{
+ try{$expected=[BitConverter]::ToString($hmac.ComputeHash($canonicalReply.ToArray())).Replace('-','').ToLowerInvariant()}
+ finally{
   $hmac.Dispose()
   $canonicalReply.Dispose()
   [Array]::Clear($testKey,0,$testKey.Length)
  }
- if($signed.mac -cne $expected){
-  throw 'NO-GO: independent Go-shaped canonical HMAC mismatch from Java'
- }
- Write-Host 'CI PASS: one fresh nonce, strict Java JSON wire shape, canonical HMAC signature'
+ if($signed.mac -cne $expected){throw 'Independent HMAC verification failed'}
+ Write-Host 'CI PASS: random-issued status-only nonce and bounded Java JSON signature'
  if(-not $child.WaitForExit(10000)){
   throw 'NO-GO: disposable Java client did not exit after pipe handshake'
  }
