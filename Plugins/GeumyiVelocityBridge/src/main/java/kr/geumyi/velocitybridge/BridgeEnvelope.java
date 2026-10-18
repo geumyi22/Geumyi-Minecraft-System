@@ -101,6 +101,32 @@ public final class BridgeEnvelope {
             issued + LIFE_SECONDS, HexFormat.of().formatHex(digest(key, unsigned)));
     }
 
+    /**
+     * Signs a SERVER-ISSUED, STATUS-ONLY challenge; unlike issue(), the
+     * caller must use the exact nonce that the server just issued.
+     *
+     * This is an inert protocol helper. It neither connects to a pipe nor
+     * retrieves a player count, executes a command, or authorizes shutdown.
+     * The GSC-side verifier must ALSO retain an in-memory one-shot issuance
+     * ledger. A correct HMAC alone never authenticates a Windows process.
+     */
+    public static Message signIssuedStatusChallenge(
+        byte[] key, String target, String generation, String nonce,
+        long issuedUnix, long expiresUnix
+    ) {
+        if (key == null || key.length < 32 || !isTarget(target)
+            || generation == null || !GENERATION.matcher(generation).matches()
+            || nonce == null || !NONCE.matcher(nonce).matches()
+            || issuedUnix <= 0 || expiresUnix <= issuedUnix
+            || expiresUnix - issuedUnix > LIFE_SECONDS) {
+            throw new IllegalArgumentException("invalid issued status-only challenge");
+        }
+        Message unsigned = new Message(1, target, "status", generation,
+            nonce, issuedUnix, expiresUnix, "");
+        return new Message(1, target, "status", generation, nonce,
+            issuedUnix, expiresUnix, HexFormat.of().formatHex(digest(key, unsigned)));
+    }
+
     /** One verifier per isolated proxy/key. Never use this as a live access grant. */
     public static final class Verifier {
         private final byte[] key;
