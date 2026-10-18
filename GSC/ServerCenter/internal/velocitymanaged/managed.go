@@ -28,6 +28,9 @@ type Spec struct {
  Executable string
  Args []string
  WorkingDirectory string
+ // Optional private host-owned log sink; never serialize it into API status.
+ // Callers must cap/redact persisted output and protect game/chat logs.
+ Output io.Writer
 }
 
 type StopPermit struct {
@@ -75,6 +78,10 @@ func (c *Controller) Start(spec Spec) error {
  if c.pending||c.cmd!=nil{return ErrBusy}
  cmd:=exec.Command(spec.Executable,spec.Args...)
  cmd.Dir=spec.WorkingDirectory
+ if spec.Output!=nil {
+  cmd.Stdout=spec.Output
+  cmd.Stderr=spec.Output
+ }
  stdin,err:=cmd.StdinPipe()
  if err!=nil{return err}
  c.pending=true
