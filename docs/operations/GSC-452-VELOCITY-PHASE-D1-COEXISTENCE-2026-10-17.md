@@ -98,6 +98,33 @@ If Task Scheduler event 129 is unavailable, it separately checks an **unauthenti
 
 The Windows CI synthetic `-SyntheticCase NoEvent` must prove even an apparently healthy Java/UDP process hint cannot grant task attribution or lifecycle rights. **Do not request another server-PC run until the exact revised CI workflow passes and a new reviewed two-file artifact is produced.** All changes remain in Draft PR #58; no deployment, control endpoint, main merge, server changes or release promotion.
 
+## 2026-10-18 17:59 KST — v2 operator read-only evidence: Event 129 channel DISABLED
+
+Received `Velocity-TaskJvm-READ-ONLY-20261018-175904.json` (collected `2026-10-18T08:59:00.2951815Z`, 17:59 KST). Exact user-uploaded sanitized JSON, not a re-run or an OS-authenticated attestation:
+
+| Target | Day10 task | TaskScheduler Operational | Event 129 | Independent UDP→Java child→Java parent hint | Task↔JVM identity | Live actions |
+|---|---|---|---|---|---|---|
+| wild | Running | DISABLED | Not available | true | unverified | blocked |
+| playground | Running | DISABLED | Not available | true | unverified | blocked |
+| other | Running | DISABLED | Not available | true | unverified | blocked |
+
+Collector reported `event_log_state=DISABLED`, `event129_query_status=LOG_DISABLED`, `event129_window_hours=48`, `event129_scan_capped=false`, `result=EVENT_OR_PROCESS_CORRELATION_INCOMPLETE`, `synthetic=false`, `read_only=true`, and all mutation flags false. The 3/3 `udp_java_pair_hint=true` values show **event-independent read-only process-family consistency**, NOT task ownership, executable authenticity, correct client routing, authenticated remote controller identity, zero-player proof, or any authorization to stop/start/restart. `source_authenticated=false`, `reliable_task_to_jvm_identity_verified=false`, `live_control_authorized=false` stay fail-closed.
+
+**NO operator log changes:** Never enable TaskScheduler Operational, clear logs, regenerate event 129 by restarting tasks, change `RestartOnFailure.Count=999`, elevate privileges, or stop JVMs to remove this warning. With the Operational channel disabled, an event-129-only correlation tool cannot close the evidence gap.
+
+### Source-only D2 read-only Scheduler COM *engine* instance hint
+
+To avoid another event-129 rerun loop, the draft adds `tools/velocity/Velocity_TaskInstance_COM_READ_ONLY.ps1` and adjacent CMD. It queries only three known registered task names via the local **read-only** Task Scheduler COM `Schedule.Service` → `GetFolder('\\')` → `GetTask(name)` → `GetInstances(0)` and retrieves `IRunningTask.EnginePID` from a unique visible instance. It compares the **engine PID** *in memory* against the Java parent/child associated with the expected Bedrock UDP port and emits sanitized categorical hints only, never raw PID/engine GUID/process paths/event XML/secrets. No calls to `Stop`, `Run`, `Register`, task settings APIs or event-log mutation are present.
+
+**Important Microsoft API limitations:** `EnginePID` is the Task Scheduler *engine* process PID, **not guaranteed to equal the Java action process PID**. `IRegisteredTask::GetInstances(0)` may return no SYSTEM task instances to a less-privileged caller; invisible instances do not prove task absence. A matching PID is supporting evidence only and could be stale or incorrect if process generations race; a nonmatching engine PID is not proof the task is malfunctioning. Both cases yield `reliable_task_to_jvm_identity_verified=false`, `live_control_authorized=false` and `safe_to_start/stop/restart=false`.
+
+Official references:
+- Microsoft `IRegisteredTask::GetInstances`: https://learn.microsoft.com/en-us/windows/win32/api/taskschd/nf-taskschd-iregisteredtask-getinstances
+- Microsoft `IRunningTask::get_EnginePID`: https://learn.microsoft.com/en-us/windows/win32/api/taskschd/nf-taskschd-irunningtask-get_enginepid
+- Microsoft `RunningTask` properties: https://learn.microsoft.com/en-us/windows/win32/taskschd/runningtask
+
+Windows CI runs **three in-memory synthetic cases** (positive engine-PID hint, no visible instances, multiple visible instances) and checks that all stay NO-GO. **The new live COM collector has not been run or validated on the operator's PC.** Only deliver the two-file kit after that branch's Windows CI succeeds. Do not install the disabled bridge plugin or unblock GSC controls, and do not merge to `main` without separate security review.
+
 ## Next gates before any release or live controls
 
 - [x] SHA-256 attestation of operator-provided **Velocity 4.2.0 Build 30** JARs
