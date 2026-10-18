@@ -38,3 +38,17 @@ Official reference: https://docs.papermc.io/velocity/built-in-commands/#shutdown
 The current `StopPermit` is a typed **model input**, not a cryptographic capability. The hosted GSC API MUST authenticate a real privileged operator, obtain explicit confirmation that any connected players will be disconnected by Velocity's built-in console `shutdown`, and verify the old Scheduler tasks have been safely migrated. Caller-supplied JSON booleans alone are NOT verification. Never wire the status endpoint to a start/stop/restart route simply because a unit test passes; perform a supervised rollback-capable cutover first.
 
 **User action now: none.** No existing task, server or release is modified by this Draft work.
+
+
+## Additional integrated host/API implementation (locked by default)
+
+The source-only Canary GSC host now has **real wired but default-locked** routes:
+
+- `GET /api/v1/velocity/tasks`: three fixed Day10 Windows Scheduler states, sanitized and read-only.
+- `GET /api/v1/velocity/managed/status`: whether a direct-ownership cutover has been opted in and whether a GSC-owned child is running; capability buttons denied by default.
+- `POST /api/v1/velocity/managed/action`: `start`, `stop`, `restart` for GSC-owned children only. Until an operator deliberately sets `GSC_VELOCITY_MANAGED_OPERATOR_OPT_IN=DIRECT_OWNERSHIP_APPROVED` on the **GSC host service** and performs a separate approved migration, the route returns **HTTP 423 Locked**. It additionally requires the authenticated **host API token**, **loopback** caller, a typed disconnect approval, a disabled exact Day10 task, and (on start) free Java TCP/Bedrock UDP listener ports plus an exact per-target *locally protected* launcher manifest and Velocity jar SHA verification. A request cannot include executable path, arbitrary task name, external port or commands. All start/stop/restart buttons in the GSC dashboard are disabled unless the Canary and cutover prerequisites are met.
+
+The manifest is read only from `%ProgramData%\GeumyiServerCenter\VelocityManaged\<target>.json` and has schema 1 with `target`, `java_executable`, `working_directory`, `args`, `expected_jar_sha256`; the expected Velocity jar SHA is currently pinned to the operator-reported 4.2.0 build 30 hash. The working directory must match the vetted `%ProgramData%\GeumyiServerCenter\Network\FourServer\<target>` and `java_executable` must name an actual `java.exe`. Unknown fields, wrong jar, relative paths and unsupported Java agent options are rejected. The one-time manifest export/ACL audit from existing Task Scheduler task definitions is **not implemented yet**. Do not hand-author or copy a manifest with a guessed JVM command.
+
+**WARNING: do not manually activate the environment opt-in or disable old tasks.** Source-only route tests prove default locking, invalid target rejection and missing/bad manifests. The existing production build and server have NOT been updated. The remaining gap before rollout is an actual preflight/cutover/rollback operator kit, correct config/ACL provenance, GSC host restart/orphan recovery, real Java+Bedrock login E2E and maintenance approval. Official Velocity 4.2.0 CI-only JVM start→graceful-console-stop→restart→stop already passed, but does not authorize migrating running proxies.
+
