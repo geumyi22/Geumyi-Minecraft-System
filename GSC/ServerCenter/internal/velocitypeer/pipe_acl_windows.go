@@ -23,6 +23,21 @@ var advapi32Pipe=syscall.NewLazyDLL("advapi32.dll")
 var convertSDDL=advapi32Pipe.NewProc("ConvertStringSecurityDescriptorToSecurityDescriptorW")
 var errPipeACL=errors.New("named-pipe allowlist security descriptor rejected")
 
+// acceptedServiceOrAccountSID deliberately rejects broad Windows group SIDs
+// such as Everyone, Authenticated Users, Users and Administrators even when
+// callers mistakenly submit one as a purported service identity. Supported:
+// Windows user/domain account, cloud user, per-service SID, or explicitly
+// pinned LocalSystem/LocalService/NetworkService. Unknown types fail closed.
+func acceptedServiceOrAccountSID(value string) bool {
+    switch value {
+    case "S-1-5-18","S-1-5-19","S-1-5-20":
+        return true
+    }
+    return strings.HasPrefix(value,"S-1-5-21-") ||
+        strings.HasPrefix(value,"S-1-12-1-") ||
+        strings.HasPrefix(value,"S-1-5-80-")
+}
+
 // NewRestrictivePipeACL permits exactly one or two individually pinned
 // Windows account SIDs (typically the GSC broker and the Velocity JVM service
 // account). NO Everyone, Authenticated Users, default permissive DACL,
@@ -41,7 +56,7 @@ func NewRestrictivePipeACL(allowed []string) (*RestrictivePipeACL,error){
         sid,err:=syscall.StringToSid(value)
         if err!=nil||sid==nil{return nil,errPipeACL}
         canonical,err:=sid.String()
-        if err!=nil || canonical!=value || seen[value]{return nil,errPipeACL}
+        if err!=nil || canonical!=value || seen[value] || !acceptedServiceOrAccountSID(value){return nil,errPipeACL}
         seen[value]=true
         ace.WriteString("(A;;GA;;;")
         ace.WriteString(value)
