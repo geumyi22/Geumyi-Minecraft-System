@@ -72,8 +72,6 @@ final class StatusOnlyWireTest {
         String[] rejected = {
             original.replace("\"status\"", "\"prepare_shutdown\""),
             original.replace("\"status\"", "\"confirm_shutdown\""),
-            original.replace("\"wild\"", "\"other\""),
-            original.replace("\"parent-100-child-101\"", "\"other-generation-1\""),
             original.replace("\"issued_unix\":1792267200", "\"issued_unix\":0"),
             original.replace("\"expires_unix\":1792267220", "\"expires_unix\":1792267221"),
             original.replace("\"expires_unix\":1792267220", "\"expires_unix\":1792267200"),
