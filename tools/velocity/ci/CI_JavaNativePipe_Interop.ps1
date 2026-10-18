@@ -50,7 +50,19 @@ try {
  if(-not $child.WaitForExit(10000)){
   throw 'NO-GO: disposable Java client did not exit after pipe handshake'
  }
- if($child.ExitCode -ne 0){throw 'NO-GO: disposable Java client exited unsuccessfully'}
+ if($child.ExitCode -ne 0){
+  $safeFailure=@(Get-Content -LiteralPath $stderr -ErrorAction SilentlyContinue |
+    Select-Object -First 6)
+  foreach($line in $safeFailure){
+   # CI fixture only; never disclose a literal runner temp path, pipe name,
+   # Windows account or accidental stacktrace file location.
+   $line=[string]$line -replace [regex]::Escape($temporary),'<CI_TEMP>'
+   $line=$line -replace [regex]::Escape($pipeName),'<CI_PIPE>'
+   $line=$line -replace '(?i)[A-Z]:\\[^\s:]+','<PATH>'
+   Write-Host ('Java CI-only error: '+$line)
+  }
+  throw 'NO-GO: disposable Java client exited unsuccessfully'
+ }
  $result=(Get-Content -LiteralPath $stdout -Raw -ErrorAction SilentlyContinue)
  if($result -notmatch 'GSC452_WINDOWS_JAVA_NATIVE_PIPE_BYTE_EXCHANGE_PASS'){
   throw 'NO-GO: Java native pipe client lacked success marker'
