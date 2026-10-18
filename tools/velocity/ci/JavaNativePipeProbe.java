@@ -3,6 +3,7 @@ import java.io.RandomAccessFile;
 import java.security.MessageDigest;
 import java.time.Instant;
 import kr.geumyi.velocitybridge.BridgeEnvelope;
+import kr.geumyi.velocitybridge.StatusOnlyWire;
 
 /**
  * Dedicated CI-only Java 25 Windows named-pipe feasibility probe.
@@ -57,6 +58,10 @@ public final class JavaNativePipeProbe {
                 .getBytes(java.nio.charset.StandardCharsets.US_ASCII);
             pipe.writeInt(response.length);
             pipe.write(response);
+            // Phase 2: independently generated Go-shaped, CURRENT, one-shot
+            // status-only JSON challenge. No player/server lifecycle APIs.
+            StatusOnlyWire.respond(
+                pipe,pipe,key,"wild",generation,Instant.now());
         }
         System.out.println("GSC452_WINDOWS_JAVA_NATIVE_PIPE_BYTE_EXCHANGE_PASS");
     }
