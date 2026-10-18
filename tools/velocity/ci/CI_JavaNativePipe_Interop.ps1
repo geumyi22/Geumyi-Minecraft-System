@@ -50,6 +50,11 @@ try {
  if(-not $child.WaitForExit(10000)){
   throw 'NO-GO: disposable Java client did not exit after pipe handshake'
  }
+ $observedStdout=[string](Get-Content -LiteralPath $stdout -Raw -ErrorAction SilentlyContinue)
+ $observedStderr=[string](Get-Content -LiteralPath $stderr -Raw -ErrorAction SilentlyContinue)
+ Write-Host ('CI child exit code: '+[string]$child.ExitCode)
+ Write-Host ('CI Java success marker present: '+[string]($observedStdout -match 'GSC452_WINDOWS_JAVA_NATIVE_PIPE_BYTE_EXCHANGE_PASS'))
+ Write-Host ('CI Java stderr present: '+[string](-not [string]::IsNullOrWhiteSpace($observedStderr)))
  if($child.ExitCode -ne 0){
   $safeFailure=@(Get-Content -LiteralPath $stderr -ErrorAction SilentlyContinue |
     Select-Object -First 6)
