@@ -103,6 +103,28 @@ func (p *PeerObservation) StillAlive() bool {
     return aliveHandle(p.handle)
 }
 
+// SameWindowsPrincipal compares the kernel-issued CLIENT process token SID
+// with an independently pinned expected SID, in memory only. A local process
+// with the same Windows account is NOT automatically an authorized GSC
+// controller: a restrictive named-pipe DACL, permitted binary identity,
+// one-shot HMAC challenge, operator approval and player admission fence are
+// STILL required. No actual pipe listener or SID policy writer exists here.
+func (p *PeerObservation) SameWindowsPrincipal(expectedSID string) bool {
+    if p==nil || len(expectedSID)<5 || len(expectedSID)>256{return false}
+    p.mu.Lock()
+    defer p.mu.Unlock()
+    if !aliveHandle(p.handle){return false}
+    var token syscall.Token
+    if err:=syscall.OpenProcessToken(syscall.Handle(p.handle),syscall.TOKEN_QUERY,&token);err!=nil{
+        return false
+    }
+    defer token.Close()
+    user,err:=token.GetTokenUser()
+    if err!=nil || user==nil || user.User.Sid==nil{return false}
+    sid,err:=user.User.Sid.String()
+    return err==nil && sid==expectedSID
+}
+
 // Reference is only an in-memory test/attestation comparison value. Do not
 // serialize raw process identity into operator report files.
 func (p *PeerObservation) Reference() (uint32,uint64,error){
