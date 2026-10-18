@@ -143,3 +143,16 @@ The default Windows named-pipe security descriptor grants unexpectedly broad **r
 
 The *negative* Task Scheduler crash-retry CI observation remains unresolved and is not part of routine release success. GSC v4.5.2 Canary lifecycle actions are still **disabled**. No Java plugin installation, backend modification, server restart, auth key export or production ACL change was made.
 
+
+## Phase D5 — Windows per-proxy HMAC key safety (source-only)
+
+Added `internal/velocitybridge/keys_windows.go` to reuse GSC's existing Windows DPAPI implementation **only through a stricter, purpose-specific wrapper**:
+
+- `GenerateUserProtectedProxyKey(wild|playground|other)` creates a fresh 256-bit CSPRNG HMAC key and returns **opaque `dpapi-u:` ciphertext only**, without file write, console output, release asset, registry edit or Java integration.
+- `OpenUserProtectedProxyKey` rejects unknown targets, cross-proxy substitutions, tampered/truncated blobs, plaintext legacy fallback, `dpapi-m:` machine-scope ciphertext and malformed key sizes. The generic legacy `securestore.UnprotectString` can accept plaintext, but that behavior is explicitly **not allowed** on this new key path. On non-Windows, `keys_other.go` fails closed rather than using the old pass-through securestore behavior.
+- Windows CI tests real **current-user** DPAPI roundtrip and reuse of the unsealed key for the HMAC challenge/response test. Only transient **test-runner** protected blobs are created, and secret bytes are not emitted to GitHub logs.
+
+This is **not** a production secret provisioning workflow. The user-protected key is decryptable only under the compatible Windows security context; the separate Velocity JVM account may differ. A production installer must determine and authorize exactly which OS principals will run GSC and each proxy, apply matching NTFS ACLs, safely deliver or derive each JVM's per-proxy key without logging or exposing it, and rotate keys on process/account compromise. This remains a design gate; **do not ask the operator to export or upload a real secret**. No production DPAPI key has been created or saved by this source-only phase.
+
+Formal remainder before any start/stop/restart feature claim: authenticated GSC↔Velocity runtime transport with named-pipe DACL and process-generation binding, Java bridge challenge implementation, player admission fencing and zero/in-flight login proof, fail-closed local operator approvals, scheduler recovery semantics independently reproduced in isolated Windows VM, full Java+Bedrock actual login tests and explicit Canary rollout approval. All production actions stay **NO-GO**.
+
