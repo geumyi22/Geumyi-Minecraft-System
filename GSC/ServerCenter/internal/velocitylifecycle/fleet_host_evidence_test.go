@@ -49,8 +49,9 @@ func TestHostTopologyAllowsLegitimateDifferentAccountWithoutTrustPromotion(t *te
 func TestFleetHostRejectsImpossibleSIDTransitivityAndMissingEvidence(t *testing.T){
     for _,test:=range []struct{name string;edit func(map[string]any)}{
         {"impossible-host-collector",func(m map[string]any){m["collector_vs_host"]="MATCH"}},
-        {"one-host-task-different",func(m map[string]any){
-            hostRow(m,0)["host_vs_task_principal"]="DIFFERENT"
+        {"task-running-contradicts-COM",func(m map[string]any){
+            hostRow(m,0)["task_running"]=false
+            m["result"]="GSC_HOST_PRINCIPAL_SCOPE_UNVERIFIED_NO_GO"
         }},
     }{
         t.Run(test.name,func(t *testing.T){
