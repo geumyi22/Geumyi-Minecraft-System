@@ -31,7 +31,7 @@ const (
 func TestWindowsConnectedPipeReportsKernelClientGeneration(t *testing.T){
     var id [10]byte
     if _,err:=rand.Read(id[:]);err!=nil{t.Fatal(err)}
-    name:=\`\\.\pipe\GSC452-CI-PEER-\`+hex.EncodeToString(id[:])
+    name:=`\\.\pipe\GSC452-CI-PEER-`+hex.EncodeToString(id[:])
     namep,err:=syscall.UTF16PtrFromString(name)
     if err!=nil{t.Fatal(err)}
     server,_,callerr:=createNamedPipeW.Call(uintptr(unsafe.Pointer(namep)),
