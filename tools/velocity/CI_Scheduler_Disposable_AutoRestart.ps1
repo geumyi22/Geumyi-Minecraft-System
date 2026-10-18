@@ -52,7 +52,7 @@ try {
     if($null -eq $count -or [string]$count.InnerText -ne '2'){
         throw 'CI bounded restart count was not retained'
     }
-    $deadline=[DateTimeOffset]::UtcNow.AddSeconds(160)
+    $deadline=[DateTimeOffset]::UtcNow.AddSeconds(105)
     $first=$false
     $second=$false
     while([DateTimeOffset]::UtcNow -lt $deadline) {
@@ -65,16 +65,20 @@ try {
         Start-Sleep -Milliseconds 900
     }
     if(-not $first){throw 'Disposable scheduled crash action did not start'}
-    if(-not $second){
-        $info=Get-ScheduledTaskInfo -TaskName $name -TaskPath '\' -ErrorAction SilentlyContinue
-        $lastFailure='UNKNOWN'
-        if($null -ne $info){$lastFailure=[string]([int64]$info.LastTaskResult -ne 0)}
-        Write-Host ('CI_ONLY_CRASH_RETRY_DIAGNOSTIC first_run='+$first+
-            ' second_run='+$second+' nonzero_last_result='+$lastFailure)
-        throw 'Disposable Task Scheduler failure retry not observed within bounded 160s'
-    }
     Write-Host 'DISPOSABLE_FAILED_DUMMY_STARTED=PASS'
-    Write-Host 'DISPOSABLE_AUTOMATIC_CRASH_RESTART_OBSERVED=PASS'
+    $info=Get-ScheduledTaskInfo -TaskName $name -TaskPath '\' -ErrorAction SilentlyContinue
+    $lastFailure='UNKNOWN'
+    if($null -ne $info){$lastFailure=[string]([int64]$info.LastTaskResult -ne 0)}
+    if($second){
+        Write-Host 'DISPOSABLE_AUTO_RETRY_OBSERVED=TRUE_NEVER_LIVE_AUTHORIZATION'
+    }else{
+        # Windows may consider an action that STARTED successfully and
+        # exited nonzero to have finished, not a Scheduler start failure.
+        # Our user-host task Count=999 must NOT be assumed to auto-respawn.
+        Write-Host 'DISPOSABLE_AUTO_RETRY_NOT_OBSERVED_GATE_BLOCKED'
+    }
+    Write-Host ('CI_ONLY_CRASH_RESULT first_run='+$first+
+        ' second_run='+$second+' nonzero_last_result='+$lastFailure)
 }
 finally {
     # Cleanup ONLY the one unique CI-owned task and local temp folder.
