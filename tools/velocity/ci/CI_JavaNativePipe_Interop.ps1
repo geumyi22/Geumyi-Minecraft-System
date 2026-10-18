@@ -103,6 +103,9 @@ try {
  if($result -notmatch 'GSC452_WINDOWS_JAVA_NATIVE_PIPE_BYTE_EXCHANGE_PASS'){
   throw 'NO-GO: Java native pipe client lacked success marker'
  }
+ if(-not [string]::IsNullOrWhiteSpace($observedStderr)){
+  throw 'NO-GO: Java 25 native pipe CI client emitted an unexpected stderr diagnostic'
+ }
  Write-Host 'CI PASS: Java 25 native Windows named pipe, same-account DACL, bounded big-endian two-way frame exchange'
  Write-Host 'No production plugin, live process, key, Scheduled Task, player, ACL or service touched.'
 }finally {
