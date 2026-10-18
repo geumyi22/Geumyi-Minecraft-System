@@ -17,6 +17,8 @@ on:
       - 'tools/velocity/Run_Velocity_TaskJvm_Event_READ_ONLY.cmd'
       - 'tools/velocity/Velocity_TaskInstance_COM_READ_ONLY.ps1'
       - 'tools/velocity/Run_Velocity_TaskInstance_COM_READ_ONLY.cmd'
+      - 'tools/velocity/Velocity_PrincipalScope_READ_ONLY.ps1'
+      - 'tools/velocity/Run_Velocity_PrincipalScope_READ_ONLY.cmd'
       - 'tools/velocity/Run_GeyserFloodgate_READ_ONLY.cmd'
       - '.github/workflows/velocity-bridge-disabled-ci.yml'
   workflow_dispatch:
@@ -340,6 +342,65 @@ jobs:
             }
           }
           Write-Host 'COM Task Scheduler 3-case read-only NO-GO fixture PASS (NOT HOST)'
+
+      - name: Validate sanitized Windows principal-scope schema (SYNTHETIC ONLY)
+        shell: powershell
+        run: |
+          $file='tools/velocity/Velocity_PrincipalScope_READ_ONLY.ps1'
+          $tokens=$null; $issues=$null
+          [void][Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path $file),[ref]$tokens,[ref]$issues)
+          if(@($issues).Count -gt 0) {
+            $issues|ForEach-Object {Write-Host ('PS syntax issue: '+$_.ErrorId)}
+            throw 'PowerShell 5.1 principal-scope collector syntax invalid'
+          }
+          $source=Get-Content -LiteralPath $file -Raw
+          if($source -match '(?im)^\s*(?:Start-Process|Stop-Process|Start-ScheduledTask|Stop-ScheduledTask|Set-ScheduledTask|Register-ScheduledTask|Enable-ScheduledTask|wevtutil|icacls|netsh)\b'){
+            throw 'Prohibited live mutation command in principal-scope collector'
+          }
+          $raw=(& powershell.exe -NoProfile -NonInteractive -File $file -Synthetic | Out-String)
+          $record=$raw|ConvertFrom-Json
+          if($record.schema -ne 1 -or
+            $record.kind -ne 'GEUMYI_GSC_452_VELOCITY_WINDOWS_PRINCIPAL_SCOPE_READ_ONLY' -or
+            $record.result -ne 'SYNTHETIC_SCHEMA_ONLY_NO_GO' -or
+            $record.synthetic -ne $true -or $record.read_only -ne $true -or
+            $record.live_control_authorized -ne $false -or
+            $record.source_authenticated -ne $false -or
+            $record.server_state_changed -ne $false -or
+            $record.task_state_modified -ne $false -or
+            $record.acl_modified -ne $false -or
+            $record.dpapi_access_attempted -ne $false -or
+            $record.privilege_elevation_attempted -ne $false -or
+            $record.audit_log_settings_changed -ne $false -or
+            @($record.instances).Count -ne 3){
+            throw 'Read-only principal-scope fixture breached safety contract'
+          }
+          if((@($record.instances | ForEach-Object { $_.id }) -join ',') -ne 'wild,playground,other'){
+            throw 'Unknown principal-scope target'
+          }
+          foreach($item in $record.instances){
+            if($item.reliable_task_to_jvm_identity_verified -ne $false -or
+              $item.dpapi_cross_process_compatibility_verified -ne $false -or
+              $item.live_control_authorized -ne $false -or
+              $item.task_principal_vs_udp_java_owner -ne 'MATCH' -or
+              $item.java_parent_and_child_same_owner -ne 'MATCH'){
+              throw 'Synthetic account coincidence promoted to live authorization'
+            }
+          }
+          if($raw -match '(?i)"(?:sid|pid|processid|username|task_command|key|secret|password|path)"\s*:'){
+            throw 'Sanitized fixture disclosed forbidden OS identity data'
+          }
+          Write-Host '3x synthetic principal relationship NO-GO contracts PASS'
+
+      - name: Attach Windows principal-scope read-only kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-PrincipalScope-READ-ONLY
+          path: |
+            tools/velocity/Run_Velocity_PrincipalScope_READ_ONLY.cmd
+            tools/velocity/Velocity_PrincipalScope_READ_ONLY.ps1
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Attach Task Scheduler COM instance hint read-only kit
         uses: actions/upload-artifact@v4
