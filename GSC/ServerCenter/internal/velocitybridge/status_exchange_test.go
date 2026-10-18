@@ -45,7 +45,7 @@ func TestStatusOnlyRejectsWrongProxyGenerationAndOperation(t *testing.T){
         {"wrong-target",func(c *Challenge){c.Target="other"}},
         {"wrong-operation",func(c *Challenge){c.Operation="prepare_shutdown"}},
         {"wrong-generation",func(c *Challenge){c.Generation="parent-other-child-111"}},
-        {"wrong-time",func(c *Challenge){c.ExpiresUnix++}},
+        {"wrong-time",func(c *Challenge){c.IssuedUnix++}},
         {"wrong-nonce",func(c *Challenge){c.Nonce="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}},
     }
     for _,tc:=range cases{
