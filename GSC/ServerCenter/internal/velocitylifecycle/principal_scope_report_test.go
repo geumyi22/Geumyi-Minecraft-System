@@ -126,8 +126,10 @@ func TestRejectContradictionsAndForgedAccountEvidence(t *testing.T){
         {"impossible_same_task_java_opposite_collector",func(m map[string]any){
             principalRow(m,0)["task_principal_vs_collector"]="MATCH"
         }},
-        {"impossible_same_task_collector_different_java",func(m map[string]any){
+        {"impossible_task_and_java_differ_but_both_equal_collector",func(m map[string]any){
             principalRow(m,0)["task_principal_vs_udp_java_owner"]="DIFFERENT"
+            principalRow(m,0)["task_principal_vs_collector"]="MATCH"
+            principalRow(m,0)["udp_java_owner_vs_collector"]="MATCH"
         }},
         {"unresolved_account_claims_match",func(m map[string]any){
             principalRow(m,0)["task_principal_resolved"]=false
