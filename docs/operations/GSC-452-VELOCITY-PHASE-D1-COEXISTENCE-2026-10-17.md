@@ -193,3 +193,20 @@ The operator executed the read-only principal-scope collector and shared **sanit
 
 **Next gates:** PR #57's strict read-only JSON review and negative tests; PR #58's Java admission model and Velocity API compilation; independent cross-principal IPC architecture and key custody; isolated Windows task and JVM lifecycle correctness under restart policy 999, plugin real player-free shutdown and actual Java/Bedrock login E2E. Preserve both Drafts and `main`.
 
+
+## 2026-10-19 — final scoped GSC host-vs-task account observation
+
+The real `Velocity-PrincipalScope-READ-ONLY-20261019-020937.json` conclusively **reported** (but did not independently authenticate) that the three Day10 task accounts and their Java parent/child accounts match **within each proxy**, while each differs from the **interactive collector account**. Nothing in that report determines the actual `GeumyiServerHost.exe` process account; it may be identical to either principal or a third account.
+
+To resolve the one remaining account-topology input without another speculative PID/log loop, the Draft source adds `tools/velocity/Velocity_GSC_HostPrincipal_READ_ONLY.ps1` and adjacent CMD. `GSC/ServerCenter/build.ps1` confirms the actual binary basename `GeumyiServerHost.exe` (distinct from the `GeumyiServerCenter.exe` interactive client), so the collector restricts WMI query to **exactly that basename** and checks whether exactly one instance is visible. It then compares the host owner's Windows SID in memory with the three **fixed scheduled task** principal SIDs, and separately compares the host owner with the current interactive collector. Output includes only `MATCH|DIFFERENT|UNKNOWN`, `NONE|ONE|MULTIPLE|UNKNOWN`, task-running booleans and permanent NO-GO guards.
+
+**Hard limits:** A matched process basename and account SID do not attest the executable hash, the actual GSC application code running within it, or the Java plugin/transport owner. Even a match does NOT prove a DPAPI blob can be decrypted by both principals, confer stop/restart permissions, or grant authority. No plaintext, DPAPI, task XML, usernames, SIDs, PIDs, Java paths, command lines or secrets are read into the report. No ACL, task, event-log, credential, running process, server or backup change is made. The tool never elevates privileges; if no host, multiple hosts or access denied, output is `UNKNOWN` and must **not** be "fixed" by starting/restarting a service.
+
+The Windows CI tests `HostDifferent`, `HostSame`, `NoHost`, `MultipleHosts` entirely synthetically and attaches the two-file `GSC452-HostPrincipal-READ-ONLY` ZIP. Only after all workflow jobs succeed may the user run this **single final host-account observation**. Its value is an architecture input for a future OS-account-scoped named-pipe broker, not a release acceptance gate. Keep all live lifecycle routes disabled.
+
+Meanwhile:
+- Draft PR #57 validates the **real-shape** principal report strictly, explicitly rejects forged account/DPAPI authorization, and merges only the three historical sanitized reports as a NO-GO status summary.
+- Draft PR #58 adds the **unwired Java admission fence**, with blocking of pending and committed-but-unpublished logins before any theoretical player-count-zero decision; Velocity 4.2.0 and 4.2.1-SNAPSHOT compilation is tested on CI.
+- Never bypass player fencing, scheduler 999 failure semantics, GSC runtime process integrity, JVM generation, operator approval or actual Java/Bedrock login E2E by treating these readonly hints as valid shutdown authentication.
+
+
