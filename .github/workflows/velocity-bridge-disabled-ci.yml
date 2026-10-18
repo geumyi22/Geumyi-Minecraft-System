@@ -52,11 +52,17 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           root=Path('Plugins/GeumyiVelocityBridge/src/main/java')
           sources=list(root.rglob('*.java'))
           entry=root/'kr/geumyi/velocitybridge/GeumyiVelocityBridge.java'
-          if len(sources)!=2 or not entry.exists():
-            raise SystemExit('unexpected active bridge source added without security review')
+          allowed={
+            'GeumyiVelocityBridge.java',
+            'BridgeEnvelope.java',
+            'AdmissionFence.java',
+          }
+          if len(sources)!=len(allowed) or {p.name for p in sources}!=allowed or not entry.exists():
+            raise SystemExit('unexpected Velocity plugin source added without security review')
           forbidden=[
             '.shutdown(', '.getScheduler(', '.getCommandManager(', '.getEventManager(',
             'ServerSocket', 'Socket(', 'HttpServer', 'HttpClient', 'DatagramSocket',
@@ -64,14 +70,22 @@ jobs:
             'registerCommand(', '.register(', 'ProxyServer.shutdown(',
           ]
           for p in sources:
-            source=p.read_text()
+            source=p.read_text(encoding='utf-8')
+            # Inspect executable source, not quoted security documentation;
+            # comments are not runtime Java statements.
+            source=re.sub(r'/\*[\s\S]*?\*/|//[^\n]*', '', source)
             for item in forbidden:
               if item in source:
                 raise SystemExit(f'active lifecycle/IPC action forbidden in {p.name}: {item}')
+          # The admission fence must stay unhooked: only the @Plugin class
+          # can have Velocity event annotations or ProxyServer references.
+          fence=(root/'kr/geumyi/velocitybridge/AdmissionFence.java').read_text(encoding='utf-8')
+          if '@Subscribe' in fence or 'ProxyServer proxy' in fence or 'ProxyServer.shutdown(' in source:
+            raise SystemExit('admission model was wired to a live Velocity event')
           source=entry.read_text()
           if '@Plugin(' not in source or 'onInitialize(ProxyInitializeEvent event)' not in source:
             raise SystemExit('not a recognized no-op Velocity plugin')
-          print('All two main Java sources verified inert (static check only)')
+          print('All three allowlisted Java sources verified inert (static check only)')
           PY
       - name: Compile offline prototype and run Java tests
         run: gradle -p Plugins/GeumyiVelocityBridge clean test jar -PvelocityApiVersion=${{ matrix.velocity_api }} --no-daemon --stacktrace
