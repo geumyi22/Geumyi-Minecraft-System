@@ -159,3 +159,16 @@ All three reported `engine_pid_matches_udp_java_child=false`, consistent with th
 
 **Next source-only work:** review these exact sanitized fields against fail-closed pure Go classification in Draft PR #57; independently test no-player gating, OS peer authorization, safe maintenance restore and synthetic negative cases before any real GSC control integration. No operator live maintenance is authorized by the COM result.
 
+
+## 2026-10-18 — Principal-scope read-only readiness for DACL/DPAPI design
+
+After the real 18:20 KST Task Scheduler COM report confirmed a **single visible running instance per target**, an EnginePID equal to each Java parent and a consistent UDP-owner Java child (still `source_authenticated=false` / NO-GO), source-only isolation in Draft PR #57 added Windows process HANDLE/generation checks, live Win32 named-pipe interprocess tests, exact-SID DACL construction, short-lived HMAC challenges and **Windows user-scope DPAPI-only** per-proxy key guards. This is not deployment.
+
+**Essential remaining operator-specific fact:** do the three actual Day10 scheduled-task principals, the Java parent/child processes, and the *interactive diagnostic user* share the same Windows SID? If accounts differ, the named-pipe ACL and HMAC secret distribution must be explicitly designed for multiple independently authenticated principals. It would be unsafe to assume that the CLI user's Windows current-user DPAPI credential can be used by GSC's runtime or Java task accounts.
+
+The optional `tools/velocity/Velocity_PrincipalScope_READ_ONLY.ps1` + adjacent CMD makes exactly that narrowly scoped **read-only relationship check** on the server PC. It examines only the three fixed known task principals, three expected UDP Java process families, their process-owner SID through `Win32_Process.GetOwnerSid`, and the collector's own Windows identity. It outputs only per-proxy `MATCH|DIFFERENT|UNKNOWN`, observed task-running state and category booleans. No raw usernames, SIDs, PIDs, process command lines, Java paths, task XML, secrets, DPAPI keys or access tokens are written. All live authorization flags stay false even if all comparisons match. `-Synthetic` is the ONLY mode used by CI.
+
+**Caveat:** the collector user's account is not necessarily the **GSC host process** account. The report cannot authenticate GSC's running service or prove that either process can decrypt a future HMAC key. A `DIFFERENT` is a scoping/design input, not an outage or automatic repair condition. If CIM owner queries lack permission, report `UNKNOWN` without elevation. Do NOT rerun earlier event collectors, enable Task Scheduler Operational, restart JVMs, alter task policy or request raw SID screenshots.
+
+Provide only the sanitized `Velocity-PrincipalScope-READ-ONLY-*.json` after the new **Windows CI synthetic validation** passes; until then keep the kit source-only. The eventual Canary deployment remains separately gated by genuine Java-side plugin authentication, player-free admission fencing, bounded policy restoration, disposable VM exit/retry semantics and explicit operator approval. **NO-GO** on all real lifecycle actions.
+
