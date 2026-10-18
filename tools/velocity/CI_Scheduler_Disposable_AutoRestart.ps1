@@ -5,6 +5,7 @@ param()
 # GitHub-hosted WINDOWS RUNNER ONLY. This is NOT a user-host script.
 # Runs ONLY an isolated CI-created fake PowerShell action that records an
 # attempt marker and exits 1. Limit restart retries to TWO, one-minute delay.
+# Has ONE scheduled trigger to test native Task Scheduler failure-retry semantics.
 # No Minecraft JVM, Velocity, ports, world files, or real task names used.
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
@@ -36,22 +37,22 @@ try {
     }
     $action=New-ScheduledTaskAction -Execute $exe -Argument ('-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "'+$script+'"')
     $settings=New-ScheduledTaskSettingsSet -RestartCount 2 -RestartInterval (New-TimeSpan -Minutes 1) -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes 3)
-    # Triggerless definition cannot start by itself. Explicitly run only the
-    # exact newly registered CI task; it always exits 1 and can auto-retry 2x.
-    $task=New-ScheduledTask -Action $action -Settings $settings
+    # Manual Start-ScheduledTask did not trigger Windows automatic retry.
+    # Use a single ONCE schedule to enter the normal Task Scheduler path.
+    $trigger=New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(14)
+    $task=New-ScheduledTask -Action $action -Settings $settings -Trigger $trigger
     Register-ScheduledTask -TaskName $name -TaskPath '\' -InputObject $task -ErrorAction Stop | Out-Null
     $registered=$true
     $current=Get-ScheduledTask -TaskName $name -TaskPath '\' -ErrorAction Stop
-    if(@($current.Triggers | Where-Object {$null -ne $_}).Count -ne 0){
-        throw 'CI task unexpectedly has a trigger; do not start it'
+    if(@($current.Triggers | Where-Object {$null -ne $_}).Count -ne 1){
+        throw 'CI task did not have exactly one ONCE trigger'
     }
     $xml=[xml](Export-ScheduledTask -TaskName $name -TaskPath '\' -ErrorAction Stop)
     $count=$xml.SelectSingleNode("//*[local-name()='RestartOnFailure']/*[local-name()='Count']")
     if($null -eq $count -or [string]$count.InnerText -ne '2'){
         throw 'CI bounded restart count was not retained'
     }
-    Start-ScheduledTask -TaskName $name -TaskPath '\' -ErrorAction Stop
-    $deadline=[DateTimeOffset]::UtcNow.AddSeconds(130)
+    $deadline=[DateTimeOffset]::UtcNow.AddSeconds(160)
     $first=$false
     $second=$false
     while([DateTimeOffset]::UtcNow -lt $deadline) {
@@ -63,8 +64,15 @@ try {
         if($attempts -ge 2){$second=$true;break}
         Start-Sleep -Milliseconds 900
     }
-    if(-not $first){throw 'Disposable fake crash action did not start'}
-    if(-not $second){throw 'Disposable Task Scheduler failure retry not observed within 130s'}
+    if(-not $first){throw 'Disposable scheduled crash action did not start'}
+    if(-not $second){
+        $info=Get-ScheduledTaskInfo -TaskName $name -TaskPath '\' -ErrorAction SilentlyContinue
+        $lastFailure='UNKNOWN'
+        if($null -ne $info){$lastFailure=[string]([int64]$info.LastTaskResult -ne 0)}
+        Write-Host ('CI_ONLY_CRASH_RETRY_DIAGNOSTIC first_run='+$first+
+            ' second_run='+$second+' nonzero_last_result='+$lastFailure)
+        throw 'Disposable Task Scheduler failure retry not observed within bounded 160s'
+    }
     Write-Host 'DISPOSABLE_FAILED_DUMMY_STARTED=PASS'
     Write-Host 'DISPOSABLE_AUTOMATIC_CRASH_RESTART_OBSERVED=PASS'
 }
