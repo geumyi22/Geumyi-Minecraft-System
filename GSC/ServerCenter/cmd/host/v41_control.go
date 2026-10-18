@@ -721,6 +721,7 @@ func recentAudit(limit int) []AuditEntry {
 
 func registerControlAPIRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v1/info", requireAuth(apiV1Info))
+	mux.HandleFunc("/api/v1/velocity/tasks", requireAuth(apiV1VelocityTasks))
 	mux.HandleFunc("/api/v1/snapshot", requireAuth(apiV1Snapshot))
 	mux.HandleFunc("/api/v1/servers", requireAuth(apiV1Servers))
 	mux.HandleFunc("/api/v1/servers/", requireAuth(apiV1ServerRoute))
