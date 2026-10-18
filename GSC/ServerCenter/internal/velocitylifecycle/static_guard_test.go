@@ -20,6 +20,8 @@ func TestPhaseCModulesHaveNoLiveProcessOrNetworkImports(t *testing.T) {
 	sources := []string{
 		filepath.Join(root, "lifecycle.go"),
 		filepath.Join(root, "maintenance_lease.go"),
+		filepath.Join(root, "task_policy_report.go"),
+		filepath.Join(root, "task_instance_report.go"),
 		filepath.Clean(filepath.Join(root, "..", "velocitybridge", "auth.go")),
 	}
 	forbidden := map[string]bool{
