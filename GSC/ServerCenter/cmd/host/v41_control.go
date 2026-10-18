@@ -723,6 +723,7 @@ func registerControlAPIRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api/v1/info", requireAuth(apiV1Info))
 	mux.HandleFunc("/api/v1/velocity/tasks", requireAuth(apiV1VelocityTasks))
 	mux.HandleFunc("/api/v1/velocity/managed/action", requireAuth(apiV1VelocityManagedAction))
+	mux.HandleFunc("/api/v1/velocity/managed/status", requireAuth(apiV1VelocityManagedStatus))
 	mux.HandleFunc("/api/v1/snapshot", requireAuth(apiV1Snapshot))
 	mux.HandleFunc("/api/v1/servers", requireAuth(apiV1Servers))
 	mux.HandleFunc("/api/v1/servers/", requireAuth(apiV1ServerRoute))
