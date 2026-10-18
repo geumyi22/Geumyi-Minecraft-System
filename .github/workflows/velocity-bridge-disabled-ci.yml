@@ -85,6 +85,7 @@ jobs:
             'GeumyiVelocityBridge.java',
             'BridgeEnvelope.java',
             'AdmissionFence.java',
+            'StatusOnlyWire.java',
           }
           if len(sources)!=len(allowed) or {p.name for p in sources}!=allowed or not entry.exists():
             raise SystemExit('unexpected Velocity plugin source added without security review')
@@ -110,7 +111,7 @@ jobs:
           source=entry.read_text()
           if '@Plugin(' not in source or 'onInitialize(ProxyInitializeEvent event)' not in source:
             raise SystemExit('not a recognized no-op Velocity plugin')
-          print('All three allowlisted Java sources verified inert (static check only)')
+          print('All four allowlisted Java sources verified inert (static check only)')
           PY
       - name: Compile offline prototype and run Java tests
         run: gradle -p Plugins/GeumyiVelocityBridge clean test jar -PvelocityApiVersion=${{ matrix.velocity_api }} --no-daemon --stacktrace
