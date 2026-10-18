@@ -1,6 +1,7 @@
 package main
 
 import (
+ "encoding/json"
  "net/http"
  "net/http/httptest"
  "os"
@@ -28,6 +29,39 @@ func TestManagedVelocityCanaryDefaultLockedNoMutatingAction(t *testing.T){
   if rec.Code!=http.StatusMethodNotAllowed{
     t.Fatalf("%s unexpectedly executed mutating Velocity handler",method)
   }
+ }
+}
+
+func TestManagedVelocityStatusDefaultButtonsRemainDisabled(t *testing.T){
+ t.Setenv(velocityCanaryGate,"")
+ req:=httptest.NewRequest(http.MethodGet,"/api/v1/velocity/managed/status",nil)
+ recorder:=httptest.NewRecorder()
+ apiV1VelocityManagedStatus(recorder,req)
+ if recorder.Code!=http.StatusOK||recorder.Header().Get("Cache-Control")!="no-store"{
+  t.Fatal("safe canary status endpoint rejected")
+ }
+ var data struct{
+  CanaryEnabled bool `json:"canary_enabled"`
+  ReadOnly bool `json:"read_only"`
+  Tasks []struct{
+   Target string `json:"target"`
+   GSCManagedRunning bool `json:"gsc_managed_running"`
+   CanStart bool `json:"can_start"`
+   CanStop bool `json:"can_stop"`
+   CanRestart bool `json:"can_restart"`
+  } `json:"tasks"`
+ }
+ if err:=json.Unmarshal(recorder.Body.Bytes(),&data);err!=nil{t.Fatal(err)}
+ if !data.ReadOnly||data.CanaryEnabled||len(data.Tasks)!=3{t.Fatal("default Canary capability gates bypassed")}
+ for _,task:=range data.Tasks{
+  if task.CanStart||task.CanStop||task.CanRestart||task.GSCManagedRunning{
+   t.Fatalf("default production host falsely offered active button: %+v",task)
+  }
+ }
+ for _,method:=range []string{http.MethodPost,http.MethodPatch,http.MethodDelete}{
+  rec:=httptest.NewRecorder()
+  apiV1VelocityManagedStatus(rec,httptest.NewRequest(method,"/api/v1/velocity/managed/status",nil))
+  if rec.Code!=http.StatusMethodNotAllowed{t.Fatalf("status unexpectedly accepts %s",method)}
  }
 }
 
