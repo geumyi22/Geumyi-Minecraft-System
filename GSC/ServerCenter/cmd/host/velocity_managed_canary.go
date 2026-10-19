@@ -208,9 +208,16 @@ func apiV1VelocityManagedAction(w http.ResponseWriter,r *http.Request){
   defer cancel()
   actionErr=controller.GracefulStop(ctx,permit)
  case "restart":
-  ctx,cancel:=context.WithTimeout(r.Context(),25*time.Second)
-  defer cancel()
-  actionErr=controller.Restart(ctx,permit)
+  // Validate original artifact hash and privileged launcher before player
+  // disconnection. No server is stopped if its manifest has drifted.
+  spec,e:=readManagedVelocityManifest(q.Target)
+  if e!=nil {
+   actionErr=e
+  }else{
+   ctx,cancel:=context.WithTimeout(r.Context(),25*time.Second)
+   defer cancel()
+   actionErr=controller.RestartWithSpec(ctx,permit,spec)
+  }
  }
  if actionErr!=nil{
   http.Error(w,"managed Velocity action blocked or unconfirmed: "+actionErr.Error(),http.StatusConflict)
