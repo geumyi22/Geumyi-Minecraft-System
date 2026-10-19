@@ -19,6 +19,7 @@ on:
       - 'Network/**'
       - 'tools/day10/**'
       - 'tools/velocity/CI_Scheduler_Disposable_Policy_Restore.ps1'
+      - 'tools/velocity/Velocity_Managed_Cutover.ps1'
       - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
       - 'tools/release/**'
       - 'DAY8-RUNBOOK.md'
@@ -41,6 +42,7 @@ on:
       - 'Network/**'
       - 'tools/day10/**'
       - 'tools/velocity/CI_Scheduler_Disposable_Policy_Restore.ps1'
+      - 'tools/velocity/Velocity_Managed_Cutover.ps1'
       - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
       - 'tools/release/**'
       - 'DAY8-RUNBOOK.md'
@@ -74,6 +76,27 @@ jobs:
       - name: Race-check isolated Velocity lifecycle and message authentication
         working-directory: GSC/ServerCenter
         run: go test -race ./internal/velocitylifecycle ./internal/velocitybridge ./internal/velocitypeer ./internal/velocitymanaged
+      - name: Validate cutover kit parser and fail-closed synthetic modes
+        shell: powershell
+        timeout-minutes: 2
+        run: |
+          $script='tools/velocity/Velocity_Managed_Cutover.ps1'
+          $tokens=$null; $parseErrors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script),[ref]$tokens,[ref]$parseErrors)
+          if(@($parseErrors).Count -gt 0){throw 'Velocity cutover PowerShell syntax invalid'}
+          foreach($target in @('wild','playground','other')){
+            foreach($state in @('Running','Ready','Disabled','Queued','Missing')){
+              $output=& powershell.exe -NoProfile -NonInteractive -File $script -Target $target -Mode Preflight -Synthetic -SyntheticState $state
+              if($LASTEXITCODE -ne 0){throw 'Synthetic preflight failed'}
+              $v=($output|Out-String)|ConvertFrom-Json
+              if($v.schema -ne 1 -or $v.target -cne $target -or $v.synthetic -ne $true -or $v.read_only -ne $true -or $v.live_control_authorized -ne $false -or $v.status -cne 'SYNTHETIC_NO_GO' -or $v.ready_for_cutover -ne ($state -eq 'Ready')){throw 'Synthetic read-only preflight violated NO-GO contract'}
+            }
+          }
+          $output=& powershell.exe -NoProfile -NonInteractive -File $script -Target wild -Mode Cutover -Synthetic -Approved -Ticket 'CI-ONLY-12345' 2>&1
+          if($LASTEXITCODE -eq 0){throw 'Synthetic mode executed a cutover'}
+          $output=& powershell.exe -NoProfile -NonInteractive -File $script -Target wild -Mode Rollback -Synthetic -Approved -Ticket 'CI-ONLY-12345' 2>&1
+          if($LASTEXITCODE -eq 0){throw 'Synthetic mode executed rollback'}
+          Write-Host 'Velocity 17-case cutover safety matrix PASS'
       - name: Disposable non-triggered Windows task 999 to zero to 999 and cleanup
         shell: powershell
         timeout-minutes: 4
