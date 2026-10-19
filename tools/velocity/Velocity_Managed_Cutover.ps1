@@ -38,6 +38,8 @@ function IsAdministrator {
 }
 function PortsFree([string]$target){
  $pair=$expectedPorts[$target]
+ $listener=$null
+ $udp=$null
  try {
   $listener=[Net.Sockets.TcpListener]::new([Net.IPAddress]::Any,[int]$pair[0])
   $listener.Start()
@@ -64,6 +66,15 @@ function HashText([string]$value){
  $sha=[Security.Cryptography.SHA256]::Create()
  try{return [BitConverter]::ToString($sha.ComputeHash($bytes)).Replace('-','').ToLowerInvariant()}
  finally{$sha.Dispose();[Array]::Clear($bytes,0,$bytes.Length)}
+}
+# Scheduler changes Settings/Enabled when disabling a task. Compare every
+# other canonical XML node to catch drift, without treating the intended
+# enable/disable flip as a definition mutation.
+function TaskDefinitionDigest([string]$text){
+ $xml=[xml]$text
+ $enabled=$xml.SelectSingleNode("//*[local-name()='Settings']/*[local-name()='Enabled']")
+ if($null -ne $enabled){[void]$enabled.ParentNode.RemoveChild($enabled)}
+ return HashText $xml.OuterXml
 }
 function AssertTaskShape([string]$target,[string]$xml){
  $root=[xml]$xml
@@ -167,7 +178,7 @@ if($Synthetic){
  return
 }
 # Actual task inspection requires Windows, but does not require elevation.
-if(-not $IsWindows -and $PSVersionTable.PSVersion.Major -ge 6){
+if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){
  Deny 'WINDOWS_REQUIRED'
 }
 Import-Module ScheduledTasks -ErrorAction Stop
@@ -217,10 +228,10 @@ if($Mode -eq 'Cutover'){
  if($stored.Receipt.cutover_committed -eq $true){
   Deny 'CUTOVER_ALREADY_COMMITTED'
  }
- if($stored.Receipt.original_task_state -ne 'Ready' -or -not $ready){
+ if(-not $ready){
   Deny 'LEGACY_TASK_MUST_BE_READY_AND_ALL_PROXY_PORTS_FREE'
  }
- if((HashText $xml) -cne $stored.Receipt.original_sha256){
+ if((TaskDefinitionDigest $xml) -cne (TaskDefinitionDigest $stored.XML)){
   Deny 'TASK_DEFINITION_CHANGED_SINCE_SNAPSHOT'
  }
  # IMPORTANT: disabling a task DOES NOT terminate a running JVM.
@@ -249,11 +260,9 @@ if($Mode -eq 'Rollback'){
  }
  # Fail-closed: original task XML and disabled status must still correspond.
  # Do not register a replacement task containing raw credentials or run Java.
- if($stored.Receipt.cutover_committed -ne $true){Deny 'NOT_COMMITTED_BY_THIS_KIT'}
- $current=[xml]$xml
- $original=[xml]$stored.XML
- $current.Settings.RestartOnFailure.Count | Out-Null
- if((HashText $xml) -cne $stored.Receipt.original_sha256){
+ # A crash between disabling the task and persisting the receipt is
+ # recoverable too: only this captured original task may be restored.
+ if((TaskDefinitionDigest $xml) -cne (TaskDefinitionDigest $stored.XML)){
   Deny 'TASK_DEFINITION_DRIFT_REQUIRES_MANUAL_RECOVERY'
  }
  Enable-ScheduledTask -TaskName $taskNames[$Target] -TaskPath '\' -ErrorAction Stop |Out-Null
