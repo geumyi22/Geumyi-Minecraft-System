@@ -129,7 +129,7 @@ func managedTaskIsMigrated(target string,ctx context.Context)bool{
  // This cannot prove absence of orphan JVMs; Start additionally requires the
  // target's Java/Bedrock listeners to be free before launching.
  states:=observeVelocityTasks(ctx)
- return states[target]=="Disabled"
+ return states[target]=="Disabled"&&velocityReceiptAvailable(target)
 }
 
 func freeManagedProxyPorts(target string)bool{
@@ -188,7 +188,7 @@ func apiV1VelocityManagedAction(w http.ResponseWriter,r *http.Request){
   http.Error(w,"unknown Velocity proxy",http.StatusBadRequest);return
  }
  if !managedTaskIsMigrated(q.Target,r.Context()){
-  http.Error(w,"original Day10 task must be disabled by approved cutover",http.StatusConflict);return
+  http.Error(w,"original task and private cutover receipt must verify migration",http.StatusConflict);return
  }
  permit:=velocitymanaged.StopPermit{Target:q.Target,OperatorApproved:true,
   TaskMigrationCompleted:true,AcceptPlayerDisconnects:true}
@@ -245,7 +245,7 @@ func apiV1VelocityManagedStatus(w http.ResponseWriter,r *http.Request){
  states:=map[string]string{}
  if enabled {states=observeVelocityTasks(r.Context())}
  for _,target:=range []string{"wild","playground","other"}{
-  item:=row{Target:target,LegacyTaskDisabled:enabled&&states[target]=="Disabled"}
+  item:=row{Target:target,LegacyTaskDisabled:enabled&&states[target]=="Disabled"&&velocityReceiptAvailable(target)}
   if enabled {
    controller,e:=managedVelocityController(target)
    if e==nil{item.GSCManagedRunning=controller.Running()}
