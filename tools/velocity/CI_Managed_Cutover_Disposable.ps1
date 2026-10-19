@@ -57,6 +57,18 @@ try{
    throw 'Host launch audit misclassified no-trigger disposable Scheduler fixture'
  }
  Write-Host 'DISPOSABLE_SANITIZED_ACTUAL_LAUNCH_AUDIT=PASS'
+ # The one-click full fleet snapshot MUST deny incomplete fleet records
+ # BEFORE writing even the first target's protected archive.
+ $snapshotWrapper=Join-Path $PSScriptRoot 'Velocity_Snapshot_Three_Before_Cutover.ps1'
+ $originalPreference=$ErrorActionPreference
+ try{
+  $ErrorActionPreference='Continue'
+  $captured=& powershell.exe -NoProfile -NonInteractive -File $snapshotWrapper 2>&1
+  $snapshotExit=$LASTEXITCODE
+ }finally{$ErrorActionPreference=$originalPreference}
+ if($snapshotExit -eq 0){throw 'Missing playground/other fleet snapshot unexpectedly succeeded'}
+ if(Test-Path -LiteralPath $originalFile){throw 'Fleet snapshot wrote wild before rejecting missing peer task'}
+ Write-Host 'DISPOSABLE_FLEET_SNAPSHOT_ALL_TARGET_PREFLIGHT_FAIL_CLOSED=PASS'
  $observed=(& powershell.exe -NoProfile -NonInteractive -File $kit -Mode Preflight -Target $target |Out-String)|ConvertFrom-Json
  if($LASTEXITCODE -ne 0 -or $observed.read_only -ne $true -or
     $observed.ready_for_cutover -ne $true){
