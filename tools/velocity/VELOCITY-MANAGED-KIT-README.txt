@@ -1,6 +1,23 @@
 GEUMYI GSC v4.5.2 Canary — Velocity Managed Cutover Kit
 ========================================================
 
+IMPORTANT: LIVE MAINTENANCE APPROVED, FORCE-STOP NOT APPROVED
+  The operator approved a brief Java/Bedrock interruption. This does not
+  prove that a scheduled background JVM has an accessible console or make
+  Stop-ScheduledTask a graceful shutdown method.
+
+  FIRST run Run_Velocity_Actual_Launch_Audit_READ_ONLY.cmd. It checks
+  the three actual task launch formats, current Java/JAR availability,
+  whether the real server workdir differs from the old ProgramData
+  prototype, and existing restart policy. It discloses no raw paths,
+  credentials, command lines or keys. SHARE ONLY ITS JSON OUTPUT.
+
+  NEVER run Snapshot/Cutover/Rollback yet. Current PR #57 GSC
+  manifest and official 4.2.0 hash are CI-pinned assumptions, NOT proof
+  of the production Velocity jar or workdir. A running task CANNOT be
+  converted to GSC ownership without a verified graceful exit path and
+  rollback-compatible Canary deployment.
+  
 SAFE FIRST STEP
   Extract the ZIP into one folder on the Windows server PC.
   Double-click Run_Velocity_Managed_PRECHECK_READ_ONLY.cmd.
