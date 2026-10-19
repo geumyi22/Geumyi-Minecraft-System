@@ -271,6 +271,7 @@ func apiV1VelocityManagedStatus(w http.ResponseWriter,r *http.Request){
    Target string `json:"target"`
    GSCManagedRunning bool `json:"gsc_managed_running"`
    LegacyTaskDisabled bool `json:"legacy_task_disabled"`
+   RecoveryRequired bool `json:"recovery_required"`
    CanStart bool `json:"can_start"`
    CanStop bool `json:"can_stop"`
    CanRestart bool `json:"can_restart"`
@@ -288,6 +289,8 @@ func apiV1VelocityManagedStatus(w http.ResponseWriter,r *http.Request){
   // preflight. A task being Disabled is not verified Java ownership.
   // A marker exists when this host owns or once owned a JVM. If its
   // host was restarted and the stdin handle lost, refuse duplicate Start.
+  item.RecoveryRequired=enabled&&item.LegacyTaskDisabled&&
+    !item.GSCManagedRunning&&!ownedMarkerAvailable(target)
   item.CanStart=enabled&&item.LegacyTaskDisabled&&!item.GSCManagedRunning&&
     ownedMarkerAvailable(target)
   item.CanStop=enabled&&item.LegacyTaskDisabled&&item.GSCManagedRunning&&
