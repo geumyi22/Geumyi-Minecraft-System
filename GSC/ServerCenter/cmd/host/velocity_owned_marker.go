@@ -126,7 +126,13 @@ func beginManagedOwnedSession(target string)(func(success bool)error,error){
 func hasManagedOwnedSession(target string)bool{
  ownedMarkerMu.Lock()
  defer ownedMarkerMu.Unlock()
- return ownedMarkerTokens[target]!=""
+ token:=ownedMarkerTokens[target]
+ if token==""{return false}
+ path,err:=ownedMarkerFile(target,os.Getenv("ProgramData"))
+ if err!=nil{return false}
+ record,err:=readOwnedMarker(path)
+ return err==nil&&record.Schema==1&&record.Target==target&&
+  record.Generation==token
 }
 func finishManagedOwnedSession(target string)error{
  ownedMarkerMu.Lock()
