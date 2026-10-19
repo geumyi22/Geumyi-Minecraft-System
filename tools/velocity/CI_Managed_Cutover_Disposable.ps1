@@ -43,6 +43,20 @@ try{
  $wasCreated=$true
  $status=(Get-ScheduledTask -TaskName $name -TaskPath '\').State.ToString()
  if($status -ne 'Ready'){throw 'Disposable no-trigger task not ready'}
+ $auditFile=Join-Path $PSScriptRoot 'Velocity_Actual_Launch_Audit_READ_ONLY.ps1'
+ $audited=(& powershell.exe -NoProfile -NonInteractive -File $auditFile -Target wild |Out-String)|ConvertFrom-Json
+ $record=@($audited.results)[0]
+ if($LASTEXITCODE -ne 0 -or $audited.read_only -ne $true -or
+    $audited.lifecycle_migration_authorized -ne $false -or
+    $record.target -cne 'wild' -or $record.task_state -cne 'Ready' -or
+    $record.action_class -cne 'DIRECT_JAVA' -or
+    $record.java_executable_exists -ne $true -or
+    $record.working_directory_exists -ne $true -or
+    $record.jar_file_found -ne $false -or
+    $record.task_policy_999 -ne $true){
+   throw 'Host launch audit misclassified no-trigger disposable Scheduler fixture'
+ }
+ Write-Host 'DISPOSABLE_SANITIZED_ACTUAL_LAUNCH_AUDIT=PASS'
  $observed=(& powershell.exe -NoProfile -NonInteractive -File $kit -Mode Preflight -Target $target |Out-String)|ConvertFrom-Json
  if($LASTEXITCODE -ne 0 -or $observed.read_only -ne $true -or
     $observed.ready_for_cutover -ne $true){
