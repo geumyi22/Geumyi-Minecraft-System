@@ -201,22 +201,49 @@ func apiV1VelocityManagedAction(w http.ResponseWriter,r *http.Request){
    actionErr=errors.New("proxy port ownership is not free")
   }else{
    spec,e:=readManagedVelocityManifest(q.Target)
-   if e!=nil{actionErr=e}else{actionErr=controller.Start(spec)}
+   if e!=nil {
+    actionErr=e
+   }else{
+    // Atomic on-disk owner marker survives GSC host crashes. A stale owner
+    // marker blocks duplicate Java launches even before a socket binds.
+    release,e:=beginManagedOwnedSession(q.Target)
+    if e!=nil {
+     actionErr=e
+    }else{
+     actionErr=controller.Start(spec)
+     if actionErr!=nil{
+      if cleanupErr:=release(false);cleanupErr!=nil{
+       actionErr=errors.New("launch failed and stale owner marker needs manual recovery")
+      }
+     }else{
+      _=release(true)
+     }
+    }
+   }
   }
  case "stop":
-  ctx,cancel:=context.WithTimeout(r.Context(),25*time.Second)
-  defer cancel()
-  actionErr=controller.GracefulStop(ctx,permit)
- case "restart":
-  // Validate original artifact hash and privileged launcher before player
-  // disconnection. No server is stopped if its manifest has drifted.
-  spec,e:=readManagedVelocityManifest(q.Target)
-  if e!=nil {
-   actionErr=e
+  if !hasManagedOwnedSession(q.Target){
+   actionErr=errors.New("GSC owner generation not authenticated after host restart")
   }else{
    ctx,cancel:=context.WithTimeout(r.Context(),25*time.Second)
    defer cancel()
-   actionErr=controller.RestartWithSpec(ctx,permit,spec)
+   actionErr=controller.GracefulStop(ctx,permit)
+   if actionErr==nil{actionErr=finishManagedOwnedSession(q.Target)}
+  }
+ case "restart":
+  // Validate original artifact hash and privileged launcher before player
+  // disconnection. Preserve marker across the whole restart transition.
+  if !hasManagedOwnedSession(q.Target) {
+   actionErr=errors.New("GSC owner generation not authenticated after host restart")
+  }else{
+   spec,e:=readManagedVelocityManifest(q.Target)
+   if e!=nil {
+    actionErr=e
+   }else{
+    ctx,cancel:=context.WithTimeout(r.Context(),25*time.Second)
+    defer cancel()
+    actionErr=controller.RestartWithSpec(ctx,permit,spec)
+   }
   }
  }
  if actionErr!=nil{
@@ -259,8 +286,12 @@ func apiV1VelocityManagedStatus(w http.ResponseWriter,r *http.Request){
   }
   // Actual action request performs additional operator, manifest/port
   // preflight. A task being Disabled is not verified Java ownership.
-  item.CanStart=enabled&&item.LegacyTaskDisabled&&!item.GSCManagedRunning
-  item.CanStop=enabled&&item.LegacyTaskDisabled&&item.GSCManagedRunning
+  // A marker exists when this host owns or once owned a JVM. If its
+  // host was restarted and the stdin handle lost, refuse duplicate Start.
+  item.CanStart=enabled&&item.LegacyTaskDisabled&&!item.GSCManagedRunning&&
+    ownedMarkerAvailable(target)
+  item.CanStop=enabled&&item.LegacyTaskDisabled&&item.GSCManagedRunning&&
+    hasManagedOwnedSession(target)
   item.CanRestart=item.CanStop
   tasks=append(tasks,item)
  }
