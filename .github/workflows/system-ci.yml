@@ -194,6 +194,17 @@ jobs:
           if(@($issues).Count -gt 0){throw 'Disposable cutover fixture syntax invalid'}
           & powershell.exe -NoProfile -NonInteractive -File $script
           if($LASTEXITCODE -ne 0){throw 'Disposable Windows cutover and rollback not proven'}
+      - name: Attach read-only-first Velocity operator kit (do not auto-apply)
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-Velocity-Managed-Cutover-CANARY
+          path: |
+            tools/velocity/Velocity_Managed_Cutover.ps1
+            tools/velocity/Run_Velocity_Managed_PRECHECK_READ_ONLY.cmd
+            tools/velocity/VELOCITY-MANAGED-KIT-README.txt
+            docs/operations/GSC-VELOCITY-DIRECT-OWNERSHIP-CUTOVER-2026-10-19.md
+          if-no-files-found: error
+          retention-days: 7
   statusagent:
     name: StatusAgent 0.5.4 / build
     runs-on: ubuntu-latest
