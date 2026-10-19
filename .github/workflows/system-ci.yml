@@ -19,6 +19,7 @@ on:
       - 'Network/**'
       - 'tools/day10/**'
       - 'tools/velocity/CI_Scheduler_Disposable_Policy_Restore.ps1'
+      - 'tools/velocity/CI_Managed_Cutover_Disposable.ps1'
       - 'tools/velocity/Velocity_Managed_Cutover.ps1'
       - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
       - 'tools/release/**'
@@ -42,6 +43,7 @@ on:
       - 'Network/**'
       - 'tools/day10/**'
       - 'tools/velocity/CI_Scheduler_Disposable_Policy_Restore.ps1'
+      - 'tools/velocity/CI_Managed_Cutover_Disposable.ps1'
       - 'tools/velocity/Velocity_Managed_Cutover.ps1'
       - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
       - 'tools/release/**'
@@ -164,6 +166,31 @@ jobs:
             Remove-Item -LiteralPath $jar -Force -ErrorAction SilentlyContinue
           }
 
+  velocity-cutover-disposable:
+    name: Disposable Windows Task cutover + original backup + rollback (CI ONLY)
+    runs-on: windows-latest
+    timeout-minutes: 7
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+      - name: Setup disposable Java path (never launch)
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Verify and execute fake non-triggered Windows Task Scheduler cutover
+        shell: powershell
+        timeout-minutes: 5
+        run: |
+          if($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_OS -cne 'Windows'){
+            throw 'CI-only OS guard failed'
+          }
+          $script='tools/velocity/CI_Managed_Cutover_Disposable.ps1'
+          $tokens=$null; $issues=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script),[ref]$tokens,[ref]$issues)
+          if(@($issues).Count -gt 0){throw 'Disposable cutover fixture syntax invalid'}
+          & powershell.exe -NoProfile -NonInteractive -File $script
+          if($LASTEXITCODE -ne 0){throw 'Disposable Windows cutover and rollback not proven'}
   statusagent:
     name: StatusAgent 0.5.4 / build
     runs-on: ubuntu-latest
