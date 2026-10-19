@@ -21,6 +21,7 @@ $programRoot=Join-Path $env:ProgramData 'GeumyiServerCenter\VelocityManaged'
 $archive=Join-Path $programRoot 'Recovery'
 $originalFile=Join-Path $archive 'wild.original.xml'
 $receiptFile=Join-Path $archive 'wild.receipt.json'
+$manifestFile=Join-Path $programRoot 'wild.json'
 $dummyWorkdir=Join-Path $env:RUNNER_TEMP 'GeumyiServerCenter\Network\FourServer\wild'
 try{
  if($null -ne (Get-ScheduledTask -TaskPath '\' -TaskName $name -ErrorAction SilentlyContinue)){
@@ -50,8 +51,16 @@ try{
  & powershell.exe -NoProfile -NonInteractive -File $kit -Mode Snapshot -Target $target -Ticket $ticket -Approved
  if($LASTEXITCODE -ne 0){throw 'Disposable private task definition snapshot failed'}
  if(-not(Test-Path -LiteralPath $originalFile) -or
-    -not(Test-Path -LiteralPath $receiptFile)){
-  throw 'Disposable task original XML and receipt not stored privately'
+    -not(Test-Path -LiteralPath $receiptFile) -or
+    -not(Test-Path -LiteralPath $manifestFile)){
+  throw 'Disposable original XML, private receipt or exact launcher manifest missing'
+ }
+ $manifest=(Get-Content -LiteralPath $manifestFile -Raw)|ConvertFrom-Json
+ if($manifest.schema -ne 1 -or $manifest.target -cne 'wild' -or
+    $manifest.expected_jar_sha256 -cne '35a5596a5468a035d8a32c8de5ebb0dc6b8d8f0cc3ff5169d514aca762af8aa8' -or
+    $manifest.args.Count -ne 2 -or
+    $manifest.args[0] -cne '-jar' -or $manifest.args[1] -cne 'velocity.jar'){
+  throw 'Disposable launcher manifest changed from original Scheduler action'
  }
  & powershell.exe -NoProfile -NonInteractive -File $kit -Mode Cutover -Target $target -Ticket $ticket -Approved
  if($LASTEXITCODE -ne 0){throw 'Disposable task cutover failed'}
@@ -81,8 +90,12 @@ try{
  # Only the fixed CI-owned files. Never sweep unrelated ProgramData.
  if(Test-Path -LiteralPath $originalFile){Remove-Item -LiteralPath $originalFile -Force}
  if(Test-Path -LiteralPath $receiptFile){Remove-Item -LiteralPath $receiptFile -Force}
+ if(Test-Path -LiteralPath $manifestFile){Remove-Item -LiteralPath $manifestFile -Force}
  if(Test-Path -LiteralPath $archive){
   Remove-Item -LiteralPath $archive -ErrorAction Stop
+ }
+ if(Test-Path -LiteralPath $programRoot){
+  Remove-Item -LiteralPath $programRoot -ErrorAction Stop
  }
  if(Test-Path -LiteralPath $dummyWorkdir){
   Remove-Item -LiteralPath $dummyWorkdir -Recurse -Force
