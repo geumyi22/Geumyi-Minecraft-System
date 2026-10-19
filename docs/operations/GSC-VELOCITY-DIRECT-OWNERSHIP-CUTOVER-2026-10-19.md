@@ -52,3 +52,19 @@ The manifest is read only from `%ProgramData%\GeumyiServerCenter\VelocityManaged
 
 **WARNING: do not manually activate the environment opt-in or disable old tasks.** Source-only route tests prove default locking, invalid target rejection and missing/bad manifests. The existing production build and server have NOT been updated. The remaining gap before rollout is an actual preflight/cutover/rollback operator kit, correct config/ACL provenance, GSC host restart/orphan recovery, real Java+Bedrock login E2E and maintenance approval. Official Velocity 4.2.0 CI-only JVM start→graceful-console-stop→restart→stop already passed, but does not authorize migrating running proxies.
 
+## 2026-10-19 — One-target operator cutover / rollback kit implemented
+
+The Draft branch now includes tools/velocity/Velocity_Managed_Cutover.ps1, with fixed targets wild, playground and other.
+
+- Preflight (default): non-admin, READ ONLY. Inspect exact Scheduler task state, Java TCP/Bedrock UDP listener availability and any persistent GSC-owned-JVM marker. No secrets or raw XML in the report.
+- Snapshot: privileged, explicit -Approved and -Ticket. Save ORIGINAL full Scheduler task XML plus integrity receipt and automatically derive the exact Java launcher manifest from strictly allowlisted Java flags. All files stay PRIVATE under ProgramData/GeumyiServerCenter/VelocityManaged; the parent and Recovery folders receive protected SYSTEM+Administrators ACLs. Do not upload XML, manifest, command lines or keys.
+- Cutover: require a matching receipt/ticket, original task definition, untampered launcher manifest, Ready task (never Running), free Java/Bedrock ports and no active owner marker. Disable only the selected old task and commit receipt. NEVER kill a running JVM or start a new JVM as a side-effect.
+- Rollback: require matching private snapshot, no active/orphaned GSC JVM marker, Disabled legacy task, free ports and unchanged Scheduler task definition (the intended Enabled bit is ignored). Restore Ready state, original Count=999 and task policy. No automatic Java start.
+
+Additional GSC backend defenses: GET /api/v1/velocity/tasks and /managed/status, POST /managed/action all behind host authentication; actions default to HTTP 423 LOCKED. A disabled task alone is insufficient. GSC validates the local committed snapshot receipt including original UTF-16 XML SHA, per-target scope and no duplicate JSON keys; it verifies Velocity JAR SHA again before restart. An exclusive on-disk owner-generation marker blocks duplicate Start after GSC Host restart or an orphaned JVM; the marker is never silently cleared. The dashboard shows recovery_required when GSC has lost ownership.
+
+Proof: dedicated disposable Windows CI builds a no-trigger fake Day10 Scheduled Task and exercises Preflight, protected XML+manifest Snapshot, Cutover to Disabled, Rollback to Ready and cleanup; independent CI executes actual SHA-pinned official Velocity 4.2.0 JVM via GSC stdin and confirms normal stop/restart/stop. No production tasks, server worlds, keys, Java/Bedrock player sessions or installed GSC services were touched.
+
+STOP: This is still DRAFT and NOT installed. Existing old Day10 tasks are currently Running; they cannot be safely handed over while Running. A future per-proxy maintenance period needs actual graceful stopping of each old task-owned JVM before running Cutover; do not use Stop-ScheduledTask or taskkill on real hosts without explicit interruption approval. Before real activation, verify Java and Bedrock logins, config forwarding/Geyser resources and the GSC Host restart/orphan recovery path. Do not set the opt-in environment flag or manually disable production tasks solely on CI success.
+
+ProgramData paths and task XML remain private. No unattended rollback/restart is claimed. A stale owner marker requires separately authenticated/manual process recovery, not a force-kill, blind deletion or automatic task reenable.
