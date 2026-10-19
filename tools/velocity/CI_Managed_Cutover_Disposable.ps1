@@ -1,0 +1,95 @@
+#requires -Version 5.1
+[CmdletBinding()]
+param()
+# Execute only on disposable GitHub-hosted Windows CI; no real Velocity,
+# Minecraft server, JAR, plugins, user credentials or production tasks.
+$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+if($env:GITHUB_ACTIONS -cne 'true' -or
+   $env:RUNNER_OS -cne 'Windows' -or $env:CI -cne 'true' -or
+   [string]::IsNullOrWhiteSpace($env:RUNNER_TEMP) -or
+   [string]::IsNullOrWhiteSpace($env:GITHUB_RUN_ID)){
+ throw 'CI HOST GUARD: refusing fake cutover on a user-owned Windows server'
+}
+Import-Module ScheduledTasks -ErrorAction Stop
+$target='wild'
+$name='Geumyi Day10 Velocity wild'
+$kit=Join-Path $PSScriptRoot 'Velocity_Managed_Cutover.ps1'
+$ticket='CI-ONLY-'+[Guid]::NewGuid().ToString('N').Substring(0,16).ToUpperInvariant()
+$wasCreated=$false
+$programRoot=Join-Path $env:ProgramData 'GeumyiServerCenter\VelocityManaged'
+$archive=Join-Path $programRoot 'Recovery'
+$originalFile=Join-Path $archive 'wild.original.xml'
+$receiptFile=Join-Path $archive 'wild.receipt.json'
+$dummyWorkdir=Join-Path $env:RUNNER_TEMP 'GeumyiServerCenter\Network\FourServer\wild'
+try{
+ if($null -ne (Get-ScheduledTask -TaskPath '\' -TaskName $name -ErrorAction SilentlyContinue)){
+  throw 'CI GUARD: fixed Day10 task already exists; do not overwrite it'
+ }
+ if(Test-Path -LiteralPath $archive){
+  throw 'CI GUARD: private recovery archive already exists; cannot use'
+ }
+ $null=New-Item -ItemType Directory -Path $dummyWorkdir -Force
+ $java=Join-Path $env:JAVA_HOME 'bin\java.exe'
+ if(-not (Test-Path -LiteralPath $java -PathType Leaf)){
+  throw 'Disposable Java executable missing'
+ }
+ $action=New-ScheduledTaskAction -Execute $java -Argument '-jar velocity.jar' -WorkingDirectory $dummyWorkdir
+ $settings=New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) -MultipleInstances IgnoreNew
+ # NO trigger. NO Java is ever launched by this fixture.
+ $task=New-ScheduledTask -Action $action -Settings $settings
+ Register-ScheduledTask -TaskName $name -TaskPath '\' -InputObject $task -ErrorAction Stop|Out-Null
+ $wasCreated=$true
+ $status=(Get-ScheduledTask -TaskName $name -TaskPath '\').State.ToString()
+ if($status -ne 'Ready'){throw 'Disposable no-trigger task not ready'}
+ $observed=(& powershell.exe -NoProfile -NonInteractive -File $kit -Mode Preflight -Target $target |Out-String)|ConvertFrom-Json
+ if($LASTEXITCODE -ne 0 -or $observed.read_only -ne $true -or
+    $observed.ready_for_cutover -ne $true){
+  throw 'Disposable task preflight unexpectedly unsafe'
+ }
+ & powershell.exe -NoProfile -NonInteractive -File $kit -Mode Snapshot -Target $target -Ticket $ticket -Approved
+ if($LASTEXITCODE -ne 0){throw 'Disposable private task definition snapshot failed'}
+ if(-not(Test-Path -LiteralPath $originalFile) -or
+    -not(Test-Path -LiteralPath $receiptFile)){
+  throw 'Disposable task original XML and receipt not stored privately'
+ }
+ & powershell.exe -NoProfile -NonInteractive -File $kit -Mode Cutover -Target $target -Ticket $ticket -Approved
+ if($LASTEXITCODE -ne 0){throw 'Disposable task cutover failed'}
+ if([string](Get-ScheduledTask -TaskName $name -TaskPath '\').State -ne 'Disabled'){
+  throw 'Disposable fake task was not disabled'
+ }
+ $receipt=Get-Content -LiteralPath $receiptFile -Raw|ConvertFrom-Json
+ if($receipt.cutover_committed -ne $true){throw 'Cutover receipt did not commit'}
+ Write-Host 'DISPOSABLE_CUTOVER_TASK_DISABLED_WITH_PRIVATE_ARCHIVE=PASS'
+ & powershell.exe -NoProfile -NonInteractive -File $kit -Mode Rollback -Target $target -Ticket $ticket -Approved
+ if($LASTEXITCODE -ne 0){throw 'Disposable task rollback failed'}
+ if([string](Get-ScheduledTask -TaskName $name -TaskPath '\').State -ne 'Ready'){
+  throw 'Disposable fake task did not restore Ready state'
+ }
+ $receipt=Get-Content -LiteralPath $receiptFile -Raw|ConvertFrom-Json
+ if($receipt.cutover_committed -ne $false){throw 'Rollback receipt not cleared'}
+ Write-Host 'DISPOSABLE_ROLLBACK_READY_WITH_ORIGINAL_POLICY_PRESERVED=PASS'
+}finally{
+ if($wasCreated){
+  $task=Get-ScheduledTask -TaskName $name -TaskPath '\' -ErrorAction SilentlyContinue
+  if($null -ne $task){
+   # Exact CI-created unique runner task only, never an external task.
+   Disable-ScheduledTask -TaskName $name -TaskPath '\' -ErrorAction SilentlyContinue|Out-Null
+   Unregister-ScheduledTask -TaskName $name -TaskPath '\' -Confirm:$false -ErrorAction Stop
+  }
+ }
+ # Only the fixed CI-owned files. Never sweep unrelated ProgramData.
+ if(Test-Path -LiteralPath $originalFile){Remove-Item -LiteralPath $originalFile -Force}
+ if(Test-Path -LiteralPath $receiptFile){Remove-Item -LiteralPath $receiptFile -Force}
+ if(Test-Path -LiteralPath $archive){
+  Remove-Item -LiteralPath $archive -ErrorAction Stop
+ }
+ if(Test-Path -LiteralPath $dummyWorkdir){
+  Remove-Item -LiteralPath $dummyWorkdir -Recurse -Force
+ }
+}
+if($null -ne (Get-ScheduledTask -TaskName $name -TaskPath '\' -ErrorAction SilentlyContinue)){
+ throw 'Disposable fixture task not removed'
+}
+Write-Host 'DISPOSABLE_CUTOVER_AND_ROLLBACK_CLEANED=PASS'
+Write-Host 'NO_MINECRAFT_JVM_STARTED_NO_PRODUCTION_TASK_TOUCHED'
