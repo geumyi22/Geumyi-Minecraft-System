@@ -166,6 +166,17 @@ func(c *Controller) GracefulStop(ctx context.Context,permit StopPermit)error{
  }
 }
 
+// RestartWithSpec allows the caller to revalidate JAR content and the exact
+// launcher manifest BEFORE disconnecting players or stopping the old JVM.
+// If validation fails, the existing owned proxy is left untouched.
+func(c *Controller) RestartWithSpec(ctx context.Context,permit StopPermit,spec Spec)error{
+ if c==nil||!validSpec(spec)||spec.Target!=c.target {
+  return errors.New("refusing restart with an untrusted or wrong-target launcher")
+ }
+ if err:=c.GracefulStop(ctx,permit);err!=nil{return err}
+ return c.Start(spec)
+}
+
 // Restart never performs a new Start if graceful exit failed. It is an
 // explicit caller action, not a crash supervisor or task repair mechanism.
 func(c *Controller) Restart(ctx context.Context,permit StopPermit)error{
