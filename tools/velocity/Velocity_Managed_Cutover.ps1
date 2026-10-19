@@ -241,7 +241,6 @@ if($Mode -eq 'Snapshot'){
  if(Test-Path -LiteralPath $paths.Original -PathType Leaf){
   Deny 'EXISTING_SNAPSHOT_MUST_NOT_BE_OVERWRITTEN'
  }
- MakePrivateFolder $paths.Dir
  $manifest=LocalLauncherManifest $Target $xml
  $manifestPath=ManifestFile $Target
  if(Test-Path -LiteralPath $manifestPath){Deny 'STAGED_MANIFEST_ALREADY_EXISTS'}
