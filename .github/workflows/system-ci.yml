@@ -107,6 +107,9 @@ jobs:
           if($cutoverExit -eq 0){throw 'Synthetic mode executed a cutover'}
           if($rollbackExit -eq 0){throw 'Synthetic mode executed rollback'}
           Write-Host 'Velocity 17-case cutover safety matrix PASS'
+          # Actions PowerShell wrapper exits with LASTEXITCODE of last native child.
+          # Reset only after both intentional denials were explicitly verified.
+          $global:LASTEXITCODE=0
       - name: Disposable non-triggered Windows task 999 to zero to 999 and cleanup
         shell: powershell
         timeout-minutes: 4
