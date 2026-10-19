@@ -186,10 +186,13 @@ $state=TaskState $Target
 $xml=GetTaskXml $Target
 AssertTaskShape $Target $xml
 $portsFree=PortsFree $Target
-$ready=($state -eq 'Ready' -and $portsFree)
+$preflightPaths=ReceiptPaths $Target
+$ownerPresent=Test-Path -LiteralPath (Join-Path $preflightPaths.Dir ($Target+'.active.json'))
+$ready=($state -eq 'Ready' -and $portsFree -and -not $ownerPresent)
 if($Mode -eq 'Preflight'){
  [ordered]@{schema=1;target=$Target;read_only=$true
     task_state=$state;proxy_ports_free=$portsFree
+    owner_marker_present=$ownerPresent
     ready_for_cutover=$ready;live_control_authorized=$false
     status='READ_ONLY_PRECHECK_NOT_APPROVAL'}|ConvertTo-Json -Compress
  return
