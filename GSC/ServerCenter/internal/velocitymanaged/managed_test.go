@@ -104,6 +104,33 @@ func TestManagedProxyRestartWaitsForGracefulExit(t *testing.T){
  if err:=c.GracefulStop(ctx,allowStop("wild"));err!=nil{t.Fatal(err)}
 }
 
+func TestManagedRestartRejectsBadFreshManifestWithoutDisconnecting(t *testing.T){
+ t.Setenv("GSC452_MANAGED_CI_HELPER","true")
+ t.Setenv("GSC452_MANAGED_CI_IGNORE_SHUTDOWN","false")
+ c,_:=New("wild")
+ ownedCleanup(t,c)
+ original:=helperSpec(t,"wild")
+ if err:=c.Start(original);err!=nil{t.Fatal(err)}
+ pid:=c.OwnedPID()
+ ctx,cancel:=context.WithTimeout(context.Background(),3*time.Second)
+ defer cancel()
+ for _,changed:=range []Spec{
+   {},
+   {Target:"playground",Executable:original.Executable,Args:original.Args,WorkingDirectory:original.WorkingDirectory},
+   {Target:"wild",Executable:"java",Args:original.Args,WorkingDirectory:original.WorkingDirectory},
+ }{
+  if err:=c.RestartWithSpec(ctx,allowStop("wild"),changed);err==nil{
+   t.Fatal("untrusted fresh launcher restarted an existing JVM")
+  }
+  if !c.Running()||c.OwnedPID()!=pid{t.Fatal("bad manifest interrupted active proxy")}
+ }
+ if err:=c.RestartWithSpec(ctx,allowStop("wild"),original);err!=nil{
+  t.Fatalf("trusted fresh manifest restart failed: %v",err)
+ }
+ if c.OwnedPID()==pid{t.Fatal("verified restart did not create a new owned generation")}
+ if err:=c.GracefulStop(ctx,allowStop("wild"));err!=nil{t.Fatal(err)}
+}
+
 func TestManagedProxyTimeoutNeverForceKillsOrRestarts(t *testing.T){
  t.Setenv("GSC452_MANAGED_CI_HELPER","true")
  t.Setenv("GSC452_MANAGED_CI_IGNORE_SHUTDOWN","true")
