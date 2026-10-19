@@ -224,6 +224,13 @@ if($Mode -eq 'Snapshot'){
 }
 $stored=VerifyBackup $paths $Target
 if($stored.Receipt.ticket -cne $Ticket){Deny 'MAINTENANCE_TICKET_MISMATCH'}
+# GSC's durable owner marker may outlive its hosting process. Neither
+# cutover nor rollback may reactivate the old scheduler task while the marker
+# is present. Never silently delete a marker just because ports look free.
+$ownerMarker=Join-Path $paths.Dir ($Target+'.active.json')
+if(Test-Path -LiteralPath $ownerMarker){
+ Deny 'GSC_OWNED_OR_ORPHANED_JVM_REQUIRES_SEPARATE_RECOVERY'
+}
 if($Mode -eq 'Cutover'){
  if($stored.Receipt.cutover_committed -eq $true){
   Deny 'CUTOVER_ALREADY_COMMITTED'
