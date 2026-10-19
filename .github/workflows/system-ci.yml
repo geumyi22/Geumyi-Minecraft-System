@@ -92,10 +92,18 @@ jobs:
               if($v.schema -ne 1 -or $v.target -cne $target -or $v.synthetic -ne $true -or $v.read_only -ne $true -or $v.live_control_authorized -ne $false -or $v.status -cne 'SYNTHETIC_NO_GO' -or $v.ready_for_cutover -ne ($state -eq 'Ready')){throw 'Synthetic read-only preflight violated NO-GO contract'}
             }
           }
-          $output=& powershell.exe -NoProfile -NonInteractive -File $script -Target wild -Mode Cutover -Synthetic -Approved -Ticket 'CI-ONLY-12345' 2>&1
-          if($LASTEXITCODE -eq 0){throw 'Synthetic mode executed a cutover'}
-          $output=& powershell.exe -NoProfile -NonInteractive -File $script -Target wild -Mode Rollback -Synthetic -Approved -Ticket 'CI-ONLY-12345' 2>&1
-          if($LASTEXITCODE -eq 0){throw 'Synthetic mode executed rollback'}
+          # Expected child errors are intentional: PowerShell 5.1 treats child
+          # stderr as a terminating NativeCommandError with Stop preference.
+          $originalPreference=$ErrorActionPreference
+          try {
+            $ErrorActionPreference='Continue'
+            $output=& powershell.exe -NoProfile -NonInteractive -File $script -Target wild -Mode Cutover -Synthetic -Approved -Ticket 'CI-ONLY-12345' 2>&1
+            $cutoverExit=$LASTEXITCODE
+            $output=& powershell.exe -NoProfile -NonInteractive -File $script -Target wild -Mode Rollback -Synthetic -Approved -Ticket 'CI-ONLY-12345' 2>&1
+            $rollbackExit=$LASTEXITCODE
+          } finally { $ErrorActionPreference=$originalPreference }
+          if($cutoverExit -eq 0){throw 'Synthetic mode executed a cutover'}
+          if($rollbackExit -eq 0){throw 'Synthetic mode executed rollback'}
           Write-Host 'Velocity 17-case cutover safety matrix PASS'
       - name: Disposable non-triggered Windows task 999 to zero to 999 and cleanup
         shell: powershell
