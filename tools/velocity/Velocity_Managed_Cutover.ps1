@@ -145,6 +145,40 @@ function MakePrivateFolder([string]$folder){
  Set-Acl -LiteralPath $folder -AclObject $acl
  AssertPrivateFolder $folder
 }
+function LocalLauncherManifest([string]$target,[string]$xml){
+ $x=[xml]$xml
+ $cmd=$x.SelectSingleNode("//*[local-name()='Actions']/*[local-name()='Exec']/*[local-name()='Command']")
+ $args=$x.SelectSingleNode("//*[local-name()='Actions']/*[local-name()='Exec']/*[local-name()='Arguments']")
+ $dir=$x.SelectSingleNode("//*[local-name()='Actions']/*[local-name()='Exec']/*[local-name()='WorkingDirectory']")
+ if($null -eq $cmd -or $null -eq $args -or $null -eq $dir){Deny 'MISSING_EXEC_ACTION'}
+ $java=[string]$cmd.InnerText
+ $work=[string]$dir.InnerText
+ $line=([string]$args.InnerText).Trim()
+ # Intentionally SMALL allowlist, not a shell parser. Do not infer unsafe
+ # or unknown JVM arguments from an existing privileged Scheduler task.
+ # If a real task differs, stop and explicitly review its launcher locally.
+ $allowed='(?i)^((?:-(?:Xms|Xmx)[1-9][0-9]*[mMgG]\s+|-XX:[+-][A-Za-z0-9_]+\s+)*)-jar\s+"?velocity\.jar"?$'
+ if($line -notmatch $allowed){Deny 'EXISTING_JVM_ARGUMENTS_REQUIRE_MANUAL_REVIEW'}
+ $argv=@($line -split '\s+'|ForEach-Object {$_.Trim('"')})
+ if($argv.Count -lt 2 -or $argv.Count -gt 40){Deny 'INVALID_MANAGED_ARGUMENT_COUNT'}
+ if(-not [IO.Path]::IsPathRooted($java) -or
+    [IO.Path]::GetFileName($java) -ine 'java.exe' -or
+    -not (Test-Path -LiteralPath $java -PathType Leaf)){Deny 'SCHEDULER_JAVA_PATH_UNVERIFIED'}
+ return [ordered]@{
+  schema=1
+  target=$target
+  java_executable=$java
+  working_directory=$work
+  args=@($argv)
+  expected_jar_sha256='35a5596a5468a035d8a32c8de5ebb0dc6b8d8f0cc3ff5169d514aca762af8aa8'
+ }
+}
+function ManifestFile([string]$target){
+ $pd=$env:ProgramData
+ if([string]::IsNullOrWhiteSpace($pd)){Deny 'PROGRAMDATA_UNAVAILABLE'}
+ return Join-Path (Join-Path $pd 'GeumyiServerCenter\VelocityManaged') ($target+'.json')
+}
+
 function ReceiptPaths([string]$target){
  $folder=PrivateFolder
  return [pscustomobject]@{
@@ -208,6 +242,13 @@ if($Mode -eq 'Snapshot'){
   Deny 'EXISTING_SNAPSHOT_MUST_NOT_BE_OVERWRITTEN'
  }
  MakePrivateFolder $paths.Dir
+ $manifest=LocalLauncherManifest $Target $xml
+ $manifestPath=ManifestFile $Target
+ if(Test-Path -LiteralPath $manifestPath){Deny 'STAGED_MANIFEST_ALREADY_EXISTS'}
+ # Both private parent and backup child receive explicit SYSTEM+Administrators
+ # access, no inherited Users/Everyone rights; never export the launcher.
+ MakePrivateFolder (Split-Path -Parent $manifestPath)
+ MakePrivateFolder $paths.Dir
  $hash=HashText $xml
  $receipt=[ordered]@{
   schema=1;target=$Target;ticket=$Ticket;original_sha256=$hash
@@ -218,7 +259,10 @@ if($Mode -eq 'Snapshot'){
   [IO.File]::WriteAllText($paths.Original,$xml,(New-Object Text.UTF8Encoding($false)))
   [IO.File]::WriteAllText($paths.Receipt,($receipt|ConvertTo-Json -Depth 4),
       (New-Object Text.UTF8Encoding($false)))
+  [IO.File]::WriteAllText($manifestPath,($manifest|ConvertTo-Json -Depth 4),
+      (New-Object Text.UTF8Encoding($false)))
   [void](VerifyBackup $paths $Target)
+  AssertPrivateFolder (Split-Path -Parent $manifestPath)
  }catch{
   Deny 'LOCAL_SNAPSHOT_VALIDATION_FAILED_NO_TASK_CHANGED'
  }
@@ -243,6 +287,22 @@ if($Mode -eq 'Cutover'){
  }
  if((TaskDefinitionDigest $xml) -cne (TaskDefinitionDigest $stored.XML)){
   Deny 'TASK_DEFINITION_CHANGED_SINCE_SNAPSHOT'
+ }
+ # Manifest was generated locally from the exact approved original task, NOT
+ # supplied in HTTP JSON. Reject any after-snapshot launcher drift.
+ $manifestFile=ManifestFile $Target
+ AssertPrivateFolder (Split-Path -Parent $manifestFile)
+ if(-not (Test-Path -LiteralPath $manifestFile -PathType Leaf)){
+  Deny 'LOCAL_JAVA_LAUNCH_MANIFEST_MISSING'
+ }
+ $expectedManifest=LocalLauncherManifest $Target $stored.XML
+ $actualManifest=Get-Content -LiteralPath $manifestFile -Raw|ConvertFrom-Json
+ if($actualManifest.schema -ne 1 -or $actualManifest.target -cne $Target -or
+    $actualManifest.java_executable -cne $expectedManifest.java_executable -or
+    $actualManifest.working_directory -cne $expectedManifest.working_directory -or
+    $actualManifest.expected_jar_sha256 -cne $expectedManifest.expected_jar_sha256 -or
+    (@($actualManifest.args)-join [char]0) -cne (@($expectedManifest.args)-join [char]0)){
+   Deny 'STAGED_MANIFEST_DRIFT'
  }
  # IMPORTANT: disabling a task DOES NOT terminate a running JVM.
  # This procedure refuses to disable a running task or kill a process.
