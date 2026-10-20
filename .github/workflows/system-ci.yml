@@ -667,6 +667,9 @@ jobs:
           if($report.success -ne $false -or $report.status -cne 'HOST_SWAP_BLOCKED_OR_UNCONFIRMED' -or
             $report.service_mutation_authorized -ne $false){throw 'Host Plan no-go classification violated'}
           Write-Host 'GSC452_HOST_SWAP_SAFE_STATE_CI_PASS_NO_SCM_MODIFICATION'
+          # Plan child is expected to exit 2 in a disposable runner. Clear its
+          # native exit code after asserting the fail-closed result explicitly.
+          $global:LASTEXITCODE=0
       - name: Publish gated service swap and original rollback kit
         uses: actions/upload-artifact@v4
         with:
