@@ -24,6 +24,8 @@ on:
       - 'tools/velocity/Velocity_Actual_Launch_Audit_READ_ONLY.ps1'
       - 'tools/velocity/Velocity_Snapshot_Three_Before_Cutover.ps1'
       - 'tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
+      - 'tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md'
       - 'tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd'
       - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
       - 'tools/release/**'
@@ -52,6 +54,8 @@ on:
       - 'tools/velocity/Velocity_Actual_Launch_Audit_READ_ONLY.ps1'
       - 'tools/velocity/Velocity_Snapshot_Three_Before_Cutover.ps1'
       - 'tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
+      - 'tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md'
       - 'tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd'
       - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
       - 'tools/release/**'
@@ -625,6 +629,55 @@ jobs:
           print(f"Validated {len(json_files)} JSON files, {len(pack_meta)} pack.mcmeta files, and {len(manifests)} manifest.json files.")
           PY
 
+  gsc452-host-swap-reversible:
+    name: GSC 4.5.2 / Host swap safe-state + parser CI (NO LIVE SCM)
+    runs-on: windows-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout Draft PR
+        uses: actions/checkout@v7
+      - name: Validate host swap syntax, mutation scopes and synthetic states
+        shell: powershell
+        run: |
+          $file='tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){foreach($e in @($errors)){Write-Host ('PARSE '+$e.Extent.StartLineNumber+': '+$e.Message)};throw 'Host reversible swap syntax error'}
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $forbid=@('Disable-ScheduledTask','Enable-ScheduledTask','Start-ScheduledTask','Stop-ScheduledTask','Unregister-ScheduledTask','Register-ScheduledTask','Stop-Process','Start-Process','taskkill','sc.exe','Set-Acl','Set-Content','Remove-Item','Remove-Service','New-Service','Register-ScheduledJob')
+          foreach($cmd in $commands){$name=$cmd.GetCommandName();if($name -and $name -in $forbid){throw ('Illegal Host swap operation '+$name)}}
+          $text=Get-Content -LiteralPath $file -Raw
+          foreach($guard in @('STAGING_HASH_MISMATCH','JOURNAL_EXISTS','MANAGED_OPTIN_ENV_ENABLED','ORPHANED_VELOCITY_GENERATION_PRESENT','AUTOSTART_BACKEND_OFFLINE','HOST_CANARY_AUTO_ROLLBACK_VERIFIED','HOST_CANARY_MANUAL_RECOVERY_REQUIRED','Invoke-CimMethod')){
+            if(-not $text.Contains($guard)){throw ('Host swap safety guard absent: '+$guard)}
+          }
+          foreach($case in @('healthy','canary-start-fails','rollback-start-fails')){
+            $result=(& powershell.exe -NoProfile -NonInteractive -File $file -Mode Synthetic -SyntheticCase $case |Out-String)|ConvertFrom-Json
+            if($LASTEXITCODE -ne 0 -or $result.schema -ne 1 -or $result.success -ne $true -or
+               $result.service_mutation_authorized -ne $false -or $result.paper_operations_direct -ne 0 -or
+               -not $result.status.StartsWith('SYNTHETIC_')){throw ('Synthetic no-mutation classification failed '+$case)}
+          }
+          $originalPreference=$ErrorActionPreference
+          try{
+            $ErrorActionPreference='Continue'
+            $blocked=& powershell.exe -NoProfile -NonInteractive -File $file -Mode Plan 2>&1
+            $code=$LASTEXITCODE
+          }finally{$ErrorActionPreference=$originalPreference}
+          if($code -ne 2){throw 'Unconfigured Windows runner unexpectedly permitted GSC Host Plan'}
+          $report=(@($blocked)|Where-Object {$_ -is [string] -and $_ -match '^\{.*\}$'}|Select-Object -Last 1)|ConvertFrom-Json
+          if($report.success -ne $false -or $report.status -cne 'HOST_SWAP_BLOCKED_OR_UNCONFIRMED' -or
+            $report.service_mutation_authorized -ne $false){throw 'Host Plan no-go classification violated'}
+          Write-Host 'GSC452_HOST_SWAP_SAFE_STATE_CI_PASS_NO_SCM_MODIFICATION'
+      - name: Publish gated service swap and original rollback kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-HOST-SWAP-AND-ROLLBACK-OPERATOR-KIT
+          path: |
+            tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1
+            tools/velocity/Run_GSC452_Host_Swap_WITH_AUTO_ROLLBACK_ADMIN.cmd
+            tools/velocity/Run_GSC452_Host_Rollback_ONLY_ADMIN.cmd
+            tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md
+          if-no-files-found: error
+          retention-days: 7
   gsc452-host-rollback-readonly:
     name: GSC 4.5.2 / host rollback read-only preflight safety CI
     runs-on: windows-latest
