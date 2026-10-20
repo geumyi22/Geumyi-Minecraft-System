@@ -621,6 +621,56 @@ jobs:
           print(f"Validated {len(json_files)} JSON files, {len(pack_meta)} pack.mcmeta files, and {len(manifests)} manifest.json files.")
           PY
 
+  velocity-managed-canary-host:
+    name: GSC 4.5.2 Canary / isolated Host binary (NO INSTALL)
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact Draft revision
+        uses: actions/checkout@v7
+      - name: Set up Go from repository
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: GSC/ServerCenter/go.mod
+          cache: false
+      - name: Compile version-stamped portable CANARY Host
+        shell: pwsh
+        working-directory: GSC/ServerCenter
+        run: |
+          $ErrorActionPreference='Stop'
+          $env:GOOS='windows'
+          $env:GOARCH='amd64'
+          $env:CGO_ENABLED='0'
+          New-Item -ItemType Directory -Force -Path dist-canary | Out-Null
+          & go build '-buildvcs=false' '-trimpath' '-ldflags=-s -w -H=windowsgui -X=main.appVersion=4.5.2-canary' -o dist-canary/GeumyiServerHost-v4.5.2-Velocity-CANARY.exe ./cmd/host
+          if($LASTEXITCODE -ne 0){throw 'Canary Host compile failed'}
+          $file=Get-Item -LiteralPath dist-canary/GeumyiServerHost-v4.5.2-Velocity-CANARY.exe
+          if($file.Length -lt 100000){throw 'Invalid Canary host image'}
+          $hash=(Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          $hash+'  '+$file.Name|Set-Content -Encoding ascii dist-canary/SHA256SUMS.txt
+          @(
+            'GSC 4.5.2 VELOCITY CANARY — UNINSTALLED TEST BINARY',
+            'Source: Draft PR #57 only. Stable/main unchanged.',
+            'Never replace a running GSC host or run this executable beside a live host.',
+            'Requires independently approved maintenance cutover, local host account/credentials validation, and rollback.',
+            'Does not install, register tasks, set environment flags, kill Java or change worlds.'
+          )|Set-Content -Encoding utf8 dist-canary/README-NO-INSTALL.txt
+      - name: Execute non-destructive Day10 Host selftest
+        shell: pwsh
+        working-directory: GSC/ServerCenter
+        timeout-minutes: 2
+        run: |
+          $exe=(Resolve-Path 'dist-canary/GeumyiServerHost-v4.5.2-Velocity-CANARY.exe').Path
+          $p=Start-Process -FilePath $exe -ArgumentList '--day10-selftest' -Wait -PassThru -NoNewWindow
+          if($p.ExitCode -ne 0){throw 'Canary built Host selftest failed'}
+          Write-Host 'GSC452_CANARY_HOST_BINARY_SELFTEST_PASS'
+      - name: Upload uninstalled Canary Host artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-Velocity-CANARY-Host-NO-INSTALL
+          path: GSC/ServerCenter/dist-canary/*
+          if-no-files-found: error
+          retention-days: 7
   gsc-package:
     name: GSC 4.5.1 / assemble CI Setup
     needs: [gsc, statusagent, gds, gst]
