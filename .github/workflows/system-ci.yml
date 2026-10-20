@@ -670,6 +670,64 @@ jobs:
           # Plan child is expected to exit 2 in a disposable runner. Clear its
           # native exit code after asserting the fail-closed result explicitly.
           $global:LASTEXITCODE=0
+      - name: Regression test staging ACL inherited from protected trusted root (synthetic, NO LIVE SCM)
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -ne 0){throw 'Host swap parser rejected ACL test target'}
+          $fn=$ast.Find({param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -ceq 'PrivateDir'},$true)
+          if($null -eq $fn){throw 'PrivateDir guard missing'}
+          Invoke-Expression $fn.Extent.Text
+          function Deny([string]$code){throw ('CI_DENY_'+$code)}
+          function AssertDenied([scriptblock]$call,[string]$code){
+            $rejected=$false
+            try{& $call}catch{
+              if($_.Exception.Message -like ('*CI_DENY_'+$code+'*')){$rejected=$true}else{throw}
+            }
+            if(-not $rejected){throw ('Unexpected ACL acceptance: '+$code)}
+          }
+          $oldProgramData=$env:ProgramData
+          $testProgramData=Join-Path $env:RUNNER_TEMP ('gsc452-acl-'+[guid]::NewGuid().ToString('N'))
+          $script:testRoot=Join-Path $testProgramData 'GeumyiServerCenter\VelocityManaged'
+          $script:testStage=Join-Path $script:testRoot 'CanaryStaging'
+          try{
+            [void](New-Item -ItemType Directory -Path $script:testStage -Force)
+            $env:ProgramData=$testProgramData
+            $systemAce=[pscustomobject]@{IdentityReference=(New-Object Security.Principal.SecurityIdentifier 'S-1-5-18');AccessControlType=[Security.AccessControl.AccessControlType]::Allow}
+            $adminsAce=[pscustomobject]@{IdentityReference=(New-Object Security.Principal.SecurityIdentifier 'S-1-5-32-544');AccessControlType=[Security.AccessControl.AccessControlType]::Allow}
+            $everyoneAce=[pscustomobject]@{IdentityReference=(New-Object Security.Principal.SecurityIdentifier 'S-1-1-0');AccessControlType=[Security.AccessControl.AccessControlType]::Allow}
+            $script:parentAcl=[pscustomobject]@{AreAccessRulesProtected=$true;Access=@($systemAce,$adminsAce)}
+            $script:stageAcl=[pscustomobject]@{AreAccessRulesProtected=$false;Access=@($systemAce,$adminsAce)}
+            # Isolate ACL decisions by mocking only Get-Acl. Real disposable
+            # directory existence and no-reparse checks still run.
+            function Get-Acl {
+              param([string]$LiteralPath)
+              if($LiteralPath -ieq $script:testRoot){return $script:parentAcl}
+              if($LiteralPath -ieq $script:testStage){return $script:stageAcl}
+              throw 'UNEXPECTED_ACL_PATH'
+            }
+            PrivateDir $script:testRoot
+            PrivateDir $script:testStage $true
+            AssertDenied {PrivateDir $script:testStage} 'STAGING_INHERITED_ACL'
+            $script:parentAcl.AreAccessRulesProtected=$false
+            AssertDenied {PrivateDir $script:testStage $true} 'STAGING_PARENT_ACL_INHERITED'
+            $script:parentAcl.AreAccessRulesProtected=$true
+            $script:stageAcl.Access=@($systemAce,$everyoneAce)
+            AssertDenied {PrivateDir $script:testStage $true} 'STAGING_UNTRUSTED_ALLOW_ACE'
+            $script:stageAcl.Access=@($systemAce,$adminsAce)
+            $script:stageAcl.AreAccessRulesProtected=$true
+            PrivateDir $script:testStage
+            $script:stageAcl.AreAccessRulesProtected=$false
+            $script:parentAcl.AreAccessRulesProtected=$false
+            AssertDenied {PrivateDir $script:testRoot} 'STAGING_INHERITED_ACL'
+            Write-Host 'GSC452_STAGING_ACL_INHERITANCE_REGRESSION_PASS_NO_SCM_CHANGES'
+          }finally{
+            $env:ProgramData=$oldProgramData
+            if(Test-Path -LiteralPath $testProgramData){Remove-Item -LiteralPath $testProgramData -Recurse -Force}
+          }
       - name: Test Windows SCM PathName change and restore on disposable unstarted service
         shell: powershell
         timeout-minutes: 2
