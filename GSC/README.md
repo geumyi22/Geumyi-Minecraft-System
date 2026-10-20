@@ -1,5 +1,13 @@
 # GSC 4.5.1 / StatusAgent 0.5.4
 
+## GSC 4.5.2 Velocity 관리 — 2026-10-20 개발 중 Canary
+
+- [PR #57](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/57)에는 GSC가 **직접 시작한** Velocity의 시작·정상 종료·재시작 엔진, UI/API와 Windows 원본 작업 보존·전환·복구 도구가 있습니다. 모든 제어는 기본 잠금, 운영 서버 배포 **미확인/미완료**.
+- GitHub Actions에서는 SHA 검증된 공식 Velocity 4.2.0을 격리 실행해 종료·재시작을 검증했지만, 실제 실행 중인 예약 작업 JVM을 제어한 것은 아닙니다.
+- 사용자 보고로 실제 세 프록시의 작업·실행 경로·JAR 해시를 확인했으며 원본 작업 세 개의 보호된 스냅샷은 성공했습니다. Canary Stage-only 결과·실제 서비스 설치·Java/Bedrock 접속 검증·고아 프로세스 복구는 별도 확인이 필요합니다.
+- [현행 단일 상태 문서](../docs/operations/GSC-452-VELOCITY-CURRENT-STATUS-2026-10-20.md) · [GitHub PR 정리](../docs/operations/PR-TRIAGE-2026-10-20.md). **아래 4.5.1 Stable 정보는 변경하지 않습니다.**
+
+
 - [ServerCenter](ServerCenter/): current GSC 4.5.1 Go source, web UI, Host/Client split, installer templates, tests and build scripts.
 - [StatusAgent](StatusAgent/): StatusAgent 0.5.4 source/recovery material.
 
