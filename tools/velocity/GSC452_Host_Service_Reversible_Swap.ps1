@@ -288,10 +288,11 @@ try{
    try{
     Restore $pre $j
     Output 'HOST_CANARY_AUTO_ROLLBACK_VERIFIED' $false 'Canary activation failed, original GSC 4.5.1 service restored and healthy.'
+    exit 3
    }catch{
     Output 'HOST_CANARY_MANUAL_RECOVERY_REQUIRED' $false 'Automatic rollback unverified. Protected journal and original Host executable retained. DO NOT restart or kill Java/Velocity.'
+    exit 4
    }
-   return
   }
  }
  if($Mode -eq 'Rollback'){
