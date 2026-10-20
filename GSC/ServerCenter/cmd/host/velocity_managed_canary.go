@@ -2,6 +2,7 @@ package main
 
 import (
  "context"
+ "crypto/subtle"
  "crypto/sha256"
  "encoding/hex"
  "encoding/json"
@@ -155,6 +156,23 @@ type managedVelocityRequest struct {
  Confirm string `json:"confirm"`
 }
 
+// This check deliberately bypasses the *classification* of requireAuth:
+// with AllowLoopbackNoAuth=true, even a correctly authenticated loopback
+// request is labelled "local" before its header is inspected. Managed
+// lifecycle actions still require a valid explicit host token, not local
+// network presence, a paired device token, or a browser cookie.
+func velocityHostTokenValid(r *http.Request, expected string) bool {
+ if r==nil||expected==""||!isLoopbackRemote(r.RemoteAddr){return false}
+ token:=strings.TrimSpace(r.Header.Get("X-GSC-Token"))
+ if token=="" {
+  authorization:=strings.TrimSpace(r.Header.Get("Authorization"))
+  if len(authorization)>=7&&strings.EqualFold(authorization[:7],"Bearer "){
+   token=strings.TrimSpace(authorization[7:])
+  }
+ }
+ if token==""||len(token)!=len(expected){return false}
+ return subtle.ConstantTimeCompare([]byte(token),[]byte(expected))==1
+}
 // This route is registered behind requireAuth and is LOCKED on all currently
 // deployed GSC builds. Even after manual Canary opt-in, only a host API token
 // on loopback with an explicit disconnect confirmation may operate it.
@@ -166,9 +184,8 @@ func apiV1VelocityManagedAction(w http.ResponseWriter,r *http.Request){
  if !velocityCanaryEnabled(){
   http.Error(w,"direct ownership not cut over",http.StatusLocked);return
  }
- principal,ok:=r.Context().Value(authContextKey{}).(authPrincipal)
- if !ok||principal.Kind!="api_token"||!isLoopbackRemote(r.RemoteAddr){
-  http.Error(w,"local host API operator token required",http.StatusForbidden);return
+ if !velocityHostTokenValid(r,configSnapshot().APIToken){
+  http.Error(w,"explicit local host API token required",http.StatusForbidden);return
  }
  var q managedVelocityRequest
  dec:=json.NewDecoder(http.MaxBytesReader(w,r.Body,2048))
