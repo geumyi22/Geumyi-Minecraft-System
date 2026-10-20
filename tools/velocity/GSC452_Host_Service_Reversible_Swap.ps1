@@ -135,6 +135,23 @@ function Preflight(){
   $machineOpt=[Environment]::GetEnvironmentVariable('GSC_VELOCITY_MANAGED_OPERATOR_OPT_IN','Machine')
   if($machineOpt -ceq 'DIRECT_OWNERSHIP_APPROVED'){Deny 'MANAGED_MACHINE_OPTIN_ENABLED'}
  }catch{Deny 'MACHINE_ENV_CHECK_FAILED'}
+ if($Mode -ne 'Rollback'){
+  # Repeat the already successful read-only evidence *internally*, not as
+  # another operator step; reject drift in private task snapshots, local Host
+  # process identity, current binary and frozen Canary digest.
+  $readOnly=Join-Path $PSScriptRoot 'GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
+  if(-not(Test-Path -LiteralPath $readOnly -PathType Leaf)){Deny 'READONLY_PREFLIGHT_SCRIPT_MISSING'}
+  $recordText=(& powershell.exe -NoProfile -NonInteractive -File $readOnly |Out-String)
+  if($LASTEXITCODE -ne 0){Deny 'READONLY_PREFLIGHT_EXECUTION_FAILED'}
+  $record=$recordText|ConvertFrom-Json -ErrorAction Stop
+  if($record.schema -ne 1 -or $record.preflight_passed -ne $true -or
+    $record.check -cne 'HOST_SWAP_AND_ROLLBACK_PREFLIGHT' -or
+    $record.checks.host_version -cne '4.5.1' -or
+    $record.host_cutover_authorized -ne $false -or
+    $record.task_mutations -ne 0 -or $record.java_operations -ne 0){
+    Deny 'READONLY_PREFLIGHT_FAILED_OR_DRIFTED'
+  }
+ }
  $pd=$env:ProgramData
  if([string]::IsNullOrWhiteSpace($pd) -or -not [IO.Path]::IsPathRooted($pd)){Deny 'PROGRAMDATA'}
  $base=Join-Path $pd 'GeumyiServerCenter\VelocityManaged'
