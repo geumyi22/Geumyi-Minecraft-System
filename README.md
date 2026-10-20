@@ -1,5 +1,8 @@
 # Geumyi Minecraft System
 
+> **2026-10-20 Post-closeout Canary development:** GSC 4.5.2 Velocity direct management is being developed in **[Draft PR #57](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/57)**. The operator-confirmed three-task live audit and protected original task snapshot have completed, but **GSC Canary staging, installation, cold cutover, live Java/Bedrock E2E and host restart/orphan recovery are NOT confirmed**. Read [the current one-page status](docs/operations/GSC-452-VELOCITY-CURRENT-STATUS-2026-10-20.md) and [the PR review grouping](docs/operations/PR-TRIAGE-2026-10-20.md). Earlier Day 1–12 milestones remain historically closed; the latest GitHub published Stable release is still GSC 4.5.1 / GSCM 1.5.1.
+
+
 > **프로젝트 종료 정리 (2026-10-11):** 일반 기능 개발과 반복 테스트는 소규모 서버 운영 기준으로 마감했습니다. GitHub/PC 정리 기록과 유지할 복구 자산은 [PROJECT-CLOSEOUT-2026-10-11.md](PROJECT-CLOSEOUT-2026-10-11.md)에 있습니다. 정식 Stable 릴리즈의 엄격한 보안 게이트는 아직 통과하지 않았습니다.
 
 **최신 수동 설치 패키지:** [GSC 4.5.1 / GSCM 1.5.1+151 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) (2026-10-11 공개, GitHub Latest). 마지막 실제 운영 기기 확인은 GSC 4.3.8 / GSCM 1.1.5+117이며, 자동 Stable 배포용 서명 manifest는 별도입니다.
