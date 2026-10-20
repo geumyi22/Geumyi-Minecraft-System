@@ -699,7 +699,8 @@ jobs:
               $null=& sc.exe delete $name
               if($LASTEXITCODE -ne 0){throw 'Disposable SCM CI service cleanup failed'}
             }
-          }      - name: Publish gated service swap and original rollback kit
+          }
+      - name: Publish gated service swap and original rollback kit
         uses: actions/upload-artifact@v4
         with:
           name: GSC452-HOST-SWAP-AND-ROLLBACK-OPERATOR-KIT
