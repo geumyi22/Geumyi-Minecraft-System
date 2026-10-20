@@ -673,6 +673,7 @@ jobs:
           name: GSC452-HOST-SWAP-AND-ROLLBACK-OPERATOR-KIT
           path: |
             tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1
+            tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1
             tools/velocity/Run_GSC452_Host_Swap_WITH_AUTO_ROLLBACK_ADMIN.cmd
             tools/velocity/Run_GSC452_Host_Rollback_ONLY_ADMIN.cmd
             tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md
