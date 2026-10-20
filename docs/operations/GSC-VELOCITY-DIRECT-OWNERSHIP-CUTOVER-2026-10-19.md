@@ -1,5 +1,8 @@
 # GSC Velocity Direct Ownership — Fast Critical Path (2026-10-19)
 
+> **2026-10-20 최신 상태:** 이 문서는 개발 단계별 설계와 과거 기술적 검토를 보존합니다. 다음의 [현재 상태·승인·증거·차단 사유 통합 문서](GSC-452-VELOCITY-CURRENT-STATUS-2026-10-20.md)가 최신 기준입니다. 아래 초기 **Remaining engineering** 항목 가운데 일부는 이미 Draft 코드/CI에서 구현됐지만, 실제 Windows GSC 서비스 적용·실서버 전환은 아직 증명되지 않았습니다. 읽기 전용 감사와 3개 작업 원본 스냅샷은 운영자 확인으로 완료됐고 Canary stage-only/설치는 미확인입니다. **이 기술 문서의 명령이나 예시만 보고 실제 서버를 중지하지 마세요.**
+
+
 **Proposal, not an operator command. No production changes are authorized by this file.**
 
 ## Decision
