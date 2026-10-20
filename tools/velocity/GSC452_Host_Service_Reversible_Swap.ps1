@@ -92,8 +92,8 @@ function SvcStart(){
 function ScSetBinary([string]$exe,[string]$cfg){
  if(-not [IO.Path]::IsPathRooted($exe)){Deny 'BINARY_NOT_ABSOLUTE'}
  $arg='"'+$exe+'" --service --config "'+$cfg+'"'
- $output=& sc.exe config $serviceName 'binPath=' $arg 2>&1
- if($LASTEXITCODE -ne 0){Deny 'SCM_BINPATH_CONFIG_FAILED'}
+ $result=Invoke-CimMethod -InputObject (Service) -MethodName Change -Arguments @{PathName=$arg} -ErrorAction Stop
+ if($null -eq $result -or [int]$result.ReturnValue -ne 0){Deny 'SCM_BINPATH_CONFIG_FAILED'}
  $after=ParseService ([string](Service).PathName)
  if($after.binary -ine $exe -or $after.config -ine $cfg){Deny 'SCM_BINPATH_VERIFY_FAILED'}
 }
