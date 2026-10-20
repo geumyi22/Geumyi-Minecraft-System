@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-20 — GSC 4.5.2 Velocity Canary 중간 GitHub 정리 (Draft, 미배포)
+
+- [Draft PR #57](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/57)의 직접 관리 Velocity 엔진, GSC 상태·시작·정상 종료·재시작 UI/API, 원본 예약 작업 보호 스냅샷, 승인형 전환·롤백, 중복 JVM 방지 기록을 현재 개발 대상으로 정리했습니다. 해당 실행은 기본 잠금 상태이며 실제 서버 적용·배포를 의미하지 않습니다.
+- 운영자가 야생·놀이터·기타 3개 예약 작업의 실행 설정·JAR SHA를 읽기 전용으로 확인하고, **원본 작업 3개 SNAPSHOT_ONLY 백업 성공(변경 0건)**을 보고했습니다. 현재 세 작업은 기존 Scheduler 실행 기준으로만 확인됐으며, Canary stage-only 결과와 실서버 전환은 미확인입니다.
+- GitHub 격리 Windows CI는 공식 Velocity 4.2.0 프로세스 콘솔 정상 종료/재시작, fake Scheduler 작업 전환·원복, Host EXE 자체 테스트 및 Go/Race 검사를 통과했습니다. [System CI](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/39441217776). 실운영 Java/Bedrock 접속이나 GSC 호스트 중단 후 고아 프로세스 자동 복구까지 통과했다는 뜻은 아닙니다.
+- [최신 단일 작업 현황](docs/operations/GSC-452-VELOCITY-CURRENT-STATUS-2026-10-20.md)과 [열린 PR 역할 정리](docs/operations/PR-TRIAGE-2026-10-20.md)를 문서화하고 README/운영 인덱스/로드맵/버전표에 연결했습니다. `main`, 기존 Stable·Beta 릴리즈, 서버 PC, Paper 월드, 운영 설정은 변경하지 않았습니다.
+
+
 ## 2026-10-11 — GSC 4.5.1 / GSCM 1.5.1+151 Latest Stable (수동 설치판)
 
 - [최신 Stable 패키지](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) 공개: Windows Setup/Host/Client, Android 영구 릴리즈 서명 APK, iOS 미서명 IPA, SHA-256·provenance 총 10개 파일.
