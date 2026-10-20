@@ -26,6 +26,8 @@ on:
       - 'tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
       - 'tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd'
       - 'tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md'
       - 'tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd'
@@ -58,6 +60,8 @@ on:
       - 'tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
       - 'tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd'
       - 'tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md'
       - 'tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd'
@@ -672,6 +676,54 @@ jobs:
               $result.java_operations -ne 0){throw ('Unsafe synthetic classifier: '+$scenario)}
           }
           Write-Host 'GSC452_WILD_TASK_JVM_READONLY_SYNTHETIC_CI_PASS_NO_REAL_TASKS'
+      - name: Test differential wild TCP-UDP ownership without live hosts (READ ONLY)
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){foreach($e in @($errors)){Write-Host ('PARSE '+$e.Message)};throw 'Read-only differential parser rejected script'}
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $forbidden=@('Stop-ScheduledTask','Start-ScheduledTask','Disable-ScheduledTask','Enable-ScheduledTask',
+            'Register-ScheduledTask','Unregister-ScheduledTask','Stop-Process','Start-Process','taskkill','Set-Content',
+            'Set-Acl','Remove-Item','Start-Service','Stop-Service','Restart-Service','Set-ItemProperty','wevtutil',
+            'Clear-EventLog','Set-NetFirewallRule','New-NetFirewallRule','Invoke-CimMethod')
+          foreach($command in $commands){
+            $name=$command.GetCommandName()
+            if($name -and $name -in $forbidden){throw ('Unexpected OS mutation command: '+$name)}
+          }
+          $source=Get-Content -LiteralPath $file -Raw
+          foreach($guard in @('read_only=$true','task_to_jvm_identity_proven=$false',
+             'safe_to_stop=$false','safe_to_cutover=$false','live_control_authorized=$false',
+             'Get-NetTCPConnection','Get-NetUDPEndpoint','Get-WinEvent','Get-CimInstance')){
+            if(-not $source.Contains($guard)){throw ('Missing fail-closed invariant: '+$guard)}
+          }
+          $cases=@{
+            same='SAME_PID'
+            different='DIFFERENT_PID'
+            'udp-missing'='INSUFFICIENT_UNIQUE_OWNERS'
+            'udp-multiple'='INSUFFICIENT_UNIQUE_OWNERS'
+            'tcp-missing'='INSUFFICIENT_UNIQUE_OWNERS'
+            'query-failed'='UNVERIFIED_QUERY'
+          }
+          foreach($key in $cases.Keys){
+            $text=& powershell.exe -NoProfile -NonInteractive -File $file -SyntheticScenario $key
+            if($LASTEXITCODE -ne 0){throw ('Differential synthetic script failed: '+$key)}
+            $out=($text|Out-String)|ConvertFrom-Json
+            if($out.schema -ne 2 -or $out.synthetic -ne $true -or $out.read_only -ne $true -or
+              $out.tcp_udp_owner_relation -cne $cases[$key] -or
+              $out.task_to_jvm_identity_proven -ne $false -or
+              $out.safe_to_stop -ne $false -or $out.safe_to_cutover -ne $false -or
+              $out.live_control_authorized -ne $false -or
+              $out.scheduled_task_modified -ne $false -or $out.java_operations -ne 0){
+                throw ('Differential safety regression: '+$key)
+            }
+            if(($text|Out-String) -match '(?i)GeumyiServerCenter\\|[A-Z]:\\|ProcessID|raw_pid'){
+              throw ('Private host detail leaked in scenario: '+$key)
+            }
+          }
+          Write-Host 'GSC452_WILD_DIFFERENTIAL_READONLY_SYNTHETIC_CI_PASS'
       - name: Publish operator read-only ownership evidence kit
         uses: actions/upload-artifact@v4
         with:
@@ -679,6 +731,8 @@ jobs:
           path: |
             tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1
             tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd
+            tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd
           if-no-files-found: error
           retention-days: 7
 
