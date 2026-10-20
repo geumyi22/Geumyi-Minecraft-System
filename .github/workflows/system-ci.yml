@@ -670,7 +670,36 @@ jobs:
           # Plan child is expected to exit 2 in a disposable runner. Clear its
           # native exit code after asserting the fail-closed result explicitly.
           $global:LASTEXITCODE=0
-      - name: Publish gated service swap and original rollback kit
+      - name: Test Windows SCM PathName change and restore on disposable unstarted service
+        shell: powershell
+        timeout-minutes: 2
+        run: |
+          $ErrorActionPreference='Stop'
+          $name='GSC_CI_BinPath_'+[guid]::NewGuid().ToString('N').Substring(0,12)
+          $old=$env:SystemRoot+'\System32\cmd.exe'
+          $created=$false
+          try{
+            $null=& sc.exe create $name 'binPath=' $old 'start=' 'demand'
+            if($LASTEXITCODE -ne 0){throw 'Cannot register disposable unstarted Windows service'}
+            $created=$true
+            $obj=Get-CimInstance Win32_Service -Filter ("Name='"+$name+"'") -ErrorAction Stop
+            if($obj.State -ne 'Stopped'){throw 'Disposable service unexpectedly running'}
+            $target='"'+$old+'" --service --config "C:\ProgramData\ci-not-real.json"'
+            $result=Invoke-CimMethod -InputObject $obj -MethodName Change -Arguments @{PathName=$target} -ErrorAction Stop
+            if($null -eq $result -or [int]$result.ReturnValue -ne 0){throw 'CIM PathName update failed'}
+            $changed=Get-CimInstance Win32_Service -Filter ("Name='"+$name+"'")
+            if($changed.PathName -cne $target -or $changed.State -ne 'Stopped'){throw 'CIM PathName update did not persist exact quotes'}
+            $result=Invoke-CimMethod -InputObject $changed -MethodName Change -Arguments @{PathName=$old} -ErrorAction Stop
+            if($null -eq $result -or [int]$result.ReturnValue -ne 0){throw 'Disposable original service restoration failed'}
+            $restored=Get-CimInstance Win32_Service -Filter ("Name='"+$name+"'")
+            if($restored.PathName -cne $old -or $restored.State -ne 'Stopped'){throw 'Disposable original PathName not restored'}
+            Write-Host 'GSC452_CIM_SERVICE_BINPATH_CHANGE_RESTORE_UNSTARTED_PASS'
+          }finally{
+            if($created){
+              $null=& sc.exe delete $name
+              if($LASTEXITCODE -ne 0){throw 'Disposable SCM CI service cleanup failed'}
+            }
+          }      - name: Publish gated service swap and original rollback kit
         uses: actions/upload-artifact@v4
         with:
           name: GSC452-HOST-SWAP-AND-ROLLBACK-OPERATOR-KIT
