@@ -23,6 +23,8 @@ on:
       - 'tools/velocity/Velocity_Managed_Cutover.ps1'
       - 'tools/velocity/Velocity_Actual_Launch_Audit_READ_ONLY.ps1'
       - 'tools/velocity/Velocity_Snapshot_Three_Before_Cutover.ps1'
+      - 'tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd'
       - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
       - 'tools/release/**'
       - 'DAY8-RUNBOOK.md'
@@ -49,6 +51,8 @@ on:
       - 'tools/velocity/Velocity_Managed_Cutover.ps1'
       - 'tools/velocity/Velocity_Actual_Launch_Audit_READ_ONLY.ps1'
       - 'tools/velocity/Velocity_Snapshot_Three_Before_Cutover.ps1'
+      - 'tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd'
       - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
       - 'tools/release/**'
       - 'DAY8-RUNBOOK.md'
@@ -621,6 +625,41 @@ jobs:
           print(f"Validated {len(json_files)} JSON files, {len(pack_meta)} pack.mcmeta files, and {len(manifests)} manifest.json files.")
           PY
 
+  gsc452-host-rollback-readonly:
+    name: GSC 4.5.2 / host rollback read-only preflight safety CI
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Verify script syntax, non-mutating verbs and fail-closed output
+        shell: powershell
+        run: |
+          $file='tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){foreach($e in @($errors)){Write-Host ('PARSE '+$e.Extent.StartLineNumber+' '+$e.Message)};throw 'Read-only preflight syntax invalid'}
+          $calls=$ast.FindAll({param($node) $node -is [Management.Automation.Language.CommandAst]},$true)
+          $denied=@('Stop-Service','Start-Service','Restart-Service','Set-Service','New-Service','Remove-Service','Stop-ScheduledTask','Start-ScheduledTask','Disable-ScheduledTask','Enable-ScheduledTask','Unregister-ScheduledTask','Register-ScheduledTask','Stop-Process','Start-Process','Remove-Item','Move-Item','Copy-Item','Set-Acl','Set-ItemProperty','New-Item','Set-Content','Out-File','taskkill','sc.exe','schtasks.exe')
+          foreach($call in $calls){$name=$call.GetCommandName();if($name -and $name -in $denied){throw ('Read-only script invokes forbidden mutation: '+$name)}}
+          $output=(& powershell.exe -NoProfile -NonInteractive -File $file |Out-String)|ConvertFrom-Json
+          if($LASTEXITCODE -ne 0 -or $output.schema -ne 1 -or $output.read_only -ne $true -or
+            $output.preflight_passed -ne $false -or $output.host_cutover_authorized -ne $false -or
+            $output.status -cne 'HOST_SWAP_ROLLBACK_PREFLIGHT_BLOCKED_NO_CHANGE' -or
+            $output.task_mutations -ne 0 -or $output.java_operations -ne 0 -or
+            $output.service_binary_changed -ne $false -or $output.service_stopped -ne $false){
+            throw 'Unconfigured disposable Windows CI machine must fail closed with no modifications'
+          }
+          Write-Host 'GSC452_HOST_READONLY_PREFLIGHT_FAIL_CLOSED_PASS'
+      - name: Upload single-action operator read-only kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-HOST-SWAP-ROLLBACK-PREFLIGHT-READ-ONLY
+          path: |
+            tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd
+          if-no-files-found: error
+          retention-days: 7
   velocity-managed-canary-host:
     name: GSC 4.5.2 Canary / isolated Host binary (NO INSTALL)
     runs-on: windows-latest
