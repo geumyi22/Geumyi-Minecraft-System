@@ -68,6 +68,30 @@ function Health([int]$port,[string]$expected,[int]$waitSec=4){
  }
  return $false
 }
+function VerifyServiceBinary([string]$expected){
+ $svc=Service
+ if($svc.State -ne 'Running' -or [int]$svc.ProcessId -le 0){Deny 'SERVICE_PROCESS_NOT_RUNNING'}
+ $registered=ParseService ([string]$svc.PathName)
+ if($registered.binary -ine $expected){Deny 'SERVICE_TARGET_NOT_EXPECTED'}
+ $process=Get-CimInstance Win32_Process -Filter ('ProcessId='+[int]$svc.ProcessId) -ErrorAction Stop
+ if($null -eq $process -or -not $process.ExecutablePath){Deny 'SERVICE_PID_EXECUTABLE_MISSING'}
+ if([IO.Path]::GetFullPath([string]$process.ExecutablePath) -ine [IO.Path]::GetFullPath($expected)){
+  Deny 'SERVICE_PID_EXE_MISMATCH'
+ }
+}
+function VerifyCanaryLocked([string]$configPath,[int]$port){
+ $cfg=Get-Content -LiteralPath $configPath -Raw -ErrorAction Stop|ConvertFrom-Json -ErrorAction Stop
+ $token=[string]$cfg.api_token
+ if([string]::IsNullOrWhiteSpace($token)){Deny 'HOST_API_TOKEN_MISSING'}
+ try{
+  $headers=@{'X-GSC-Token'=$token}
+  $data=Invoke-RestMethod -Uri ('http://127.0.0.1:'+$port+'/api/v1/velocity/managed/status') -Headers $headers -Method Get -TimeoutSec 3 -ErrorAction Stop
+  if($data.canary_enabled -ne $false -or $data.read_only -ne $true -or @($data.tasks).Count -ne 3){Deny 'CANARY_MANAGED_GATE_NOT_LOCKED'}
+  foreach($row in @($data.tasks)){
+   if($row.can_start -ne $false -or $row.can_stop -ne $false -or $row.can_restart -ne $false){Deny 'VELOCITY_ACTION_UNEXPECTEDLY_ENABLED'}
+  }
+ }catch{Deny 'CANARY_CONTROL_STATUS_UNVERIFIED'}
+}
 function SvcWait([string]$state,[int]$seconds){
  $s=Get-Service -Name $serviceName -ErrorAction Stop
  if([string]$s.Status -ne $state){
@@ -217,6 +241,7 @@ function Restore($pre,$j){
  ScSetBinary ([string]$j.original_binary) ([string]$j.config)
  SvcStart
  if(-not(Health $pre.port $expectedOriginalVersion 25)){Deny 'RESTORED_HOST_HEALTH_FAILED'}
+ VerifyServiceBinary ([string]$j.original_binary)
  VerifyProxyBaseline
  OwnersAbsent $pre.recover
 }
@@ -253,6 +278,8 @@ try{
    ScSetBinary $pre.candidate $pre.config
    SvcStart
    if(-not(Health $pre.port $expectedCanaryVersion 25)){Deny 'CANARY_HEALTH_VERSION_FAILED'}
+   VerifyServiceBinary $pre.candidate
+   VerifyCanaryLocked $pre.config $pre.port
    OwnersAbsent $pre.recover
    VerifyProxyBaseline
    Output 'HOST_CANARY_ACTIVE_VERIFIED' $true 'Canary 4.5.2 service passed health and old proxy tasks remain Running. Journal retained for rollback.'
