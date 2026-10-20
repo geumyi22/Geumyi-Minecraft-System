@@ -28,7 +28,9 @@ import (
 	"time"
 )
 
-const appVersion = "4.5.1"
+// Build-time override is permitted only for a separately packaged Canary host.
+// The Stable setup/host default version remains 4.5.1.
+var appVersion = "4.5.1"
 
 type Config struct {
 	Bind                string         `json:"bind"`
