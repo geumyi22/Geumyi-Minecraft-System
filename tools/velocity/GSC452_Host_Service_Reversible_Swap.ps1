@@ -20,7 +20,7 @@ $journalName='HOST-SWAP-PRIVATE-JOURNAL.json'
 function Output([string]$status,[bool]$success,[string]$detail){
  [ordered]@{schema=1;operation='HOST_SERVICE_REVERSIBLE_SWAP';mode=$Mode
   success=$success;status=$status;detail=$detail
-  minecraft_task_operations=0;paper_operations=0;configuration_writes=0
+  minecraft_task_operations=0;paper_operations_direct=0;paper_indirect_restart_effects_not_proven=$true;configuration_writes=0
   service_mutation_authorized=($Mode -in @('Apply','Rollback') -and $OperatorConfirmed.IsPresent)
  }|ConvertTo-Json -Compress -Depth 4
 }
@@ -131,6 +131,10 @@ function ConfigPorts([string]$path){
 }
 function Preflight(){
  if($env:GSC_VELOCITY_MANAGED_OPERATOR_OPT_IN -ceq 'DIRECT_OWNERSHIP_APPROVED'){Deny 'MANAGED_OPTIN_ENV_ENABLED'}
+ try{
+  $machineOpt=[Environment]::GetEnvironmentVariable('GSC_VELOCITY_MANAGED_OPERATOR_OPT_IN','Machine')
+  if($machineOpt -ceq 'DIRECT_OWNERSHIP_APPROVED'){Deny 'MANAGED_MACHINE_OPTIN_ENABLED'}
+ }catch{Deny 'MACHINE_ENV_CHECK_FAILED'}
  $pd=$env:ProgramData
  if([string]::IsNullOrWhiteSpace($pd) -or -not [IO.Path]::IsPathRooted($pd)){Deny 'PROGRAMDATA'}
  $base=Join-Path $pd 'GeumyiServerCenter\VelocityManaged'
@@ -222,6 +226,7 @@ try{
  if(-not $OperatorConfirmed){Deny 'EXPLICIT_CONFIRMATION_REQUIRED'}
  if($Mode -eq 'Apply'){
   if((Service).State -ne 'Running'){Deny 'SERVICE_NOT_RUNNING'}
+  if([IO.Path]::GetFileName($pre.launch.binary) -ine 'GeumyiServerHost.exe'){Deny 'ALREADY_NOT_ORIGINAL_SERVICE_BINARY'}
   $live=Sha $pre.launch.binary
   if($live -cne $pre.receipt.original_host_sha256){Deny 'ORIGINAL_HASH_MISMATCH'}
   if(-not(Health $pre.port $expectedOriginalVersion 5)){Deny 'ORIGINAL_HOST_HEALTH_FAILED'}
@@ -247,6 +252,7 @@ try{
  }
  if($Mode -eq 'Rollback'){
   $j=ReadJournal $pre
+  if($pre.launch.binary -ine $pre.candidate -and $pre.launch.binary -ine [string]$j.original_binary){Deny 'SERVICE_ALREADY_POINTS_TO_OTHER_BINARY'}
   Restore $pre $j
   Output 'HOST_ORIGINAL_RESTORED_VERIFIED' $true 'Existing GSC 4.5.1 service verified healthy. Canary staging and recovery journal preserved.'
   return
