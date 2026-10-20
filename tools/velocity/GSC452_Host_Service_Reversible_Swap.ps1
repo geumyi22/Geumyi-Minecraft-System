@@ -31,11 +31,22 @@ function Sha([string]$path){
  if($f.Attributes.HasFlag([IO.FileAttributes]::ReparsePoint)){Deny 'REPARSE_FILE'}
  return (Get-FileHash -LiteralPath $path -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
 }
-function PrivateDir([string]$path){
+function PrivateDir([string]$path,[bool]$allowTrustedInheritance=$false){
  $item=Get-Item -LiteralPath $path -ErrorAction Stop
  if(-not $item.PSIsContainer -or $item.Attributes.HasFlag([IO.FileAttributes]::ReparsePoint)){Deny 'STAGING_DIRECTORY_TYPE'}
- $acl=Get-Acl -LiteralPath $path
- if(-not $acl.AreAccessRulesProtected){Deny 'STAGING_INHERITED_ACL'}
+ $acl=Get-Acl -LiteralPath $path -ErrorAction Stop
+ if(-not $acl.AreAccessRulesProtected){
+  if(-not $allowTrustedInheritance){Deny 'STAGING_INHERITED_ACL'}
+  # Staging is intentionally created inheriting ACLs from the protected
+  # VelocityManaged root. Never accept inheritance from any other parent.
+  $parent=Split-Path -Path $path -Parent
+  $trustedParent=Join-Path $env:ProgramData 'GeumyiServerCenter\VelocityManaged'
+  if([IO.Path]::GetFullPath($parent) -ine [IO.Path]::GetFullPath($trustedParent)){Deny 'STAGING_PARENT_PATH_MISMATCH'}
+  $parentAcl=Get-Acl -LiteralPath $parent -ErrorAction Stop
+  if(-not $parentAcl.AreAccessRulesProtected){Deny 'STAGING_PARENT_ACL_INHERITED'}
+ }
+ # Inherited and explicit ALLOW entries must both remain restricted to
+ # SYSTEM and BUILTIN Administrators. No ACL is changed by this check.
  foreach($ace in $acl.Access){
   $sid=$ace.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value
   if($ace.AccessControlType -eq [Security.AccessControl.AccessControlType]::Allow -and
@@ -196,7 +207,7 @@ function Preflight(){
  $stage=Join-Path $base 'CanaryStaging'
  PrivateDir $base
  PrivateDir $recover
- PrivateDir $stage
+ PrivateDir $stage $true
  OwnersAbsent $recover
  VerifyProxyBaseline
  $receipt=Get-Content -LiteralPath (Join-Path $stage 'STAGING-RECEIPT.json') -Raw -ErrorAction Stop|ConvertFrom-Json -ErrorAction Stop
