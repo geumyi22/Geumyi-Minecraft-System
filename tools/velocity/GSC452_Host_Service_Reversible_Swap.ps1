@@ -101,11 +101,24 @@ function SvcWait([string]$state,[int]$seconds){
  return ([string]$s.Status -eq $state)
 }
 function SvcStop(){
+ $svc=Service
+ $pidToWatch=[int]$svc.ProcessId
  $s=Get-Service -Name $serviceName -ErrorAction Stop
  if([string]$s.Status -eq 'Stopped'){return}
  if([string]$s.Status -ne 'Running'){Deny 'SERVICE_NOT_STABLE_BEFORE_STOP'}
  Stop-Service -Name $serviceName -ErrorAction Stop
  if(-not(SvcWait 'Stopped' 25)){Deny 'SERVICE_DID_NOT_STOP'}
+ # Windows SCM can report STOPPED before a process actually exits.
+ # Never start a second GSC Host while the original PID still exists.
+ if($pidToWatch -gt 0){
+  $limit=[DateTime]::UtcNow.AddSeconds(25)
+  while([DateTime]::UtcNow -lt $limit){
+   $prior=Get-CimInstance Win32_Process -Filter ('ProcessId='+$pidToWatch) -ErrorAction Stop
+   if($null -eq $prior){return}
+   Start-Sleep -Milliseconds 300
+  }
+  Deny 'OLD_HOST_PROCESS_STILL_ALIVE'
+ }
 }
 function SvcStart(){
  $s=Get-Service -Name $serviceName -ErrorAction Stop
