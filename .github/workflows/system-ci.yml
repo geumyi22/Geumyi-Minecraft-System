@@ -648,11 +648,22 @@ jobs:
           if($file.Length -lt 100000){throw 'Invalid Canary host image'}
           $hash=(Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
           $hash+'  '+$file.Name|Set-Content -Encoding ascii dist-canary/SHA256SUMS.txt
+          $stage='../../tools/velocity/Stage_GSC452_Velocity_CANARY_NO_INSTALL.ps1'
+          $tokens=$null; $parseProblems=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $stage),[ref]$tokens,[ref]$parseProblems)
+          if(@($parseProblems).Count -gt 0){
+            foreach($problem in @($parseProblems)){Write-Host ('STAGE SCRIPT PARSE '+$problem.Extent.StartLineNumber+': '+$problem.Message)}
+            throw 'Canary stage-only PowerShell parser failure'
+          }
+          Copy-Item $stage dist-canary/Stage_GSC452_Velocity_CANARY_NO_INSTALL.ps1
+          Copy-Item ../../tools/velocity/Run_Stage_GSC452_Velocity_CANARY_ADMIN.cmd dist-canary/Run_Stage_GSC452_Velocity_CANARY_ADMIN.cmd
           @(
             'GSC 4.5.2 VELOCITY CANARY — UNINSTALLED TEST BINARY',
             'Source: Draft PR #57 only. Stable/main unchanged.',
             'Never replace a running GSC host or run this executable beside a live host.',
             'Requires independently approved maintenance cutover, local host account/credentials validation, and rollback.',
+            'Stage via Run_Stage_GSC452_Velocity_CANARY_ADMIN.cmd (right-click administrator).',
+            'Only copies the uninstalled candidate and originals to private staging.',
             'Does not install, register tasks, set environment flags, kill Java or change worlds.'
           )|Set-Content -Encoding utf8 dist-canary/README-NO-INSTALL.txt
       - name: Execute non-destructive Day10 Host selftest
