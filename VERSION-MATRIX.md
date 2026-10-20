@@ -1,5 +1,18 @@
 # Version and source recovery matrix
 
+## 2026-10-20 — latest release vs Canary development (not installed)
+
+| Role | Identified version | Evidence and deployment boundary |
+|---|---|---|
+| Published manual Stable package | **GSC 4.5.1 / GSCM 1.5.1+151** | [Official GitHub release](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151); signed automatic Stable final gate remains separate and blocked. |
+| Velocity managed Canary source | **GSC 4.5.2-canary, Draft PR #57** | Real official Velocity 4.2.0 + fake Windows task tests PASS in isolated CI; Canary Host binary built + selftested, **not production-installed**. |
+| Alternative Velocity status-only IPC | **PR #58 Draft**, inert Java plugin | Test fixture only; no live player management or JVM stop. |
+| Real Velocity proxy fleet | **3× official 4.2.0 JAR SHA matched** | Operator read-only audit and Scheduler XML snapshot only. All 3 running via old Task Scheduler, not managed by the new GSC Host. |
+| Real GSC/GSCM deployment version | **Not re-attested in current 4.5.2 workflow** | Historical Day 11 GSC 4.3.8 / GSCM 1.1.5+117 remains a separate past verification; do not infer a production 4.5.1/4.5.2 install from release/CI. |
+
+Current source of truth: [docs/operations/GSC-452-VELOCITY-CURRENT-STATUS-2026-10-20.md](docs/operations/GSC-452-VELOCITY-CURRENT-STATUS-2026-10-20.md). Do not rewrite historical build and provenance lines below to imply new live verification.
+
+
 Confirmed runtime baseline updated 2026-10-07. Recovery/verification status updated 2026-10-07.
 
 CI:
