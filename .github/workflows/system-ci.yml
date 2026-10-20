@@ -25,6 +25,8 @@ on:
       - 'tools/velocity/Velocity_Snapshot_Three_Before_Cutover.ps1'
       - 'tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
+      - 'tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd'
       - 'tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md'
       - 'tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd'
       - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
@@ -55,6 +57,8 @@ on:
       - 'tools/velocity/Velocity_Snapshot_Three_Before_Cutover.ps1'
       - 'tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
+      - 'tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd'
       - 'tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md'
       - 'tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd'
       - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
@@ -628,6 +632,55 @@ jobs:
 
           print(f"Validated {len(json_files)} JSON files, {len(pack_meta)} pack.mcmeta files, and {len(manifests)} manifest.json files.")
           PY
+
+  gsc452-wild-identity-readonly:
+    name: GSC 4.5.2 / wild Task-JVM evidence parser + isolated synthetic CI
+    runs-on: windows-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout Draft PR
+        uses: actions/checkout@v7
+      - name: Fail-closed evidence classifier and forbidden-operation test
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -ne 0){foreach($e in @($errors)){Write-Host ('PARSE '+$e.Message)};throw 'Read-only evidence parser failed'}
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $forbid=@('Disable-ScheduledTask','Enable-ScheduledTask','Stop-ScheduledTask','Start-ScheduledTask','Unregister-ScheduledTask',
+             'Register-ScheduledTask','Stop-Process','Start-Process','taskkill','sc.exe','Set-Acl','Set-Content','Remove-Item',
+             'Set-ItemProperty','New-Service','Remove-Service','Stop-Service','Start-Service',
+             'Set-NetFirewallRule','New-NetFirewallRule','wevtutil','Clear-EventLog')
+          foreach($command in $commands){
+            $n=$command.GetCommandName()
+            if($n -and $n -in $forbid){throw ('Mutation in read-only evidence script: '+$n)}
+          }
+          $text=Get-Content -LiteralPath $file -Raw
+          foreach($required in @('Get-ScheduledTask','Get-NetTCPConnection','Get-NetUDPEndpoint','Get-WinEvent','Get-CimInstance',
+             'Id=129','live_control_authorized=$false','safe_to_stop=$false','safe_to_cutover=$false')){
+            if(-not $text.Contains($required)){throw ('Safety/evidence requirement missing: '+$required)}
+          }
+          foreach($scenario in @('matched','missing-event','different-owner','stale-event')){
+            $result=(& powershell.exe -NoProfile -NonInteractive -File $file -SyntheticScenario $scenario |Out-String) | ConvertFrom-Json
+            if($LASTEXITCODE -ne 0 -or $result.schema -ne 1 -or $result.target -cne 'wild' -or
+              $result.synthetic -ne $true -or $result.read_only -ne $true -or
+              $result.task_to_proxy_jvm_evidence_matched -ne $false -or
+              $result.safe_to_stop -ne $false -or $result.safe_to_cutover -ne $false -or
+              $result.live_control_authorized -ne $false -or $result.scheduled_task_modified -ne $false -or
+              $result.java_operations -ne 0){throw ('Unsafe synthetic classifier: '+$scenario)}
+          }
+          Write-Host 'GSC452_WILD_TASK_JVM_READONLY_SYNTHETIC_CI_PASS_NO_REAL_TASKS'
+      - name: Publish operator read-only ownership evidence kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-WILD-TASK-JVM-IDENTITY-READ-ONLY
+          path: |
+            tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd
+          if-no-files-found: error
+          retention-days: 7
 
   gsc452-host-swap-reversible:
     name: GSC 4.5.2 / Host swap safe-state + parser CI (NO LIVE SCM)
