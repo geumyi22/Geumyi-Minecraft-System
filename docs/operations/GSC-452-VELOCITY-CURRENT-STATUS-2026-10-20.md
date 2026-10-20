@@ -17,7 +17,7 @@
 2. Sanitized real-host launch audit reported for **all three**: direct `java.exe` execution, existing fixed ProgramData FourServer working directories, existing Java executable and `velocity.jar`, pinned official 4.2.0 CI artifact SHA match, `RestartOnFailure.Count=999` policy. Existing Java console STDIN control remains **NOT PROVEN**.
 3. Operator ran elevated snapshot-only kit. Output contained `operation=SNAPSHOT_ONLY`, `task_mutations=0`, `launched_jvms=0`, and `saved_targets=[wild,playground,other]`, with all original task XML and derived launcher manifests saved in protected operator-local storage. **Snapshot completed. Do not request the operator to repeat it or upload private XML.**
 4. Operator approved a scoped temporary player interruption and, if graceful console control is unavailable, immediate stop of **only** the three exact task-owned Velocity proxy instances as part of a verified rollback-capable maintenance. Approval does **not** establish that those instances have already stopped. Paper servers, worlds, Geyser/Floodgate secrets, other tasks, current Stable and backups are outside the change scope.
-5. The Stage-only GSC Canary package was provided, but the operator has **not supplied `CANARY_STAGED_NO_INSTALL` output**. Do not claim staging or installation completed.
+5. **Operator confirmed Canary staging** by submitting `CANARY_STAGED_NO_INSTALL`: all three original tasks preserved, original live GSC Host executable copied to protected private CanaryStaging and SHA-256 verified against the live service, staged 4.5.2 Canary binary SHA-256 verified; service restart=false, scheduled task changes=false, Java changes=false. **This is not installation or activation.**
 
 ## Repository and CI evidence
 
@@ -38,7 +38,7 @@
 
 ## Next decision gate — **not authorized to blindly execute**
 
-1. Confirm the **stage-only** operator result; keep the existing Stable host service running. Verify the original live service binary backup and candidate SHA without disclosing host configuration.
+1. **Stage-only is complete.** Next run only the dedicated non-mutating Windows GSC Host service/backup/rollback preflight to recheck service command, process path, protected private original backup, candidate SHA, localhost health, legacy proxy task states and owner-marker absence. Do not repeat snapshot/stage. A green preflight is not authorization to install.
 2. Finalize and separately test a **GSC service installation/recovery** procedure with explicit service restart and rollback evidence, then confirm the Canary routes remain locked before cutover. Do not simply run a second Host beside the live Host.
 3. Cold migrate **one Velocity proxy at a time** (wild → playground → other) only after service fallback and launch preflight are proven. If a task-owned JVM cannot be shutdown gracefully, the user-approved immediate task stop may interrupt players. Verify old JVM exit and both port families, then perform one-target protected cutover, start the GSC-owned JVM, check real Java+Bedrock joins and forwarding; rollback if any gate fails.
 4. Validate behavior during a GSC Host restart / orphaned Java generation. Do not clear a stale marker, guess PID identity or re-enable old task while an owned JVM might remain. Automation cannot be called production-ready without this proof.

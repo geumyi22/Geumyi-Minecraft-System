@@ -7,7 +7,7 @@
 | 실제 야생·놀이터·기타 예약 작업 및 JAR/Java 실행 설정 확인 | **완료 — 운영자 READ ONLY 결과**, 세 작업 Running |
 | 기존 Windows 작업 원본 XML·실행 manifest 보호 저장 | **완료 — 운영자 SNAPSHOT_ONLY**, 작업 변경 0건 |
 | GSC 직접 소유 Velocity 종료·재시작 / Windows 격리 전환·롤백 | **CI 검증 완료**, 실제 운영 서버 미적용 |
-| GSC 4.5.2 Canary 호스트 SHA/자체 테스트 및 staging 도구 | **CI 통과**, 서버 PC stage-only 실행 결과 미확인 |
+| GSC 4.5.2 Canary 호스트 SHA/자체 테스트 및 staging 도구 | **CI 통과 + 운영자 CANARY_STAGED_NO_INSTALL 성공**, 기존 Host 실행 파일 백업/해시 검증 확인 |
 | 실제 기존 Java 종료 → 예약 작업 전환 → GSC 호스트 적용 | **미완료** — 운영자 승인 범위 내에서 한 대상씩, 복구 검증 선행 |
 | Java+Bedrock 실제 접속, GSC 호스트 재시작/고아 프로세스 복구 | **미검증**, Beta/Stable 승격 차단 |
 

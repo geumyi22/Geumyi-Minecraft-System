@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-20 — GSC 4.5.2 Velocity Host Staging confirmed (not installed)
+
+- 서버 PC의 운영자 출력 `CANARY_STAGED_NO_INSTALL`: 이전 GSC Host 실행 파일 보호 백업, Canary SHA-256 검증, 세 개의 기존 Velocity 작업 보존 성공. `service_restarted=false`, `scheduled_tasks_changed=false`, `java_changed=false`. **서비스 교체·Canary 설치·프록시 중지/전환은 아직 실시하지 않음**.
+- 다음 단일 단계: GSC 호스트 Windows 서비스 시작 구성·복구 파일·기존 프로세스·원본 스냅샷·고아 마커 **읽기 전용 사전 검증**. PR #57 개발 전용 스크립트와 CI; 사용자 환경에서 통과 확인 필요.
+
 ## 2026-10-20 — GSC 4.5.2 Velocity Canary 중간 GitHub 정리 (Draft, 미배포)
 
 - [Draft PR #57](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/57)의 직접 관리 Velocity 엔진, GSC 상태·시작·정상 종료·재시작 UI/API, 원본 예약 작업 보호 스냅샷, 승인형 전환·롤백, 중복 JVM 방지 기록을 현재 개발 대상으로 정리했습니다. 해당 실행은 기본 잠금 상태이며 실제 서버 적용·배포를 의미하지 않습니다.

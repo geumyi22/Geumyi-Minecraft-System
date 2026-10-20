@@ -141,7 +141,9 @@ try{
 }catch{
  # Deliberately no internal exception text: Windows can embed paths/usernames.
 }
-$pass=($c.service_running -and $c.service_binary_matches_running_process -and
+$pass=($c.service_running -and $c.service_account_class -ceq 'LOCAL_SYSTEM' -and
+ $c.host_version -ne 'UNVERIFIED' -and $c.host_version -notlike '4.5.2*' -and
+ $c.service_binary_matches_running_process -and
  $c.service_start_arguments_verified -and $c.original_host_backup_matches_live -and
  $c.staged_canary_integrity_verified -and $c.protected_recovery_folders -and
  $c.original_task_snapshots_intact -and $c.legacy_tasks_running -eq 3 -and
