@@ -71,7 +71,8 @@ $udpPorts=@(19132,19133,19134)
 if($Synthetic -ne 'none') {
  foreach($id in $targetNames){$r.task_states+=@([ordered]@{target=$id;state='Running';action_shape='MATCH'})}
  $r.scheduled_launcher_profiles_shared='YES'
- $candidateIds=if($Synthetic -eq 'no-candidates'){[int[]]@()}else{[int[]]@(11,22,33)}
+ [int[]]$candidateIds=@(11,22,33)
+ if($Synthetic -eq 'no-candidates'){$candidateIds=[int[]]@()}
  $udpIds=if($Synthetic -eq 'overlap'){[int[]]@(11,22,33)}else{[int[]]@(44,55,66)}
  if($Synthetic -eq 'query-failed'){$udpIds=[int[]]@()}
  $r.task_java_velocity_candidates_distinct=CountBucket $candidateIds.Count
