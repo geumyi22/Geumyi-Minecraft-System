@@ -28,6 +28,8 @@ on:
       - 'tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Wild_Proxy_Topology_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd'
@@ -64,6 +66,8 @@ on:
       - 'tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Wild_Proxy_Topology_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd'
@@ -640,6 +644,75 @@ jobs:
 
           print(f"Validated {len(json_files)} JSON files, {len(pack_meta)} pack.mcmeta files, and {len(manifests)} manifest.json files.")
           PY
+
+  gsc452-wild-topology-readonly:
+    name: GSC 4.5.2 / wild proxy topology read-only synthetic safety
+    runs-on: windows-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout Draft PR
+        uses: actions/checkout@v7
+      - name: Verify no mutations, schema and known topology fixtures
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){
+            foreach($e in @($errors)){Write-Host ('PARSE '+$e.Message)}
+            throw 'Wild proxy topology parser failure'
+          }
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $forbid=@('Stop-ScheduledTask','Start-ScheduledTask','Disable-ScheduledTask','Enable-ScheduledTask',
+            'Register-ScheduledTask','Unregister-ScheduledTask','Stop-Process','Start-Process',
+            'Set-Acl','Set-Content','Remove-Item','Stop-Service','Start-Service','Restart-Service',
+            'Set-ItemProperty','Invoke-CimMethod','Set-NetFirewallRule','Start-Job','taskkill','sc.exe')
+          foreach($cmd in $commands){
+            $name=$cmd.GetCommandName()
+            if($name -and $name -in $forbid){throw ('Illegal read-only mutation: '+$name)}
+          }
+          $source=Get-Content -LiteralPath $file -Raw
+          foreach($gate in @('Get-NetTCPConnection -State Listen','Get-NetUDPEndpoint',
+             'Get-ScheduledTask','Get-CimInstance','safe_to_stop=$false',
+             'safe_to_cutover=$false','live_control_authorized=$false',
+             'task_to_jvm_identity_proven=$false','config_bind_port')){
+            if(-not $source.Contains($gate)){throw ('Guard not found: '+$gate)}
+          }
+          $expected=@{
+             wild='MATCHES_WILD_TCP25565'
+             'playground-tcp'='MATCHES_PLAYGROUND_TCP25566'
+             'other-udp'='MATCHES_OTHER_UDP19134'
+             unmatched='NO_MATCH_WITH_KNOWN_PROXY_PORTS'
+             missing='UDP19132_NOT_UNIQUE'
+          }
+          foreach($fixture in $expected.Keys){
+            $raw=(& powershell.exe -NoProfile -NonInteractive -File $file -SyntheticScenario $fixture |Out-String)
+            if($LASTEXITCODE -ne 0){throw ('Synthetic fixture process failed: '+$fixture)}
+            $d=$raw|ConvertFrom-Json
+            if($d.schema -ne 4 -or $d.target -cne 'wild' -or $d.synthetic -ne $true -or
+              $d.read_only -ne $true -or
+              $d.udp19132_relation_to_proxy_ports -cne $expected[$fixture] -or
+              $d.live_control_authorized -ne $false -or
+              $d.safe_to_stop -ne $false -or $d.safe_to_cutover -ne $false -or
+              $d.task_to_jvm_identity_proven -ne $false -or
+              $d.task_or_service_mutations -ne 0 -or $d.java_operations -ne 0) {
+              throw ('Invalid topology classifier: '+$fixture)
+            }
+            if($raw -match '(?i)[a-z]:\\|ProcessID|raw_pid'){
+              throw ('Unexpected private value in topology synthetic result: '+$fixture)
+            }
+          }
+          Write-Host 'WILD_PROXY_TOPOLOGY_READ_ONLY_SYNTHETIC_PASS_NO_LIVE_CHANGES'
+      - name: Publish read-only topology operator zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-WILD-PROXY-TOPOLOGY-READ-ONLY
+          path: |
+            tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Wild_Proxy_Topology_READ_ONLY.cmd
+          if-no-files-found: error
+          retention-days: 7
 
   gsc452-wild-identity-readonly:
     name: GSC 4.5.2 / wild Task-JVM evidence parser + isolated synthetic CI
