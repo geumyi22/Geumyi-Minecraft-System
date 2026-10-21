@@ -8,7 +8,9 @@ param(
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 function CountClass([int[]]$values) {
- switch(@($values).Count){0{'ZERO'} 1{'ONE'} default{'MULTIPLE'}}
+ if($null -eq $values -or $values.Count -eq 0){return 'ZERO'}
+ if($values.Count -eq 1){return 'ONE'}
+ return 'MULTIPLE'
 }
 function PidSet([object[]]$values) {
  return [int[]]@($values | Where-Object { $null -ne $_ -and [int]$_ -gt 0 } |
@@ -60,6 +62,11 @@ $row=[ordered]@{
  status='READ_ONLY_INCOMPLETE_NO_ACTION'
 }
 if($SyntheticScenario -ne 'none'){
+ if((CountClass ([int[]]@())) -cne 'ZERO' -or
+    (CountClass ([int[]]@(11))) -cne 'ONE' -or
+    (CountClass ([int[]]@(11,12))) -cne 'MULTIPLE'){
+   throw 'SYNTHETIC_COUNT_CLASSIFIER_REGRESSION'
+ }
  $row.task_state='Running'
  $row.task_java_action_verified=$true
  $row.scheduler_restart_risk='PRESENT'
@@ -95,7 +102,7 @@ function TcpPowerShell {
   $hits=@($all|Where-Object {[int]$_.LocalPort -eq 25565})
   return [pscustomobject]@{
    status=if($hits.Count){'OBSERVED'}else{'NO_LISTENER'}
-   owners=(PidSet @($hits|Select-Object -ExpandProperty OwningProcess))
+   owners=[int[]]@(PidSet @($hits|Select-Object -ExpandProperty OwningProcess))
   }
  }catch{
   return [pscustomobject]@{status='QUERY_FAILED';owners=[int[]]@()}
@@ -116,7 +123,7 @@ function TcpNetstat {
   }
   return [pscustomobject]@{
    status=if($found.Count){'OBSERVED'}else{'NO_LISTENER'}
-   owners=(PidSet @($found.ToArray()))
+   owners=[int[]]@(PidSet @($found.ToArray()))
   }
  }catch{
   return [pscustomobject]@{status='QUERY_FAILED';owners=[int[]]@()}
@@ -128,7 +135,7 @@ function UdpPowerShell {
   $hits=@($all|Where-Object {[int]$_.LocalPort -eq 19132})
   return [pscustomobject]@{
    status=if($hits.Count){'OBSERVED'}else{'NO_ENDPOINT'}
-   owners=(PidSet @($hits|Select-Object -ExpandProperty OwningProcess))
+   owners=[int[]]@(PidSet @($hits|Select-Object -ExpandProperty OwningProcess))
   }
  }catch{
   return [pscustomobject]@{status='QUERY_FAILED';owners=[int[]]@()}
