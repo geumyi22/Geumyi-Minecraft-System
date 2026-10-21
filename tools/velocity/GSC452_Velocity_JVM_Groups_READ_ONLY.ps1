@@ -5,7 +5,7 @@ param([ValidateSet('none','disjoint','overlap','no-candidates','query-failed')][
 # process IDs, raw command lines, original task XML or raw logs are exported.
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
-function Class([int]$n) {
+function CountBucket([int]$n) {
  if($n -lt 0){return 'UNVERIFIED'}
  if($n -eq 0){return 'ZERO'}
  if($n -eq 1){return 'ONE'}
@@ -74,7 +74,7 @@ if($Synthetic -ne 'none') {
  $candidateIds=if($Synthetic -eq 'no-candidates'){[int[]]@()}else{[int[]]@(11,22,33)}
  $udpIds=if($Synthetic -eq 'overlap'){[int[]]@(11,22,33)}else{[int[]]@(44,55,66)}
  if($Synthetic -eq 'query-failed'){$udpIds=[int[]]@()}
- $r.task_java_velocity_candidates_distinct=Class $candidateIds.Count
+ $r.task_java_velocity_candidates_distinct=CountBucket $candidateIds.Count
  $r.task_java_candidates_with_any_tcp_listen='ZERO'
  $r.task_java_candidates_with_any_known_udp=if($Synthetic -eq 'overlap'){'THREE'}else{'ZERO'}
  $r.udp_three_distinct_owners=if($Synthetic -eq 'query-failed'){'UNVERIFIED'}else{'YES'}
@@ -130,7 +130,7 @@ try{
     (ExactPath ([string]$_.ExecutablePath) $actions['playground']) -or
     (ExactPath ([string]$_.ExecutablePath) $actions['other'])
  })
- $r.task_java_velocity_candidates_distinct=Class $candidates.Count
+ $r.task_java_velocity_candidates_distinct=CountBucket $candidates.Count
  $candidateIds=[int[]]@($candidates|ForEach-Object {[int]$_.ProcessId})
  $tcp=@(Get-NetTCPConnection -State Listen -ErrorAction Stop)
  $udp=@(Get-NetUDPEndpoint -ErrorAction Stop)
@@ -139,8 +139,8 @@ try{
   if(@($tcp|Where-Object {[int]$_.OwningProcess -eq [int]$p.ProcessId}).Count -gt 0){$candidateTcp++}
   if(@($udp|Where-Object {[int]$_.OwningProcess -eq [int]$p.ProcessId -and [int]$_.LocalPort -in $udpPorts}).Count -gt 0){$candidateUdp++}
  }
- $r.task_java_candidates_with_any_tcp_listen=Class $candidateTcp
- $r.task_java_candidates_with_any_known_udp=Class $candidateUdp
+ $r.task_java_candidates_with_any_tcp_listen=CountBucket $candidateTcp
+ $r.task_java_candidates_with_any_known_udp=CountBucket $candidateUdp
  $owners=@();$overlap=0;$complete=$true
  for($i=0;$i -lt 3;$i++){
   $port=$udpPorts[$i];$id=$targetNames[$i]
@@ -161,8 +161,8 @@ try{
     $row.unique_owner='YES'
     $row.velocity_jar=if(VelocityJar ([string]$p.CommandLine)){'YES'}else{'NO_OR_UNAVAILABLE'}
     $row.task_java_exact=if(ExactPath ([string]$p.ExecutablePath) $actions[$id]){'YES'}else{'NO'}
-    $row.owner_any_tcp_listener=Class @($tcp|Where-Object {[int]$_.OwningProcess -eq $pidValue}).Count
-    $row.owner_other_known_udp_listener=Class @($udp|Where-Object {
+    $row.owner_any_tcp_listener=CountBucket @($tcp|Where-Object {[int]$_.OwningProcess -eq $pidValue}).Count
+    $row.owner_other_known_udp_listener=CountBucket @($udp|Where-Object {
       [int]$_.OwningProcess -eq $pidValue -and
       [int]$_.LocalPort -in $udpPorts -and
       [int]$_.LocalPort -ne $port
