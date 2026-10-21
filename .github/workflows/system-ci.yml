@@ -27,6 +27,8 @@ on:
       - 'tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
       - 'tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd'
       - 'tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md'
@@ -61,6 +63,8 @@ on:
       - 'tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
       - 'tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd'
       - 'tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md'
@@ -724,15 +728,63 @@ jobs:
             }
           }
           Write-Host 'GSC452_WILD_DIFFERENTIAL_READONLY_SYNTHETIC_CI_PASS'
+      - name: V3 wild socket owner cause parser / synthetic no-mutation cases
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){foreach($e in @($errors)){Write-Host ('PARSE '+$e.Message)};throw 'Wild socket diagnostic syntax failed'}
+          $all=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $banned=@('Stop-ScheduledTask','Start-ScheduledTask','Disable-ScheduledTask','Enable-ScheduledTask',
+            'Register-ScheduledTask','Unregister-ScheduledTask','Stop-Process','Start-Process','taskkill',
+            'Set-Content','Set-Acl','Remove-Item','Start-Service','Stop-Service','Restart-Service',
+            'Set-ItemProperty','wevtutil','Clear-EventLog','Set-NetFirewallRule','New-NetFirewallRule',
+            'Invoke-CimMethod','Start-Job','Set-ScheduledTask')
+          foreach($cmd in $all){
+            $name=$cmd.GetCommandName()
+            if($name -and $name -in $banned){throw ('Unsafe diagnostic mutation: '+$name)}
+          }
+          $src=Get-Content -LiteralPath $file -Raw
+          foreach($must in @('safe_to_stop=$false','safe_to_cutover=$false','task_to_jvm_identity_proven=$false',
+              'Get-NetTCPConnection -State Listen','netstat.exe','Get-NetUDPEndpoint',
+              'Get-CimInstance','Get-WinEvent','owner_generation_marker_absent')){
+            if(-not $src.Contains($must)){throw ('Required no-go guard missing: '+$must)}
+          }
+          $cases=@{
+            matching=@('SAME_PID','TASK_JAVA_EXACT')
+            'tcp-no-listener'=@('TCP_NO_LOCAL_LISTENER','TASK_JAVA_EXACT')
+            'tcp-fallback'=@('SAME_PID','TASK_JAVA_EXACT')
+            'split-owners'=@('DIFFERENT_PID','TASK_JAVA_EXACT')
+            'other-java'=@('SAME_PID','JAVA_OTHER_LOCATION')
+            'non-java-udp'=@('SAME_PID','NON_JAVA_EXECUTABLE')
+          }
+          foreach($name in $cases.Keys){
+            $raw=(& powershell.exe -NoProfile -NonInteractive -File $file -SyntheticScenario $name |Out-String)
+            if($LASTEXITCODE -ne 0){throw ('V3 diagnostic failed: '+$name)}
+            $d=$raw|ConvertFrom-Json
+            if($d.schema -ne 3 -or $d.read_only -ne $true -or $d.synthetic -ne $true -or
+              $d.tcp_udp_owner_relation -cne $cases[$name][0] -or
+              $d.udp_owner_executable_class -cne $cases[$name][1] -or
+              $d.task_to_jvm_identity_proven -ne $false -or
+              $d.safe_to_stop -ne $false -or $d.safe_to_cutover -ne $false -or
+              $d.live_control_authorized -ne $false -or $d.scheduled_task_modified -ne $false -or
+              $d.java_operations -ne 0){throw ('V3 fail-closed regression: '+$name)}
+            if($raw -match '(?i)[A-Z]:\\|ProcessID|netstat.exe'){throw 'Private synthetic host detail leaked'}
+          }
+          Write-Host 'GSC452_WILD_SOCKET_CAUSE_V3_CI_PASS_NO_PRODUCTION_ACTION'
       - name: Publish operator read-only ownership evidence kit
         uses: actions/upload-artifact@v4
         with:
-          name: GSC452-WILD-TASK-JVM-IDENTITY-READ-ONLY
+          name: GSC452-WILD-SOCKET-OWNER-CAUSE-V3-READ-ONLY
           path: |
             tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1
             tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd
             tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1
             tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd
+            tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd
           if-no-files-found: error
           retention-days: 7
 
