@@ -29,6 +29,8 @@ on:
       - 'tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Three_Proxy_JVM_Roles_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Three_Proxy_JVM_Roles_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Proxy_Topology_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd'
@@ -67,6 +69,8 @@ on:
       - 'tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Three_Proxy_JVM_Roles_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Three_Proxy_JVM_Roles_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Proxy_Topology_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd'
@@ -644,6 +648,71 @@ jobs:
 
           print(f"Validated {len(json_files)} JSON files, {len(pack_meta)} pack.mcmeta files, and {len(manifests)} manifest.json files.")
           PY
+
+  gsc452-proxy-process-roles-readonly:
+    name: GSC 4.5.2 / 3 proxy task vs live JVM roles READ ONLY
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Draft PR
+        uses: actions/checkout@v7
+      - name: Syntax safety and synthetic role classifiers
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Three_Proxy_JVM_Roles_READ_ONLY.ps1'
+          $tok=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tok,[ref]$errors)
+          if(@($errors).Count -gt 0){
+            foreach($item in @($errors)){Write-Host ('PARSE '+$item.Message)}
+            throw 'Proxy task/process role script syntax failed'
+          }
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $forbidden=@('Start-ScheduledTask','Stop-ScheduledTask','Disable-ScheduledTask',
+            'Enable-ScheduledTask','Register-ScheduledTask','Unregister-ScheduledTask',
+            'Stop-Process','Start-Process','taskkill','Set-Acl','Set-Content','Remove-Item',
+            'Start-Service','Stop-Service','Restart-Service','Invoke-CimMethod',
+            'Set-ItemProperty','Set-NetFirewallRule','New-NetFirewallRule','wevtutil')
+          foreach($cmd in $commands){
+            $n=$cmd.GetCommandName()
+            if($n -and $n -in $forbidden){throw ('Disallowed read-only mutation: '+$n)}
+          }
+          $text=Get-Content -LiteralPath $file -Raw
+          foreach($required in @('Get-CimInstance Win32_Process','Get-ScheduledTaskInfo',
+            'Get-NetTCPConnection -State Listen','Get-NetUDPEndpoint','Get-WinEvent',
+            'safe_to_stop=$false','safe_to_cutover=$false','live_control_authorized=$false',
+            'task_to_jvm_ownership_proven=$false')){
+            if(-not $text.Contains($required)){throw ('Guard missing: '+$required)}
+          }
+          $raw=(& powershell.exe -NoProfile -NonInteractive -File $file -Synthetic |Out-String)
+          if($LASTEXITCODE -ne 0){throw 'Synthetic process role probe failed'}
+          $result=$raw|ConvertFrom-Json
+          if($result.schema -ne 5 -or $result.synthetic -ne $true -or $result.read_only -ne $true -or
+            @($result.scheduled_tasks).Count -ne 3 -or @($result.udp_owners).Count -ne 3 -or
+            $result.all_target_tcp_ports -cne 'ZERO_LISTENERS' -or
+            $result.live_control_authorized -ne $false -or $result.safe_to_stop -ne $false -or
+            $result.safe_to_cutover -ne $false -or $result.task_to_jvm_ownership_proven -ne $false -or
+            $result.task_mutations -ne 0 -or $result.service_mutations -ne 0 -or
+            $result.java_operations -ne 0){throw 'Unsafe read-only role synthetic result'}
+          foreach($id in @('wild','playground','other')){
+            if(@($result.scheduled_tasks|Where-Object {$_.target -ceq $id}).Count -ne 1 -or
+              @($result.udp_owners|Where-Object {$_.target -ceq $id}).Count -ne 1){
+              throw ('Missing target: '+$id)
+            }
+          }
+          if($raw -match '(?i)[a-z]:\\|ProcessID|CommandLine|api_token'){
+            throw 'Private data in synthetic output'
+          }
+          Write-Host 'GSC452_PROXY_ROLE_READ_ONLY_WINDOWS_SYNTHETIC_PASS'
+      - name: Publish three-proxy role diagnosis ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-THREE-PROXY-JVM-ROLES-READ-ONLY
+          path: |
+            tools/velocity/GSC452_Three_Proxy_JVM_Roles_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Three_Proxy_JVM_Roles_READ_ONLY.cmd
+          if-no-files-found: error
+          retention-days: 7
 
   gsc452-wild-topology-readonly:
     name: GSC 4.5.2 / wild proxy topology read-only synthetic safety
