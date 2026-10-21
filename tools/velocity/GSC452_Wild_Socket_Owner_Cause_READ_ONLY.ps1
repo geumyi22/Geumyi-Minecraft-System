@@ -76,7 +76,7 @@ if($SyntheticScenario -ne 'none'){
  switch($SyntheticScenario){
   'tcp-no-listener'{
    $row.tcp_powershell_inventory='NO_LISTENER';$row.tcp_netstat_inventory='NO_LISTENER'
-   $row.tcp_25565_owner_count='ZERO';$row.tcp_udp_owner_relation='INSUFFICIENT_OWNERS'
+   $row.tcp_25565_owner_count='ZERO';$row.tcp_udp_owner_relation='TCP_NO_LOCAL_LISTENER'
    $row.tcp_owner_executable_class='NOT_CHECKED'
   }
   'tcp-fallback'{$row.tcp_powershell_inventory='QUERY_FAILED';$row.tcp_owner_sources_agree='UNVERIFIED'}
