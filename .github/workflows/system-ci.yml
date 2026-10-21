@@ -30,6 +30,8 @@ on:
       - 'tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Three_Proxy_JVM_Roles_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Velocity_JVM_Groups_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Velocity_JVM_Groups_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Three_Proxy_JVM_Roles_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Proxy_Topology_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd'
@@ -70,6 +72,8 @@ on:
       - 'tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1'
       - 'tools/velocity/GSC452_Three_Proxy_JVM_Roles_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Velocity_JVM_Groups_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Velocity_JVM_Groups_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Three_Proxy_JVM_Roles_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Proxy_Topology_READ_ONLY.cmd'
       - 'tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd'
@@ -648,6 +652,75 @@ jobs:
 
           print(f"Validated {len(json_files)} JSON files, {len(pack_meta)} pack.mcmeta files, and {len(manifests)} manifest.json files.")
           PY
+
+  gsc452-jvm-groups-readonly:
+    name: GSC 4.5.2 / shared launcher vs UDP JVM group audit READ ONLY
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Draft PR
+        uses: actions/checkout@v7
+      - name: PowerShell parser, no-mutation audit and disjoint/overlap synthetic cases
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Velocity_JVM_Groups_READ_ONLY.ps1'
+          $tok=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tok,[ref]$errors)
+          if(@($errors).Count -gt 0){
+            foreach($e in @($errors)){Write-Host ('PARSE '+$e.Message)}
+            throw 'JVM groups script syntax failed'
+          }
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $forbidden=@('Start-ScheduledTask','Stop-ScheduledTask','Disable-ScheduledTask','Enable-ScheduledTask',
+            'Register-ScheduledTask','Unregister-ScheduledTask','Stop-Process','Start-Process',
+            'Stop-Service','Start-Service','Restart-Service','Invoke-CimMethod',
+            'Set-ItemProperty','Set-Content','Set-Acl','Remove-Item','taskkill','sc.exe',
+            'Set-NetFirewallRule','New-NetFirewallRule','wevtutil','Clear-EventLog')
+          foreach($cmd in $commands){
+            $name=$cmd.GetCommandName()
+            if($name -and $name -in $forbidden){throw ('Read-only command prohibition failed: '+$name)}
+          }
+          $text=Get-Content -LiteralPath $file -Raw
+          foreach($g in @('Get-CimInstance Win32_Process','Get-ScheduledTask','Get-NetTCPConnection',
+              'Get-NetUDPEndpoint','task_to_jvm_ownership_proven=$false','safe_to_stop=$false',
+              'safe_to_cutover=$false','live_control_authorized=$false')){
+            if(-not $text.Contains($g)){throw ('Required guard missing: '+$g)}
+          }
+          $expected=@{
+             disjoint=@('NONE','THREE','ZERO')
+             overlap=@('ALL_THREE','THREE','THREE')
+             'no-candidates'=@('NONE','ZERO','ZERO')
+             'query-failed'=@('UNVERIFIED','THREE','ZERO')
+          }
+          foreach($s in $expected.Keys){
+            $raw=(& powershell.exe -NoProfile -NonInteractive -File $file -Synthetic $s |Out-String)
+            if($LASTEXITCODE -ne 0){throw ('Synthetic scenario failed: '+$s)}
+            $report=$raw|ConvertFrom-Json
+            if($report.schema -ne 6 -or $report.read_only -ne $true -or $report.synthetic -ne $true -or
+              @($report.task_states).Count -ne 3 -or @($report.udp_owners).Count -ne 3 -or
+              $report.udp_owners_overlap_task_java_candidates -cne $expected[$s][0] -or
+              $report.task_java_velocity_candidates_distinct -cne $expected[$s][1] -or
+              $report.task_java_candidates_with_any_known_udp -cne $expected[$s][2] -or
+              $report.safe_to_stop -ne $false -or $report.safe_to_cutover -ne $false -or
+              $report.task_to_jvm_ownership_proven -ne $false -or $report.live_control_authorized -ne $false -or
+              $report.java_operations -ne 0 -or $report.service_mutations -ne 0 -or $report.task_mutations -ne 0){
+              throw ('Synthetic group safety/identity failure: '+$s)
+            }
+            if($raw -match '(?i)[a-z]:\\|raw_pid|commandline|password|api_token'){
+              throw ('Synthetic output exposes an unapproved detail: '+$s)
+            }
+          }
+          Write-Host 'GSC452_GROUP_DIAGNOSTIC_READ_ONLY_CI_PASS'
+      - name: Publish guarded JVM group operator ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-JVM-GROUP-SEPARATION-READ-ONLY
+          path: |
+            tools/velocity/GSC452_Velocity_JVM_Groups_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Velocity_JVM_Groups_READ_ONLY.cmd
+          if-no-files-found: error
+          retention-days: 7
 
   gsc452-proxy-process-roles-readonly:
     name: GSC 4.5.2 / 3 proxy task vs live JVM roles READ ONLY
