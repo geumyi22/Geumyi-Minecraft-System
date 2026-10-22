@@ -57,6 +57,13 @@ try{
    throw 'Host launch audit misclassified no-trigger disposable Scheduler fixture'
  }
  Write-Host 'DISPOSABLE_SANITIZED_ACTUAL_LAUNCH_AUDIT=PASS'
+ $source=Get-Content -LiteralPath $kit -Raw
+ if($source -notmatch 'Get-NetTCPConnection' -or
+    $source -notmatch 'Get-NetUDPEndpoint' -or
+    $source -match '\\[Net\\.Sockets\\.(?:TcpListener|UdpClient)\\]'){
+  throw 'Production cutover preflight must use passive socket queries only'
+ }
+ Write-Host 'DISPOSABLE_PORT_PRECHECK_STATIC_PASSIVE_ONLY=PASS'
  # The one-click full fleet snapshot MUST deny incomplete fleet records
  # BEFORE writing even the first target's protected archive.
  $snapshotWrapper=Join-Path $PSScriptRoot 'Velocity_Snapshot_Three_Before_Cutover.ps1'
@@ -74,6 +81,31 @@ try{
     $observed.ready_for_cutover -ne $true){
   throw 'Disposable task preflight unexpectedly unsafe'
  }
+ # Occupy only disposable Windows CI runner target ports. NEVER run this
+ # fixture on production: the guard above requires a GitHub-hosted runner.
+ $heldUdp=$null
+ try {
+  $heldUdp=[Net.Sockets.UdpClient]::new(19132)
+  $blocked=(& powershell.exe -NoProfile -NonInteractive -File $kit -Mode Preflight -Target $target | Out-String)|ConvertFrom-Json
+  if($LASTEXITCODE -ne 0 -or $blocked.proxy_ports_free -ne $false -or $blocked.ready_for_cutover -ne $false){
+   throw 'UDP port occupancy not classified as unsafe'
+  }
+ }finally{
+  if($null -ne $heldUdp){$heldUdp.Close()}
+ }
+ Write-Host 'DISPOSABLE_UDP_OCCUPANCY_BLOCKS_CUTOVER=PASS'
+ $heldTcp=$null
+ try {
+  $heldTcp=[Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback,25565)
+  $heldTcp.Start()
+  $blocked=(& powershell.exe -NoProfile -NonInteractive -File $kit -Mode Preflight -Target $target | Out-String)|ConvertFrom-Json
+  if($LASTEXITCODE -ne 0 -or $blocked.proxy_ports_free -ne $false -or $blocked.ready_for_cutover -ne $false){
+   throw 'TCP port occupancy not classified as unsafe'
+  }
+ }finally{
+  if($null -ne $heldTcp){$heldTcp.Stop()}
+ }
+ Write-Host 'DISPOSABLE_TCP_OCCUPANCY_BLOCKS_CUTOVER=PASS'
  & powershell.exe -NoProfile -NonInteractive -File $kit -Mode Snapshot -Target $target -Ticket $ticket -Approved
  if($LASTEXITCODE -ne 0){throw 'Disposable private task definition snapshot failed'}
  if(-not(Test-Path -LiteralPath $originalFile) -or
