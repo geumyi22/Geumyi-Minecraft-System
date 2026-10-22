@@ -795,7 +795,8 @@ jobs:
           }
           # Dot-source into a scope containing ONLY fake Windows command responses.
           # No real Scheduled Task, Java process or socket is queried by the script.
-          $raw=(& { . $file -Fixture none } | Out-String)
+          $raw=(& $file -Fixture none | Out-String)
+          if($LASTEXITCODE -ne 0){throw 'Valid mocked collection exited nonzero'}
           $result=$raw|ConvertFrom-Json
           if($result.schema -ne 7 -or $result.synthetic -ne $false -or
             $result.status -cne 'JVM_GROUPS_READ_ONLY_ANALYZED_NO_ACTION' -or
@@ -814,7 +815,8 @@ jobs:
             param([string]$ClassName,[string]$Filter)
             throw 'PRIVATE_TEST_SENTINEL_PROCESS_PATH'
           }
-          $failure=(& { . $file -Fixture none } | Out-String)
+          $failure=(& $file -Fixture none | Out-String)
+          if($LASTEXITCODE -ne 2){throw 'Failed WMI collection must exit 2'}
           $blocked=$failure|ConvertFrom-Json
           if($blocked.status -cne 'INCOMPLETE_NO_ACTION' -or
             $blocked.safe_to_stop -ne $false -or $blocked.safe_to_cutover -ne $false -or
