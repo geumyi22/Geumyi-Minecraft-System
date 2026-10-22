@@ -737,6 +737,92 @@ jobs:
             }
           }
           Write-Host 'GSC452_V61_SHARED_ANALYSIS_EIGHT_FIXTURES_PASS_NO_OS_MUTATION'
+      - name: Mock Windows live collection path and fail-closed on private errors
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file=(Resolve-Path 'tools/velocity/GSC452_Velocity_JVM_Groups_READ_ONLY.ps1').Path
+          $script:javaA='C:\MockJDK\bin\java.exe'
+          $script:javaB='C:\OtherJDK\bin\java.exe'
+          $script:mockProcesses=@(
+            [pscustomobject]@{ProcessId=101;Name='java.exe';ExecutablePath=$script:javaA;CommandLine='java.exe -jar velocity.jar'},
+            [pscustomobject]@{ProcessId=102;Name='java.exe';ExecutablePath=$script:javaA;CommandLine='java.exe -jar velocity.jar'},
+            [pscustomobject]@{ProcessId=103;Name='java.exe';ExecutablePath=$script:javaA;CommandLine='java.exe -jar velocity.jar'},
+            [pscustomobject]@{ProcessId=201;Name='java.exe';ExecutablePath=$script:javaB;CommandLine='java.exe -jar velocity.jar'},
+            [pscustomobject]@{ProcessId=202;Name='java.exe';ExecutablePath=$script:javaB;CommandLine='java.exe -jar velocity.jar'},
+            [pscustomobject]@{ProcessId=203;Name='java.exe';ExecutablePath=$script:javaB;CommandLine='java.exe -jar velocity.jar'}
+          )
+          function Get-ScheduledTask {
+            [CmdletBinding()]
+            param([string]$TaskPath,[string]$TaskName)
+            $id=$TaskName.Replace('Geumyi Day10 Velocity ','')
+            if($id -notin @('wild','playground','other')){throw 'UNEXPECTED_TASK'}
+            return [pscustomobject]@{
+              State='Running'
+              Actions=@([pscustomobject]@{
+                Execute=$script:javaA
+                WorkingDirectory=(Join-Path $env:ProgramData ('GeumyiServerCenter\Network\FourServer\'+$id))
+                Arguments='-Xmx2G -jar velocity.jar'
+              })
+              Settings=[pscustomobject]@{RestartCount=999}
+            }
+          }
+          function Test-Path {
+            [CmdletBinding()]
+            param([string]$LiteralPath,[string]$PathType)
+            return $true
+          }
+          function Get-CimInstance {
+            [CmdletBinding()]
+            param([string]$ClassName,[string]$Filter)
+            if($ClassName -cne 'Win32_Process'){throw 'UNEXPECTED_QUERY'}
+            return $script:mockProcesses
+          }
+          function Get-NetTCPConnection {
+            [CmdletBinding()]
+            param([string]$State)
+            if($State -ne 'Listen'){throw 'UNEXPECTED_TCP_QUERY'}
+            return @()
+          }
+          function Get-NetUDPEndpoint {
+            [CmdletBinding()]
+            param()
+            return @(
+              [pscustomobject]@{LocalPort=19132;OwningProcess=201},
+              [pscustomobject]@{LocalPort=19133;OwningProcess=202},
+              [pscustomobject]@{LocalPort=19134;OwningProcess=203}
+            )
+          }
+          # Dot-source into a scope containing ONLY fake Windows command responses.
+          # No real Scheduled Task, Java process or socket is queried by the script.
+          $raw=(. $file -Fixture none | Out-String)
+          $result=$raw|ConvertFrom-Json
+          if($result.schema -ne 7 -or $result.synthetic -ne $false -or
+            $result.status -cne 'JVM_GROUPS_READ_ONLY_ANALYZED_NO_ACTION' -or
+            $result.scheduled_java_profiles_shared -cne 'YES' -or
+            $result.candidate_velocity_java_unique -cne 'THREE' -or
+            $result.udp_three_distinct_owner_pids -cne 'YES' -or
+            $result.udp_owner_overlap_with_launcher_candidates -cne 'NONE' -or
+            $result.candidate_jvms_with_tcp_listeners -cne 'ZERO' -or
+            $result.live_control_authorized -ne $false -or
+            $result.task_to_jvm_ownership_proven -ne $false -or
+            $result.safe_to_stop -ne $false -or $result.safe_to_cutover -ne $false) {
+            throw 'V6.1 mock Windows live collection rejected a valid read-only snapshot'
+          }
+          function Get-CimInstance {
+            [CmdletBinding()]
+            param([string]$ClassName,[string]$Filter)
+            throw 'PRIVATE_TEST_SENTINEL_PROCESS_PATH'
+          }
+          $failure=(. $file -Fixture none | Out-String)
+          $blocked=$failure|ConvertFrom-Json
+          if($blocked.status -cne 'INCOMPLETE_NO_ACTION' -or
+            $blocked.safe_to_stop -ne $false -or $blocked.safe_to_cutover -ne $false -or
+            $blocked.live_control_authorized -ne $false -or
+            $failure.Contains('PRIVATE_TEST_SENTINEL')) {
+            throw 'Private WMI query failure did not fail closed/sanitized'
+          }
+          Write-Host 'GSC452_V61_MOCK_WINDOWS_COLLECTION_AND_PRIVATE_FAILURE_PASS'
       - name: Publish reviewed V6.1 READ-ONLY operator ZIP
         uses: actions/upload-artifact@v4
         with:
