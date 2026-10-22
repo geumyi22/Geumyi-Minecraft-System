@@ -1,55 +1,72 @@
-GEUMYI GSC v4.5.2 Canary — Velocity Managed Cutover Kit
-========================================================
+GEUMYI GSC 4.5.2 CANARY — VELOCITY CUTOVER KIT (2026-10-23)
+================================================================
+DRAFT PR #57 ONLY. LIVE MIGRATION 0/3. NOT A STABLE RELEASE.
 
-IMPORTANT: LIVE MAINTENANCE APPROVED, FORCE-STOP NOT APPROVED
-  The operator approved a brief Java/Bedrock interruption. This does not
-  prove that a scheduled background JVM has an accessible console or make
-  Stop-ScheduledTask a graceful shutdown method.
+OPERATOR AUTHORIZATION AND CURRENT FACTS
+  The operator explicitly approved maintenance, including restarting or
+  stopping Velocity and Windows task/configuration changes. The approval
+  is NOT evidence of exact task-to-JVM identity, deployable GSC Host
+  capabilities, or a recoverable shutdown. This GitHub session cannot
+  execute commands on the owner's Windows server PC.
+  Wild Java client login succeeded. Playground client login is not
+  independently established in the latest session. Other Paper server
+  is intentionally OFF; its Velocity Scheduled Task may still run.
+  On-host reports identify three parent/child Velocity-JAR JVM pairs,
+  with UDP19132/33/34 owners in child JVMs; scheduler task instance
+  PID ownership is still not proven. Existing wild client access must
+  not be damaged solely to fix the prior TCP LISTEN=0 observation.
 
-  FIRST run Run_Velocity_Actual_Launch_Audit_READ_ONLY.cmd. It checks
-  the three actual task launch formats, current Java/JAR availability,
-  whether the real server workdir differs from the old ProgramData
-  prototype, and existing restart policy. It discloses no raw paths,
-  credentials, command lines or keys. SHARE ONLY ITS JSON OUTPUT.
+WHAT IS VERIFIED IN ISOLATED WINDOWS CI
+  Source: Velocity_Managed_Cutover.ps1.
+  It now uses only Get-NetTCPConnection and Get-NetUDPEndpoint to inspect
+  TCP/UDP port occupancy; it never probes by transiently opening a port.
+  ANY matching local TCP endpoint (LISTEN or ESTABLISHED), UDP endpoint,
+  or query failure blocks Cutover. Isolated Windows CI verified:
+   * empty-port Preflight;
+   * TCP 25565 occupied -> Cutover readiness DENIED;
+   * UDP 19132 occupied -> Cutover readiness DENIED;
+   * private XML Snapshot, Ready-task disable, receipt commit,
+     Rollback to Ready, and fixture cleanup.
+  This does not prove it is safe to stop a RUNNING production task.
 
-  NEVER run Snapshot/Cutover/Rollback yet. Current PR #57 GSC
-  manifest and official 4.2.0 hash are CI-pinned assumptions, NOT proof
-  of the production Velocity jar or workdir. A running task CANNOT be
-  converted to GSC ownership without a verified graceful exit path and
-  rollback-compatible Canary deployment.
-  
-SAFE FIRST STEP
-  Extract the ZIP into one folder on the Windows server PC.
-  Double-click Run_Velocity_Managed_PRECHECK_READ_ONLY.cmd.
-  It queries only three exact fixed Day10 Scheduled Tasks (wild,
-  playground, other), their Windows task states, and TCP/UDP port
-  availability. It makes NO task edits, restarts, ACL, DPAPI or key changes.
+PROTECTED SNAPSHOT — DO NOT REPEAT
+  The operator previously reported original 3-task Snapshot PASS,
+  including protected ProgramData Recovery records and fixed manifests.
+  DO NOT rerun the fleet snapshot or overwrite records. Tickets and
+  private manifest/task XML are to stay local. Before production cutover,
+  validate those EXACT existing protected receipts, binary artifacts,
+  task XML, launch spec, GSC host capability, and rollback readiness.
+  Never guess/change the protected maintenance ticket.
 
-DO NOT RUN CUTOVER WHILE THE TASK IS RUNNING.
-  This tool is not a process stopper. The currently running old
-  Velocity JVM must be independently and safely stopped during an
-  operator-approved maintenance window before a cutover is possible.
-  A Running result necessarily blocks a Cutover.
+CURRENT PRODUCTION NO-GO GATES
+  - Original Day10 tasks were Running and RestartOnFailure=999.
+  - Old Velocity Java consoles' stdin control is not available to GSC.
+  - This kit has NO stop/kill action for a Running legacy task.
+  - Direct management requires task Disabled, exact approved receipt,
+    pinned velocity.jar, protected manifest, freed ports, Host opt-in,
+    authentication, and an owner-generation marker.
+  - Stop-ScheduledTask IMMEDIATELY stops task instances; it is not the
+    Velocity console-only graceful shutdown command. It might leave
+    child JVMs alive, and scheduling retries must first be inhibited.
+  - Disabling a task does not prove its JVM exited. NEVER disable three
+    production tasks at once or enable a legacy task while an old child
+    or GSC-owned generation might still exist.
+  - Rollback reenables the exact task but does NOT automatically start
+    the original JVM. A dedicated recovery start/join verification is
+    needed. Failure can produce downtime.
 
-PRIVILEGED MODES ARE NOT YET AUTHORIZED ON PRODUCTION
-  Velocity_Managed_Cutover.ps1 supports Snapshot, Cutover, Rollback
-  only with an operator's explicit -Approved switch and unique -Ticket.
-  Snapshot makes a protected local backup and derives a launcher manifest
-  from exact task XML; Cutover disables only the chosen Ready task after
-  free-port and integrity proofs; Rollback only re-enables it after the
-  GSC-owned JVM has stopped and no active-generation marker remains.
-  Rollback does not automatically start Java. Never blindly delete an
-  active/orphan marker or force-stop a task-owned JVM.
+WHAT THIS PACKAGE CAN DO NOW
+  Run_Velocity_Managed_PRECHECK_READ_ONLY.cmd  (READ ONLY).
+  Velocity_Managed_Cutover.ps1 -Mode Snapshot   (privileged, approved).
+  Velocity_Managed_Cutover.ps1 -Mode Cutover    (Ready only, never Running).
+  Velocity_Managed_Cutover.ps1 -Mode Rollback   (Disabled only, ports free).
+  DO NOT use the privileged modes merely because the user gave broad
+  approval. Need an independently verified and tested running-task
+  shutdown/cleanup and host-opt-in/recovery procedure before live use.
+  PR #57 is Draft and existing main, Stable release and worlds are intact.
 
 SECURITY
-  Never upload task XML, private recovery archives, Java commands,
-  username/SID lists, server paths, credentials, VPN keys or
-  Geyser/Floodgate secrets. Share only sanitized READ ONLY outputs.
-  The full source and operator runbook are in PR #57:
+  Do not share task XML, local ticket, raw JVM command lines, absolute
+  private paths, PIDs, secrets, configs, launcher manifests, or
+  Geyser/Floodgate keys. Only sanitized status output is shareable.
   https://github.com/geumyi22/Geumyi-Minecraft-System/pull/57
-
-STATUS
-  The functional cutover/rollback tools and GSC backend are Draft/Canary
-  source, not an installed update, Stable release or live server change.
-  Java+Bedrock actual player login and host-restart recovery must pass
-  operator-attended verification before full production activation.
