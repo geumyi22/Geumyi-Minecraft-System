@@ -321,4 +321,4 @@ try {
 }
 Emit $report
 # Return nonzero errorlevel on incomplete evidence; do not auto-elevate or change ACLs.
-if($script:resultCode -ne 0){exit $script:resultCode}
+exit $script:resultCode
