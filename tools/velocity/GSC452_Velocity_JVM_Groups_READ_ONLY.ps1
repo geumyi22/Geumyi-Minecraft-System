@@ -321,4 +321,9 @@ try {
 }
 Emit $report
 # Return nonzero errorlevel on incomplete evidence; do not auto-elevate or change ACLs.
-exit $script:resultCode
+if($MyInvocation.InvocationName -eq '.'){
+ # Dot-sourced CI mock: preserve test harness scope and publish exit status only.
+ $global:LASTEXITCODE=$script:resultCode
+}else{
+ exit $script:resultCode
+}
