@@ -60,7 +60,8 @@ try{
  $source=Get-Content -LiteralPath $kit -Raw
  if($source -notmatch 'Get-NetTCPConnection' -or
     $source -notmatch 'Get-NetUDPEndpoint' -or
-    $source -match '\\[Net\\.Sockets\\.(?:TcpListener|UdpClient)\\]'){
+    $source.Contains('[Net.Sockets.TcpListener]') -or
+    $source.Contains('[Net.Sockets.UdpClient]')){
   throw 'Production cutover preflight must use passive socket queries only'
  }
  Write-Host 'DISPOSABLE_PORT_PRECHECK_STATIC_PASSIVE_ONLY=PASS'
