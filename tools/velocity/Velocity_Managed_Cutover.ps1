@@ -37,21 +37,18 @@ function IsAdministrator {
  }catch{return $false}
 }
 function PortsFree([string]$target){
+ # OBSERVATION ONLY. Never acquire transient TCP/UDP sockets on production.
+ # Any TCP endpoint (including ESTABLISHED) on the local front port blocks
+ # cutover; sockets may outlive their listening endpoint. Treat query
+ # exceptions as UNKNOWN -> not free, never infer authorization from absence.
  $pair=$expectedPorts[$target]
- $listener=$null
- $udp=$null
  try {
-  $listener=[Net.Sockets.TcpListener]::new([Net.IPAddress]::Any,[int]$pair[0])
-  $listener.Start()
-  $listener.Stop()
-  $udp=[Net.Sockets.UdpClient]::new([int]$pair[1])
-  $udp.Close()
-  return $true
- }catch{
-  if($null -ne $listener){try{$listener.Stop()}catch{}}
-  if($null -ne $udp){try{$udp.Close()}catch{}}
-  return $false
- }
+  $tcp=@(Get-NetTCPConnection -ErrorAction Stop |
+    Where-Object {[int]$_.LocalPort -eq [int]$pair[0]})
+  $udp=@(Get-NetUDPEndpoint -ErrorAction Stop |
+    Where-Object {[int]$_.LocalPort -eq [int]$pair[1]})
+  return ($tcp.Count -eq 0 -and $udp.Count -eq 0)
+ }catch{return $false}
 }
 function TaskState([string]$target){
  $t=Get-ScheduledTask -TaskPath '\' -TaskName $taskNames[$target] -ErrorAction Stop
