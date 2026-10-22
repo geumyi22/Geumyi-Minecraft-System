@@ -41,9 +41,9 @@ function ProcessImageClass($p,[string]$expectedJava) {
  return 'OTHER_EXECUTABLE'
 }
 function Owners($rows,[int]$port) {
- return [int[]]@($rows|Where-Object {
+ return ,([int[]]@($rows|Where-Object {
   [int]$_.LocalPort -eq $port -and [int]$_.OwningProcess -gt 0
- }|ForEach-Object {[int]$_.OwningProcess}|Sort-Object -Unique)
+ }|ForEach-Object {[int]$_.OwningProcess}|Sort-Object -Unique))
 }
 function Emit($r) {
  $r.read_only=$true
@@ -174,7 +174,7 @@ function Analyze($snap,$report) {
   }
  }
  $report.snapshot_task_states_unchanged=[string]$snap.tasksStable
- $report.status='JVM_GROUPS_READ_ONLY_ANALYZED_NO_ACTION'
+ $report.status=if([string]$snap.tasksStable -ceq 'YES'){'JVM_GROUPS_READ_ONLY_ANALYZED_NO_ACTION'}else{'INCONSISTENT_TASK_STATE_NO_ACTION'}
 }
 function FixtureSnapshot([string]$scenario) {
  $base='C:\ProgramData'
