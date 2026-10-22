@@ -4,11 +4,14 @@ param(
  [ValidateSet('none','disjoint','overlap','partial-overlap','shared-owner','missing-udp','tcp-active','metadata-missing','no-candidates')]
  [string]$Fixture='none'
 )
-# READ ONLY. This diagnostic NEVER provides task->JVM attribution or stop authority.
+# V6.2 permission-hardened (schema 7 compatible). READ ONLY.
+# This diagnostic NEVER provides task->JVM attribution or stop authority.
 # Raw task XML, private paths, PIDs, process command lines, secrets and logs
 # are NEVER serialized. Fixtures exercise the SAME analysis as live snapshots.
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
+$script:phase='PREFLIGHT'
+$script:resultCode=0
 
 function CountLabel([int]$value) {
  if($value -lt 0){return 'UNVERIFIED'}
@@ -60,8 +63,14 @@ function Emit($r) {
 function EmptyResult([bool]$synthetic) {
  return [ordered]@{
   schema=7
+  diagnostic_revision='6.2-permissions'
   check='GSC452_VELOCITY_JVM_GROUP_SEPARATION_VERIFIED_READ_ONLY'
   synthetic=$synthetic
+  execution_elevated='NOT_CHECKED'
+  programdata_path_check='NOT_CHECKED'
+  process_metadata_completeness='NOT_CHECKED'
+  failure_phase='NONE'
+  failure_class='NONE'
   task_states=@()
   scheduled_java_profiles_shared='UNVERIFIED'
   candidate_velocity_java_unique='UNVERIFIED'
@@ -175,6 +184,10 @@ function Analyze($snap,$report) {
  }
  $report.snapshot_task_states_unchanged=[string]$snap.tasksStable
  $report.status=if([string]$snap.tasksStable -ceq 'YES'){'JVM_GROUPS_READ_ONLY_ANALYZED_NO_ACTION'}else{'INCONSISTENT_TASK_STATE_NO_ACTION'}
+ $incomplete=@($snap.processes|Where-Object {($_.Name -ieq 'java.exe' -or $_.Name -ieq 'javaw.exe') -and ([string]::IsNullOrWhiteSpace([string]$_.ExecutablePath) -or [string]::IsNullOrWhiteSpace([string]$_.CommandLine))}).Count
+ $report.process_metadata_completeness=if($incomplete -gt 0){'PARTIAL_JAVA_PROCESS_METADATA'}else{'NO_NULL_FIELDS_IN_VISIBLE_JAVA_PROCESSES'}
+ if(-not $report.synthetic -and $incomplete -gt 0){$report.status='PARTIAL_JAVA_METADATA_NO_ACTION';$script:resultCode=2}
+ if(-not $report.synthetic -and $report.snapshot_task_states_unchanged -cne 'YES'){$script:resultCode=2}
 }
 function FixtureSnapshot([string]$scenario) {
  $base='C:\ProgramData'
@@ -227,14 +240,33 @@ function FixtureSnapshot([string]$scenario) {
  }
 }
 function RealSnapshot {
+ $script:phase='PLATFORM_CHECK'
  if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){throw 'WINDOWS_REQUIRED'}
+ $script:phase='TOKEN_CHECK'
+ $identity=[Security.Principal.WindowsIdentity]::GetCurrent()
+ $principal=[Security.Principal.WindowsPrincipal]::new($identity)
+ if(-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
+   $report.execution_elevated='NO';throw 'ELEVATION_REQUIRED'
+ }
+ $report.execution_elevated='YES'
+ $script:phase='PROGRAMDATA_PATH_CHECK'
+ $canonical=[Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData)
+ if([string]::IsNullOrWhiteSpace($env:ProgramData) -or [string]::IsNullOrWhiteSpace($canonical) -or -not (PathEquals $env:ProgramData $canonical)){
+   $report.programdata_path_check='ENVIRONMENT_MISMATCH';throw 'PROGRAMDATA_MISMATCH'
+ }
+ $report.programdata_path_check='CANONICAL_MATCH'
  $taskFacts=@()
  foreach($id in @('wild','playground','other')){
   $name='Geumyi Day10 Velocity '+$id
+  $script:phase='SCHEDULED_TASK_READ'
   $t=Get-ScheduledTask -TaskPath '\' -TaskName $name -ErrorAction Stop
   $act=@($t.Actions|Where-Object {$null -ne $_})
   if($act.Count -ne 1){throw 'TASK_ACTION_AMBIGUOUS'}
   $exe=[string]$act[0].Execute
+  $script:phase='WORKDIR_METADATA_READ'
+  $workdir=Join-Path $env:ProgramData ('GeumyiServerCenter\Network\FourServer\'+$id)
+  if(-not (Test-Path -LiteralPath $workdir -PathType Container -ErrorAction Stop)){throw 'WORKDIR_NOT_ACCESSIBLE'}
+  $script:phase='SCHEDULED_TASK_READ'
   $taskFacts+=@([pscustomobject]@{
    target=$id;state=[string]$t.State;executable=$exe
    executable_exists=(Test-Path -LiteralPath $exe -PathType Leaf)
@@ -243,10 +275,14 @@ function RealSnapshot {
    restartCount=[int]$t.Settings.RestartCount
   })
  }
+ $script:phase='JAVA_CIM_QUERY'
  $java=@(Get-CimInstance Win32_Process -Filter "Name = 'java.exe' OR Name = 'javaw.exe'" -ErrorAction Stop)
+ $script:phase='TCP_LISTENER_QUERY'
  $tcp=@(Get-NetTCPConnection -State Listen -ErrorAction Stop)
+ $script:phase='UDP_ENDPOINT_QUERY'
  $udp=@(Get-NetUDPEndpoint -ErrorAction Stop)
  $stable='YES'
+ $script:phase='SCHEDULED_TASK_STABILITY_CHECK'
  foreach($t in $taskFacts){
   $again=Get-ScheduledTask -TaskPath '\' -TaskName ('Geumyi Day10 Velocity '+$t.target) -ErrorAction Stop
   if([string]$again.State -cne [string]$t.state){$stable='NO'}
@@ -259,9 +295,30 @@ function RealSnapshot {
 $report=EmptyResult ($Fixture -ne 'none')
 try {
  $snapshot=if($Fixture -ne 'none'){FixtureSnapshot $Fixture}else{RealSnapshot}
+ $script:phase='ANALYSIS'
  Analyze $snapshot $report
 }catch {
- # No sensitive exception messages, paths, PID or task XML are emitted.
+ # Never print exception message, paths, PIDs, command lines, task XML or stack.
  $report.status='INCOMPLETE_NO_ACTION'
+ $report.failure_phase=$script:phase
+ $ex=$_.Exception
+ $code=[int64]$ex.HResult
+ if($ex.Message -ceq 'ELEVATION_REQUIRED'){
+   $report.failure_class='ELEVATION_REQUIRED';$script:resultCode=3
+ }elseif($ex.Message -ceq 'PROGRAMDATA_MISMATCH'){
+   $report.failure_class='PROGRAMDATA_ENVIRONMENT_MISMATCH';$script:resultCode=4
+ }elseif($ex.Message -ceq 'WINDOWS_REQUIRED'){
+   $report.failure_class='WINDOWS_REQUIRED';$script:resultCode=4
+ }elseif($ex.Message -ceq 'WORKDIR_NOT_ACCESSIBLE'){
+   $report.failure_class='WORKDIR_ACCESS_OR_MISSING';$script:resultCode=2
+ }elseif($ex -is [System.UnauthorizedAccessException] -or $code -eq -2147024891 -or [string]$_.FullyQualifiedErrorId -match 'AccessDenied|UnauthorizedAccess'){
+   $report.failure_class='ACCESS_DENIED';$script:resultCode=2
+ }elseif($ex -is [System.Management.Automation.ItemNotFoundException]){
+   $report.failure_class='EXPECTED_OBJECT_NOT_FOUND';$script:resultCode=2
+ }else{
+   $report.failure_class='QUERY_OR_ENVIRONMENT_FAILURE';$script:resultCode=2
+ }
 }
 Emit $report
+# Return nonzero errorlevel on incomplete evidence; do not auto-elevate or change ACLs.
+if($script:resultCode -ne 0){exit $script:resultCode}
