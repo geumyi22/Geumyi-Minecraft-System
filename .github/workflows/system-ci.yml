@@ -825,6 +825,8 @@ jobs:
             throw 'Private WMI query failure did not fail closed/sanitized'
           }
           Write-Host 'GSC452_V61_MOCK_WINDOWS_COLLECTION_AND_PRIVATE_FAILURE_PASS'
+          # Expected negative test sets LASTEXITCODE=2; do not fail the wrapper job.
+          exit 0
       - name: Publish reviewed V6.1 READ-ONLY operator ZIP
         uses: actions/upload-artifact@v4
         with:
