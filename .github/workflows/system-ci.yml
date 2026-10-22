@@ -796,7 +796,7 @@ jobs:
           # Dot-source into a scope containing ONLY fake Windows command responses.
           # No real Scheduled Task, Java process or socket is queried by the script.
           $raw=(& $file -Fixture none | Out-String)
-          if($LASTEXITCODE -ne 0){throw 'Valid mocked collection exited nonzero'}
+          if($LASTEXITCODE -ne 0){$why=$raw|ConvertFrom-Json;throw ('Mock collection failed: '+$why.failure_class+' phase='+$why.failure_phase+' exit='+$LASTEXITCODE)}
           $result=$raw|ConvertFrom-Json
           if($result.schema -ne 7 -or $result.synthetic -ne $false -or
             $result.status -cne 'JVM_GROUPS_READ_ONLY_ANALYZED_NO_ACTION' -or
