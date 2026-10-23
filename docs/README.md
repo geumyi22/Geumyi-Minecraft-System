@@ -5,6 +5,7 @@
 ## 찾아보기
 
 - [현재 프로젝트 안내](../README.md)
+- [**2026-10-24 최신 운영 상태·GitHub/PR 인수인계**](operations/GMS-CURRENT-STATUS-2026-10-24.md) — Stable/Canary/실서버 구분, Velocity 0/3, Day12 이후 유지보수, 민감정보 보존 원칙
 - [최신 4.5.1/1.5.1+151 수동 설치 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151)
 - [실운영 기준 및 관리 자료](operations/INDEX.md)
 - [4.5.1/1.5.1 실기기 검증 체크리스트](operations/RELEASE-4.5.1-1.5.1-SMOKE-CHECKLIST.md)
