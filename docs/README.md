@@ -1,5 +1,8 @@
 # 금이 마인크래프트 시스템 문서 안내
 
+> **현재 2026-10-20 진행 중:** [GSC 4.5.2 Velocity 개발·실서버 확인 현황](operations/GSC-452-VELOCITY-CURRENT-STATUS-2026-10-20.md) · [GitHub Draft PR 정리표](operations/PR-TRIAGE-2026-10-20.md). 기존 Day 12 종료 문서와 최신 Stable 릴리즈는 그대로 보존합니다.
+
+
 최상위 폴더의 복잡한 개발 기록을 일차별 및 주제별로 재배치했습니다.
 
 ## 찾아보기

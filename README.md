@@ -1,5 +1,8 @@
 # Geumyi Minecraft System
 
+> **2026-10-20 Post-closeout Canary development:** GSC 4.5.2 Velocity direct management is being developed in **[Draft PR #57](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/57)**. The operator-confirmed three-task live audit and protected original task snapshot have completed, but **GSC Canary Staging + live original Host executable backup and SHA verification are operator-confirmed; installation, cold cutover, live Java/Bedrock E2E and host restart/orphan recovery are NOT confirmed**. Read [the current one-page status](docs/operations/GSC-452-VELOCITY-CURRENT-STATUS-2026-10-20.md) and [the PR review grouping](docs/operations/PR-TRIAGE-2026-10-20.md). Earlier Day 1–12 milestones remain historically closed; the latest GitHub published Stable release is still GSC 4.5.1 / GSCM 1.5.1.
+
+
 > **프로젝트 종료 정리 (2026-10-11):** 일반 기능 개발과 반복 테스트는 소규모 서버 운영 기준으로 마감했습니다. GitHub/PC 정리 기록과 유지할 복구 자산은 [PROJECT-CLOSEOUT-2026-10-11.md](PROJECT-CLOSEOUT-2026-10-11.md)에 있습니다. 정식 Stable 릴리즈의 엄격한 보안 게이트는 아직 통과하지 않았습니다.
 
 > **2026-10-24 유지보수 현황:** Day 12의 소규모 운영 마감은 역사적 기준이며, 이후 GSC **4.5.2 Canary/Velocity 직접 관리**는 [Draft PR #57](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/57)에서 별도 개발 중입니다. 2026-10-21 GSC Canary **Host 설치 성공은 운영자 보고**이고, 기존 Velocity 세 프록시의 GSC 직접 관리 전환은 **0/3**입니다. 이 작업은 `main`/Stable에 병합·배포되지 않았습니다. 최신 점검·인수인계: [2026-10-24 프로젝트 상태](docs/operations/GMS-CURRENT-STATUS-2026-10-24.md).

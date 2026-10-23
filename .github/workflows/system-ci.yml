@@ -18,6 +18,28 @@ on:
       - 'deploy/**'
       - 'Network/**'
       - 'tools/day10/**'
+      - 'tools/velocity/CI_Scheduler_Disposable_Policy_Restore.ps1'
+      - 'tools/velocity/CI_Managed_Cutover_Disposable.ps1'
+      - 'tools/velocity/Velocity_Managed_Cutover.ps1'
+      - 'tools/velocity/Velocity_Actual_Launch_Audit_READ_ONLY.ps1'
+      - 'tools/velocity/Velocity_Snapshot_Three_Before_Cutover.ps1'
+      - 'tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
+      - 'tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Three_Proxy_JVM_Roles_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Velocity_JVM_Groups_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Velocity_JVM_Groups_READ_ONLY.cmd'
+      - 'tools/velocity/Run_GSC452_Three_Proxy_JVM_Roles_READ_ONLY.cmd'
+      - 'tools/velocity/Run_GSC452_Wild_Proxy_Topology_READ_ONLY.cmd'
+      - 'tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd'
+      - 'tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd'
+      - 'tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd'
+      - 'tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md'
+      - 'tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd'
+      - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
       - 'tools/release/**'
       - 'DAY8-RUNBOOK.md'
       - '.github/workflows/day8-release.yml'
@@ -38,6 +60,28 @@ on:
       - 'deploy/**'
       - 'Network/**'
       - 'tools/day10/**'
+      - 'tools/velocity/CI_Scheduler_Disposable_Policy_Restore.ps1'
+      - 'tools/velocity/CI_Managed_Cutover_Disposable.ps1'
+      - 'tools/velocity/Velocity_Managed_Cutover.ps1'
+      - 'tools/velocity/Velocity_Actual_Launch_Audit_READ_ONLY.ps1'
+      - 'tools/velocity/Velocity_Snapshot_Three_Before_Cutover.ps1'
+      - 'tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
+      - 'tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Three_Proxy_JVM_Roles_READ_ONLY.ps1'
+      - 'tools/velocity/GSC452_Velocity_JVM_Groups_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Velocity_JVM_Groups_READ_ONLY.cmd'
+      - 'tools/velocity/Run_GSC452_Three_Proxy_JVM_Roles_READ_ONLY.cmd'
+      - 'tools/velocity/Run_GSC452_Wild_Proxy_Topology_READ_ONLY.cmd'
+      - 'tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd'
+      - 'tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd'
+      - 'tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd'
+      - 'tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md'
+      - 'tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd'
+      - 'tools/velocity/CI_Scheduler_Disposable_AutoRestart.ps1'
       - 'tools/release/**'
       - 'DAY8-RUNBOOK.md'
       - '.github/workflows/day8-release.yml'
@@ -67,7 +111,165 @@ jobs:
       - name: Run GSC tests
         working-directory: GSC/ServerCenter
         run: go test ./...
+      - name: Race-check isolated Velocity lifecycle and message authentication
+        working-directory: GSC/ServerCenter
+        run: go test -race ./internal/velocitylifecycle ./internal/velocitybridge ./internal/velocitypeer ./internal/velocitymanaged
+      - name: Validate cutover kit parser and fail-closed synthetic modes
+        shell: powershell
+        timeout-minutes: 2
+        run: |
+          $script='tools/velocity/Velocity_Managed_Cutover.ps1'
+          $tokens=$null; $parseErrors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script),[ref]$tokens,[ref]$parseErrors)
+          if(@($parseErrors).Count -gt 0){throw 'Velocity cutover PowerShell syntax invalid'}
+          foreach($target in @('wild','playground','other')){
+            foreach($state in @('Running','Ready','Disabled','Queued','Missing')){
+              $output=& powershell.exe -NoProfile -NonInteractive -File $script -Target $target -Mode Preflight -Synthetic -SyntheticState $state
+              if($LASTEXITCODE -ne 0){throw 'Synthetic preflight failed'}
+              $v=($output|Out-String)|ConvertFrom-Json
+              if($v.schema -ne 1 -or $v.target -cne $target -or $v.synthetic -ne $true -or $v.read_only -ne $true -or $v.live_control_authorized -ne $false -or $v.status -cne 'SYNTHETIC_NO_GO' -or $v.ready_for_cutover -ne ($state -eq 'Ready')){throw 'Synthetic read-only preflight violated NO-GO contract'}
+            }
+          }
+          # Expected child errors are intentional: PowerShell 5.1 treats child
+          # stderr as a terminating NativeCommandError with Stop preference.
+          $originalPreference=$ErrorActionPreference
+          try {
+            $ErrorActionPreference='Continue'
+            $output=& powershell.exe -NoProfile -NonInteractive -File $script -Target wild -Mode Cutover -Synthetic -Approved -Ticket 'CI-ONLY-12345' 2>&1
+            $cutoverExit=$LASTEXITCODE
+            $output=& powershell.exe -NoProfile -NonInteractive -File $script -Target wild -Mode Rollback -Synthetic -Approved -Ticket 'CI-ONLY-12345' 2>&1
+            $rollbackExit=$LASTEXITCODE
+          } finally { $ErrorActionPreference=$originalPreference }
+          if($cutoverExit -eq 0){throw 'Synthetic mode executed a cutover'}
+          if($rollbackExit -eq 0){throw 'Synthetic mode executed rollback'}
+          Write-Host 'Velocity 17-case cutover safety matrix PASS'
+          # Actions PowerShell wrapper exits with LASTEXITCODE of last native child.
+          # Reset only after both intentional denials were explicitly verified.
+          $global:LASTEXITCODE=0
+      - name: Disposable non-triggered Windows task 999 to zero to 999 and cleanup
+        shell: powershell
+        timeout-minutes: 4
+        run: |
+          $file='tools/velocity/CI_Scheduler_Disposable_Policy_Restore.ps1'
+          $tokens=$null; $syntaxErrors=$null
+          [void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$syntaxErrors)
+          if(@($syntaxErrors).Count -gt 0){throw 'Disposable CI policy task script syntax rejected'}
+          & powershell.exe -NoProfile -NonInteractive -File $file
+          if($LASTEXITCODE -ne 0){throw 'Disposable Windows task restoration test failed'}
+      # Deliberately do not re-run the bounded dummy auto-retry probe on
+      # every PR commit. Two disposable Windows observations saw only the
+      # initial failure and no automatic relaunch within the fixed window.
+      # A green probe used to mean cleanup succeeded, NOT crash-retry worked.
+      # Crash-recovery capability remains NO-GO until a separate, purpose-
+      # built disposable Windows VM verifies the actual scheduler failure mode.
 
+  velocity-owned-official-e2e:
+    name: Official Velocity 4.2.0 owned-console shutdown/restart CI only
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact draft
+        uses: actions/checkout@v7
+      - name: Setup JDK25
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Setup Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: GSC/ServerCenter/go.mod
+          cache: false
+      - name: Run pinned official Velocity process ownership lifecycle (CI ONLY)
+        shell: powershell
+        working-directory: GSC/ServerCenter
+        timeout-minutes: 6
+        run: |
+          if($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_OS -cne 'Windows' -or
+             [string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)){
+            throw 'CI HOST GUARD failed; refusing Velocity process launch'
+          }
+          $sha='35a5596a5468a035d8a32c8de5ebb0dc6b8d8f0cc3ff5169d514aca762af8aa8'
+          $jar=Join-Path $env:RUNNER_TEMP 'gsc452-ci-velocity-4.2.0-30.jar'
+          $url='https://fill-data.papermc.io/v1/objects/'+$sha+'/velocity-4.2.0-30.jar'
+          try {
+            Invoke-WebRequest -Uri $url -OutFile $jar -UseBasicParsing -TimeoutSec 75 -ErrorAction Stop
+            $file=Get-Item -LiteralPath $jar -ErrorAction Stop
+            if($file.Length -ne 42163652){throw 'Official Velocity artifact length mismatch'}
+            $digest=(Get-FileHash -LiteralPath $jar -Algorithm SHA256).Hash.ToLowerInvariant()
+            if($digest -cne $sha){throw 'Official Velocity SHA-256 mismatch'}
+            $env:GSC452_CI_VELOCITY420_JAR=$jar
+            go test -count=1 -timeout 125s -run TestOfficialVelocity420ManagedConsoleLifecycleCI -v ./internal/velocitymanaged
+            if($LASTEXITCODE -ne 0){throw 'Owned-console shutdown/restart E2E failed'}
+          } finally {
+            Remove-Item -LiteralPath $jar -Force -ErrorAction SilentlyContinue
+          }
+
+  velocity-cutover-disposable:
+    name: Disposable Windows Task cutover + original backup + rollback (CI ONLY)
+    runs-on: windows-latest
+    timeout-minutes: 7
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+      - name: Setup disposable Java path (never launch)
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Verify and execute fake non-triggered Windows Task Scheduler cutover
+        shell: powershell
+        timeout-minutes: 5
+        run: |
+          if($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_OS -cne 'Windows'){
+            throw 'CI-only OS guard failed'
+          }
+          $script='tools/velocity/CI_Managed_Cutover_Disposable.ps1'
+          $tokens=$null; $issues=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $script),[ref]$tokens,[ref]$issues)
+          if(@($issues).Count -gt 0){throw 'Disposable cutover fixture syntax invalid'}
+          $audit='tools/velocity/Velocity_Actual_Launch_Audit_READ_ONLY.ps1'
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $audit),[ref]$tokens,[ref]$issues)
+          if(@($issues).Count -gt 0){foreach($i in @($issues)){Write-Host ('AUDIT PARSE LINE '+$i.Extent.StartLineNumber+': '+$i.Message)};throw 'Host launch audit PowerShell syntax invalid'}
+          $backup='tools/velocity/Velocity_Snapshot_Three_Before_Cutover.ps1'
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $backup),[ref]$tokens,[ref]$issues)
+          if(@($issues).Count -gt 0){throw 'Production backup-only wrapper PowerShell syntax invalid'}
+          & powershell.exe -NoProfile -NonInteractive -File $script
+          if($LASTEXITCODE -ne 0){throw 'Disposable Windows cutover and rollback not proven'}
+      - name: Upload actual-host READ-ONLY launch audit (separate safe ZIP)
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-Velocity-Actual-Launch-READ-ONLY
+          path: |
+            tools/velocity/Velocity_Actual_Launch_Audit_READ_ONLY.ps1
+            tools/velocity/Run_Velocity_Actual_Launch_Audit_READ_ONLY.cmd
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload snapshot-only approved maintenance kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-Velocity-OriginalTask-Snapshot-ONLY
+          path: |
+            tools/velocity/Velocity_Snapshot_Three_Before_Cutover.ps1
+            tools/velocity/Run_Velocity_Snapshot_Three_ADMIN.cmd
+            tools/velocity/Velocity_Managed_Cutover.ps1
+            tools/velocity/Velocity_Actual_Launch_Audit_READ_ONLY.ps1
+            tools/velocity/VELOCITY-MANAGED-KIT-README.txt
+          if-no-files-found: error
+          retention-days: 7
+      - name: Attach read-only-first Velocity operator kit (do not auto-apply)
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-Velocity-Managed-Cutover-CANARY
+          path: |
+            tools/velocity/Velocity_Managed_Cutover.ps1
+            tools/velocity/Run_Velocity_Managed_PRECHECK_READ_ONLY.cmd
+            tools/velocity/Velocity_Actual_Launch_Audit_READ_ONLY.ps1
+            tools/velocity/Run_Velocity_Actual_Launch_Audit_READ_ONLY.cmd
+            tools/velocity/VELOCITY-MANAGED-KIT-README.txt
+            docs/operations/GSC-VELOCITY-DIRECT-OWNERSHIP-CUTOVER-2026-10-19.md
+          if-no-files-found: error
+          retention-days: 7
   statusagent:
     name: StatusAgent 0.5.4 / build
     runs-on: ubuntu-latest
@@ -451,6 +653,708 @@ jobs:
           print(f"Validated {len(json_files)} JSON files, {len(pack_meta)} pack.mcmeta files, and {len(manifests)} manifest.json files.")
           PY
 
+  gsc452-jvm-groups-readonly:
+    name: GSC 4.5.2 / V6.1 full analysis fixture + mutation guard
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Draft PR
+        uses: actions/checkout@v7
+      - name: Parse, audit no OS changes, run real analysis on eight fake Windows snapshots
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Velocity_JVM_Groups_READ_ONLY.ps1'
+          $tok=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tok,[ref]$errors)
+          if(@($errors).Count -ne 0){
+            foreach($e in @($errors)){Write-Host ('PARSE '+$e.Message)}
+            throw 'V6.1 PowerShell parser failed'
+          }
+          $forbidden=@('Start-ScheduledTask','Stop-ScheduledTask','Disable-ScheduledTask','Enable-ScheduledTask',
+            'Register-ScheduledTask','Unregister-ScheduledTask','Set-ScheduledTask',
+            'Stop-Process','Start-Process','taskkill','sc.exe','Set-Acl','Set-Content',
+            'Remove-Item','Set-ItemProperty','Stop-Service','Start-Service',
+            'Restart-Service','Invoke-CimMethod','Set-NetFirewallRule',
+            'New-NetFirewallRule','wevtutil','Clear-EventLog','Start-Job')
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          foreach($cmd in $commands) {
+            $name=$cmd.GetCommandName()
+            if($name -and $name -in $forbidden){throw ('Mutating command in READ-ONLY script: '+$name)}
+          }
+          $source=Get-Content -LiteralPath $file -Raw
+          foreach($gate in @('Get-ScheduledTask','Get-CimInstance Win32_Process',
+            'Get-NetTCPConnection -State Listen','Get-NetUDPEndpoint','function Analyze(',
+            'Analyze $snapshot $report','safe_to_stop=$false','safe_to_cutover=$false',
+            'live_control_authorized=$false','task_to_jvm_ownership_proven=$false',
+            'legacy_stdin_access_proven=$false')) {
+            if(-not $source.Contains($gate)){throw ('Missing safety/shared-engine gate: '+$gate)}
+          }
+          $scenarios=@{
+            disjoint=@('NONE','THREE','ZERO','ZERO','YES')
+            overlap=@('ALL_THREE','THREE','THREE','ZERO','YES')
+            'partial-overlap'=@('SOME','THREE','ONE','ZERO','YES')
+            'shared-owner'=@('UNVERIFIED','THREE','ZERO','ZERO','NO')
+            'missing-udp'=@('UNVERIFIED','THREE','ZERO','ZERO','UNVERIFIED')
+            'tcp-active'=@('NONE','THREE','ZERO','ONE','YES')
+            'metadata-missing'=@('UNVERIFIED','THREE','ZERO','ZERO','YES')
+            'no-candidates'=@('NONE','ZERO','ZERO','ZERO','YES')
+          }
+          foreach($scenario in $scenarios.Keys) {
+            $raw=(& powershell.exe -NoProfile -NonInteractive -File $file -Fixture $scenario |Out-String)
+            if($LASTEXITCODE -ne 0){throw ('Fixture failed to run: '+$scenario)}
+            try{$x=$raw|ConvertFrom-Json}catch{throw ('Invalid JSON from fixture: '+$scenario)}
+            if($x.schema -ne 7 -or $x.synthetic -ne $true -or $x.read_only -ne $true -or
+              $x.status -cne 'JVM_GROUPS_READ_ONLY_ANALYZED_NO_ACTION' -or
+              $x.udp_owner_overlap_with_launcher_candidates -cne $scenarios[$scenario][0] -or
+              $x.candidate_velocity_java_unique -cne $scenarios[$scenario][1] -or
+              $x.candidate_jvms_with_known_udp -cne $scenarios[$scenario][2] -or
+              $x.candidate_jvms_with_tcp_listeners -cne $scenarios[$scenario][3] -or
+              $x.udp_three_distinct_owner_pids -cne $scenarios[$scenario][4] -or
+              $x.task_to_jvm_ownership_proven -ne $false -or
+              $x.legacy_stdin_access_proven -ne $false -or
+              $x.safe_to_stop -ne $false -or $x.safe_to_cutover -ne $false -or
+              $x.live_control_authorized -ne $false -or
+              $x.task_mutations -ne 0 -or $x.service_mutations -ne 0 -or $x.java_operations -ne 0 -or
+              @($x.task_states).Count -ne 3 -or @($x.udp_owners).Count -ne 3 -or
+              @($x.known_tcp_listeners).Count -ne 3) {
+              throw ('V6.1 fixture/guard regression: '+$scenario)
+            }
+            if($scenario -eq 'disjoint' -and @($x.udp_owners|Where-Object {
+              $_.image_class -cne 'JAVA_OTHER_LOCATION' -or $_.jar_class -cne 'VELOCITY_JAR'
+            }).Count -ne 0){throw 'Disjoint UDP process classification mismatch'}
+            if($scenario -eq 'missing-udp' -and $x.udp_owners[0].unique_owner_count -cne 'ZERO'){
+              throw 'Zero UDP endpoint was not classified without throwing'
+            }
+            if($scenario -eq 'metadata-missing' -and $x.udp_owners[1].jar_class -cne 'UNVERIFIED'){
+              throw 'Missing process metadata did not fail closed'
+            }
+            if($scenario -eq 'tcp-active' -and $x.known_tcp_listeners[0].unique_owner_count -cne 'ONE'){
+              throw 'Configured TCP listener classifier failed'
+            }
+            if($raw -match '(?i)[A-Z]:\\|raw_pid|commandline|api_token|secret'){
+              throw ('Unapproved private data in synthetic output: '+$scenario)
+            }
+          }
+          Write-Host 'GSC452_V61_SHARED_ANALYSIS_EIGHT_FIXTURES_PASS_NO_OS_MUTATION'
+      - name: Mock Windows live collection path and fail-closed on private errors
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file=(Resolve-Path 'tools/velocity/GSC452_Velocity_JVM_Groups_READ_ONLY.ps1').Path
+          $script:javaA='C:\MockJDK\bin\java.exe'
+          $script:javaB='C:\OtherJDK\bin\java.exe'
+          $script:mockProcesses=@(
+            [pscustomobject]@{ProcessId=101;Name='java.exe';ExecutablePath=$script:javaA;CommandLine='java.exe -jar velocity.jar'},
+            [pscustomobject]@{ProcessId=102;Name='java.exe';ExecutablePath=$script:javaA;CommandLine='java.exe -jar velocity.jar'},
+            [pscustomobject]@{ProcessId=103;Name='java.exe';ExecutablePath=$script:javaA;CommandLine='java.exe -jar velocity.jar'},
+            [pscustomobject]@{ProcessId=201;Name='java.exe';ExecutablePath=$script:javaB;CommandLine='java.exe -jar velocity.jar'},
+            [pscustomobject]@{ProcessId=202;Name='java.exe';ExecutablePath=$script:javaB;CommandLine='java.exe -jar velocity.jar'},
+            [pscustomobject]@{ProcessId=203;Name='java.exe';ExecutablePath=$script:javaB;CommandLine='java.exe -jar velocity.jar'}
+          )
+          function Get-ScheduledTask {
+            [CmdletBinding()]
+            param([string]$TaskPath,[string]$TaskName)
+            $id=$TaskName.Replace('Geumyi Day10 Velocity ','')
+            if($id -notin @('wild','playground','other')){throw 'UNEXPECTED_TASK'}
+            return [pscustomobject]@{
+              State='Running'
+              Actions=@([pscustomobject]@{
+                Execute=$script:javaA
+                WorkingDirectory=(Join-Path $env:ProgramData ('GeumyiServerCenter\Network\FourServer\'+$id))
+                Arguments='-Xmx2G -jar velocity.jar'
+              })
+              Settings=[pscustomobject]@{RestartCount=999}
+            }
+          }
+          function Test-Path {
+            [CmdletBinding()]
+            param([string]$LiteralPath,[string]$PathType)
+            return $true
+          }
+          function Get-CimInstance {
+            [CmdletBinding()]
+            param([string]$ClassName,[string]$Filter)
+            if($ClassName -cne 'Win32_Process'){throw 'UNEXPECTED_QUERY'}
+            return $script:mockProcesses
+          }
+          function Get-NetTCPConnection {
+            [CmdletBinding()]
+            param([string]$State)
+            if($State -ne 'Listen'){throw 'UNEXPECTED_TCP_QUERY'}
+            return @()
+          }
+          function Get-NetUDPEndpoint {
+            [CmdletBinding()]
+            param()
+            return @(
+              [pscustomobject]@{LocalPort=19132;OwningProcess=201},
+              [pscustomobject]@{LocalPort=19133;OwningProcess=202},
+              [pscustomobject]@{LocalPort=19134;OwningProcess=203}
+            )
+          }
+          # Dot-source into a scope containing ONLY fake Windows command responses.
+          # No real Scheduled Task, Java process or socket is queried by the script.
+          $raw=(& { . $file -Fixture none } | Out-String)
+          if($LASTEXITCODE -ne 0){$why=$raw|ConvertFrom-Json;throw ('Mock collection failed: '+$why.failure_class+' phase='+$why.failure_phase+' exit='+$LASTEXITCODE)}
+          $result=$raw|ConvertFrom-Json
+          if($result.schema -ne 7 -or $result.synthetic -ne $false -or
+            $result.status -cne 'JVM_GROUPS_READ_ONLY_ANALYZED_NO_ACTION' -or
+            $result.scheduled_java_profiles_shared -cne 'YES' -or
+            $result.candidate_velocity_java_unique -cne 'THREE' -or
+            $result.udp_three_distinct_owner_pids -cne 'YES' -or
+            $result.udp_owner_overlap_with_launcher_candidates -cne 'NONE' -or
+            $result.candidate_jvms_with_tcp_listeners -cne 'ZERO' -or
+            $result.live_control_authorized -ne $false -or
+            $result.task_to_jvm_ownership_proven -ne $false -or
+            $result.safe_to_stop -ne $false -or $result.safe_to_cutover -ne $false) {
+            throw 'V6.1 mock Windows live collection rejected a valid read-only snapshot'
+          }
+          function Get-CimInstance {
+            [CmdletBinding()]
+            param([string]$ClassName,[string]$Filter)
+            throw 'PRIVATE_TEST_SENTINEL_PROCESS_PATH'
+          }
+          $failure=(& { . $file -Fixture none } | Out-String)
+          if($LASTEXITCODE -ne 2){throw 'Failed WMI collection must exit 2'}
+          $blocked=$failure|ConvertFrom-Json
+          if($blocked.status -cne 'INCOMPLETE_NO_ACTION' -or
+            $blocked.safe_to_stop -ne $false -or $blocked.safe_to_cutover -ne $false -or
+            $blocked.live_control_authorized -ne $false -or
+            $failure.Contains('PRIVATE_TEST_SENTINEL')) {
+            throw 'Private WMI query failure did not fail closed/sanitized'
+          }
+          Write-Host 'GSC452_V61_MOCK_WINDOWS_COLLECTION_AND_PRIVATE_FAILURE_PASS'
+          # Expected negative test sets LASTEXITCODE=2; do not fail the wrapper job.
+          exit 0
+      - name: Publish reviewed V6.1 READ-ONLY operator ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-VELOCITY-JVM-GROUPS-V61-VERIFIED-READ-ONLY
+          path: |
+            tools/velocity/GSC452_Velocity_JVM_Groups_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Velocity_JVM_Groups_READ_ONLY.cmd
+          if-no-files-found: error
+          retention-days: 7
+
+  gsc452-proxy-process-roles-readonly:
+    name: GSC 4.5.2 / 3 proxy task vs live JVM roles READ ONLY
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout Draft PR
+        uses: actions/checkout@v7
+      - name: Syntax safety and synthetic role classifiers
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Three_Proxy_JVM_Roles_READ_ONLY.ps1'
+          $tok=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tok,[ref]$errors)
+          if(@($errors).Count -gt 0){
+            foreach($item in @($errors)){Write-Host ('PARSE '+$item.Message)}
+            throw 'Proxy task/process role script syntax failed'
+          }
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $forbidden=@('Start-ScheduledTask','Stop-ScheduledTask','Disable-ScheduledTask',
+            'Enable-ScheduledTask','Register-ScheduledTask','Unregister-ScheduledTask',
+            'Stop-Process','Start-Process','taskkill','Set-Acl','Set-Content','Remove-Item',
+            'Start-Service','Stop-Service','Restart-Service','Invoke-CimMethod',
+            'Set-ItemProperty','Set-NetFirewallRule','New-NetFirewallRule','wevtutil')
+          foreach($cmd in $commands){
+            $n=$cmd.GetCommandName()
+            if($n -and $n -in $forbidden){throw ('Disallowed read-only mutation: '+$n)}
+          }
+          $text=Get-Content -LiteralPath $file -Raw
+          foreach($required in @('Get-CimInstance Win32_Process','Get-ScheduledTaskInfo',
+            'Get-NetTCPConnection -State Listen','Get-NetUDPEndpoint','Get-WinEvent',
+            'safe_to_stop=$false','safe_to_cutover=$false','live_control_authorized=$false',
+            'task_to_jvm_ownership_proven=$false')){
+            if(-not $text.Contains($required)){throw ('Guard missing: '+$required)}
+          }
+          $raw=(& powershell.exe -NoProfile -NonInteractive -File $file -Synthetic |Out-String)
+          if($LASTEXITCODE -ne 0){throw 'Synthetic process role probe failed'}
+          $result=$raw|ConvertFrom-Json
+          if($result.schema -ne 5 -or $result.synthetic -ne $true -or $result.read_only -ne $true -or
+            @($result.scheduled_tasks).Count -ne 3 -or @($result.udp_owners).Count -ne 3 -or
+            $result.all_target_tcp_ports -cne 'ZERO_LISTENERS' -or
+            $result.live_control_authorized -ne $false -or $result.safe_to_stop -ne $false -or
+            $result.safe_to_cutover -ne $false -or $result.task_to_jvm_ownership_proven -ne $false -or
+            $result.task_mutations -ne 0 -or $result.service_mutations -ne 0 -or
+            $result.java_operations -ne 0){throw 'Unsafe read-only role synthetic result'}
+          foreach($id in @('wild','playground','other')){
+            if(@($result.scheduled_tasks|Where-Object {$_.target -ceq $id}).Count -ne 1 -or
+              @($result.udp_owners|Where-Object {$_.target -ceq $id}).Count -ne 1){
+              throw ('Missing target: '+$id)
+            }
+          }
+          if($raw -match '(?i)[a-z]:\\|ProcessID|CommandLine|api_token'){
+            throw 'Private data in synthetic output'
+          }
+          Write-Host 'GSC452_PROXY_ROLE_READ_ONLY_WINDOWS_SYNTHETIC_PASS'
+      - name: Publish three-proxy role diagnosis ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-THREE-PROXY-JVM-ROLES-READ-ONLY
+          path: |
+            tools/velocity/GSC452_Three_Proxy_JVM_Roles_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Three_Proxy_JVM_Roles_READ_ONLY.cmd
+          if-no-files-found: error
+          retention-days: 7
+
+  gsc452-wild-topology-readonly:
+    name: GSC 4.5.2 / wild proxy topology read-only synthetic safety
+    runs-on: windows-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout Draft PR
+        uses: actions/checkout@v7
+      - name: Verify no mutations, schema and known topology fixtures
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){
+            foreach($e in @($errors)){Write-Host ('PARSE '+$e.Message)}
+            throw 'Wild proxy topology parser failure'
+          }
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $forbid=@('Stop-ScheduledTask','Start-ScheduledTask','Disable-ScheduledTask','Enable-ScheduledTask',
+            'Register-ScheduledTask','Unregister-ScheduledTask','Stop-Process','Start-Process',
+            'Set-Acl','Set-Content','Remove-Item','Stop-Service','Start-Service','Restart-Service',
+            'Set-ItemProperty','Invoke-CimMethod','Set-NetFirewallRule','Start-Job','taskkill','sc.exe')
+          foreach($cmd in $commands){
+            $name=$cmd.GetCommandName()
+            if($name -and $name -in $forbid){throw ('Illegal read-only mutation: '+$name)}
+          }
+          $source=Get-Content -LiteralPath $file -Raw
+          foreach($gate in @('Get-NetTCPConnection -State Listen','Get-NetUDPEndpoint',
+             'Get-ScheduledTask','Get-CimInstance','safe_to_stop=$false',
+             'safe_to_cutover=$false','live_control_authorized=$false',
+             'task_to_jvm_identity_proven=$false','config_bind_port')){
+            if(-not $source.Contains($gate)){throw ('Guard not found: '+$gate)}
+          }
+          $expected=@{
+             wild='MATCHES_WILD_TCP25565'
+             'playground-tcp'='MATCHES_PLAYGROUND_TCP25566'
+             'other-udp'='MATCHES_OTHER_UDP19134'
+             unmatched='NO_MATCH_WITH_KNOWN_PROXY_PORTS'
+             missing='UDP19132_NOT_UNIQUE'
+          }
+          foreach($fixture in $expected.Keys){
+            $raw=(& powershell.exe -NoProfile -NonInteractive -File $file -SyntheticScenario $fixture |Out-String)
+            if($LASTEXITCODE -ne 0){throw ('Synthetic fixture process failed: '+$fixture)}
+            $d=$raw|ConvertFrom-Json
+            if($d.schema -ne 4 -or $d.target -cne 'wild' -or $d.synthetic -ne $true -or
+              $d.read_only -ne $true -or
+              $d.udp19132_relation_to_proxy_ports -cne $expected[$fixture] -or
+              $d.live_control_authorized -ne $false -or
+              $d.safe_to_stop -ne $false -or $d.safe_to_cutover -ne $false -or
+              $d.task_to_jvm_identity_proven -ne $false -or
+              $d.task_or_service_mutations -ne 0 -or $d.java_operations -ne 0) {
+              throw ('Invalid topology classifier: '+$fixture)
+            }
+            if($raw -match '(?i)[a-z]:\\|ProcessID|raw_pid'){
+              throw ('Unexpected private value in topology synthetic result: '+$fixture)
+            }
+          }
+          Write-Host 'WILD_PROXY_TOPOLOGY_READ_ONLY_SYNTHETIC_PASS_NO_LIVE_CHANGES'
+      - name: Publish read-only topology operator zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-WILD-PROXY-TOPOLOGY-READ-ONLY
+          path: |
+            tools/velocity/GSC452_Wild_Proxy_Topology_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Wild_Proxy_Topology_READ_ONLY.cmd
+          if-no-files-found: error
+          retention-days: 7
+
+  gsc452-wild-identity-readonly:
+    name: GSC 4.5.2 / wild Task-JVM evidence parser + isolated synthetic CI
+    runs-on: windows-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout Draft PR
+        uses: actions/checkout@v7
+      - name: Fail-closed evidence classifier and forbidden-operation test
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -ne 0){foreach($e in @($errors)){Write-Host ('PARSE '+$e.Message)};throw 'Read-only evidence parser failed'}
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $forbid=@('Disable-ScheduledTask','Enable-ScheduledTask','Stop-ScheduledTask','Start-ScheduledTask','Unregister-ScheduledTask',
+             'Register-ScheduledTask','Stop-Process','Start-Process','taskkill','sc.exe','Set-Acl','Set-Content','Remove-Item',
+             'Set-ItemProperty','New-Service','Remove-Service','Stop-Service','Start-Service',
+             'Set-NetFirewallRule','New-NetFirewallRule','wevtutil','Clear-EventLog')
+          foreach($command in $commands){
+            $n=$command.GetCommandName()
+            if($n -and $n -in $forbid){throw ('Mutation in read-only evidence script: '+$n)}
+          }
+          $text=Get-Content -LiteralPath $file -Raw
+          foreach($required in @('Get-ScheduledTask','Get-NetTCPConnection','Get-NetUDPEndpoint','Get-WinEvent','Get-CimInstance',
+             'Id=129','live_control_authorized=$false','safe_to_stop=$false','safe_to_cutover=$false')){
+            if(-not $text.Contains($required)){throw ('Safety/evidence requirement missing: '+$required)}
+          }
+          foreach($scenario in @('matched','missing-event','different-owner','stale-event')){
+            $result=(& powershell.exe -NoProfile -NonInteractive -File $file -SyntheticScenario $scenario |Out-String) | ConvertFrom-Json
+            if($LASTEXITCODE -ne 0 -or $result.schema -ne 1 -or $result.target -cne 'wild' -or
+              $result.synthetic -ne $true -or $result.read_only -ne $true -or
+              $result.task_to_proxy_jvm_evidence_matched -ne $false -or
+              $result.safe_to_stop -ne $false -or $result.safe_to_cutover -ne $false -or
+              $result.live_control_authorized -ne $false -or $result.scheduled_task_modified -ne $false -or
+              $result.java_operations -ne 0){throw ('Unsafe synthetic classifier: '+$scenario)}
+          }
+          Write-Host 'GSC452_WILD_TASK_JVM_READONLY_SYNTHETIC_CI_PASS_NO_REAL_TASKS'
+      - name: Test differential wild TCP-UDP ownership without live hosts (READ ONLY)
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){foreach($e in @($errors)){Write-Host ('PARSE '+$e.Message)};throw 'Read-only differential parser rejected script'}
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $forbidden=@('Stop-ScheduledTask','Start-ScheduledTask','Disable-ScheduledTask','Enable-ScheduledTask',
+            'Register-ScheduledTask','Unregister-ScheduledTask','Stop-Process','Start-Process','taskkill','Set-Content',
+            'Set-Acl','Remove-Item','Start-Service','Stop-Service','Restart-Service','Set-ItemProperty','wevtutil',
+            'Clear-EventLog','Set-NetFirewallRule','New-NetFirewallRule','Invoke-CimMethod')
+          foreach($command in $commands){
+            $name=$command.GetCommandName()
+            if($name -and $name -in $forbidden){throw ('Unexpected OS mutation command: '+$name)}
+          }
+          $source=Get-Content -LiteralPath $file -Raw
+          foreach($guard in @('read_only=$true','task_to_jvm_identity_proven=$false',
+             'safe_to_stop=$false','safe_to_cutover=$false','live_control_authorized=$false',
+             'Get-NetTCPConnection','Get-NetUDPEndpoint','Get-WinEvent','Get-CimInstance')){
+            if(-not $source.Contains($guard)){throw ('Missing fail-closed invariant: '+$guard)}
+          }
+          $cases=@{
+            same='SAME_PID'
+            different='DIFFERENT_PID'
+            'udp-missing'='INSUFFICIENT_UNIQUE_OWNERS'
+            'udp-multiple'='INSUFFICIENT_UNIQUE_OWNERS'
+            'tcp-missing'='INSUFFICIENT_UNIQUE_OWNERS'
+            'query-failed'='UNVERIFIED_QUERY'
+          }
+          foreach($key in $cases.Keys){
+            $text=& powershell.exe -NoProfile -NonInteractive -File $file -SyntheticScenario $key
+            if($LASTEXITCODE -ne 0){throw ('Differential synthetic script failed: '+$key)}
+            $out=($text|Out-String)|ConvertFrom-Json
+            if($out.schema -ne 2 -or $out.synthetic -ne $true -or $out.read_only -ne $true -or
+              $out.tcp_udp_owner_relation -cne $cases[$key] -or
+              $out.task_to_jvm_identity_proven -ne $false -or
+              $out.safe_to_stop -ne $false -or $out.safe_to_cutover -ne $false -or
+              $out.live_control_authorized -ne $false -or
+              $out.scheduled_task_modified -ne $false -or $out.java_operations -ne 0){
+                throw ('Differential safety regression: '+$key)
+            }
+            if(($text|Out-String) -match '(?i)GeumyiServerCenter\\|[A-Z]:\\|ProcessID|raw_pid'){
+              throw ('Private host detail leaked in scenario: '+$key)
+            }
+          }
+          Write-Host 'GSC452_WILD_DIFFERENTIAL_READONLY_SYNTHETIC_CI_PASS'
+      - name: V3 wild socket owner cause parser / synthetic no-mutation cases
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){foreach($e in @($errors)){Write-Host ('PARSE '+$e.Message)};throw 'Wild socket diagnostic syntax failed'}
+          $all=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $banned=@('Stop-ScheduledTask','Start-ScheduledTask','Disable-ScheduledTask','Enable-ScheduledTask',
+            'Register-ScheduledTask','Unregister-ScheduledTask','Stop-Process','Start-Process','taskkill',
+            'Set-Content','Set-Acl','Remove-Item','Start-Service','Stop-Service','Restart-Service',
+            'Set-ItemProperty','wevtutil','Clear-EventLog','Set-NetFirewallRule','New-NetFirewallRule',
+            'Invoke-CimMethod','Start-Job','Set-ScheduledTask')
+          foreach($cmd in $all){
+            $name=$cmd.GetCommandName()
+            if($name -and $name -in $banned){throw ('Unsafe diagnostic mutation: '+$name)}
+          }
+          $src=Get-Content -LiteralPath $file -Raw
+          foreach($must in @('safe_to_stop=$false','safe_to_cutover=$false','task_to_jvm_identity_proven=$false',
+              'Get-NetTCPConnection -State Listen','netstat.exe','Get-NetUDPEndpoint',
+              'Get-CimInstance','Get-WinEvent','owner_generation_marker_absent')){
+            if(-not $src.Contains($must)){throw ('Required no-go guard missing: '+$must)}
+          }
+          $cases=@{
+            matching=@('SAME_PID','TASK_JAVA_EXACT')
+            'tcp-no-listener'=@('TCP_NO_LOCAL_LISTENER','TASK_JAVA_EXACT')
+            'tcp-fallback'=@('SAME_PID','TASK_JAVA_EXACT')
+            'split-owners'=@('DIFFERENT_PID','TASK_JAVA_EXACT')
+            'other-java'=@('SAME_PID','JAVA_OTHER_LOCATION')
+            'non-java-udp'=@('SAME_PID','NON_JAVA_EXECUTABLE')
+          }
+          foreach($name in $cases.Keys){
+            $raw=(& powershell.exe -NoProfile -NonInteractive -File $file -SyntheticScenario $name |Out-String)
+            if($LASTEXITCODE -ne 0){throw ('V3 diagnostic failed: '+$name)}
+            $d=$raw|ConvertFrom-Json
+            if($d.schema -ne 3 -or $d.read_only -ne $true -or $d.synthetic -ne $true -or
+              $d.tcp_udp_owner_relation -cne $cases[$name][0] -or
+              $d.udp_owner_executable_class -cne $cases[$name][1] -or
+              $d.task_to_jvm_identity_proven -ne $false -or
+              $d.safe_to_stop -ne $false -or $d.safe_to_cutover -ne $false -or
+              $d.live_control_authorized -ne $false -or $d.scheduled_task_modified -ne $false -or
+              $d.java_operations -ne 0){throw ('V3 fail-closed regression: '+$name)}
+            if($raw -match '(?i)[A-Z]:\\|ProcessID|netstat.exe'){throw 'Private synthetic host detail leaked'}
+          }
+          Write-Host 'GSC452_WILD_SOCKET_CAUSE_V3_CI_PASS_NO_PRODUCTION_ACTION'
+      - name: Publish operator read-only ownership evidence kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-WILD-SOCKET-OWNER-CAUSE-V3-READ-ONLY
+          path: |
+            tools/velocity/GSC452_Wild_Task_JVM_Identity_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Wild_Task_JVM_Identity_READ_ONLY.cmd
+            tools/velocity/GSC452_Wild_Endpoint_Differential_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Wild_Endpoint_Differential_READ_ONLY.cmd
+            tools/velocity/GSC452_Wild_Socket_Owner_Cause_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Wild_Socket_Owner_Cause_READ_ONLY.cmd
+          if-no-files-found: error
+          retention-days: 7
+
+  gsc452-host-swap-reversible:
+    name: GSC 4.5.2 / Host swap safe-state + parser CI (NO LIVE SCM)
+    runs-on: windows-latest
+    timeout-minutes: 4
+    steps:
+      - name: Checkout Draft PR
+        uses: actions/checkout@v7
+      - name: Validate host swap syntax, mutation scopes and synthetic states
+        shell: powershell
+        run: |
+          $file='tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){foreach($e in @($errors)){Write-Host ('PARSE '+$e.Extent.StartLineNumber+': '+$e.Message)};throw 'Host reversible swap syntax error'}
+          $commands=$ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)
+          $forbid=@('Disable-ScheduledTask','Enable-ScheduledTask','Start-ScheduledTask','Stop-ScheduledTask','Unregister-ScheduledTask','Register-ScheduledTask','Stop-Process','Start-Process','taskkill','sc.exe','Set-Acl','Set-Content','Remove-Item','Remove-Service','New-Service','Register-ScheduledJob')
+          foreach($cmd in $commands){$name=$cmd.GetCommandName();if($name -and $name -in $forbid){throw ('Illegal Host swap operation '+$name)}}
+          $text=Get-Content -LiteralPath $file -Raw
+          foreach($guard in @('STAGING_HASH_MISMATCH','JOURNAL_EXISTS','MANAGED_OPTIN_ENV_ENABLED','ORPHANED_VELOCITY_GENERATION_PRESENT','AUTOSTART_BACKEND_OFFLINE','HOST_CANARY_AUTO_ROLLBACK_VERIFIED','HOST_CANARY_MANUAL_RECOVERY_REQUIRED','Invoke-CimMethod')){
+            if(-not $text.Contains($guard)){throw ('Host swap safety guard absent: '+$guard)}
+          }
+          foreach($case in @('healthy','canary-start-fails','rollback-start-fails')){
+            $result=(& powershell.exe -NoProfile -NonInteractive -File $file -Mode Synthetic -SyntheticCase $case |Out-String)|ConvertFrom-Json
+            if($LASTEXITCODE -ne 0 -or $result.schema -ne 1 -or $result.success -ne $true -or
+               $result.service_mutation_authorized -ne $false -or $result.paper_operations_direct -ne 0 -or
+               -not $result.status.StartsWith('SYNTHETIC_')){throw ('Synthetic no-mutation classification failed '+$case)}
+          }
+          $originalPreference=$ErrorActionPreference
+          try{
+            $ErrorActionPreference='Continue'
+            $blocked=& powershell.exe -NoProfile -NonInteractive -File $file -Mode Plan 2>&1
+            $code=$LASTEXITCODE
+          }finally{$ErrorActionPreference=$originalPreference}
+          if($code -ne 2){throw 'Unconfigured Windows runner unexpectedly permitted GSC Host Plan'}
+          $report=(@($blocked)|Where-Object {$_ -is [string] -and $_ -match '^\{.*\}$'}|Select-Object -Last 1)|ConvertFrom-Json
+          if($report.success -ne $false -or $report.status -cne 'HOST_SWAP_BLOCKED_OR_UNCONFIRMED' -or
+            $report.service_mutation_authorized -ne $false){throw 'Host Plan no-go classification violated'}
+          Write-Host 'GSC452_HOST_SWAP_SAFE_STATE_CI_PASS_NO_SCM_MODIFICATION'
+          # Plan child is expected to exit 2 in a disposable runner. Clear its
+          # native exit code after asserting the fail-closed result explicitly.
+          $global:LASTEXITCODE=0
+      - name: Regression test staging ACL inherited from protected trusted root (synthetic, NO LIVE SCM)
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file='tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -ne 0){throw 'Host swap parser rejected ACL test target'}
+          $fn=$ast.Find({param($node) $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -ceq 'PrivateDir'},$true)
+          if($null -eq $fn){throw 'PrivateDir guard missing'}
+          Invoke-Expression $fn.Extent.Text
+          function Deny([string]$code){throw ('CI_DENY_'+$code)}
+          function AssertDenied([scriptblock]$call,[string]$code){
+            $rejected=$false
+            try{& $call}catch{
+              if($_.Exception.Message -like ('*CI_DENY_'+$code+'*')){$rejected=$true}else{throw}
+            }
+            if(-not $rejected){throw ('Unexpected ACL acceptance: '+$code)}
+          }
+          $oldProgramData=$env:ProgramData
+          $testProgramData=Join-Path $env:RUNNER_TEMP ('gsc452-acl-'+[guid]::NewGuid().ToString('N'))
+          $script:testRoot=Join-Path $testProgramData 'GeumyiServerCenter\VelocityManaged'
+          $script:testStage=Join-Path $script:testRoot 'CanaryStaging'
+          try{
+            [void](New-Item -ItemType Directory -Path $script:testStage -Force)
+            $env:ProgramData=$testProgramData
+            $systemAce=[pscustomobject]@{IdentityReference=(New-Object Security.Principal.SecurityIdentifier 'S-1-5-18');AccessControlType=[Security.AccessControl.AccessControlType]::Allow}
+            $adminsAce=[pscustomobject]@{IdentityReference=(New-Object Security.Principal.SecurityIdentifier 'S-1-5-32-544');AccessControlType=[Security.AccessControl.AccessControlType]::Allow}
+            $everyoneAce=[pscustomobject]@{IdentityReference=(New-Object Security.Principal.SecurityIdentifier 'S-1-1-0');AccessControlType=[Security.AccessControl.AccessControlType]::Allow}
+            $script:parentAcl=[pscustomobject]@{AreAccessRulesProtected=$true;Access=@($systemAce,$adminsAce)}
+            $script:stageAcl=[pscustomobject]@{AreAccessRulesProtected=$false;Access=@($systemAce,$adminsAce)}
+            # Isolate ACL decisions by mocking only Get-Acl. Real disposable
+            # directory existence and no-reparse checks still run.
+            function Get-Acl {
+              param([string]$LiteralPath)
+              if($LiteralPath -ieq $script:testRoot){return $script:parentAcl}
+              if($LiteralPath -ieq $script:testStage){return $script:stageAcl}
+              throw 'UNEXPECTED_ACL_PATH'
+            }
+            PrivateDir $script:testRoot
+            PrivateDir $script:testStage $true
+            AssertDenied {PrivateDir $script:testStage} 'STAGING_INHERITED_ACL'
+            $script:parentAcl.AreAccessRulesProtected=$false
+            AssertDenied {PrivateDir $script:testStage $true} 'STAGING_PARENT_ACL_INHERITED'
+            $script:parentAcl.AreAccessRulesProtected=$true
+            $script:stageAcl.Access=@($systemAce,$everyoneAce)
+            AssertDenied {PrivateDir $script:testStage $true} 'STAGING_UNTRUSTED_ALLOW_ACE'
+            $script:stageAcl.Access=@($systemAce,$adminsAce)
+            $script:stageAcl.AreAccessRulesProtected=$true
+            PrivateDir $script:testStage
+            $script:stageAcl.AreAccessRulesProtected=$false
+            $script:parentAcl.AreAccessRulesProtected=$false
+            AssertDenied {PrivateDir $script:testRoot} 'STAGING_INHERITED_ACL'
+            Write-Host 'GSC452_STAGING_ACL_INHERITANCE_REGRESSION_PASS_NO_SCM_CHANGES'
+          }finally{
+            $env:ProgramData=$oldProgramData
+            if(Test-Path -LiteralPath $testProgramData){Remove-Item -LiteralPath $testProgramData -Recurse -Force}
+          }
+      - name: Test Windows SCM PathName change and restore on disposable unstarted service
+        shell: powershell
+        timeout-minutes: 2
+        run: |
+          $ErrorActionPreference='Stop'
+          $name='GSC_CI_BinPath_'+[guid]::NewGuid().ToString('N').Substring(0,12)
+          $old=$env:SystemRoot+'\System32\cmd.exe'
+          $created=$false
+          try{
+            $null=& sc.exe create $name 'binPath=' $old 'start=' 'demand'
+            if($LASTEXITCODE -ne 0){throw 'Cannot register disposable unstarted Windows service'}
+            $created=$true
+            $obj=Get-CimInstance Win32_Service -Filter ("Name='"+$name+"'") -ErrorAction Stop
+            if($obj.State -ne 'Stopped'){throw 'Disposable service unexpectedly running'}
+            $target='"'+$old+'" --service --config "C:\ProgramData\ci-not-real.json"'
+            $result=Invoke-CimMethod -InputObject $obj -MethodName Change -Arguments @{PathName=$target} -ErrorAction Stop
+            if($null -eq $result -or [int]$result.ReturnValue -ne 0){throw 'CIM PathName update failed'}
+            $changed=Get-CimInstance Win32_Service -Filter ("Name='"+$name+"'")
+            if($changed.PathName -cne $target -or $changed.State -ne 'Stopped'){throw 'CIM PathName update did not persist exact quotes'}
+            $result=Invoke-CimMethod -InputObject $changed -MethodName Change -Arguments @{PathName=$old} -ErrorAction Stop
+            if($null -eq $result -or [int]$result.ReturnValue -ne 0){throw 'Disposable original service restoration failed'}
+            $restored=Get-CimInstance Win32_Service -Filter ("Name='"+$name+"'")
+            if($restored.PathName -cne $old -or $restored.State -ne 'Stopped'){throw 'Disposable original PathName not restored'}
+            Write-Host 'GSC452_CIM_SERVICE_BINPATH_CHANGE_RESTORE_UNSTARTED_PASS'
+          }finally{
+            if($created){
+              $null=& sc.exe delete $name
+              if($LASTEXITCODE -ne 0){throw 'Disposable SCM CI service cleanup failed'}
+            }
+          }
+      - name: Publish gated service swap and original rollback kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-HOST-SWAP-AND-ROLLBACK-OPERATOR-KIT
+          path: |
+            tools/velocity/GSC452_Host_Service_Reversible_Swap.ps1
+            tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Host_Swap_WITH_AUTO_ROLLBACK_ADMIN.cmd
+            tools/velocity/Run_GSC452_Host_Rollback_ONLY_ADMIN.cmd
+            tools/velocity/GSC452_HOST_SWAP_OPERATOR_README.md
+          if-no-files-found: error
+          retention-days: 7
+  gsc452-host-rollback-readonly:
+    name: GSC 4.5.2 / host rollback read-only preflight safety CI
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Verify script syntax, non-mutating verbs and fail-closed output
+        shell: powershell
+        run: |
+          $file='tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1'
+          $tokens=$null; $errors=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){foreach($e in @($errors)){Write-Host ('PARSE '+$e.Extent.StartLineNumber+' '+$e.Message)};throw 'Read-only preflight syntax invalid'}
+          $calls=$ast.FindAll({param($node) $node -is [Management.Automation.Language.CommandAst]},$true)
+          $denied=@('Stop-Service','Start-Service','Restart-Service','Set-Service','New-Service','Remove-Service','Stop-ScheduledTask','Start-ScheduledTask','Disable-ScheduledTask','Enable-ScheduledTask','Unregister-ScheduledTask','Register-ScheduledTask','Stop-Process','Start-Process','Remove-Item','Move-Item','Copy-Item','Set-Acl','Set-ItemProperty','New-Item','Set-Content','Out-File','taskkill','sc.exe','schtasks.exe')
+          foreach($call in $calls){$name=$call.GetCommandName();if($name -and $name -in $denied){throw ('Read-only script invokes forbidden mutation: '+$name)}}
+          $output=(& powershell.exe -NoProfile -NonInteractive -File $file |Out-String)|ConvertFrom-Json
+          if($LASTEXITCODE -ne 0 -or $output.schema -ne 1 -or $output.read_only -ne $true -or
+            $output.preflight_passed -ne $false -or $output.host_cutover_authorized -ne $false -or
+            $output.status -cne 'HOST_SWAP_ROLLBACK_PREFLIGHT_BLOCKED_NO_CHANGE' -or
+            $output.task_mutations -ne 0 -or $output.java_operations -ne 0 -or
+            $output.service_binary_changed -ne $false -or $output.service_stopped -ne $false){
+            throw 'Unconfigured disposable Windows CI machine must fail closed with no modifications'
+          }
+          Write-Host 'GSC452_HOST_READONLY_PREFLIGHT_FAIL_CLOSED_PASS'
+      - name: Upload single-action operator read-only kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-HOST-SWAP-ROLLBACK-PREFLIGHT-READ-ONLY
+          path: |
+            tools/velocity/GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Host_Swap_Recovery_PREFLIGHT_READ_ONLY.cmd
+          if-no-files-found: error
+          retention-days: 7
+  velocity-managed-canary-host:
+    name: GSC 4.5.2 Canary / isolated Host binary (NO INSTALL)
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact Draft revision
+        uses: actions/checkout@v7
+      - name: Set up Go from repository
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: GSC/ServerCenter/go.mod
+          cache: false
+      - name: Compile version-stamped portable CANARY Host
+        shell: pwsh
+        working-directory: GSC/ServerCenter
+        run: |
+          $ErrorActionPreference='Stop'
+          $env:GOOS='windows'
+          $env:GOARCH='amd64'
+          $env:CGO_ENABLED='0'
+          New-Item -ItemType Directory -Force -Path dist-canary | Out-Null
+          & go build '-buildvcs=false' '-trimpath' '-ldflags=-s -w -H=windowsgui -X=main.appVersion=4.5.2-canary' -o dist-canary/GeumyiServerHost-v4.5.2-Velocity-CANARY.exe ./cmd/host
+          if($LASTEXITCODE -ne 0){throw 'Canary Host compile failed'}
+          $file=Get-Item -LiteralPath dist-canary/GeumyiServerHost-v4.5.2-Velocity-CANARY.exe
+          if($file.Length -lt 100000){throw 'Invalid Canary host image'}
+          $hash=(Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          $hash+'  '+$file.Name|Set-Content -Encoding ascii dist-canary/SHA256SUMS.txt
+          $stage='../../tools/velocity/Stage_GSC452_Velocity_CANARY_NO_INSTALL.ps1'
+          $tokens=$null; $parseProblems=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $stage),[ref]$tokens,[ref]$parseProblems)
+          if(@($parseProblems).Count -gt 0){
+            foreach($problem in @($parseProblems)){Write-Host ('STAGE SCRIPT PARSE '+$problem.Extent.StartLineNumber+': '+$problem.Message)}
+            throw 'Canary stage-only PowerShell parser failure'
+          }
+          Copy-Item $stage dist-canary/Stage_GSC452_Velocity_CANARY_NO_INSTALL.ps1
+          Copy-Item ../../tools/velocity/Run_Stage_GSC452_Velocity_CANARY_ADMIN.cmd dist-canary/Run_Stage_GSC452_Velocity_CANARY_ADMIN.cmd
+          @(
+            'GSC 4.5.2 VELOCITY CANARY — UNINSTALLED TEST BINARY',
+            'Source: Draft PR #57 only. Stable/main unchanged.',
+            'Never replace a running GSC host or run this executable beside a live host.',
+            'Requires independently approved maintenance cutover, local host account/credentials validation, and rollback.',
+            'Stage via Run_Stage_GSC452_Velocity_CANARY_ADMIN.cmd (right-click administrator).',
+            'Only copies the uninstalled candidate and originals to private staging.',
+            'Does not install, register tasks, set environment flags, kill Java or change worlds.'
+          )|Set-Content -Encoding utf8 dist-canary/README-NO-INSTALL.txt
+      - name: Execute non-destructive Day10 Host selftest
+        shell: pwsh
+        working-directory: GSC/ServerCenter
+        timeout-minutes: 2
+        run: |
+          $exe=(Resolve-Path 'dist-canary/GeumyiServerHost-v4.5.2-Velocity-CANARY.exe').Path
+          $p=Start-Process -FilePath $exe -ArgumentList '--day10-selftest' -Wait -PassThru -NoNewWindow
+          if($p.ExitCode -ne 0){throw 'Canary built Host selftest failed'}
+          Write-Host 'GSC452_CANARY_HOST_BINARY_SELFTEST_PASS'
+      - name: Upload uninstalled Canary Host artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-Velocity-CANARY-Host-NO-INSTALL
+          path: GSC/ServerCenter/dist-canary/*
+          if-no-files-found: error
+          retention-days: 7
   gsc-package:
     name: GSC 4.5.1 / assemble CI Setup
     needs: [gsc, statusagent, gds, gst]

@@ -1,0 +1,147 @@
+name: GSC 4.5.2 Velocity V6.3 Read-Only Diagnostic CI
+on:
+  push:
+    branches:
+      - feature/velocity-lifecycle-isolated-engine-20261017
+    paths:
+      - 'tools/velocity/GSC452_Velocity_Origin_V63_READ_ONLY.ps1'
+      - 'tools/velocity/Run_GSC452_Velocity_Origin_V63_READ_ONLY.cmd'
+      - 'tools/velocity/V63-READ-ONLY-README.md'
+      - '.github/workflows/gsc452-v63-readonly-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  v63-readonly-mock-windows:
+    name: V6.3 Windows read-only AST, 9 fixtures, mocked collection
+    runs-on: windows-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse and enforce no mutation commands / sensitive literals
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $f='tools/velocity/GSC452_Velocity_Origin_V63_READ_ONLY.ps1'
+          $tokens=$null;$errs=$null
+          $ast=[Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f),[ref]$tokens,[ref]$errs)
+          if(@($errs).Count -ne 0){throw 'PowerShell V6.3 AST parse failed'}
+          $banned=@('Stop-ScheduledTask','Start-ScheduledTask','Disable-ScheduledTask','Enable-ScheduledTask','Set-ScheduledTask','Register-ScheduledTask','Unregister-ScheduledTask','Stop-Process','Start-Process','Restart-Service','Stop-Service','Start-Service','Set-Acl','icacls','takeown','Remove-Item','New-Item','Set-Content','Add-Content','Out-File','Start-Job','Invoke-CimMethod','Set-NetFirewallRule','Clear-EventLog','Set-ItemProperty')
+          foreach($cmd in $ast.FindAll({param($n) $n -is [Management.Automation.Language.CommandAst]},$true)){
+            if($cmd.GetCommandName() -in $banned){throw ('Forbidden mutation command '+$cmd.GetCommandName())}
+          }
+          $s=Get-Content $f -Raw
+          foreach($required in @('safe_to_stop=$false','safe_to_cutover=$false','live_control_authorized=$false','task_to_jvm_ownership_proven=$false','Get-ScheduledTask','Get-CimInstance Win32_Process','Get-NetTCPConnection -State Listen','Get-NetUDPEndpoint')){
+            if(-not $s.Contains($required)){throw ('Missing diagnostic safety feature '+$required)}
+          }
+          Write-Host 'V63_STATIC_READ_ONLY_AST_PASS'
+      - name: Analyze 10 synthetic Windows topology and failure scenarios
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $f='tools/velocity/GSC452_Velocity_Origin_V63_READ_ONLY.ps1'
+          $cases=@{
+            disjoint=@(0,'THREE','THREE','NONE','PROCESS_ORIGIN_AND_BIND_EVIDENCE_COLLECTED_NO_ACTION')
+            overlap=@(0,'THREE','THREE','ALL_THREE','PROCESS_ORIGIN_AND_BIND_EVIDENCE_COLLECTED_NO_ACTION')
+            'missing-udp'=@(0,'THREE','TWO','NONE','PROCESS_ORIGIN_AND_BIND_EVIDENCE_COLLECTED_NO_ACTION')
+            'missing-tcp'=@(0,'THREE','THREE','NONE','PROCESS_ORIGIN_AND_BIND_EVIDENCE_COLLECTED_NO_ACTION')
+            'bind-failure'=@(0,'THREE','THREE','NONE','PROCESS_ORIGIN_AND_BIND_EVIDENCE_COLLECTED_NO_ACTION')
+            'missing-metadata'=@(2,'TWO','THREE','NONE','INCOMPLETE_JAVA_METADATA_NO_ACTION')
+            'task-drift'=@(2,'THREE','THREE','NONE','TASK_STATES_CHANGED_DURING_CHECK_NO_ACTION')
+            'missing-task'=@(2,'UNVERIFIED','UNVERIFIED','UNVERIFIED','INCOMPLETE_NO_ACTION')
+            'query-denied'=@(2,'UNVERIFIED','UNVERIFIED','UNVERIFIED','INCOMPLETE_NO_ACTION')
+          }
+          foreach($scenario in $cases.Keys){
+            $raw=(& powershell.exe -NoProfile -NonInteractive -File $f -Fixture $scenario | Out-String)
+            $exit=$LASTEXITCODE
+            $x=$raw|ConvertFrom-Json
+            $expected=$cases[$scenario]
+            if($exit -ne $expected[0] -or $x.schema -ne 8 -or $x.synthetic -ne $true -or $x.read_only -ne $true -or
+              $x.status -cne $expected[4] -or $x.java_groups.task_java_candidates -cne $expected[1] -or
+              $x.java_groups.udp_velocity_owners -cne $expected[2] -or $x.java_groups.overlap -cne $expected[3] -or
+              $x.safe_to_stop -ne $false -or $x.safe_to_cutover -ne $false -or $x.live_control_authorized -ne $false -or
+              $x.task_to_jvm_ownership_proven -ne $false -or $x.task_mutations -ne 0 -or $x.java_operations -ne 0 -or
+              $x.acl_mutations -ne 0 -or $x.world_operations -ne 0){throw ('Scenario regression '+$scenario+' exit='+$exit)}
+            if($raw -match '(?i)[A-Z]:\\|PRIVATE_FAKE|TASK_NOT_FOUND_PRIVATE_DATA|"ProcessId"\s*:|"CommandLine"\s*:|"ExecutablePath"\s*:'){
+              throw ('Private data disclosure in '+$scenario)
+            }
+          }
+          $none=& powershell.exe -NoProfile -NonInteractive -File $f -Fixture disjoint | ConvertFrom-Json
+          if($none.tasks[0].udp_owner_image -cne 'JAVA_OTHER_LOCATION' -or $none.tasks[0].udp_owner_jar_argument -cne 'RELATIVE_JAR_CWD_NOT_PROVEN'){
+            throw 'Group classification regression'
+          }
+          $bad=& powershell.exe -NoProfile -NonInteractive -File $f -Fixture bind-failure | ConvertFrom-Json
+          if($bad.tasks[0].log_signal -cne 'BIND_FAILURE_EVIDENCE'){throw 'Bind log classification regression'}
+          Write-Host 'V63_SYNTHETIC_TOPOLOGY_AND_FAIL_CLOSED_PASS'
+      - name: Mock real Windows scheduled-task, filesystem, WMI and socket calls
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $file=(Resolve-Path 'tools/velocity/GSC452_Velocity_Origin_V63_READ_ONLY.ps1').Path
+          $script:mockJavaA='C:\JDK-A\bin\java.exe'
+          $script:mockJavaB='C:\JDK-B\bin\java.exe'
+          $script:mockProc=@()
+          foreach($i in 0..2){
+            $script:mockProc+=@([pscustomobject]@{Name='java.exe';ProcessId=(100+$i);ParentProcessId=0;CreationDate=(Get-Date).AddMinutes(-5);ExecutablePath=$script:mockJavaA;CommandLine='java.exe -jar velocity.jar'})
+            $script:mockProc+=@([pscustomobject]@{Name='java.exe';ProcessId=(200+$i);ParentProcessId=0;CreationDate=(Get-Date).AddMinutes(-5);ExecutablePath=$script:mockJavaB;CommandLine='java.exe -jar velocity.jar'})
+          }
+          function Get-ScheduledTask {
+            [CmdletBinding()]param([string]$TaskPath,[string]$TaskName)
+            $id=$TaskName.Replace('Geumyi Day10 Velocity ','')
+            if($id -notin @('wild','playground','other')){throw 'UNEXPECTED_TASK'}
+            return [pscustomobject]@{State='Running';Actions=@([pscustomobject]@{
+              Execute=$script:mockJavaA;WorkingDirectory=(Join-Path $env:ProgramData ('GeumyiServerCenter\Network\FourServer\'+$id));Arguments='-Xmx2G -jar velocity.jar'
+            });Settings=[pscustomobject]@{RestartCount=999}}
+          }
+          function Get-ScheduledTaskInfo { [CmdletBinding()]param([string]$TaskPath,[string]$TaskName)
+            return [pscustomobject]@{LastRunTime=(Get-Date).AddMinutes(-5)}
+          }
+          function Test-Path { [CmdletBinding()]param([string]$LiteralPath,[string]$PathType)
+            return ($LiteralPath -like '*velocity.toml')
+          }
+          function Get-Content { [CmdletBinding()]param([string]$LiteralPath,[int]$TotalCount,[int]$Tail)
+            if($LiteralPath -match 'wild'){return 'bind = "0.0.0.0:25565"'}
+            if($LiteralPath -match 'playground'){return 'bind = "0.0.0.0:25566"'}
+            return 'bind = "0.0.0.0:25567"'
+          }
+          function Get-CimInstance { [CmdletBinding()]param([string]$ClassName,[string]$Filter)
+            if($ClassName -cne 'Win32_Process'){throw 'UNEXPECTED_CIM'}
+            return $script:mockProc
+          }
+          function Get-NetTCPConnection { [CmdletBinding()]param([string]$State)
+            if($State -ne 'Listen'){throw 'UNEXPECTED_TCP'}
+            return @()
+          }
+          function Get-NetUDPEndpoint { [CmdletBinding()]param()
+            return @([pscustomobject]@{LocalPort=19132;OwningProcess=200},[pscustomobject]@{LocalPort=19133;OwningProcess=201},[pscustomobject]@{LocalPort=19134;OwningProcess=202})
+          }
+          $raw=(& { . $file -Fixture none } | Out-String)
+          $status=$LASTEXITCODE
+          $x=$raw|ConvertFrom-Json
+          if($status -ne 0 -or $x.synthetic -ne $false -or $x.status -cne 'PROCESS_ORIGIN_AND_BIND_EVIDENCE_COLLECTED_NO_ACTION' -or
+            $x.java_groups.task_java_candidates -cne 'THREE' -or $x.java_groups.udp_velocity_owners -cne 'THREE' -or
+            $x.java_groups.overlap -cne 'NONE' -or $x.tasks[0].config_bind -cne 'EXPECTED_PORT' -or $x.live_control_authorized -ne $false){
+            throw ('Mock Windows collection regression status='+$status+' failure_phase='+$x.failure_phase+' failure_class='+$x.failure_class)
+          }
+          # Deliberately introduce an unreadable CIM query; expect fail-closed and no private exception text.
+          function Get-CimInstance { [CmdletBinding()]param([string]$ClassName,[string]$Filter)
+            throw [System.UnauthorizedAccessException]::new('PRIVATE_FAKE_PROCESS_PATH')
+          }
+          $bad=(& { . $file -Fixture none } | Out-String)
+          $failure=$bad|ConvertFrom-Json
+          if($LASTEXITCODE -ne 2 -or $failure.failure_class -cne 'ACCESS_DENIED' -or
+            $failure.safe_to_stop -ne $false -or $bad -match 'PRIVATE_FAKE_PROCESS_PATH'){
+            throw 'Mock Windows ACCESS_DENIED did not fail closed'
+          }
+          Write-Host 'V63_REAL_COLLECTION_MOCK_WINDOWS_AND_DENIED_ACCESS_PASS'
+          exit 0
+      - name: Upload sanitized operator kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-VELOCITY-ORIGIN-V63-READ-ONLY
+          path: |
+            tools/velocity/GSC452_Velocity_Origin_V63_READ_ONLY.ps1
+            tools/velocity/Run_GSC452_Velocity_Origin_V63_READ_ONLY.cmd
+            tools/velocity/V63-READ-ONLY-README.md
+          if-no-files-found: error
+          retention-days: 7
