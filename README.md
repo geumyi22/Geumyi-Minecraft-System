@@ -2,6 +2,8 @@
 
 > **프로젝트 종료 정리 (2026-10-11):** 일반 기능 개발과 반복 테스트는 소규모 서버 운영 기준으로 마감했습니다. GitHub/PC 정리 기록과 유지할 복구 자산은 [PROJECT-CLOSEOUT-2026-10-11.md](PROJECT-CLOSEOUT-2026-10-11.md)에 있습니다. 정식 Stable 릴리즈의 엄격한 보안 게이트는 아직 통과하지 않았습니다.
 
+> **2026-10-24 유지보수 현황:** Day 12의 소규모 운영 마감은 역사적 기준이며, 이후 GSC **4.5.2 Canary/Velocity 직접 관리**는 [Draft PR #57](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/57)에서 별도 개발 중입니다. 2026-10-21 GSC Canary **Host 설치 성공은 운영자 보고**이고, 기존 Velocity 세 프록시의 GSC 직접 관리 전환은 **0/3**입니다. 이 작업은 `main`/Stable에 병합·배포되지 않았습니다. 최신 점검·인수인계: [2026-10-24 프로젝트 상태](docs/operations/GMS-CURRENT-STATUS-2026-10-24.md).
+
 **최신 수동 설치 패키지:** [GSC 4.5.1 / GSCM 1.5.1+151 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) (2026-10-11 공개, GitHub Latest). 마지막 실제 운영 기기 확인은 GSC 4.3.8 / GSCM 1.1.5+117이며, 자동 Stable 배포용 서명 manifest는 별도입니다.
 
 GSC 4.5.1 및 GSCM 1.5.1+151 Stable 수동 설치 빌드 대상의 소스·복구 근거·CI·리소스팩을 모은 저장소입니다. **원본 그대로 회수한 소스와 바이너리 기준으로 재구성한 소스를 구분해서 기록합니다.**
