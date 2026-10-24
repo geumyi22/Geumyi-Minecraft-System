@@ -38,6 +38,24 @@ PROTECTED SNAPSHOT — DO NOT REPEAT
   task XML, launch spec, GSC host capability, and rollback readiness.
   Never guess/change the protected maintenance ticket.
 
+EXISTING RECOVERY EVIDENCE — SAFE READ ONLY (NEW)
+  Run_GSC452_Wild_Existing_Evidence_READ_ONLY.cmd
+  This ONE-target wild read-only check loads the EXISTING protected
+  original task XML, verifies the private receipt/hash and exact Java
+  launcher manifest, compares current task definition (ignoring only
+  Scheduler's intended Enabled bit), and checks the real velocity.jar
+  SHA-256 against the pinned official build. It NEVER writes the
+  private files, creates a new snapshot, stops/starts Java, changes a
+  Scheduled Task, or enables direct ownership.
+  Execute on the SERVER PC, preferably in an elevated CMD context if
+  protected Recovery ACLs deny ordinary access. The output is sanitized:
+  no private ticket/command line/XML/paths/PIDs/tokens are printed.
+  Any missing or changed snapshot/manifest blocks the check. A valid
+  snapshot is NOT proof legacy parent/child JVMs exited; live cutover
+  remains prohibited until process ownership and shutdown are proven.
+  The disposable Windows CI fixture deliberately has no Velocity JAR,
+  so its pin-check field is false while archive integrity still passes.
+
 CURRENT PRODUCTION NO-GO GATES
   - Original Day10 tasks were Running and RestartOnFailure=999.
   - Old Velocity Java consoles' stdin control is not available to GSC.
