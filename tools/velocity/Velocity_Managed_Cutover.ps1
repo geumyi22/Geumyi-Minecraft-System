@@ -1,7 +1,7 @@
 #requires -Version 5.1
 [CmdletBinding()]
 param(
-    [ValidateSet('Preflight','Snapshot','Cutover','Rollback')]
+    [ValidateSet('Preflight','VerifyExisting','Snapshot','Cutover','Rollback')]
     [string]$Mode='Preflight',
     [Parameter(Mandatory=$true)]
     [ValidateSet('wild','playground','other')]
@@ -226,6 +226,63 @@ if($Mode -eq 'Preflight'){
     owner_marker_present=$ownerPresent
     ready_for_cutover=$ready;live_control_authorized=$false
     status='READ_ONLY_PRECHECK_NOT_APPROVAL'}|ConvertTo-Json -Compress
+ return
+}
+# Inspect the EXISTING protected operator archive, never create a second
+# snapshot or change a Scheduled Task. Missing/inconsistent evidence FAILS.
+# Successful evidence inspection does NOT prove a legacy child JVM is stopped.
+if($Mode -eq 'VerifyExisting'){
+ $evidence=VerifyBackup $preflightPaths $Target
+ if($evidence.Receipt.original_task_state -notin @('Running','Ready')){
+  Deny 'SNAPSHOT_ORIGIN_NOT_AN_ACTIVE_OR_READY_TASK'
+ }
+ if((TaskDefinitionDigest $xml) -cne (TaskDefinitionDigest $evidence.XML)){
+  Deny 'SCHEDULED_TASK_DEFINITION_CHANGED_SINCE_SNAPSHOT'
+ }
+ $manifestPath=ManifestFile $Target
+ AssertPrivateFolder (Split-Path -Parent $manifestPath)
+ if(-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)){
+  Deny 'PROTECTED_LAUNCH_MANIFEST_MISSING'
+ }
+ $expectedManifest=LocalLauncherManifest $Target $evidence.XML
+ $actualManifest=Get-Content -LiteralPath $manifestPath -Raw -ErrorAction Stop|ConvertFrom-Json -ErrorAction Stop
+ if($actualManifest.schema -ne 1 -or $actualManifest.target -cne $Target -or
+    $actualManifest.java_executable -cne $expectedManifest.java_executable -or
+    $actualManifest.working_directory -cne $expectedManifest.working_directory -or
+    $actualManifest.expected_jar_sha256 -cne $expectedManifest.expected_jar_sha256 -or
+    (@($actualManifest.args)-join [char]0) -cne (@($expectedManifest.args)-join [char]0)){
+  Deny 'PROTECTED_LAUNCH_MANIFEST_DOES_NOT_MATCH_ORIGINAL_TASK'
+ }
+ # Check actual original JAR bytes, not just the private launcher manifest.
+ # The disposable CI fixture has no real Velocity JAR and must report false.
+ $jarMatches=$false
+ $jar=Join-Path $expectedManifest.working_directory 'velocity.jar'
+ try{
+  $jarInfo=Get-Item -LiteralPath $jar -Force -ErrorAction Stop
+  if(-not $jarInfo.PSIsContainer -and
+     -not ($jarInfo.Attributes -band [IO.FileAttributes]::ReparsePoint)){
+    $jarMatches=((Get-FileHash -LiteralPath $jar -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant() -ceq
+      $expectedManifest.expected_jar_sha256)
+  }
+ }catch{$jarMatches=$false}
+ [ordered]@{
+  schema=1
+  check='GSC452_EXISTING_CUTOVER_EVIDENCE_READ_ONLY'
+  target=$Target
+  read_only=$true
+  protected_original_snapshot_valid=$true
+  protected_manifest_matches_original=$true
+  task_definition_matches_original=$true
+  velocity_jar_sha256_matches_pin=$jarMatches
+  task_state=$state
+  proxy_ports_free=$portsFree
+  owner_marker_present=$ownerPresent
+  cutover_already_committed=[bool]$evidence.Receipt.cutover_committed
+  task_to_child_jvm_shutdown_proven=$false
+  operator_cutover_authorized=$false
+  status='EXISTING_EVIDENCE_VERIFIED_LIVE_CUTOVER_NOT_AUTHORIZED'
+  next_step='VERIFY_LEGACY_TASK_AND_CHILD_JVM_SHUTDOWN_BEFORE_ANY_MUTATION'
+ }|ConvertTo-Json -Compress
  return
 }
 if(-not (IsAdministrator)){Deny 'OPERATOR_ADMIN_REQUIRED_FOR_MANUAL_MAINTENANCE'}
