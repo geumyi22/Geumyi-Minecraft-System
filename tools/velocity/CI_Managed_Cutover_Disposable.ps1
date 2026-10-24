@@ -121,6 +121,28 @@ try{
     $manifest.args[0] -cne '-jar' -or $manifest.args[1] -cne 'velocity.jar'){
   throw 'Disposable launcher manifest changed from original Scheduler action'
  }
+ # This verifies the EXISTING protected snapshot without resnapshotting.
+ # No official Velocity jar exists on this disposable CI host.
+ $snapshotHashBefore=(Get-FileHash -LiteralPath $originalFile -Algorithm SHA256).Hash
+ $receiptHashBefore=(Get-FileHash -LiteralPath $receiptFile -Algorithm SHA256).Hash
+ $manifestHashBefore=(Get-FileHash -LiteralPath $manifestFile -Algorithm SHA256).Hash
+ $verify=(& powershell.exe -NoProfile -NonInteractive -File $kit -Mode VerifyExisting -Target $target |Out-String)|ConvertFrom-Json
+ if($LASTEXITCODE -ne 0 -or $verify.read_only -ne $true -or
+    $verify.protected_original_snapshot_valid -ne $true -or
+    $verify.protected_manifest_matches_original -ne $true -or
+    $verify.task_definition_matches_original -ne $true -or
+    $verify.velocity_jar_sha256_matches_pin -ne $false -or
+    $verify.task_to_child_jvm_shutdown_proven -ne $false -or
+    $verify.operator_cutover_authorized -ne $false -or
+    $verify.cutover_already_committed -ne $false){
+   throw 'Existing protected snapshot read-only verification falsely passed a live gate'
+ }
+ if((Get-FileHash -LiteralPath $originalFile -Algorithm SHA256).Hash -cne $snapshotHashBefore -or
+    (Get-FileHash -LiteralPath $receiptFile -Algorithm SHA256).Hash -cne $receiptHashBefore -or
+    (Get-FileHash -LiteralPath $manifestFile -Algorithm SHA256).Hash -cne $manifestHashBefore){
+   throw 'Existing evidence verification mutated protected operator files'
+ }
+ Write-Host 'DISPOSABLE_EXISTING_EVIDENCE_VERIFIED_NO_RESNAPSHOT_NO_MUTATION=PASS'
  & powershell.exe -NoProfile -NonInteractive -File $kit -Mode Cutover -Target $target -Ticket $ticket -Approved
  if($LASTEXITCODE -ne 0){throw 'Disposable task cutover failed'}
  if([string](Get-ScheduledTask -TaskName $name -TaskPath '\').State -ne 'Disabled'){
