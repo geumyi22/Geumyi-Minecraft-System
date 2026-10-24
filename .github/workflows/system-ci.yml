@@ -264,6 +264,7 @@ jobs:
           path: |
             tools/velocity/Velocity_Managed_Cutover.ps1
             tools/velocity/Run_Velocity_Managed_PRECHECK_READ_ONLY.cmd
+            tools/velocity/Run_GSC452_Wild_Existing_Evidence_READ_ONLY.cmd
             tools/velocity/Velocity_Actual_Launch_Audit_READ_ONLY.ps1
             tools/velocity/Run_Velocity_Actual_Launch_Audit_READ_ONLY.cmd
             tools/velocity/VELOCITY-MANAGED-KIT-README.txt
