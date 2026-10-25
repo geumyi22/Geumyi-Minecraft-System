@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"geumyi/servercenter/internal/atomicfile"
 	"geumyi/servercenter/internal/javaruntime"
 	"geumyi/servercenter/internal/securestore"
 	"io"
@@ -36,6 +37,13 @@ type Config struct {
 	Port                int            `json:"port"`
 	APIToken            string         `json:"api_token"`
 	AllowLoopbackNoAuth bool           `json:"allow_loopback_no_auth"`
+	// LoopbackNoAuthScope: "" or "read" (default) = token-free loopback callers
+	// may only read status; "full" = legacy full admin (explicit opt-in);
+	// "off" = token required for everything.
+	LoopbackNoAuthScope string `json:"loopback_no_auth_scope,omitempty"`
+	// AgentAPIToken is the StatusAgent credential (agent.properties gsc.token),
+	// limited to the Discord server routes and to loopback callers.
+	AgentAPIToken string `json:"agent_api_token,omitempty"`
 	MobileEnabled       bool           `json:"mobile_enabled"`
 	PairingTTLSeconds   int            `json:"pairing_ttl_seconds"`
 	AutoStartAgent      bool           `json:"auto_start_agent"`
@@ -269,7 +277,16 @@ func runHostCore() error {
 	// Reconcile the local Agent/GDS bridge before either side begins sending
 	// heartbeats. This prevents a preserved/migrated config from leaving the
 	// Agent and per-server GDS secrets or IDs out of sync after an upgrade.
+	_, agentTokenCreated, _ := ensureAgentAPIToken()
 	changedBridges, _ := reconcileLocalCompanionConfigs()
+	// First start after the agent-token upgrade: an Agent process that survived
+	// from the previous Host lifetime still runs without gsc.token, so restart
+	// only the Agent (never Minecraft servers) through the normal reconcile path.
+	if agentTokenCreated && cfg.Agent.HealthURL != "" {
+		if _, running := getTextURL(cfg.Agent.HealthURL); running {
+			applyCompanionReconcile(nil, true)
+		}
+	}
 	startStatusTelemetry()
 	go startupSupervisor()
 	go reloadReconciledGDS(changedBridges)
@@ -338,6 +355,11 @@ func loadOrCreateConfig(path string) (Config, error) {
 			return c, fmt.Errorf("GitHub token decrypt failed: %w", err)
 		}
 		c.GitHubToken = githubPlain
+		agentPlain, err := securestore.UnprotectString(c.AgentAPIToken)
+		if err != nil {
+			return c, fmt.Errorf("agent token decrypt failed: %w", err)
+		}
+		c.AgentAPIToken = agentPlain
 		if c.Port == 0 {
 			c.Port = 8787
 		}
@@ -390,6 +412,17 @@ func requireAuth(fn http.HandlerFunc) http.HandlerFunc {
 		if !ok {
 			appendUnauthorizedAudit(r)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		if !principalPermits(p, r) {
+			appendUnauthorizedAudit(r)
+			if p.Kind == principalLocalReadOnly {
+				// 401 (not 403) so the dashboards prompt for the API token.
+				w.Header().Set("WWW-Authenticate", `Bearer realm="GSC"`)
+				http.Error(w, "Unauthorized: GSC API token required (token-free local access is read-only)", http.StatusUnauthorized)
+				return
+			}
+			http.Error(w, "Forbidden for this credential", http.StatusForbidden)
 			return
 		}
 		r = r.WithContext(context.WithValue(r.Context(), authContextKey{}, p))
@@ -517,22 +550,33 @@ func saveHostConfig(next Config) error {
 		return err
 	}
 	disk.GitHubToken = githubProtected
+	agentProtected, err := securestore.ProtectString(next.AgentAPIToken, true)
+	if err != nil {
+		return err
+	}
+	disk.AgentAPIToken = agentProtected
 	b, err := json.MarshalIndent(disk, "", "  ")
 	if err != nil {
 		return err
 	}
-	if err = os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
-		return err
-	}
-	tmp := configPath + ".tmp"
-	if err = os.WriteFile(tmp, b, 0600); err != nil {
-		return err
-	}
-	if err = os.Rename(tmp, configPath); err != nil {
+	if err = writeHostConfigSafely(configPath, b); err != nil {
 		return err
 	}
 	cfg = next
 	return nil
+}
+
+
+// writeHostConfigSafely uses an unpredictable, exclusively created temporary
+// file in the destination directory. Never open a predictable server.json.tmp:
+// a less-privileged local user could otherwise pre-create it if directory
+// inheritance permits file creation. The destination is not removed on error.
+func writeHostConfigSafely(path string, data []byte) error {
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	return atomicfile.WriteFile(path, data, 0600)
 }
 
 func apiAgentAction(w http.ResponseWriter, r *http.Request) {

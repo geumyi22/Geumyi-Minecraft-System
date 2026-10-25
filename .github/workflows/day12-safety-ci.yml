@@ -50,6 +50,382 @@ jobs:
           }
           Write-Host "Parsed $($files.Count) Day 12 PowerShell scripts."
 
+      - name: ACL predeployment target-map synthetic self-test (NO host ACL access)
+        shell: powershell
+        run: |
+          $tool='tools/day12/Day12_Phase5_ACL_Change_Preflight_READ_ONLY.ps1'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -SelfTest
+          if($LASTEXITCODE -ne 0){throw 'ACL predeployment self-test failed'}
+          $s=Get-Content -LiteralPath $tool -Raw
+          foreach($pattern in @(
+            'Set-NetFirewallRule','Set-Service','Stop-Service','Restart-Service',
+            'Restart-Computer','icacls.exe','/grant','/deny','/reset'
+          )){
+            if($s.Contains($pattern)){throw ('ACL preflight unsafe source marker: '+$pattern)}
+          }
+
+      - name: ACL predeployment capture on disposable Windows directory tree
+        shell: powershell
+        run: |
+          $tool='tools/day12/Day12_Phase5_ACL_Change_Preflight_READ_ONLY.ps1'
+          $base=Join-Path $env:RUNNER_TEMP ('day12-acl-preflight-'+[guid]::NewGuid().ToString('N'))
+          $pd=Join-Path $base 'ProgramData'
+          $local=Join-Path $base 'LocalAppData'
+          $agent=Join-Path $pd 'GeumyiServerCenter/Runtime/Agent'
+          $oldPD=$env:ProgramData;$oldLA=$env:LOCALAPPDATA
+          $oldFixture=$env:GEUMYI_DAY12_ACL_FIXTURE_ONLY
+          try {
+            New-Item -ItemType Directory -Force -Path $agent,$local | Out-Null
+            Set-Content -LiteralPath (Join-Path $pd 'GeumyiServerCenter/server.json') -Value '{}' -Encoding ASCII
+            $env:ProgramData=$pd
+            $env:LOCALAPPDATA=$local
+            $env:GEUMYI_DAY12_ACL_FIXTURE_ONLY='isolated_windows_ci'
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool
+            if($LASTEXITCODE -ne 0){throw 'ACL fixture collector execution failed'}
+            $share=@(Get-ChildItem -LiteralPath $local -Filter 'DAY12-ACL-CHANGE-PREFLIGHT-SHARE-ONLY-THIS.json' -Recurse -File)
+            $private=@(Get-ChildItem -LiteralPath $local -Filter 'PRIVATE-ACL-SDDL-SNAPSHOT-DO-NOT-SHARE.json' -Recurse -File)
+            if($share.Count -ne 1 -or $private.Count -ne 1){throw 'ACL fixture evidence output missing'}
+            $j=Get-Content -LiteralPath $share[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+            $p=Get-Content -LiteralPath $private[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
+            if(-not $j.synthetic -or -not $j.output_directory_acl_restricted -or
+                $j.production_acl_modified -or $j.raw_sddl_or_paths_shared -or
+                @($j.targets).Count -ne 11 -or
+                @($p.targets).Count -ne 11 -or
+                -not $p.targets[1].acl_sddl -or
+                $j.final_acl_security_pass -or $j.exact_ace_mutation_approved){
+              throw 'ACL fixture redaction/safety contract failed'
+            }
+            $raw=Get-Content -LiteralPath $share[0].FullName -Raw
+            if($raw.Contains($pd) -or $raw.Contains('acl_sddl') -or $raw.Contains('principal_sid')){
+              throw 'ACL fixture leaked private SDDL, SID or actual path into shareable JSON'
+            }
+            Write-Host 'ACL predeployment isolated filesystem capture PASS'
+          } finally {
+            $env:ProgramData=$oldPD
+            $env:LOCALAPPDATA=$oldLA
+            $env:GEUMYI_DAY12_ACL_FIXTURE_ONLY=$oldFixture
+            if(Test-Path -LiteralPath $base){Remove-Item -LiteralPath $base -Recurse -Force}
+          }
+
+      - name: Isolated Windows ACL least-privilege and real icacls restore rehearsal
+        shell: powershell
+        env:
+          GEUMYI_DAY12_ACL_REHEARSAL_CI: isolated_fixture
+        run: |
+          $tool='tools/day12/ci/Day12_ACL_LeastPrivilege_Rehearsal_Windows_CI.ps1'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -Synthetic
+          if($LASTEXITCODE -ne 0){throw 'Isolated ACL least-privilege/rollback rehearsal failed'}
+
+      - name: ACL negative test with a real standard-user token (disposable CI fixture)
+        shell: powershell
+        env:
+          GEUMYI_DAY12_ACL_NEGTEST_CI: isolated_fixture
+        run: |
+          $ErrorActionPreference='Stop'
+          $tool='tools/day12/ci/Day12_ACL_NegativeTest_Windows_CI.ps1'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -Synthetic
+          $rc=$LASTEXITCODE
+          # 0=PASS, 1=FAIL, 42=BLOCKED/UNVERIFIED. BLOCKED must NOT look like success.
+          if($rc -eq 42){throw "ACL negative test BLOCKED/UNVERIFIED (could not create a real standard-user token or run the checks). See DAY12-ACL-NEGATIVE-TEST-RESULT.json."}
+          if($rc -ne 0){throw "ACL negative test FAILED (exit $rc)."}
+          Write-Host 'ACL_NEGATIVE_TEST_PASS'
+
+      - name: Preserve standard-user ACL synthetic test evidence (JSON only)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: day12-acl-standard-user-negative-result
+          path: ${{ runner.temp }}/DAY12-ACL-NEGATIVE-TEST-RESULT.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Native no-write permission check selftest and privileged-token veto (PS 5.1)
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $probe='tools/day12/Day12_Phase5_GSC_StandardUser_NoWriteProbe_READ_ONLY.ps1'
+          $ps51=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $probe -SelfTest
+          if($LASTEXITCODE -ne 0){throw 'NATIVE_NO_WRITE_PROBE_SELFTEST_FAILED'}
+          # GitHub Windows runner is privileged: a secure operator tool must
+          # BLOCK, not pretend it performed an actual standard-user audit.
+          $dir=Join-Path $env:LOCALAPPDATA 'Geumyi-Day12-StandardUser-AccessProbe'
+          $before=@(Get-ChildItem -LiteralPath $dir -Filter 'DAY12-GSC-STANDARD-USER-NOWRITE-SHARE-ONLY-THIS-*.json' -File -ErrorAction SilentlyContinue).Count
+          & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $probe
+          if($LASTEXITCODE -ne 42){throw 'PRIVILEGED_RUNNER_TOKEN_MUST_BE_BLOCKED'}
+          $results=@(Get-ChildItem -LiteralPath $dir -Filter 'DAY12-GSC-STANDARD-USER-NOWRITE-SHARE-ONLY-THIS-*.json' -File | Sort-Object LastWriteTime -Descending)
+          if($results.Count -ne ($before+1)){throw 'NO_WRITE_PROBE_BLOCKED_REPORT_MISSING'}
+          $raw=Get-Content -LiteralPath $results[0].FullName -Raw -Encoding UTF8
+          $r=$raw | ConvertFrom-Json
+          if($r.result -ne 'BLOCKED_UNVERIFIED' -or $r.token_class -eq 'STANDARD_ACCOUNT_TOKEN' -or
+             $r.root_checked -or $r.production_acl_modified -or $r.raw_sids_paths_credentials_or_sddl_shared -or
+             $r.strict_security_gate -ne 'NOT_PASSED' -or $r.create_files_access -ne 'UNVERIFIED' -or
+             $r.create_directories_access -ne 'UNVERIFIED' -or
+             $raw -match 'S-1-5-|[A-Z]:\\|principal_sid|acl_sddl'){
+              throw 'NO_WRITE_PROBE_PRIVILEGED_VETO_CONTRACT_FAILED'
+          }
+          Write-Host 'NATIVE_NO_WRITE_PROBE_PRIVILEGED_VETO_PASS'
+          # Exit 42 was EXPECTED and verified. Reset the shell's native exit
+          # code so Actions does not mistake this successful veto for failure.
+          $global:LASTEXITCODE=0
+
+      - name: Package GSC standard-user no-write diagnostic kit (READ ONLY)
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP ('gsc-nowrite-kit-'+[guid]::NewGuid().ToString('N'))
+          New-Item -ItemType Directory -Path $dir -ErrorAction Stop | Out-Null
+          foreach($file in @(
+            'Day12_GSC_NoWrite_AccessCore.ps1',
+            'Day12_Phase5_GSC_StandardUser_NoWriteProbe_READ_ONLY.ps1',
+            'START_Day12_Phase5_GSC_StandardUser_NoWriteProbe_READ_ONLY.cmd',
+            'README-Day12-STANDARD-USER-NOWRITE-KO.txt'
+          )){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12' $file) -Destination $dir -ErrorAction Stop
+          }
+          Compress-Archive -Path (Join-Path $dir '*') -DestinationPath 'Geumyi-Day12-StandardUser-NoWrite-READ-ONLY.zip' -Force
+          if(-not (Test-Path 'Geumyi-Day12-StandardUser-NoWrite-READ-ONLY.zip')){
+            throw 'NO_WRITE_PROBE_KIT_MISSING'
+          }
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc-standard-user-nowrite-operator-kit
+          path: Geumyi-Day12-StandardUser-NoWrite-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Package CI-checked ACL preflight kit (NO APPLY)
+        shell: powershell
+        run: |
+          $dir=Join-Path $env:RUNNER_TEMP 'acl-preflight-kit'
+          New-Item -ItemType Directory -Path $dir -Force|Out-Null
+          foreach($f in @(
+            'Day12_Phase5_ACL_Change_Preflight_READ_ONLY.ps1',
+            'START_Day12_Phase5_ACL_Change_Preflight_READ_ONLY.cmd',
+            'README-Day12-ACL-PREFLIGHT-KO.txt'
+          )){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12' $f) -Destination $dir -ErrorAction Stop
+          }
+          Compress-Archive -Path (Join-Path $dir '*') -DestinationPath 'Geumyi-Day12-ACL-Preflight-READ-ONLY.zip' -Force
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-acl-predeployment-readonly-kit
+          path: Geumyi-Day12-ACL-Preflight-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Exact GSC ACL backup archives and parent-relative restore on isolated Windows fixture
+        shell: powershell
+        env:
+          GEUMYI_DAY12_ACL_BACKUP_CI: isolated_fixture
+        run: |
+          $tool='tools/day12/Day12_Phase5_Production_ACL_Backup_READ_ONLY.ps1'
+          & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -SelfTest
+          if($LASTEXITCODE -ne 0){throw 'GSC ACL original backup self-test failed'}
+          $fixture=Join-Path $env:RUNNER_TEMP ('ACL-Backup-Fixture-'+[guid]::NewGuid().ToString('N'))
+          $gsc=Join-Path $fixture 'GeumyiServerCenter'
+          $agent=Join-Path $gsc 'Runtime/Agent'
+          $update=Join-Path $gsc 'Updates'
+          $backup=Join-Path $gsc 'Backups'
+          $stage=Join-Path $gsc 'Staging/GSC'
+          try {
+            New-Item -ItemType Directory -Force -Path $agent,$update,$backup,$stage|Out-Null
+            Set-Content -LiteralPath (Join-Path $gsc 'server.json') -Value '{}' -Encoding ASCII
+            Set-Content -LiteralPath (Join-Path $gsc 'trusted-devices.json') -Value '[]' -Encoding ASCII
+            Set-Content -LiteralPath (Join-Path $agent 'GeumyiStatusAgent-0.5.4.jar') -Value 'fixture' -Encoding ASCII
+            $parentDaclBefore=(Get-Acl -LiteralPath $fixture).GetSecurityDescriptorSddlForm(
+              [System.Security.AccessControl.AccessControlSections]::Access)
+            $rootDaclBefore=(Get-Acl -LiteralPath $gsc).GetSecurityDescriptorSddlForm(
+              [System.Security.AccessControl.AccessControlSections]::Access)
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -CIFixture -CIFixtureRoot $fixture
+            if($LASTEXITCODE -ne 0){throw 'GSC original ACL backup fixture execution failed'}
+            $resultBase=Join-Path $env:LOCALAPPDATA 'Geumyi-Day12-ACL-Backup'
+            $latest=Get-ChildItem -LiteralPath $resultBase -Directory -Filter 'backup-*'|
+              Sort-Object CreationTimeUtc -Descending|Select-Object -First 1
+            if($null -eq $latest){throw 'No private backup output directory'}
+            $shared=Join-Path $latest.FullName 'DAY12-ACL-BACKUP-SHARE-ONLY-THIS.json'
+            $priv=Join-Path $latest.FullName 'PRIVATE-ACL-BACKUP-MANIFEST-DO-NOT-SHARE.json'
+            $j=Get-Content -LiteralPath $shared -Raw -Encoding UTF8|ConvertFrom-Json
+            $m=Get-Content -LiteralPath $priv -Raw -Encoding UTF8|ConvertFrom-Json
+            $saved=@(Get-ChildItem -LiteralPath $latest.FullName -File -Filter 'PRIVATE-*.dacl')
+            if(-not $j.synthetic -or $j.status -ne 'CI_FIXTURE_BACKUP_PASS' -or
+               $j.scoped_role_count -ne 10 -or $j.captured_archive_count -ne 10 -or
+               $j.optional_missing_count -ne 0 -or $saved.Count -ne 10 -or
+               @($m.entries).Count -ne 10 -or
+               $j.production_acl_modified -or $j.real_production_restore_performed -or
+               -not $j.target_acls_unchanged_during_backup -or
+               -not $j.parent_acl_unchanged_during_backup -or
+               -not $j.backup_output_directory_acl_restricted) {
+              throw 'GSC original backup privacy/scope contract failed'
+            }
+            $shareText=Get-Content -LiteralPath $shared -Raw -Encoding UTF8
+            if($shareText.Contains($fixture) -or $shareText.Contains('original_dacl_sddl') -or
+               $shareText.Contains('restore_parent') -or $shareText.Contains('archive_sha256')) {
+              throw 'Sensitive ACL metadata leaked to sharing report'
+            }
+            foreach($ent in $m.entries){
+              $p=Join-Path $latest.FullName $ent.archive_name
+              if((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() -ne $ent.archive_sha256){
+                throw ('Archive digest mismatch: '+$ent.role)
+              }
+            }
+            # Independently audit the private backups in CI before mutation.
+            $auditTool='tools/day12/Day12_Phase5_ACL_Backup_Integrity_READ_ONLY.ps1'
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $auditTool -SelfTest
+            if($LASTEXITCODE -ne 0){throw 'ACL backup integrity self-test failed'}
+            & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $auditTool -CIFixture -CIFixtureRoot $fixture -BackupDir $latest.FullName
+            if($LASTEXITCODE -ne 0){throw 'ACL backup integrity CI fixture audit failed'}
+            $audits=@(Get-ChildItem -LiteralPath $latest.FullName -File -Filter 'DAY12-ACL-INTEGRITY-SHARE-ONLY-THIS-*.json')
+            if($audits.Count -ne 1){throw 'Expected single redacted ACL integrity audit'}
+            $audit=Get-Content -LiteralPath $audits[0].FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+            if(-not $audit.synthetic -or $audit.archive_hashes_verified -ne 10 -or
+               $audit.unchanged_live_target_acls -ne 10 -or
+               @($audit.targets).Count -ne 10 -or
+               -not $audit.parent_dacl_unchanged -or
+               $audit.production_acl_modified -or $audit.real_production_restore_performed -or
+               $audit.strict_security_gate -ne 'NOT_PASSED' -or
+               $audit.raw_sddl_sid_paths_or_hashes_shared){
+              throw 'Integrity redacted schema or production safety contract failed'
+            }
+            $auditText=Get-Content -LiteralPath $audits[0].FullName -Raw -Encoding UTF8
+            if($auditText.Contains($fixture) -or $auditText.Contains('original_dacl_sddl') -or
+               $auditText.Contains('restore_parent') -or $auditText.Contains('archive_sha256') -or
+               $auditText.Contains($env:LOCALAPPDATA) -or $auditText.Contains('S-1-5-')){
+              throw 'ACL integrity report leaked private paths, SDDL, hashes or SID'
+            }
+            # Negative fixture: tamper with one disposable archive and ensure
+            # a new audit refuses it. Restore bytes ONLY within synthetic CI.
+            $tamper=Join-Path $latest.FullName 'PRIVATE-GSC_ROOT.dacl'
+            $originalBytes=[System.IO.File]::ReadAllBytes($tamper)
+            try {
+              [System.IO.File]::WriteAllBytes($tamper,[System.Text.Encoding]::ASCII.GetBytes('synthetic-tamper'))
+              # Native stderr is expected for this negative test. PowerShell's
+              # Stop preference would otherwise turn its intentional nonzero
+              # exit into an unhandled NativeCommandError.
+              $priorPreference=$ErrorActionPreference
+              try {
+                $ErrorActionPreference='Continue'
+                & powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $auditTool -CIFixture -CIFixtureRoot $fixture -BackupDir $latest.FullName *> $null
+                $tamperExit=$LASTEXITCODE
+              } finally {
+                $ErrorActionPreference=$priorPreference
+              }
+              if($tamperExit -eq 0){throw 'Tampered synthetic ACL archive was accepted'}
+              $global:LASTEXITCODE=0
+            } finally {
+              [System.IO.File]::WriteAllBytes($tamper,$originalBytes)
+            }
+            if((Get-FileHash -LiteralPath $tamper -Algorithm SHA256).Hash.ToLowerInvariant() -ne
+               @($m.entries | Where-Object {$_.role -eq 'GSC_ROOT'})[0].archive_sha256){
+              throw 'Synthetic original archive was not restored after negative test'
+            }
+            Write-Host 'On-host ACL backup integrity audit 10/10 + tamper rejection PASS (CI only)'
+
+            # Exercise EVERY original archive, rather than only the GSC root.
+            # All paths below originate from the private synthetic manifest.
+            # No operator or production ACL can be changed by this fixture.
+            $fixturePrefix=[System.IO.Path]::GetFullPath($fixture).TrimEnd('\')+'\'
+            $stagedCount=0
+            foreach($ent in $m.entries){
+              $objectPath=[System.IO.Path]::GetFullPath([string]$ent.actual_path)
+              $restoreParent=[System.IO.Path]::GetFullPath([string]$ent.restore_parent)
+              if(-not $objectPath.StartsWith($fixturePrefix,[StringComparison]::OrdinalIgnoreCase) -or
+                 -not ($restoreParent+'\').StartsWith($fixturePrefix,[StringComparison]::OrdinalIgnoreCase)){
+                throw ('Restore fixture path escaped runner scope: '+$ent.role)
+              }
+              $current=Get-Acl -LiteralPath $objectPath -ErrorAction Stop
+              $current.SetAccessRuleProtection($true,$true)
+              Set-Acl -LiteralPath $objectPath -AclObject $current -ErrorAction Stop
+              if(-not (Get-Acl -LiteralPath $objectPath).AreAccessRulesProtected){
+                throw ('Synthetic ACL staging failed: '+$ent.role)
+              }
+              $stagedCount++
+            }
+            # Parent-first restore. Child DACLs may be affected by restoring
+            # parent inheritance, so verify all objects only AFTER every restore.
+            foreach($ent in @($m.entries | Sort-Object { $_.actual_path.Length })){
+              $archivePath=Join-Path $latest.FullName $ent.archive_name
+              & icacls.exe $ent.restore_parent /restore $archivePath | Out-Null
+              if($LASTEXITCODE -ne 0){
+                throw ('Isolated archive restore failed: '+$ent.role)
+              }
+            }
+            $verified=0
+            $autoInheritedMarkerNormalized=0
+            foreach($ent in $m.entries){
+              $post=Get-Acl -LiteralPath $ent.actual_path -ErrorAction Stop
+              $actualDacl=$post.GetSecurityDescriptorSddlForm(
+                [System.Security.AccessControl.AccessControlSections]::Access)
+              # icacls /restore may add the non-permission D:AI control marker.
+              # Ignore ONLY that marker, never ACE rights, order, flags,
+              # protection state or any other SDDL control bit.
+              $expectedAcl=([string]$ent.original_dacl_sddl) -replace '^D:AI','D:'
+              $actualAcl=$actualDacl -replace '^D:AI','D:'
+              if($expectedAcl -ne $actualAcl -or
+                 $post.AreAccessRulesProtected -ne [bool]$ent.original_inheritance_protected){
+                throw ('Restored ACL differs from original: '+$ent.role)
+              }
+              if($actualDacl -ne [string]$ent.original_dacl_sddl){
+                $autoInheritedMarkerNormalized++
+              }
+              $verified++
+            }
+            $parentAfter=(Get-Acl -LiteralPath $fixture).GetSecurityDescriptorSddlForm(
+              [System.Security.AccessControl.AccessControlSections]::Access)
+            if($parentAfter -ne $parentDaclBefore -or $verified -ne 10 -or $stagedCount -ne 10){
+              throw 'Synthetic parent DACL or 10-target restoration contract failed'
+            }
+            Write-Host ('GSC ACL BACKUP 10/10 + isolated 10/10 icacls /restore PASS; '+
+                        'full_ACE_equivalence=true; parent_unchanged=true; '+
+                        'auto_inherited_marker_normalized_count='+$autoInheritedMarkerNormalized)
+          } finally {
+            if(Test-Path -LiteralPath $fixture){Remove-Item -LiteralPath $fixture -Force -Recurse -ErrorAction SilentlyContinue}
+          }
+
+      - name: Package tested GSC ACL backup CMD (NO production APPLY)
+        shell: powershell
+        run: |
+          $folder=Join-Path $env:RUNNER_TEMP 'GSC-ACL-BACKUP-READ-ONLY-KIT'
+          New-Item -ItemType Directory -Force -Path $folder|Out-Null
+          foreach($n in @(
+            'Day12_Phase5_Production_ACL_Backup_READ_ONLY.ps1',
+            'START_Day12_Phase5_Production_ACL_Backup_READ_ONLY.cmd',
+            'README-Day12-ACL-ORIGINAL-BACKUP-KO.txt'
+          )){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12' $n) -Destination $folder -ErrorAction Stop
+          }
+          Compress-Archive -Path (Join-Path $folder '*') -DestinationPath 'Geumyi-Day12-ACL-Original-Backup-READ-ONLY.zip' -Force
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-acl-original-backup-readonly-kit
+          path: Geumyi-Day12-ACL-Original-Backup-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Package tested ACL backup integrity audit (NO production APPLY)
+        shell: powershell
+        run: |
+          $folder=Join-Path $env:RUNNER_TEMP 'GSC-ACL-INTEGRITY-READ-ONLY-KIT'
+          New-Item -ItemType Directory -Force -Path $folder|Out-Null
+          foreach($n in @(
+            'Day12_Phase5_ACL_Backup_Integrity_READ_ONLY.ps1',
+            'START_Day12_Phase5_ACL_Backup_Integrity_READ_ONLY.cmd',
+            'README-Day12-ACL-INTEGRITY-KO.txt'
+          )){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12' $n) -Destination $folder -ErrorAction Stop
+          }
+          Compress-Archive -Path (Join-Path $folder '*') -DestinationPath 'Geumyi-Day12-ACL-Integrity-READ-ONLY.zip' -Force
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-acl-integrity-readonly-kit
+          path: Geumyi-Day12-ACL-Integrity-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Dual-stack SubPC exposure probe synthetic and unsafe-target rejection
         shell: powershell
         run: |
@@ -140,6 +516,193 @@ jobs:
               throw "$($file.Name) contains a mutating HTTP method"
             }
           }
+
+      - name: GSC subtree owner inventory on Windows PowerShell 5.1 (self-test + disposable fixture, NO production path)
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          if($PSVersionTable.PSVersion.Major -ne 5 -or $PSVersionTable.PSEdition -ne 'Desktop'){
+            throw "Expected Windows PowerShell 5.1 Desktop, got $($PSVersionTable.PSVersion) $($PSVersionTable.PSEdition)"
+          }
+          Write-Host ("Windows PowerShell " + $PSVersionTable.PSVersion + " " + $PSVersionTable.PSEdition)
+          $tool=Join-Path $env:GITHUB_WORKSPACE 'tools\day12\Day12_Phase5_GSC_Subtree_Owner_Inventory_READ_ONLY.ps1'
+          $ps51=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -SelfTest
+          if($LASTEXITCODE -ne 0){throw "Inventory -SelfTest failed under PS 5.1: $LASTEXITCODE"}
+          $leftovers=@(Get-ChildItem -LiteralPath ([IO.Path]::GetTempPath()) -Directory -Filter 'gsc-inv-selftest-*' -ErrorAction SilentlyContinue)
+          if($leftovers.Count -ne 0){throw "Self-test left $($leftovers.Count) temp fixture directories"}
+
+          # Disposable GSC-like tree under RUNNER_TEMP with one junction and one legacy temp.
+          $fixture=Join-Path $env:RUNNER_TEMP ('gsc-inventory-fixture-' + [guid]::NewGuid().ToString('N'))
+          $outside=$fixture + '-junction-target'
+          New-Item -ItemType Directory -Path (Join-Path $fixture 'Runtime\Agent\data') -Force | Out-Null
+          New-Item -ItemType Directory -Path (Join-Path $fixture 'Backups\wild') -Force | Out-Null
+          New-Item -ItemType Directory -Path $outside -Force | Out-Null
+          Set-Content -LiteralPath (Join-Path $outside 'must-not-be-walked.txt') -Value 'x'
+          Set-Content -LiteralPath (Join-Path $fixture 'server.json') -Value '{}'
+          Set-Content -LiteralPath (Join-Path $fixture 'Runtime\Agent\agent.properties') -Value 'a=b'
+          Set-Content -LiteralPath (Join-Path $fixture 'Runtime\Agent\agent.properties.gsc.tmp') -Value 'legacy'
+          Set-Content -LiteralPath (Join-Path $fixture 'Backups\wild\.x.zip.gsc-123456789.tmp') -Value 'new-random'
+          cmd.exe /d /c mklink /J "$(Join-Path $fixture 'Staging')" "$outside" | Out-Null
+          if($LASTEXITCODE -ne 0){throw 'mklink /J failed on runner'}
+          $outBase=Join-Path $env:LOCALAPPDATA 'Geumyi-Day12-ACL-Inventory'
+          $before=@(Get-ChildItem -LiteralPath $outBase -Filter '*.json' -ErrorAction SilentlyContinue).Count
+          & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -CIFixture -CIFixtureRoot $fixture
+          if($LASTEXITCODE -ne 0){throw "Inventory fixture run failed: $LASTEXITCODE"}
+          $json=@(Get-ChildItem -LiteralPath $outBase -Filter 'DAY12-GSC-SUBTREE-INVENTORY-SHARE-ONLY-THIS-*.json' | Sort-Object LastWriteTime -Descending)
+          if($json.Count -ne ($before + 1)){throw 'Expected exactly one new share JSON'}
+          $r=Get-Content -LiteralPath $json[0].FullName -Raw | ConvertFrom-Json
+          $legacy=0; foreach($p in $r.legacy_predictable_temp_by_owner_class.PSObject.Properties){ $legacy += [int]$p.Value }
+          Write-Host ("objects=" + $r.objects + " reparse=" + $r.reparse_points + " legacy=" + $legacy + " new_random=" + $r.new_random_temp_files + " synthetic=" + $r.synthetic)
+          if(-not $r.synthetic){throw 'Fixture report must be marked synthetic'}
+          if($r.reparse_points -ne 1 -or $r.reparse_points_followed){throw 'Junction must be counted once and never followed'}
+          if($legacy -ne 1){throw "Expected exactly one legacy predictable temp, got $legacy"}
+          if($r.new_random_temp_files -ne 1){throw 'Expected one new random temp'}
+          # Root: Runtime, Backups, server.json, Staging(junction)=4; Agent=1; data+2 agent files=3; wild=1; zip temp=1 => 10.
+          # Verified with the same walker on PowerShell 7 + symlink; junction target content must be absent.
+          if($r.objects -ne 10){throw "Unexpected object count $($r.objects) (junction target walked?)"}
+          $text=Get-Content -LiteralPath $json[0].FullName -Raw
+          if($text -match [regex]::Escape($fixture) -or $text -match 'S-1-5-' -or $text -match 'must-not-be-walked'){
+            throw 'Share JSON leaked a path, SID or file name'
+          }
+          if(-not (Test-Path -LiteralPath (Join-Path $outside 'must-not-be-walked.txt'))){throw 'Junction target was modified'}
+          cmd.exe /d /c rmdir "$(Join-Path $fixture 'Staging')" | Out-Null
+          Remove-Item -LiteralPath $fixture -Recurse -Force
+          Remove-Item -LiteralPath $outside -Recurse -Force
+          Write-Host 'PS51_INVENTORY_SELFTEST_AND_FIXTURE_PASS'
+
+      - name: Package reviewed GSC subtree inventory READ-ONLY operator kit
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'gsc-subtree-operator-kit'
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          foreach($leaf in @(
+            'Day12_Phase5_GSC_Subtree_Owner_Inventory_READ_ONLY.ps1',
+            'START_Day12_Phase5_GSC_Subtree_Owner_Inventory_READ_ONLY.cmd'
+          )){ Copy-Item -LiteralPath (Join-Path 'tools/day12' $leaf) -Destination $root -ErrorAction Stop }
+          $guide = @(
+            'Geumyi Day12.5 - GSC subtree inventory [READ ONLY]',
+            ('GitHub reviewed commit: ' + $env:GITHUB_SHA),
+            'Run on the actual GSC Windows server PC only.',
+            'Extract BOTH CMD and PS1 into the SAME directory.',
+            'Double-click START_Day12_Phase5_GSC_Subtree_Owner_Inventory_READ_ONLY.cmd.',
+            'The CMD runs a disposable temporary fixture self-test, then only inventories the GSC subtree.',
+            'It does NOT apply ACLs, restore, delete production data, or stop/restart servers.',
+            'It writes only a counts-only shareable JSON to LOCALAPPDATA/Geumyi-Day12-ACL-Inventory.',
+            'Send ONLY the newest DAY12-GSC-SUBTREE-INVENTORY-SHARE-ONLY-THIS-*.json to ChatGPT.',
+            'If BLOCKED or FAILED, send the screen; do NOT adjust ACLs manually.'
+          )
+          [IO.File]::WriteAllLines((Join-Path $root 'README-FIRST.txt'), $guide, (New-Object System.Text.UTF8Encoding($false)))
+          Compress-Archive -Path (Join-Path $root '*') -DestinationPath 'Geumyi-Day12-GSC-Subtree-READ-ONLY.zip' -Force
+          if(-not (Test-Path 'Geumyi-Day12-GSC-Subtree-READ-ONLY.zip')){throw 'Operator kit ZIP missing'}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc-subtree-operator-readonly-kit
+          path: Geumyi-Day12-GSC-Subtree-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: GSC explicit/protected ACL counts-only review (PS 5.1, disposable Windows fixture)
+        shell: powershell
+        env:
+          GEUMYI_DAY12_EXPLICIT_ACL_CI: isolated_fixture
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tool = Join-Path $env:GITHUB_WORKSPACE 'tools\day12\Day12_Phase5_GSC_ExplicitAcl_Review_READ_ONLY.ps1'
+          $ps51 = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+          & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -SelfTest
+          if($LASTEXITCODE -ne 0){ throw 'EXPLICIT_ACL_REVIEW_SELFTEST_FAILED' }
+
+          $base = Join-Path $env:RUNNER_TEMP ('gsc-explicit-acl-fixture-' + [guid]::NewGuid().ToString('N'))
+          $root = Join-Path $base 'GeumyiServerCenter'
+          $outside = Join-Path $base 'outside'
+          $junction = Join-Path $root 'Staging'
+          $linked = $false
+          try {
+            foreach($dir in @((Join-Path $root 'Runtime'),(Join-Path $root 'Updates'),(Join-Path $root 'Backups'),$outside)){
+              New-Item -ItemType Directory -Force -Path $dir | Out-Null
+            }
+            $weak = Join-Path $root 'Runtime\fixture-weak.bin'
+            $protected = Join-Path $root 'Updates\fixture-protected.bin'
+            $plain = Join-Path $root 'Backups\fixture-plain.bin'
+            Set-Content -LiteralPath $weak -Value 'unchanged' -Encoding ASCII
+            Set-Content -LiteralPath $protected -Value 'unchanged' -Encoding ASCII
+            Set-Content -LiteralPath $plain -Value 'unchanged' -Encoding ASCII
+            Set-Content -LiteralPath (Join-Path $outside 'never-follow-this.txt') -Value 'outside' -Encoding ASCII
+            $users = New-Object System.Security.Principal.SecurityIdentifier('S-1-5-32-545')
+            $weakAcl = Get-Acl -LiteralPath $weak
+            $allow = New-Object System.Security.AccessControl.FileSystemAccessRule(
+                $users,'Write','Allow')
+            $weakAcl.AddAccessRule($allow)
+            Set-Acl -LiteralPath $weak -AclObject $weakAcl
+            $protectAcl = Get-Acl -LiteralPath $protected
+            $protectAcl.SetAccessRuleProtection($true, $true)
+            Set-Acl -LiteralPath $protected -AclObject $protectAcl
+            cmd.exe /d /c mklink /J "$junction" "$outside" | Out-Null
+            if($LASTEXITCODE -ne 0){ throw 'FIXTURE_JUNCTION_FAILED' }
+            $linked = $true
+
+            $outBase = Join-Path $env:LOCALAPPDATA 'Geumyi-Day12-ACL-ExplicitReview'
+            $before = @(Get-ChildItem -LiteralPath $outBase -Filter 'DAY12-GSC-EXPLICIT-ACL-SHARE-ONLY-THIS-*.json' -File -ErrorAction SilentlyContinue).Count
+            & $ps51 -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -CIFixture -CIFixtureRoot $root
+            if($LASTEXITCODE -ne 0){ throw 'EXPLICIT_ACL_REVIEW_FIXTURE_FAILED' }
+            $files = @(Get-ChildItem -LiteralPath $outBase -Filter 'DAY12-GSC-EXPLICIT-ACL-SHARE-ONLY-THIS-*.json' -File | Sort-Object LastWriteTime -Descending)
+            if($files.Count -ne ($before+1)){ throw 'EXPLICIT_ACL_REVIEW_OUTPUT_MISSING' }
+            $raw = Get-Content -LiteralPath $files[0].FullName -Raw -Encoding UTF8
+            $j = $raw | ConvertFrom-Json
+            if(-not $j.synthetic -or $j.production_acl_modified -or $j.effective_access_verified -or
+               $j.effective_standard_user_write_denial_proven -or $j.names_paths_sids_or_raw_sddl_shared -or
+               $j.strict_security_gate -ne 'NOT_PASSED' -or $j.evidence_state -ne 'BLOCKED_UNVERIFIED' -or
+               [int]$j.candidate_count -lt 2 -or [int]$j.explicit_ace_objects -lt 1 -or
+               [int]$j.protected_dacl_objects -lt 1 -or
+               [int]$j.broad_write_allow_explicit_objects -lt 1 -or
+               [int]$j.candidate_non_system_admin_write_allow_objects -lt 1 -or
+               ([int]$j.candidate_system_admin_write_only_objects +
+                [int]$j.candidate_non_system_admin_write_allow_objects) -gt [int]$j.candidate_count -or
+               [int]$j.reparse_points -ne 1){
+              throw 'EXPLICIT_ACL_REVIEW_CLASSIFICATION_CONTRACT_FAILED'
+            }
+            if($raw -match 'S-1-5-|(?i)[A-Z]:\\|fixture-weak|fixture-protected|never-follow-this|agent.properties|principal_sid|acl_sddl'){
+              throw 'EXPLICIT_ACL_REVIEW_SHARE_JSON_LEAKED_PRIVATE_METADATA'
+            }
+            if((Get-Content -LiteralPath $weak -Raw).Trim() -ne 'unchanged' -or
+               (Get-Content -LiteralPath $protected -Raw).Trim() -ne 'unchanged' -or
+               (Get-Content -LiteralPath $plain -Raw).Trim() -ne 'unchanged' -or
+               -not (Test-Path -LiteralPath (Join-Path $outside 'never-follow-this.txt'))){
+              throw 'EXPLICIT_ACL_REVIEW_MODIFIED_READONLY_SOURCE'
+            }
+            Write-Host 'PS51_EXPLICIT_ACL_READONLY_FIXTURE_PASS'
+          } finally {
+            if($linked){
+              [IO.Directory]::Delete($junction,$false)
+            }
+            if(Test-Path -LiteralPath $base){ Remove-Item -LiteralPath $base -Recurse -Force }
+          }
+
+      - name: Package reviewed explicit ACL counts-only READ-ONLY operator kit
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP ('gsc-explicit-operator-kit-' + [guid]::NewGuid().ToString('N'))
+          New-Item -ItemType Directory -Path $root -ErrorAction Stop | Out-Null
+          foreach($name in @(
+            'Day12_Phase5_GSC_ExplicitAcl_Review_READ_ONLY.ps1',
+            'START_Day12_Phase5_GSC_ExplicitAcl_Review_READ_ONLY.cmd',
+            'README-Day12-GSC-EXPLICIT-ACL-REVIEW-KO.txt'
+          )){
+            Copy-Item -LiteralPath (Join-Path 'tools/day12' $name) -Destination $root -ErrorAction Stop
+          }
+          Compress-Archive -Path (Join-Path $root '*') -DestinationPath 'Geumyi-Day12-Explicit-ACL-READ-ONLY.zip' -Force
+          if(-not (Test-Path 'Geumyi-Day12-Explicit-ACL-READ-ONLY.zip')){ throw 'EXPLICIT_ACL_OPERATOR_KIT_MISSING' }
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-gsc-explicit-acl-operator-readonly-kit
+          path: Geumyi-Day12-Explicit-ACL-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Synthetic final Stable release gate omission and fail-closed tests
         shell: pwsh
@@ -294,7 +857,10 @@ jobs:
           if($reports.Count -ne 1){throw 'Native crosscheck expected a single report'}
           $r=Get-Content -LiteralPath $reports[0].FullName -Raw -Encoding UTF8|ConvertFrom-Json
           if($r.result -ne 'SYNTHETIC_PASS' -or -not $r.read_only -or -not $r.synthetic -or
-            -not $r.controlled_listener_observed_basic -or -not $r.controlled_listener_observed_owner -or $r.mutation_performed){
+            -not $r.controlled_listener_observed_basic -or -not $r.controlled_listener_observed_owner -or
+            -not $r.class3_state0_listener_accepted -or -not $r.class0_state0_listener_accepted -or
+            -not $r.class5_state0_not_promoted -or -not $r.class2_state0_not_promoted -or
+            -not $r.class5_state2_supported -or $r.mutation_performed){
             throw 'Native controlled listener report contract failed'
           }
 

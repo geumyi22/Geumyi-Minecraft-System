@@ -1,3 +1,5 @@
+> **최신 상태 안내 — 2026-10-13:** 이 파일의 2026-10-09~11 단락은 **시간순 원본 진행 기록**으로 보존합니다. 현재 Day12의 완료·미완료 구분은 [Day1~12 상세 마스터](docs/PROJECT-DAY1-12-MASTER-STATUS-20261013.md), 저장소 구조는 [저장소 지도](docs/REPOSITORY-MAP-20261013.md), 정식 Stable 조건은 [Stable Fast Track](docs/day12/DAY12-STABLE-FAST-TRACK-20261013.md)에서 확인하세요. 사용자 최신 상태: **기타 Paper는 의도적 OFFLINE**. 사용자 최신 의사: **8시간 실서버 계측을 재승인**, 완료 결과는 아직 미접수. 최초 2026-10-11의 면제/진행 지시는 당시 이력으로 취급하고, 2026-10-13 이후 실제 검사 없이 새 PASS를 선언하지 않습니다.
+
 ## 2026-10-11 — Operator 12.12 stability acceptance (supersedes routine-run request)
 
 **12.12 operational soak: OPERATOR ACCEPTED / PASS in user-reported scope.** The server was left running continuously and the operator noticed no problems, then explicitly instructed that the eight-hour test be passed. Do not ask for another routine eight-hour monitoring run. Exact timed start/end and resource/process telemetry were not provided; this is **not** an instrumented eight-hour PASS. The protected formal soak gate remains `PENDING_LIVE`; signed Stable/Maintenance is still BLOCKED by separate safety gates. See `docs/day12/phases/phase-12/DAY12-PHASE12-OPERATOR-SOAK-ACCEPTANCE-20261011.md`.

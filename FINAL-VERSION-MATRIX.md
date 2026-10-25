@@ -1,5 +1,7 @@
 # FINAL Version Matrix
 
+> **2026-10-13 보충(역사 기록 보존):** 아래 2026-10-09 상태문과 Lobby provenance 미확인 문구는 과거 시점 기록입니다. 이후 2026-10-11에 **13/13 설치 JAR의 역사적 SHA-256 출처가 확인**됐습니다(실제 현재 로딩 여부는 별도). [GSC 4.5.1/GSCM 1.5.1+151 수동 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151)은 이미 게시됐으나, 아래 표의 GSC 4.3.8/GSCM 1.1.5+117은 **마지막으로 확인된 실기기 기준선**이며 현재 설치 버전이 아닐 수도 있습니다. [Day12 최종 서명 Stable 빠른 마감 계획](docs/day12/DAY12-STABLE-FAST-TRACK-20261013.md) 및 `FINAL-RELEASE-GATES.json`의 엄격한 차단은 그대로 유지됩니다.
+
 Status: **12.0A live READY + 12.0B Golden 4/4 PASS (operator evidence, 2026-10-09); 12.2 binary provenance still PENDING; Stable BLOCKED**
 
 This matrix preserves the frozen Day-11 component targets and documents Day-12 real operator progress. Phase 12.0A baseline READY was recorded at 02:45 KST and **four of four protected full Golden checkpoints** PASS at 03:23 KST on 2026-10-09. This does NOT make the separate 12.2 component binary hash provenance or 12.10 native socket-owner security gates pass.

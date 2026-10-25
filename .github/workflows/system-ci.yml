@@ -68,6 +68,34 @@ jobs:
         working-directory: GSC/ServerCenter
         run: go test ./...
 
+      # CI must distinguish executed Windows ACL tests from Go's successful SKIP.
+      # Only disposable Windows-runner fixtures; never production ACLs.
+      - name: Require Windows atomicfile ACL assertions (skip is unverified)
+        shell: pwsh
+        working-directory: GSC/ServerCenter
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $names = @(
+            'TestAtomicReplaceYieldsFreshInheritedDaclNotPreplanted',
+            'TestAtomicWriteFreshFileInheritsDirectoryDacl'
+          )
+          $pattern = '^(' + ($names -join '|') + ')$'
+          $output = @(& go test -count=1 -v -run $pattern ./internal/atomicfile 2>&1)
+          $exitCode = $LASTEXITCODE
+          $output | ForEach-Object { Write-Host $_ }
+          if($exitCode -ne 0) { throw ('WINDOWS_ACL_TEST_FAILED_exit=' + $exitCode) }
+          $text = ($output | Out-String)
+          if($text -match '(?m)^\s*--- SKIP:' -or $text.Contains('UNVERIFIED:')) {
+            throw 'WINDOWS_ACL_TEST_UNVERIFIED_OR_SKIPPED'
+          }
+          foreach($name in $names) {
+            $passPattern = '(?m)^\s*--- PASS: ' + [regex]::Escape($name) + '\s+\('
+            if($text -notmatch $passPattern) {
+              throw ('WINDOWS_ACL_TEST_NOT_EXECUTED: ' + $name)
+            }
+          }
+          Write-Host 'WINDOWS_ATOMICFILE_ACL_TESTS_EXECUTED_AND_PASSED'
+
   statusagent:
     name: StatusAgent 0.5.4 / build
     runs-on: ubuntu-latest

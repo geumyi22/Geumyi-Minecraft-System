@@ -13,6 +13,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 type BackupManifest struct {
@@ -263,41 +265,31 @@ func createBackupWithReason(s ServerConfig, scope string, checkpoints bool, reas
 	}
 	name := fmt.Sprintf("%s-%s-%s-%s.zip", s.ID, scope, kind, stamp)
 	out := filepath.Join(root, name)
-	tmp := out + ".tmp"
 	reason = normalizeBackupReason(reason, checkpoints)
 	manifest := BackupManifest{Format: 1, GSCVersion: appVersion, ServerID: s.ID, ServerName: s.Name, Scope: scope, Created: time.Now().Format(time.RFC3339), Roots: roots, SourcePath: dir, SourceReason: reason, OnlineSnapshot: tcpOpen("127.0.0.1", s.JavaPort, 200*time.Millisecond)}
 	do := func() error {
-		f, e := os.Create(tmp)
-		if e != nil {
-			return e
-		}
-		zw := zip.NewWriter(f)
-		mb, _ := json.MarshalIndent(manifest, "", "  ")
-		mw, e := zw.Create("GSC_BACKUP_MANIFEST.json")
-		if e == nil {
-			_, e = mw.Write(mb)
-		}
-		if e == nil {
-			for _, r := range roots {
-				if e = addPathToZip(zw, dir, r); e != nil {
-					break
+		// Unpredictable O_EXCL temp in the Backups directory; a pre-created
+		// "<name>.zip.tmp" (possibly user-owned) is never opened.
+		return atomicfile.WriteFrom(out, 0644, func(f io.Writer) error {
+			zw := zip.NewWriter(f)
+			mb, _ := json.MarshalIndent(manifest, "", "  ")
+			mw, e := zw.Create("GSC_BACKUP_MANIFEST.json")
+			if e == nil {
+				_, e = mw.Write(mb)
+			}
+			if e == nil {
+				for _, r := range roots {
+					if e = addPathToZip(zw, dir, r); e != nil {
+						break
+					}
 				}
 			}
-		}
-		ce := zw.Close()
-		fe := f.Close()
-		if e == nil {
-			e = ce
-		}
-		if e == nil {
-			e = fe
-		}
-		if e != nil {
-			_ = os.Remove(tmp)
+			ce := zw.Close()
+			if e == nil {
+				e = ce
+			}
 			return e
-		}
-		_ = os.Remove(out)
-		return os.Rename(tmp, out)
+		})
 	}
 	if scope == "world" {
 		e = withOnlineWorldFreeze(s, do)
@@ -311,7 +303,7 @@ func createBackupWithReason(s ServerConfig, scope string, checkpoints bool, reas
 	if e != nil {
 		return BackupInfo{}, e
 	}
-	_ = os.WriteFile(out+".sha256", []byte(sha+"  "+filepath.Base(out)+"\r\n"), 0644)
+	_ = atomicfile.WriteFile(out+".sha256", []byte(sha+"  "+filepath.Base(out)+"\r\n"), 0644)
 	protected := false
 	if checkpoints {
 		meta := readBackupMeta(out)
@@ -541,24 +533,14 @@ func extractBackup(p, dst string, m BackupManifest) error {
 		if e != nil {
 			return e
 		}
-		tmp := target + ".gsc-restore"
-		out, e := os.Create(tmp)
-		if e != nil {
-			rc.Close()
-			return e
-		}
-		_, e = io.Copy(out, rc)
-		ce := out.Close()
+		// No predictable ".gsc-restore" temp and no delete-before-rename:
+		// a failed entry leaves the existing world file intact.
+		e = atomicfile.WriteFrom(target, 0644, func(w io.Writer) error {
+			_, err := io.Copy(w, rc)
+			return err
+		})
 		_ = rc.Close()
-		if e == nil {
-			e = ce
-		}
 		if e != nil {
-			_ = os.Remove(tmp)
-			return e
-		}
-		_ = os.Remove(target)
-		if e = os.Rename(tmp, target); e != nil {
 			return e
 		}
 	}

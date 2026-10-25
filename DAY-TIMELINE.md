@@ -13,6 +13,9 @@
 - 과거 대화에서 나온 "Day 4에 정확히 할 것이 없다"는 표현은 **Day 4가 존재하지 않는다는 뜻이 아니라, 추가 구현 없이 실서버 검증/마감만 남았다는 뜻**으로 정리합니다.
 - 완료는 실제 사용자 실행/E2E 또는 명시된 CI/검증 근거가 있는 경우에만 표시합니다.
 
+
+> **2026-10-13 최신 상태 보충:** [Day 1~12 상세 마스터 현황](docs/PROJECT-DAY1-12-MASTER-STATUS-20261013.md)과 [저장소 지도](docs/REPOSITORY-MAP-20261013.md)를 우선 참조하세요. Day 1~11 **각 milestone 완료**, Day12 **2026-10-11 소규모 운영 수락 기준 마감**입니다. 그러나 Day12의 엄격한 **최종 보안 통합/서명 Stable**은 별도 미완료입니다. 2026-10-13 현재 **Other Paper는 사용자 확인에 따라 의도적 OFFLINE**이며 프록시 25567과 동의어가 아닙니다. 8시간 계측 테스트가 다시 승인됐지만 실호스트 결과는 아직 제출되지 않았습니다.
+
 ## Canonical timeline
 
 | Day | Canonical milestone | 상태 | 핵심 근거/경계 |
@@ -113,7 +116,7 @@ Day 11은 2026-10-07 기준 **완료**입니다.
 - GSC 콘솔의 의도적 `stop`도 `desired_running=false`로 처리
 - 원칙: 의도적 종료 -> OFFLINE, 실제 crash -> RECOVERING -> 자동 재시작
 
-## Day 12 현재 진행 상태
+## Day 12 진행 상태 (2026-10-09 당시 스냅샷 · 최신은 상단 링크)
 
 - Day 12: **IN PROGRESS**
 - repository/tooling preparation: **✅ verified**

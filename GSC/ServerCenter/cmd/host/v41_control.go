@@ -33,21 +33,32 @@ type authContextKey struct{}
 
 func authenticateRequest(r *http.Request) (authPrincipal, bool) {
 	c := configSnapshot()
-	if c.AllowLoopbackNoAuth && isLoopbackRemote(r.RemoteAddr) {
-		return authPrincipal{Kind: "local", ID: "loopback", Name: "Local GSC"}, true
+	// 1. Explicit credentials first. A caller that holds a credential always gets
+	//    that principal, whatever the loopback setting is.
+	if got := bearerFromRequest(r); got != "" {
+		if tokenEqual(got, c.APIToken) {
+			return authPrincipal{Kind: "api_token", ID: "host-token", Name: "Host API Token"}, true
+		}
+		// The StatusAgent credential is only honoured from the local machine.
+		if tokenEqual(got, c.AgentAPIToken) && isLoopbackRemote(r.RemoteAddr) {
+			return authPrincipal{Kind: principalAgent, ID: "status-agent", Name: "GeumyiStatusAgent"}, true
+		}
+		if d, ok := trustedDeviceForToken(got); ok {
+			return authPrincipal{Kind: "device", ID: d.ID, Name: d.Name}, true
+		}
+		// An unknown token falls through to the (read-only by default) loopback
+		// shortcut so a stale dashboard token still shows status and then prompts.
 	}
-	got := strings.TrimSpace(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer"))
-	if got == "" {
-		got = strings.TrimSpace(r.Header.Get("X-GSC-Token"))
-	}
-	if got == "" {
-		return authPrincipal{}, false
-	}
-	if got == c.APIToken {
-		return authPrincipal{Kind: "api_token", ID: "host-token", Name: "Host API Token"}, true
-	}
-	if d, ok := trustedDeviceForToken(got); ok {
-		return authPrincipal{Kind: "device", ID: d.ID, Name: d.Name}, true
+	// 2. Token-free loopback shortcut. Browser cross-site / DNS-rebinding
+	//    requests are excluded by loopbackNoAuthRequestAllowed; local programs get
+	//    read-only status access unless loopback_no_auth_scope is "full".
+	if isLoopbackRemote(r.RemoteAddr) && loopbackNoAuthRequestAllowed(r) {
+		switch effectiveLoopbackScope(c) {
+		case loopbackScopeFull:
+			return authPrincipal{Kind: principalLocal, ID: "loopback", Name: "Local GSC"}, true
+		case loopbackScopeRead:
+			return authPrincipal{Kind: principalLocalReadOnly, ID: "loopback-readonly", Name: "Local GSC (read-only)"}, true
+		}
 	}
 	return authPrincipal{}, false
 }

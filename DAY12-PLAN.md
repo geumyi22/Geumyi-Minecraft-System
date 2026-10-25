@@ -3,6 +3,9 @@
 **12.12 operational soak: OPERATOR ACCEPTED / PASS in user-reported scope.** The server was left running continuously and the operator noticed no problems, then explicitly instructed that the eight-hour test be passed. Do not ask for another routine eight-hour monitoring run. Exact timed start/end and resource/process telemetry were not provided; this is **not** an instrumented eight-hour PASS. The protected formal soak gate remains `PENDING_LIVE`; signed Stable/Maintenance is still BLOCKED by separate safety gates. See `docs/day12/phases/phase-12/DAY12-PHASE12-OPERATOR-SOAK-ACCEPTANCE-20261011.md`.
 
 # Day 12 — Final Production Hardening & Closure
+> **2026-10-13 최신 상태는 [Day1~12 마스터](docs/PROJECT-DAY1-12-MASTER-STATUS-20261013.md) 및 [Stable Fast Track](docs/day12/DAY12-STABLE-FAST-TRACK-20261013.md)을 먼저 확인하세요.** 아래 초기 2026-10-11 8시간 면제/운영 수락은 역사 기록이며, 이후 사용자가 **실제 8시간 시험 포함 전 과정 재승인**했습니다. 기타(Other) Paper는 **현재 의도적 OFFLINE**으로 운영자가 확인했으며, Velocity 25567과 별개입니다. 최종 자동 Stable 게이트는 아직 BLOCKED입니다.
+
+
 
 Status: **IN PROGRESS — repository/CI hardening toolchain verified; real server-PC/client closure gates pending**
 Role: **final project milestone before Maintenance Mode**

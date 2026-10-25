@@ -18,6 +18,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 type UpdateConfig struct {
@@ -155,7 +157,7 @@ func defaultUpdateConfig(dataRoot string) UpdateConfig {
 	return UpdateConfig{
 		Enabled:        false,
 		Repository:     "geumyi22/Geumyi-Minecraft-System",
-		Channel:        "canary",
+		Channel:        "stable",
 		PublicKeyPath:  filepath.Join(dataRoot, "deployment-public.pem"),
 		TimeoutSeconds: 12,
 	}
@@ -170,7 +172,7 @@ func normalizeUpdateConfig(c UpdateConfig) UpdateConfig {
 	switch c.Channel {
 	case "stable", "beta", "canary":
 	default:
-		c.Channel = "canary"
+		c.Channel = "stable"
 	}
 	c.PublicKeyPath = strings.TrimSpace(os.ExpandEnv(c.PublicKeyPath))
 	if c.TimeoutSeconds < 3 || c.TimeoutSeconds > 60 {
@@ -256,6 +258,9 @@ func publicUpdateConfig(c Config) map[string]any {
 		"enabled": u.Enabled,
 		"repository": u.Repository,
 		"channel": u.Channel,
+		"recommended_channel": "stable",
+		"channels": gscReleaseChannelCatalog(),
+		"channel_selection_only": true,
 		"public_key_path": u.PublicKeyPath,
 		"timeout_seconds": u.TimeoutSeconds,
 		"github_authenticated": strings.TrimSpace(c.GitHubToken) != "",
@@ -1212,10 +1217,6 @@ func writeUpdateState(s ServerConfig, st UpdateStatus, manifestHash string) {
 		"updated":         time.Now().Format(time.RFC3339),
 	}
 	b, _ := json.MarshalIndent(payload, "", "  ")
-	tmp := filepath.Join(root, safePathPart(s.ID)+".json.tmp")
 	dst := filepath.Join(root, safePathPart(s.ID)+".json")
-	if os.WriteFile(tmp, b, 0644) == nil {
-		_ = os.Remove(dst)
-		_ = os.Rename(tmp, dst)
-	}
+	_ = atomicfile.WriteFile(dst, b, 0644)
 }

@@ -1,0 +1,83 @@
+name: Day12 Phase7 Current Host Offline Readiness Read-Only Kit
+
+on:
+  pull_request:
+    paths:
+      - 'tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.ps1'
+      - 'tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.cmd'
+      - 'tools/day12/README-Day12-PHASE7-REAL-HOST-READINESS-20261013-KO.txt'
+      - '.github/workflows/day12-phase7-real-host-readiness-kit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-current-host-readiness:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: PowerShell 5.1 source parse and synthetic refusal tests
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $tool='tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.ps1'
+          $tokens=$null;$errors=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $tool).Path,[ref]$tokens,[ref]$errors)
+          if(@($errors).Count -gt 0){throw 'READINESS_SCRIPT_PARSE_ERRORS'}
+          $dir=Join-Path $env:RUNNER_TEMP ('phase7-synthetic-'+[guid]::NewGuid().ToString('N'))
+          $out=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $tool -Synthetic -OutputDir $dir)
+          if($LASTEXITCODE -ne 0){throw 'PHASE7_SYNTHETIC_TEST_FAILED'}
+          $report=Join-Path $dir 'Day12-Offline-Readiness-READ-ONLY.json'
+          if(-not (Test-Path $report)){throw 'PHASE7_SYNTHETIC_REPORT_MISSING'}
+          $j=Get-Content -LiteralPath $report -Raw -Encoding UTF8|ConvertFrom-Json
+          if($j.result -ne 'PRECHECK_GUARDS_MET_NO_TEST_PERFORMED' -or
+             $j.checks.host_version_label -ne '4.3.8' -or
+             $j.offline_start_e2e_proven -or $j.stable_release_allowed -or
+             $j.backup_world_cache_modified -or $j.service_restart_performed){
+             throw 'PHASE7_SYNTHETIC_FAIL_CLOSED_CONTRACT'
+          }
+          Write-Host 'PHASE7_CURRENT_HOST_VERSION_NEGATIVE_FIXTURES_PASS'
+
+      - name: Refuse GitHub runner as production server host
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $dir=Join-Path $env:RUNNER_TEMP ('phase7-not-host-'+[guid]::NewGuid().ToString('N'))
+          $ErrorActionPreference='Continue'
+          $out=@(& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/day12/Day12_Phase7_Offline_Start_Readiness_READ_ONLY.ps1 -OutputDir $dir 2>&1)
+          $code=$LASTEXITCODE
+          $ErrorActionPreference='Stop'
+          if($code -eq 0){throw 'PHASE7_NON_HOST_WRONGLY_ACCEPTED'}
+          if(($out|Out-String) -notmatch 'REFUSE_NON_HOST_PC'){throw 'PHASE7_EXPECTED_NON_HOST_REFUSAL_MISSING'}
+          $global:LASTEXITCODE=0
+          Write-Host 'PHASE7_NON_HOST_RUNNER_REFUSED_AS_EXPECTED'
+
+      - name: Assemble verified minimal operator ZIP
+        shell: powershell
+        run: |
+          $ErrorActionPreference='Stop'
+          $files=@('Day12_Phase7_Offline_Start_Readiness_READ_ONLY.ps1',
+                   'Day12_Phase7_Offline_Start_Readiness_READ_ONLY.cmd',
+                   'README-Day12-PHASE7-REAL-HOST-READINESS-20261013-KO.txt')
+          $staging=Join-Path $env:RUNNER_TEMP ('phase7-kit-'+[guid]::NewGuid().ToString('N'))
+          New-Item -Path $staging -ItemType Directory -ErrorAction Stop | Out-Null
+          foreach($file in $files){Copy-Item -LiteralPath (Join-Path 'tools/day12' $file) -Destination $staging -ErrorAction Stop}
+          $zip=Join-Path $PWD 'Geumyi-Day12-Phase7-Offline-Readiness-READ-ONLY.zip'
+          Compress-Archive -Path (Join-Path $staging '*') -DestinationPath $zip -Force
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $z=[IO.Compression.ZipFile]::OpenRead($zip)
+          try{
+            $actual=@($z.Entries|ForEach-Object{$_.FullName}|Sort-Object)
+            $expected=@($files|Sort-Object)
+            if((Compare-Object $actual $expected)){throw 'PHASE7_ZIP_MANIFEST_BAD'}
+          }finally{$z.Dispose()}
+          Write-Host ('PHASE7_READINESS_ZIP_SHA256='+(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant())
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: day12-phase7-current-host-readiness-readonly-kit
+          path: Geumyi-Day12-Phase7-Offline-Readiness-READ-ONLY.zip
+          if-no-files-found: error
+          retention-days: 21
