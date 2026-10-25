@@ -293,6 +293,9 @@ jobs:
           $authCall=$cutoverSource.IndexOf('Test-GSCActualHostActionToken $token')
           $drainCall=$cutoverSource.IndexOf('& $kit -Mode DrainAndCutover')
           $consent=$cutoverSource.IndexOf("Read-Host 'Type DISCONNECT WILD PLAYERS")
+          if(-not $cutoverSource.Contains("foreach($neighbor in @('playground','other'))")){
+            throw 'Wild cutover must reject abnormal non-target legacy Scheduler tasks'
+          }
           if($authCall -lt 0 -or $drainCall -le $authCall -or
              $consent -le $authCall -or
              -not $cutoverSource.Contains('WILD_EXPLICIT_TOKEN_VERIFIED_AND_PRECUTOVER_GATES=PASS_READ_ONLY')){
@@ -467,6 +470,7 @@ jobs:
             tools/velocity/Run_GSC452_Wild_Existing_Evidence_READ_ONLY.cmd
             tools/velocity/Run_GSC452_Wild_Attended_Cutover_ADMIN.ps1
             tools/velocity/GSC452_Host_Action_Token_Verifier.ps1
+            tools/velocity/Run_GSC452_Wild_Attended_Cutover_VERIFY_ONLY.cmd
             tools/velocity/Run_GSC452_Wild_Attended_Cutover_ADMIN.cmd
             tools/velocity/Run_GSC452_Wild_Attended_Restore_ADMIN.ps1
             tools/velocity/Run_GSC452_Wild_Attended_Restore_ADMIN.cmd
