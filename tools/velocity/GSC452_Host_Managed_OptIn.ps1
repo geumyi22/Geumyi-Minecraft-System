@@ -87,16 +87,20 @@ function FleetNotMigrated(){
   }
  }
 }
-function VerifiedCanary(){
+function VerifiedCanary([bool]$allowStopped=$false){
  $svc=TrustedService
- if($svc.State -ne 'Running' -or [int]$svc.ProcessId -le 4){Deny 'CANARY_HOST_SERVICE_NOT_RUNNING'}
+ if($svc.State -ne 'Running' -and (-not $allowStopped -or $svc.State -ne 'Stopped')){Deny 'CANARY_HOST_SERVICE_NOT_RUNNING'}
+ if($svc.State -eq 'Running' -and [int]$svc.ProcessId -le 4){Deny 'CANARY_HOST_SERVICE_PID_UNKNOWN'}
  $m=[regex]::Match([string]$svc.PathName,'(?i)^\s*"([^"]+\\GeumyiServerHost-v4\.5\.2-Velocity-CANARY\.exe)"\s+--service\s+--config\s+"([^"]+)"\s*$')
  if(-not $m.Success){Deny 'HOST_SERVICE_NOT_CANARY'}
  $exe=$m.Groups[1].Value
  $config=$m.Groups[2].Value
- $proc=Get-CimInstance Win32_Process -Filter ('ProcessId='+[int]$svc.ProcessId) -ErrorAction Stop
- if($null -eq $proc -or [IO.Path]::GetFullPath([string]$proc.ExecutablePath) -ine [IO.Path]::GetFullPath($exe)){
-  Deny 'HOST_SERVICE_BINARY_IDENTITY_MISMATCH'
+ if($svc.State -eq 'Running'){
+  $proc=Get-CimInstance Win32_Process -Filter ('ProcessId='+[int]$svc.ProcessId) -ErrorAction Stop
+  if($null -eq $proc -or [string]::IsNullOrWhiteSpace([string]$proc.ExecutablePath) -or
+     [IO.Path]::GetFullPath([string]$proc.ExecutablePath) -ine [IO.Path]::GetFullPath($exe)){
+   Deny 'HOST_SERVICE_BINARY_IDENTITY_MISMATCH'
+  }
  }
  $stagingRecord=Get-Content -LiteralPath (Join-Path $staging 'STAGING-RECEIPT.json') -Raw -ErrorAction Stop|ConvertFrom-Json -ErrorAction Stop
  $exeInfo=Get-Item -LiteralPath $exe -Force -ErrorAction Stop
@@ -200,7 +204,7 @@ try{
   if($matches.Count -ne 1 -or $matches[0] -cne ($variable+'='+$approval)){
    Deny 'OPTIN_REGISTRY_DRIFTED'
   }
-  $null=VerifiedCanary
+  $null=VerifiedCanary $true
   $typed=Read-Host 'Type RESTORE HOST MANAGED LOCK to revert service-specific flag'
   if($typed -cne 'RESTORE HOST MANAGED LOCK'){Deny 'HOST_RESTORE_NOT_APPROVED'}
   SetServiceEnvironment ([bool]$record.original_present) ([string[]]@($record.original_values))
