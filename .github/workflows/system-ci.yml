@@ -278,6 +278,50 @@ jobs:
             }
           }
           Write-Host 'CI_CANARY_WILD_ATTENDED_OPERATOR_STATIC_GATES=PASS'
+      - name: Host-only Velocity opt-in operator syntax and isolated REG_MULTI_SZ semantics
+        shell: powershell
+        timeout-minutes: 3
+        run: |
+          if($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_OS -cne 'Windows'){
+            throw 'GSC Host-only opt-in isolated Windows CI guard failed'
+          }
+          foreach($file in @(
+            'tools/velocity/GSC452_Host_Managed_OptIn.ps1',
+            'tools/velocity/CI_Host_Managed_OptIn_Registry_Disposable.ps1'
+          )){
+            $tokens=$null; $issues=$null
+            [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$issues)
+            if(@($issues).Count -gt 0){
+              foreach($i in @($issues)){Write-Host ('OPT-IN PARSE LINE '+$i.Extent.StartLineNumber+': '+$i.Message)}
+              throw ('Invalid Windows PowerShell 5.1 opt-in script: '+$file)
+            }
+          }
+          $source=Get-Content 'tools/velocity/GSC452_Host_Managed_OptIn.ps1' -Raw
+          foreach($required in @('Plan','Apply','Restore',
+            'GSC_VELOCITY_MANAGED_OPERATOR_OPT_IN',
+            'DIRECT_OWNERSHIP_APPROVED','CreateNew',
+            'original_values','FleetNotMigrated',
+            'PRIVATE','HOST_SERVICE_NOT_CANARY')){
+            if(-not $source.Contains($required)){throw ('Missing Host opt-in hard gate: '+$required)}
+          }
+          if($source -match '(?i)(Stop-ScheduledTask|Disable-ScheduledTask|taskkill|Stop-Process|Unregister-ScheduledTask|Remove-NetFirewallRule)'){
+            throw 'Host opt-in script must never mutate proxy scheduler or Java processes'
+          }
+          & powershell.exe -NoProfile -NonInteractive -File 'tools/velocity/CI_Host_Managed_OptIn_Registry_Disposable.ps1'
+          if($LASTEXITCODE -ne 0){throw 'Service-only Environment registry CI was not verified'}
+          Write-Host 'CI_GSC452_HOST_OPTIN_PLAN_APPLY_RESTORE_STATIC_GATES=PASS'
+      - name: Upload Host-only managed Velocity opt-in plan and private rollback kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: GSC452-Host-Managed-Velocity-OptIn-PLAN-AND-RESTORE-CANARY
+          path: |
+            tools/velocity/GSC452_Host_Managed_OptIn.ps1
+            tools/velocity/Run_GSC452_Host_Managed_OptIn_PLAN_READ_ONLY.cmd
+            tools/velocity/Run_GSC452_Host_Managed_OptIn_APPLY_ADMIN.cmd
+            tools/velocity/Run_GSC452_Host_Managed_OptIn_RESTORE_ADMIN.cmd
+            tools/velocity/VELOCITY-MANAGED-KIT-README.txt
+          if-no-files-found: error
+          retention-days: 7
       - name: Upload actual-host READ-ONLY launch audit (separate safe ZIP)
         uses: actions/upload-artifact@v4
         with:
