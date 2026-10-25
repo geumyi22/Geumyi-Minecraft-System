@@ -1,3 +1,29 @@
+2026-10-25 LIVE HOST FEATURE ENABLED — VERIFIED BY OPERATOR
+  Local GSC 4.5.2-canary Host response:
+    canary_enabled=true, read_only=true, 3 tasks, 5.2 seconds
+  The previous Apply script timed out after 2 seconds on GET. THIS IS NOT
+  permission to rerun Apply or Restore. Existing proxies still 0/3 migrated.
+
+2026-10-25 CRITICAL WILD TOKEN GATE AND VERIFY-ONLY
+  OLD KIT BUG: read-only localhost managed/status GET can succeed even if
+  X-GSC-Token is WRONG because Host may allow loopback without auth.
+  Yet POST managed/action requires the real Host API token. Previously the
+  original Wild task could be stopped before POST rejects that token.
+  DO NOT USE THE OLD ATTENDED CUTOVER KIT.
+  Updated kit includes GSC452_Host_Action_Token_Verifier.ps1.
+  The operator tool now verifies the token AGAINST THE RUNNING Canary Host's
+  actual --config token using Windows machine DPAPI entirely on the local PC,
+  with no printed keys, task changes, or control/action POST probe.
+  Any unverified token refuses maintenance before player disconnection.
+  Run_GSC452_Wild_Attended_Cutover_VERIFY_ONLY.cmd performs the identical
+  pre-mutation original-receipt/JAR/Host/action-token/non-target task checks
+  and exits without ever disabling/stopping a proxy.
+  This is the new FIRST operator step. Only a proven PASS can precede an
+  attended approved maintenance; confirmation still explicitly warns it is
+  not a Velocity console-graceful disconnect.
+  The updated Host GET client timeout is 20s to accommodate the 5s
+  internal Windows Scheduler poll.
+
 GEUMYI GSC 4.5.2 CANARY — VELOCITY CUTOVER KIT (2026-10-23)
 ================================================================
 DRAFT PR #57 ONLY. LIVE MIGRATION 0/3. NOT A STABLE RELEASE.
