@@ -236,6 +236,19 @@ jobs:
           if(@($issues).Count -gt 0){throw 'Production backup-only wrapper PowerShell syntax invalid'}
           & powershell.exe -NoProfile -NonInteractive -File $script
           if($LASTEXITCODE -ne 0){throw 'Disposable Windows cutover and rollback not proven'}
+      - name: Test isolated Windows running-task disable and stop behavior
+        shell: powershell
+        timeout-minutes: 3
+        run: |
+          if($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_OS -cne 'Windows'){
+            throw 'isolated Windows task CI guard failed'
+          }
+          $file='tools/velocity/CI_Scheduler_Disposable_DisableStop.ps1'
+          $tokens=$null; $issues=$null
+          [void][Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file),[ref]$tokens,[ref]$issues)
+          if(@($issues).Count -gt 0){throw 'isolated task stop script syntax invalid'}
+          & powershell.exe -NoProfile -NonInteractive -File $file
+          if($LASTEXITCODE -ne 0){throw 'isolated Windows task disable and stop semantics not verified'}
       - name: Upload actual-host READ-ONLY launch audit (separate safe ZIP)
         uses: actions/upload-artifact@v4
         with:
