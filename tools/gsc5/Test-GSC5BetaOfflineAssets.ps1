@@ -24,6 +24,17 @@ $metadata = @(
     "RELEASE-NOTES-5.0.0-beta.1.md"
 )
 
+# Pin all seven public prerelease assets, not just the editable SHA256SUMS text.
+$expectedDigests = @{
+    "GeumyiServerCenter-v5.0.0-beta.1-Setup.exe" = "89e4a99fb7be536c31cfcb36d416215bd6e9d7865a0bc9f52c1bc580d634c13a"
+    "GeumyiServerHost.exe" = "68c3304c256d8287cbe92826cf98cd742f4f598b669a706973656443fb8088ad"
+    "GeumyiServerCenter.exe" = "d4bce2eb2e3ea78057732d26da15c730677e7e6603f8d857324b6a57461ef431"
+    "SHA256SUMS.txt" = "8bae175f2c948bc592835ab048b3755f2f92e0788def8859b5ded7770a42284c"
+    "SOURCE-COMMIT.txt" = "6e589313483fe2fea80dd6a3e683afca858ec884b4ff8df8c11c35d3f4e9b843"
+    "RELEASE-CHANNEL.txt" = "e379f1b5729ca557d3175323e767b32e20ec8b5b084846a9f5ccdec3ede4e8e8"
+    "RELEASE-NOTES-5.0.0-beta.1.md" = "805763234fe4e895485b1947b374ea5d27223b39b536c4b572cf500deafc66b7"
+}
+
 $root = (Resolve-Path -LiteralPath $AssetDirectory -ErrorAction Stop).ProviderPath
 if (-not (Test-Path -LiteralPath $root -PathType Container)) {
     throw "Not a directory: $root"
@@ -34,6 +45,14 @@ foreach ($name in ($executables + $metadata)) {
         throw "Missing beta asset: $name"
     }
 }
+
+foreach ($name in ($executables + $metadata)) {
+    $actual = (Get-FileHash -LiteralPath (Join-Path $root $name) -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($actual -cne $expectedDigests[$name]) {
+        throw "Official immutable prerelease SHA256 mismatch: $name"
+    }
+}
+Write-Output "PASS pinned official SHA256 for all seven assets"
 
 $sourceCommit = (Get-Content -LiteralPath (Join-Path $root "SOURCE-COMMIT.txt") -Raw -Encoding UTF8).Trim()
 if ($sourceCommit -cne $expectedSourceCommit) {
