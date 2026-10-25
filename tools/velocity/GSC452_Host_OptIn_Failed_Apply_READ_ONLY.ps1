@@ -125,7 +125,8 @@ try{
    [string]$h.version -ceq '4.5.2-canary'){'HEALTHY_CANARY'}else{'OTHER_VERSION_OR_UNHEALTHY'}
 }catch{$out.canary_health='UNAVAILABLE'}
 try{
- $status=Invoke-RestMethod -Method Get -Uri 'http://127.0.0.1:8787/api/v1/velocity/managed/status' -TimeoutSec 3 -ErrorAction Stop
+ # Enabled Canary probes ScheduledTasks with a 5-second host-side cap;
+ $status=Invoke-RestMethod -Method Get -Uri 'http://127.0.0.1:8787/api/v1/velocity/managed/status' -TimeoutSec 15 -ErrorAction Stop
  $out.canary_managed_api=if($status.ok -eq $true -and $status.read_only -eq $true -and
    @($status.tasks).Count -eq 3){
     if($status.canary_enabled -eq $true){'ENABLED'}elseif($status.canary_enabled -eq $false){'LOCKED'}else{'UNVERIFIED'}
