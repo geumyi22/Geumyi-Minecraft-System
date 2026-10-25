@@ -1,7 +1,7 @@
 #requires -Version 5.1
 [CmdletBinding()]
 param(
-    [ValidateSet('Preflight','VerifyExisting','Snapshot','Cutover','Rollback')]
+    [ValidateSet('Preflight','VerifyExisting','Snapshot','Cutover','DrainAndCutover','Rollback')]
     [string]$Mode='Preflight',
     [Parameter(Mandatory=$true)]
     [ValidateSet('wild','playground','other')]
@@ -48,6 +48,46 @@ function PortsFree([string]$target){
   $udp=@(Get-NetUDPEndpoint -ErrorAction Stop |
     Where-Object {[int]$_.LocalPort -eq [int]$pair[1]})
   return ($tcp.Count -eq 0 -and $udp.Count -eq 0)
+ }catch{return $false}
+}
+# Only the target-specific Geyser UDP kernel owner anchors the legacy JVM.
+# Never print, stop by PID, or guess Java identity from task name alone.
+function GetLegacyProxyProcessAnchor([string]$target){
+ try{
+  $pair=$expectedPorts[$target]
+  $udp=@(Get-NetUDPEndpoint -LocalPort ([int]$pair[1]) -ErrorAction Stop)
+  $ids=@($udp|ForEach-Object {[int]$_.OwningProcess}|Select-Object -Unique)
+  if($ids.Count -ne 1 -or $ids[0] -le 4){Deny 'NO_UNIQUE_GEYSER_UDP_OWNER'}
+  $owner=Get-CimInstance Win32_Process -Filter ("ProcessId = "+$ids[0]) -ErrorAction Stop
+  if($null -eq $owner -or [string]$owner.Name -notin @('java.exe','javaw.exe') -or
+     [string]$owner.CommandLine -notmatch '(?i)(?:^|\s)-jar\s+(?:"[^"]*velocity\.jar"|\S*velocity\.jar)(?:\s|$)' -or
+     $null -eq $owner.CreationDate){
+   Deny 'GEYSER_UDP_OWNER_NOT_VERIFIED_VELOCITY_JAVA'
+  }
+  $tracked=@([pscustomobject]@{PID=[int]$owner.ProcessId;Started=[string]$owner.CreationDate})
+  # A separate Java launcher may parent the UDP-owner JVM.
+  if([int]$owner.ParentProcessId -gt 4){
+   $parent=Get-CimInstance Win32_Process -Filter ("ProcessId = "+[int]$owner.ParentProcessId) -ErrorAction Stop
+   if($null -ne $parent -and [string]$parent.Name -in @('java.exe','javaw.exe') -and
+      [string]$parent.CommandLine -match '(?i)(?:^|\s)-jar\s+(?:"[^"]*velocity\.jar"|\S*velocity\.jar)(?:\s|$)' -and
+      $null -ne $parent.CreationDate){
+    $tracked+=([pscustomobject]@{PID=[int]$parent.ProcessId;Started=[string]$parent.CreationDate})
+   }
+  }
+  return $tracked
+ }catch{
+  Deny 'LEGACY_PROCESS_UDP_IDENTITY_NOT_ATTESTED'
+ }
+}
+function TrackedLegacyExited($tracked){
+ try{
+  foreach($p in @($tracked)){
+   $current=Get-CimInstance Win32_Process -Filter ("ProcessId = "+[int]$p.PID) -ErrorAction Stop
+   if($null -ne $current -and [string]$current.CreationDate -ceq [string]$p.Started){
+    return $false
+   }
+  }
+  return $true
  }catch{return $false}
 }
 function TaskState([string]$target){
@@ -330,6 +370,76 @@ if($stored.Receipt.ticket -cne $Ticket){Deny 'MAINTENANCE_TICKET_MISMATCH'}
 $ownerMarker=Join-Path $paths.Dir ($Target+'.active.json')
 if(Test-Path -LiteralPath $ownerMarker){
  Deny 'GSC_OWNED_OR_ORPHANED_JVM_REQUIRES_SEPARATE_RECOVERY'
+}
+# One-target maintenance. Disable future Scheduler launches before requesting
+# STOP on the exact existing task. The external Velocity JVM has no GSC-owned
+# stdin, so this is NOT console-graceful shutdown; players may disconnect.
+# There is NO taskkill or JVM PID kill. Failures remain Disabled (safe no-spawn)
+# and require recovery. A task stop alone does not attest child JVM exit.
+if($Mode -eq 'DrainAndCutover'){
+ if($state -ne 'Running'){Deny 'LEGACY_RUNNING_TASK_REQUIRED_FOR_CONTROLLED_DRAIN'}
+ if([bool]$stored.Receipt.cutover_committed){Deny 'CUTOVER_ALREADY_COMMITTED'}
+ if((TaskDefinitionDigest $xml) -cne (TaskDefinitionDigest $stored.XML)){
+  Deny 'TASK_DEFINITION_CHANGED_SINCE_SNAPSHOT'
+ }
+ $manifestFile=ManifestFile $Target
+ AssertPrivateFolder (Split-Path -Parent $manifestFile)
+ if(-not (Test-Path -LiteralPath $manifestFile -PathType Leaf)){
+  Deny 'LOCAL_JAVA_LAUNCH_MANIFEST_MISSING'
+ }
+ $expectedManifest=LocalLauncherManifest $Target $stored.XML
+ $actualManifest=Get-Content -LiteralPath $manifestFile -Raw -ErrorAction Stop|ConvertFrom-Json -ErrorAction Stop
+ if($actualManifest.schema -ne 1 -or $actualManifest.target -cne $Target -or
+    $actualManifest.java_executable -cne $expectedManifest.java_executable -or
+    $actualManifest.working_directory -cne $expectedManifest.working_directory -or
+    $actualManifest.expected_jar_sha256 -cne $expectedManifest.expected_jar_sha256 -or
+    (@($actualManifest.args)-join [char]0) -cne (@($expectedManifest.args)-join [char]0)){
+  Deny 'STAGED_MANIFEST_DRIFT'
+ }
+ # Check actual bytes before any player interruption, not the manifest only.
+ $jar=Join-Path $expectedManifest.working_directory 'velocity.jar'
+ $ji=Get-Item -LiteralPath $jar -Force -ErrorAction Stop
+ if($ji.PSIsContainer -or ($ji.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+    (Get-FileHash -LiteralPath $jar -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant() -cne
+    $expectedManifest.expected_jar_sha256){
+  Deny 'VELOCITY_JAR_BYTES_DIFFER_FROM_PIN'
+ }
+ $tracked=@(GetLegacyProxyProcessAnchor $Target)
+ if($tracked.Count -lt 1 -or (TrackedLegacyExited $tracked)){
+  Deny 'LEGACY_UDP_JVM_EXITED_BEFORE_DRAIN'
+ }
+ Disable-ScheduledTask -TaskPath '\' -TaskName $taskNames[$Target] -ErrorAction Stop|Out-Null
+ if((TaskState $Target) -ne 'Disabled'){
+  Deny 'DISABLE_FUTURE_RESTARTS_NOT_CONFIRMED_MANUAL_RECOVERY_REQUIRED'
+ }
+ try{
+  Stop-ScheduledTask -TaskPath '\' -TaskName $taskNames[$Target] -ErrorAction Stop
+ }catch{
+  Deny 'EXACT_LEGACY_TASK_STOP_FAILED_REMAINS_DISABLED_MANUAL_RECOVERY'
+ }
+ $deadline=[DateTime]::UtcNow.AddSeconds(40)
+ $drained=$false
+ do{
+  if((TaskState $Target) -eq 'Disabled' -and -not (Test-Path -LiteralPath $ownerMarker) -and
+     (TrackedLegacyExited $tracked) -and (PortsFree $Target)){
+   $drained=$true;break
+  }
+  Start-Sleep -Milliseconds 500
+ }while([DateTime]::UtcNow -lt $deadline)
+ if(-not $drained){
+  Deny 'CHILD_JVM_OR_PORT_PERSISTS_TASK_LEFT_DISABLED_DO_NOT_START_ANOTHER_PROXY'
+ }
+ if((TaskDefinitionDigest (GetTaskXml $Target)) -cne (TaskDefinitionDigest $stored.XML) -or
+    (TaskState $Target) -ne 'Disabled' -or -not (PortsFree $Target) -or
+    -not (TrackedLegacyExited $tracked)){
+  Deny 'DRAIN_POSTCHECK_CHANGED_TASK_LEFT_DISABLED'
+ }
+ $stored.Receipt.cutover_committed=$true
+ [IO.File]::WriteAllText($paths.Receipt,($stored.Receipt|ConvertTo-Json -Depth 4),
+     (New-Object Text.UTF8Encoding($false)))
+ Write-Host 'ONE_TARGET_LEGACY_TASK_DISABLED_JAVA_OWNER_GONE_PORTS_FREE_RECEIPT_COMMITTED'
+ Write-Host 'GSC_PROXY_NOT_STARTED_REQUIRE_SEPARATE_AUTHENTICATED_HOST_OPT_IN_AND_CLIENT_E2E'
+ return
 }
 if($Mode -eq 'Cutover'){
  if($stored.Receipt.cutover_committed -eq $true){
