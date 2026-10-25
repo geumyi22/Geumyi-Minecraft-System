@@ -5,6 +5,8 @@ Set-StrictMode -Version Latest
 function Unseal-GSCLocalMachineToken([string]$protected){
  if([string]::IsNullOrWhiteSpace($protected)){throw 'HOST_TOKEN_EMPTY'}
  if($protected.StartsWith('dpapi-m:')){
+  # Windows PowerShell 5.1 may not auto-load the System.Security assembly.
+  Add-Type -AssemblyName System.Security -ErrorAction Stop
   $raw=$protected.Substring(8)
   $padding=(4-($raw.Length%4))%4
   $cipher=[Convert]::FromBase64String($raw+('='*$padding))
