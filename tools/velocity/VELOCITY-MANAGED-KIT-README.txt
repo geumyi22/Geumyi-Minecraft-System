@@ -111,6 +111,55 @@ RUNNING TASK MAINTENANCE — NEW DRAFT CANDIDATE (WILD ONLY)
   Playground and Other are intentionally NOT in the attended kit.
   Other PAPER game server remains intentionally OFF.
 
+2026-10-25 HOST MANAGED CONTROL OPT-IN — CURRENT USER NO-GO
+  Operator executed Wild attended cutover and obtained:
+    WILD_PROTECTED_EVIDENCE_AND_CURRENT_JAR=PASS
+    WILD_MAINTENANCE_NO_GO: GSC_HOST_CANARY_DIRECT_OWNERSHIP_NOT_ACTIVE
+  This occurred BEFORE the script's player-disconnect approval and BEFORE
+  any Scheduler stop, JVM shutdown or migration. Host 4.5.2 Canary was
+  previously activated, but Velocity direct ownership is intentionally
+  DEFAULT-LOCKED. DO NOT repeat protected snapshots or disable tasks.
+
+  NEW separate Host-only candidate, not automatically deployed:
+    GSC452_Host_Managed_OptIn.ps1
+    Run_GSC452_Host_Managed_OptIn_PLAN_READ_ONLY.cmd
+    Run_GSC452_Host_Managed_OptIn_APPLY_ADMIN.cmd
+    Run_GSC452_Host_Managed_OptIn_RESTORE_ADMIN.cmd
+
+  FIRST OPERATOR ACTION is Plan ONLY (run as administrator). Plan requires
+  original 3 Scheduler tasks Running, private receipts uncommitted, no
+  GSC-owned markers, pinned Canary Host executable/actual service process,
+  currently responsive localhost Canary managed/status with flag FALSE,
+  and auto-start Paper backends already online. Plan NEVER changes registry,
+  SCM, task definitions, Java processes, worlds, original snapshots or tokens.
+  If Plan fails, DO NOT try Apply to bypass it.
+
+  Apply is a LATER, explicitly approved, ATTENDED GSC Host service restart:
+  adds an opt-in to only THIS service's REG_MULTI_SZ Environment, stores
+  any original Environment as PRIVATE JSON in the already protected Recovery
+  directory (never upload it; it might contain unrelated secrets), and
+  requires operator confirmation. No global machine Environment mutation,
+  no Velocity/Paper stop, no task edit, no GSC-owned Java launch.
+  It independently validates localhost Canary managed/status flag TRUE
+  after restart. Service restart may indirectly interact with auto-start
+  Paper backend logic; therefore currently-offline configured auto-start
+  backends are NO-GO. Do not use during active changes or live migration.
+  If partially interrupted, private journal is preserved for manual
+  restore. Do not repeat Apply blindly.
+
+  Restore is only allowed BEFORE ANY proxy was cut over, while all three
+  original tasks are Running, and no GSC-owned/orphan process marker exists.
+  It returns the exact service-specific Environment setting and restarts
+  only GSC Host, then checks Canary flag FALSE; no automatic task restart.
+  Never revert the flag after a GSC-owned proxy is running.
+
+  Once Host-only opt-in is separately verified, the Wild attended cutover
+  still requires existing original receipt, operator/API token and distinct
+  player-disconnect consent. Live migration is STILL 0/3. Java and Bedrock
+  real-client tests and orphan/restart recovery remain pending.
+  Previously exposed Host API token should be rotated in a separate
+  controlled client/GSCM pairing session, not mixed into this operation.
+
 CURRENT PRODUCTION NO-GO GATES
   - Original Day10 tasks were Running and RestartOnFailure=999.
   - Old Velocity Java consoles' stdin control is not available to GSC.
