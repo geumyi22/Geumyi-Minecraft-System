@@ -45,6 +45,8 @@ func TestManagedVelocityStatusDefaultButtonsRemainDisabled(t *testing.T){
   ReadOnly bool `json:"read_only"`
   Tasks []struct{
    Target string `json:"target"`
+   LegacyTaskState string `json:"legacy_task_state"`
+   CutoverReceiptVerified bool `json:"cutover_receipt_verified"`
    GSCManagedRunning bool `json:"gsc_managed_running"`
    CanStart bool `json:"can_start"`
    CanStop bool `json:"can_stop"`
@@ -54,7 +56,8 @@ func TestManagedVelocityStatusDefaultButtonsRemainDisabled(t *testing.T){
  if err:=json.Unmarshal(recorder.Body.Bytes(),&data);err!=nil{t.Fatal(err)}
  if !data.ReadOnly||data.CanaryEnabled||len(data.Tasks)!=3{t.Fatal("default Canary capability gates bypassed")}
  for _,task:=range data.Tasks{
-  if task.CanStart||task.CanStop||task.CanRestart||task.GSCManagedRunning{
+  if task.CanStart||task.CanStop||task.CanRestart||task.GSCManagedRunning||
+      task.LegacyTaskState!="UNKNOWN"||task.CutoverReceiptVerified{
    t.Fatalf("default production host falsely offered active button: %+v",task)
   }
  }
