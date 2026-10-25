@@ -544,9 +544,11 @@ jobs:
           GSC5_DISPOSABLE_WINDOWS_CLIENT_INSTALL: 'EXPLICIT_CI_ONLY'
         run: |
           $ErrorActionPreference = 'Stop'
-          # This ephemeral runner has no real GSC installation or Minecraft worlds.
-          # The Go test refuses to operate if an existing GSC Host/service is found.
-          go test -count=1 -v ./cmd/setup -run '^TestGSC5DisposableWindowsClientOnlyInstallation
+          # The runner is disposable and has no real Minecraft worlds.
+          go test -count=1 -v ./cmd/setup -run '^TestGSC5DisposableWindowsClientOnlyInstallation$'
+          if ($LASTEXITCODE -ne 0) { throw 'Disposable Windows client installation failed' }
+      - name: Verify and stage GSC binaries
+        shell: pwsh
         run: |
           $root = 'GSC/ServerCenter'
           $files = @(
