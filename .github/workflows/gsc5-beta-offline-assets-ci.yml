@@ -66,3 +66,20 @@ jobs:
           if ($LASTEXITCODE -eq 0) { throw 'Tampered executable was accepted' }
           $global:LASTEXITCODE = 0
           Write-Output 'GSC5_BETA_BINARY_TAMPER_REJECTED'
+      - name: Verify read-only operator preflight fails closed on disposable Windows runner
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $script = Join-Path $env:GITHUB_WORKSPACE 'tools/gsc5/Get-GSC5OperatorReadOnlyPreflight.ps1'
+          $lines = @(& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script)
+          if ($LASTEXITCODE -ne 0) { throw 'Read-only operator preflight failed to run' }
+          if (@($lines).Count -lt 2 -or $lines[0] -ne 'GSC5_OPERATOR_READ_ONLY_PREFLIGHT') {
+            throw 'Operator preflight did not identify itself'
+          }
+          $payload = ($lines | Select-Object -Skip 1) -join "`n"
+          $r = $payload | ConvertFrom-Json
+          if ($r.read_only -ne $true -or $r.production_mutation_applied -ne $false -or
+              $r.gsc5_stable_install_authorized -ne $false -or $r.release_gate_stable_allowed -ne $false) {
+            throw 'Operator preflight must remain read-only and fail-closed'
+          }
+          Write-Host "GSC5_READ_ONLY_OPERATOR_PREFLIGHT_PASS"
