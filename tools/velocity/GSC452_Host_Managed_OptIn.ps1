@@ -128,7 +128,10 @@ function Health([bool]$expect,[int]$seconds=6){
  do{
   try{
    $h=Invoke-RestMethod -Uri 'http://127.0.0.1:8787/api/health' -Method Get -TimeoutSec 2 -ErrorAction Stop
-   $v=Invoke-RestMethod -Uri 'http://127.0.0.1:8787/api/v1/velocity/managed/status' -Method Get -TimeoutSec 2 -ErrorAction Stop
+   # Enabled Canary status executes a Windows Scheduler read-only probe
+   # with its own 5-second upper bound; a 2-second client timeout
+   # previously produced a false failed-Apply result after service restart.
+   $v=Invoke-RestMethod -Uri 'http://127.0.0.1:8787/api/v1/velocity/managed/status' -Method Get -TimeoutSec 15 -ErrorAction Stop
    if($h.ok -eq $true -and $h.service -eq $true -and [string]$h.version -ceq '4.5.2-canary' -and
       $v.read_only -eq $true -and $v.canary_enabled -eq $expect -and @($v.tasks).Count -eq 3){return $true}
   }catch{}
