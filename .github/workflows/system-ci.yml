@@ -293,6 +293,14 @@ jobs:
           $authCall=$cutoverSource.IndexOf('Test-GSCActualHostActionToken $token')
           $drainCall=$cutoverSource.IndexOf('& $kit -Mode DrainAndCutover')
           $consent=$cutoverSource.IndexOf("Read-Host 'Type DISCONNECT WILD PLAYERS")
+          # Host Scheduler GET must provide reliable per-task states BEFORE
+          # the first live disable operation, otherwise fail closed.
+          $hostProbeCall=$cutoverSource.IndexOf("Uri 'http://127.0.0.1:8787/api/v1/velocity/tasks'")
+          if($hostProbeCall -lt 0 -or $hostProbeCall -ge $drainCall -or
+             -not $cutoverSource.Contains('HOST_CANNOT_PROVE_ORIGINAL_RUNNING_TASKS_NO_CUTOVER') -or
+             -not $cutoverSource.Contains('WILD_HOST_INDEPENDENT_SCHEDULER_PROBE_ALL_3_RUNNING=PASS')){
+            throw 'Attended Wild operator tool must prove Host-side Scheduler observation before disabling legacy Wild'
+          }
           if(-not $cutoverSource.Contains('foreach($neighbor in @(''playground'',''other''))')){
             throw 'Wild cutover must reject abnormal non-target legacy Scheduler tasks'
           }
