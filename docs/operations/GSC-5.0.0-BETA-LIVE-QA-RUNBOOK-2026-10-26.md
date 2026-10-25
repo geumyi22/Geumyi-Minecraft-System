@@ -18,6 +18,17 @@
    Success marker: `GSC5_BETA_OFFLINE_ASSETS_PASS`. The script only reads local files, checks SHA-256/commit/channel flags, and rejects unexpected/missing EXEs. It never executes an installer.
 3. Record the asset filenames, SHA-256 values, source commit and the actual current local app versions. Do **not** copy pairing tokens, RCON secrets, private keys or private recovery receipts into public CI logs.
 
+## Phase A.1: optional read-only operator inventory
+If the operator eventually wants to identify the **currently running** Windows Host without changing anything, run this script locally in Windows PowerShell 5.1. It reads GSC service state, executable SHA-256, the public loopback `/api/health` JSON and **only the original three Day10 Velocity Scheduler task states**. It never reads private API/RCON tokens and never performs a cutover. Keep machine-specific results private.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\gsc5\Get-GSC5OperatorReadOnlyPreflight.ps1
+```
+
+A `4.5.2*` reported runtime is an explicit **no-automatic-upgrade** risk. Unknown service origin, inaccessible task state, or unavailable Host health also remains unverified. The script **always** emits `gsc5_stable_install_authorized=false` regardless of its read-only findings. A service path or JSON response alone cannot establish binary identity; use a separate trusted SHA/backup comparison before any authorized maintenance.
+
+**CI evidence, not production install evidence:** the `gsc-package` Windows job exercises actual compiled x64 embedded Host/Client payload extraction, isolated backup/rollback and a disposable **Client-only** install-code path using temporary ProgramData/AppData and a fake local host URL. This is still **not** an interactive published Setup.exe install, a real Host service upgrade, a valid 4.5.2 Canary migration, or player/device E2E. It must not be described as production-ready.
+
 ## Phase B: non-production installation and compatibility
 1. Use an isolated Windows x64 test environment with **disposable** data, not a copy that can reach or mutate live server worlds. Preserve the test system snapshot and clean rollback point.
 2. Test a fresh installer separately from a 4.5.1 stable upgrade. Test Host-only, Client-only, and combined-role installation paths only with disposable config.
