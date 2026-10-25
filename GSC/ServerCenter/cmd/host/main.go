@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-const appVersion = "4.5.1"
+const appVersion = "5.0.0-beta.1"
 
 type Config struct {
 	Bind                string         `json:"bind"`
@@ -278,6 +278,7 @@ func runHostCore() error {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveDashboard)
+	mux.HandleFunc("/api/v5/release", requireAuth(apiV5ReleaseInfo))
 	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, map[string]any{"ok": true, "version": appVersion, "service": serviceModeRequested(), "generation": 4})
 	})
