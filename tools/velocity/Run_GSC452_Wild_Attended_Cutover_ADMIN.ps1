@@ -42,13 +42,29 @@ try{
  try{$token=[Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)}
  finally{[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)}
  if([string]::IsNullOrWhiteSpace($token)){StopSafely 'HOST_TOKEN_MISSING'}
+ # Authenticated GET may succeed with AllowLoopbackNoAuth=true.
+ # Validate the explicit action token BEFORE any task mutation.
+ $verifier=Join-Path $PSScriptRoot 'GSC452_Host_Action_Token_Verifier.ps1'
+ if(-not(Test-Path -LiteralPath $verifier -PathType Leaf)){
+  StopSafely 'HOST_ACTION_TOKEN_VERIFIER_MISSING_NO_CUTOVER'
+ }
+ . $verifier
+ if(-not(Test-GSCActualHostActionToken $token)){
+  StopSafely 'HOST_ACTION_TOKEN_NOT_VERIFIED_NO_CUTOVER'
+ }
+ Write-Host 'WILD_EXPLICIT_HOST_ACTION_TOKEN_MATCHES_RUNNING_CONFIG=PASS'
  $headers=@{'X-GSC-Token'=$token;'Cache-Control'='no-store'}
- $status=Invoke-RestMethod -Method Get -Uri ($endpoint+'/status') -Headers $headers -TimeoutSec 10 -ErrorAction Stop
+ $status=Invoke-RestMethod -Method Get -Uri ($endpoint+'/status') -Headers $headers -TimeoutSec 20 -ErrorAction Stop
  if($status.canary_enabled -ne $true -or $status.read_only -ne $true){
   StopSafely 'GSC_HOST_CANARY_DIRECT_OWNERSHIP_NOT_ACTIVE'
  }
  $wild=@($status.tasks|Where-Object {$_.target -ceq 'wild'})
- if($wild.Count -ne 1 -or $wild[0].gsc_managed_running -ne $false -or
+ if(@($status.tasks).Count -ne 3 -or $wild.Count -ne 1 -or
+    $wild[0].legacy_task_disabled -ne $false -or
+    $wild[0].can_start -ne $false -or
+    $wild[0].can_stop -ne $false -or
+    $wild[0].can_restart -ne $false -or
+    $wild[0].gsc_managed_running -ne $false -or
     $wild[0].recovery_required -eq $true){
   StopSafely 'GSC_HOST_EXISTING_OWNER_OR_AMBIGUOUS_TASK_STATE'
  }
