@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"debug/pe"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,6 +15,9 @@ import (
 // Client payloads. No installer is launched and no Windows services, tasks,
 // registry entries, worlds, or real installation files are touched.
 func TestGSC5RealPackagedPayloadExtractAndRollback(t *testing.T) {
+	if os.Getenv("GSC5_REAL_PAYLOAD_TEST") != "1" {
+		t.Skip("actual compiled payload fixtures are staged only after build.ps1")
+	}
 	if version != "5.0.0-beta.1" {
 		t.Fatalf("unexpected setup version %q", version)
 	}
@@ -29,12 +31,9 @@ func TestGSC5RealPackagedPayloadExtractAndRollback(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			compiled, err := os.ReadFile(filepath.Join("cmd", "setup", "payload", name))
-			if err == nil {
-				// Usually the go-test working directory is cmd/setup instead.
-				if !bytes.Equal(embedded, compiled) {
-					t.Fatal("embedded payload differs from compiled source")
-				}
+			compiled, err := os.ReadFile(filepath.Join("payload", name))
+			if err != nil || !bytes.Equal(embedded, compiled) {
+				t.Fatalf("embedded payload differs from compiled source: %v", err)
 			}
 			if len(embedded) < 100000 {
 				t.Fatalf("real %s payload too small: %d", name, len(embedded))
@@ -98,5 +97,4 @@ func TestGSC5PackagedSetupVersionAndMissingBackupFailClosed(t *testing.T) {
 	if e != nil || string(data) != "candidate" {
 		t.Fatal("failed restore unexpectedly modified candidate")
 	}
-	_ = fmt.Sprintf("%v", err) // preserve the error path without logging local paths
 }
