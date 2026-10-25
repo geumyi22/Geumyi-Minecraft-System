@@ -60,6 +60,24 @@ try{
  if($status.canary_enabled -ne $true -or $status.read_only -ne $true){
   StopSafely 'GSC_HOST_CANARY_DIRECT_OWNERSHIP_NOT_ACTIVE'
  }
+ # CRITICAL: production incident 2026-10-25 proved localhost Host can
+ # answer managed/status with all controls false when its internal Scheduler
+ # observation is UNKNOWN. Confirm that THIS running GSC Host can actually
+ # observe all three legacy tasks BEFORE disabling the original Wild task.
+ # Endpoint is authenticated GET only, never a live task mutation.
+ $taskProbe=Invoke-RestMethod -Method Get -Uri 'http://127.0.0.1:8787/api/v1/velocity/tasks' -Headers $headers -TimeoutSec 20 -ErrorAction Stop
+ if($taskProbe.ok -ne $true -or $taskProbe.read_only -ne $true -or
+    $taskProbe.control_authorized -ne $false -or
+    @($taskProbe.tasks).Count -ne 3){
+  StopSafely 'HOST_SCHEDULER_OBSERVATION_UNTRUSTED_NO_CUTOVER'
+ }
+ foreach($t in @('wild','playground','other')){
+  $seen=@($taskProbe.tasks|Where-Object {$_.target -ceq $t})
+  if($seen.Count -ne 1 -or $seen[0].task_state -cne 'Running'){
+   StopSafely 'HOST_CANNOT_PROVE_ORIGINAL_RUNNING_TASKS_NO_CUTOVER'
+  }
+ }
+ Write-Host 'WILD_HOST_INDEPENDENT_SCHEDULER_PROBE_ALL_3_RUNNING=PASS'
  $wild=@($status.tasks|Where-Object {$_.target -ceq 'wild'})
  if(@($status.tasks).Count -ne 3 -or $wild.Count -ne 1 -or
     $wild[0].legacy_task_disabled -ne $false -or
