@@ -56,6 +56,61 @@ EXISTING RECOVERY EVIDENCE — SAFE READ ONLY (NEW)
   The disposable Windows CI fixture deliberately has no Velocity JAR,
   so its pin-check field is false while archive integrity still passes.
 
+RUNNING TASK MAINTENANCE — NEW DRAFT CANDIDATE (WILD ONLY)
+  The production operator reported the existing Wild snapshot, original
+  task XML, launcher manifest, and actual Velocity JAR hash all MATCH.
+  Current Wild legacy Scheduler state is Running; TCP/UDP ports occupied;
+  owner marker absent; live cutover remains 0/3 as of operator evidence.
+
+  The Draft contains a guarded script -Mode DrainAndCutover.
+  It REQUIRES the same original, locally protected snapshot and ticket.
+  It checks the real Geyser UDP owner is a Java velocity.jar JVM,
+  captures its PID plus creation time (and verified JVM parent, if any),
+  disables future Scheduled Task starts, requests Stop-ScheduledTask on
+  ONE exact task, and waits for those OLD JVM identities to exit and BOTH
+  front ports to be released. Only then may it mark the cutover receipt.
+  IT NEVER FORCE-KILLS by PID and NEVER starts Paper, Velocity or worlds.
+  Windows Scheduler Stop is NOT an external JVM's console-graceful
+  shutdown. Existing players can be immediately disconnected.
+  If a child JVM/port survives or postcheck fails, the original task
+  stays Disabled; DO NOT launch another JVM or blindly enable it.
+  A valid receipt alone is NOT proof of a full end-to-end production
+  migration. Only official protected source + validated process identity.
+
+  The optional ATTENDED wrapper is:
+    Run_GSC452_Wild_Attended_Cutover_ADMIN.cmd
+  It requires (a) local Admin, (b) CURRENT VerifyExisting PASS incl jar,
+  (c) GSC Host authenticated local status API at 127.0.0.1:8787
+  reporting Canary direct ownership enabled, (d) manually entered HOST
+  API token IN THE SERVER CONSOLE ONLY, and (e) typed explicit PLAYER
+  DISCONNECT consent. It does not transmit private ticket/path outside
+  the host; it calls the core script IN-PROCESS and only requests GSC
+  start AFTER the original task is committed Disabled and ports empty.
+  START ACK is not full Java/Bedrock gameplay/route health evidence.
+  If the Host Canary flag is not enabled, the wrapper MUST deny without
+  any task or JVM change; do NOT work around the gate.
+
+  Original task manual recovery wrapper:
+    Run_GSC452_Wild_Attended_Restore_ADMIN.cmd
+  This requires Admin, local original XML/hash and receipt, NO GSC
+  active/orphaned ownership, empty TCP/UDP ports, validated local HOST
+  API status, and distinct typed RESTORE consent. It then uses the
+  existing Rollback mode to restore the exact original task, followed
+  by an explicit Start-ScheduledTask request. Never perform recovery if
+  GSC might still own an unbound or orphan Java process.
+  BACKUP/ROLLBACK cannot be inferred merely from a stale PID scan.
+  This tool is not production-approved until dedicated Windows CI,
+  Host Canary readiness, rollback staging and operator observation
+  have been validated. Never run all three proxies simultaneously.
+
+  Isolated CI additionally validates a unique no-trigger dummy Running
+  task can have Settings.Enabled=false while its task.State is still
+  Running, then a subsequent Stop-ScheduledTask must be separately
+  verified. Neither this CI proof nor the existing Velocity shutdown
+  CI demonstrates a live parent-child JVM was actually terminated.
+  Playground and Other are intentionally NOT in the attended kit.
+  Other PAPER game server remains intentionally OFF.
+
 CURRENT PRODUCTION NO-GO GATES
   - Original Day10 tasks were Running and RestartOnFailure=999.
   - Old Velocity Java consoles' stdin control is not available to GSC.
