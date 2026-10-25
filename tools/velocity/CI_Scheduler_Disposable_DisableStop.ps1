@@ -52,7 +52,7 @@ try{
  Stop-ScheduledTask -TaskPath '\' -TaskName $name -ErrorAction Stop
  $deadline=[DateTimeOffset]::UtcNow.AddSeconds(18)
  do{
-  $running=@((Get-ScheduledTask -TaskPath '\' -TaskName $name).State -eq 'Running').Count -gt 0
+  $running=([string](Get-ScheduledTask -TaskPath '\' -TaskName $name -ErrorAction Stop).State -eq 'Running')
   if(-not $running){break}
   Start-Sleep -Milliseconds 300
  }while([DateTimeOffset]::UtcNow -lt $deadline)
