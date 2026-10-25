@@ -79,6 +79,14 @@ try{
     $receipt.cutover_committed -ne $false){
   StopSafely 'ORIGINAL_LOCAL_RECOVERY_TICKET_UNVERIFIED'
  }
+ # Fleet isolation: do not risk Wild maintenance when other legacy task
+ # state is abnormal. These checks are observational only.
+ foreach($neighbor in @('playground','other')){
+  $neighborTask=Get-ScheduledTask -TaskPath '\' -TaskName ('Geumyi Day10 Velocity '+$neighbor) -ErrorAction Stop
+  if($neighborTask.State -ne 'Running' -or $neighborTask.Settings.Enabled -ne $true){
+   StopSafely 'OTHER_PROXY_TASK_STATE_UNEXPECTED_NO_WILD_CUTOVER'
+  }
+ }
  Write-Host 'WILD_HOST_CANARY_AUTHENTICATION_AND_MIGRATION_PREREQUISITES=PASS'
  if($VerifyOnly){
   Write-Host 'WILD_EXPLICIT_TOKEN_VERIFIED_AND_PRECUTOVER_GATES=PASS_READ_ONLY'
