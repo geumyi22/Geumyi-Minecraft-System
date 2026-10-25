@@ -45,9 +45,11 @@ try{
  Write-Host 'CI_DISPOSABLE_LEGACY_TASK_RUNNING=PASS'
  # Disable is a future-launch gate; it is not proof the process stopped.
  Disable-ScheduledTask -TaskPath '\' -TaskName $name -ErrorAction Stop|Out-Null
- if([string](Get-ScheduledTask -TaskPath '\' -TaskName $name).State -ne 'Disabled'){
+ $afterDisable=Get-ScheduledTask -TaskPath '\' -TaskName $name -ErrorAction Stop
+ if($afterDisable.Settings.Enabled -ne $false){
   throw 'CI disabling running task did not block scheduled starts'
  }
+ # State can remain Running while this task instance is still executing.
  Write-Host 'CI_DISPOSABLE_RESTART_BLOCKED_BEFORE_STOP=PASS'
  Stop-ScheduledTask -TaskPath '\' -TaskName $name -ErrorAction Stop
  $deadline=[DateTimeOffset]::UtcNow.AddSeconds(18)
