@@ -409,7 +409,10 @@ if($Mode -eq 'DrainAndCutover'){
   Deny 'LEGACY_UDP_JVM_EXITED_BEFORE_DRAIN'
  }
  Disable-ScheduledTask -TaskPath '\' -TaskName $taskNames[$Target] -ErrorAction Stop|Out-Null
- if((TaskState $Target) -ne 'Disabled'){
+ # Scheduler can continue reporting Running until the instance has stopped;
+ # inspect the independent Enabled setting to prove relaunch is blocked.
+ $postDisableTask=Get-ScheduledTask -TaskPath '\' -TaskName $taskNames[$Target] -ErrorAction Stop
+ if($null -eq $postDisableTask -or $postDisableTask.Settings.Enabled -ne $false){
   Deny 'DISABLE_FUTURE_RESTARTS_NOT_CONFIRMED_MANUAL_RECOVERY_REQUIRED'
  }
  try{
