@@ -1609,7 +1609,7 @@ jobs:
             'Use Run_GSC452_Host_Canary_Hotfix_PLAN_READ_ONLY.cmd for current Canary, never automatic update.',
             'Canary-to-Canary stage only preserves service and Velocity tasks; no Host restart/update is performed.',
             'Requires independently approved maintenance cutover, local host account/credentials validation, and rollback.',
-            'Stage via Run_Stage_GSC452_Velocity_CANARY_ADMIN.cmd (right-click administrator).',
+            'OLD FIRST-INSTALL KIT only: Run_Stage_GSC452_Velocity_CANARY_ADMIN.cmd; DO NOT run on a current Canary.',
             'Only copies the uninstalled candidate and originals to private staging.',
             'Does not install, register tasks, set environment flags, kill Java or change worlds.'
           )|Set-Content -Encoding utf8 dist-canary/README-NO-INSTALL.txt
