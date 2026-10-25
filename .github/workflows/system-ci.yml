@@ -293,7 +293,7 @@ jobs:
           $authCall=$cutoverSource.IndexOf('Test-GSCActualHostActionToken $token')
           $drainCall=$cutoverSource.IndexOf('& $kit -Mode DrainAndCutover')
           $consent=$cutoverSource.IndexOf("Read-Host 'Type DISCONNECT WILD PLAYERS")
-          if(-not $cutoverSource.Contains("foreach($neighbor in @('playground','other'))")){
+          if(-not $cutoverSource.Contains('foreach($neighbor in @(''playground'',''other''))')){
             throw 'Wild cutover must reject abnormal non-target legacy Scheduler tasks'
           }
           if($authCall -lt 0 -or $drainCall -le $authCall -or
