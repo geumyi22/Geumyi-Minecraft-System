@@ -27,7 +27,13 @@ func observeVelocityTasks(parent context.Context) map[string]string {
           [pscustomobject]@{id=$x.ID;state=$state}
         });
         ConvertTo-Json -InputObject $out -Compress -Depth 3`
-    ctx,cancel:=context.WithTimeout(parent,5*time.Second)
+    // Live 2026-10-25 incident: Windows PowerShell Task Scheduler read-only
+    // probe took >5 s. The previous five-second deadline returned an empty
+    // state map even though Windows observed Wild as Disabled and receipt was
+    // committed; a managed-action POST then rejected its migrated guard.
+    // Still strictly bounded and fail-closed; no Scheduler mutations.
+    const schedulerObservationTimeout=15*time.Second
+    ctx,cancel:=context.WithTimeout(parent,schedulerObservationTimeout)
     defer cancel()
     cmd:=exec.CommandContext(ctx,"powershell.exe",
         "-NoProfile","-NonInteractive","-Command",ps)
