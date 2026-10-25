@@ -1,6 +1,8 @@
 #requires -Version 5.1
 [CmdletBinding()]
-param()
+param(
+ [switch]$VerifyOnly
+)
 # INTERACTIVE operator-only wrapper for ONE target. NEVER run in CI or on
 # unattended schedule. NO auto-elevation, no remote network beyond localhost,
 # no world/Paper edits. This may interrupt active Wild Java+Bedrock players.
@@ -78,6 +80,11 @@ try{
   StopSafely 'ORIGINAL_LOCAL_RECOVERY_TICKET_UNVERIFIED'
  }
  Write-Host 'WILD_HOST_CANARY_AUTHENTICATION_AND_MIGRATION_PREREQUISITES=PASS'
+ if($VerifyOnly){
+  Write-Host 'WILD_EXPLICIT_TOKEN_VERIFIED_AND_PRECUTOVER_GATES=PASS_READ_ONLY'
+  Write-Host 'ORIGINAL_WILD_PROXY_AND_ALL_TASKS_NOT_MODIFIED'
+  return
+ }
  Write-Host 'DANGER: Windows will stop the exact existing Wild Scheduler task.'
  Write-Host 'This is NOT a Velocity console-graceful shutdown; players may disconnect.'
  Write-Host 'If a legacy child JVM persists, the task remains Disabled and no GSC'
