@@ -45,6 +45,9 @@ jobs:
           Add-Content -LiteralPath (Join-Path $assets 'RELEASE-CHANNEL.txt') -Value 'tampered=true'
           & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script -AssetDirectory $assets *> $null
           if ($LASTEXITCODE -eq 0) { throw 'Tampered release metadata was accepted' }
+          # GitHub Actions pwsh shell propagates the last native exit code,
+          # even if an expected failure was handled above.
+          $global:LASTEXITCODE = 0
           Write-Output 'GSC5_BETA_METADATA_TAMPER_REJECTED'
       - name: Confirm fail-closed behavior after a disposable executable tamper
         shell: pwsh
@@ -61,4 +64,5 @@ jobs:
           $script = Join-Path $env:GITHUB_WORKSPACE 'tools/gsc5/Test-GSC5BetaOfflineAssets.ps1'
           & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script -AssetDirectory $assets *> $null
           if ($LASTEXITCODE -eq 0) { throw 'Tampered executable was accepted' }
+          $global:LASTEXITCODE = 0
           Write-Output 'GSC5_BETA_BINARY_TAMPER_REJECTED'
