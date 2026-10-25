@@ -288,6 +288,8 @@ func apiV1VelocityManagedStatus(w http.ResponseWriter,r *http.Request){
    Target string `json:"target"`
    GSCManagedRunning bool `json:"gsc_managed_running"`
    LegacyTaskDisabled bool `json:"legacy_task_disabled"`
+   LegacyTaskState string `json:"legacy_task_state"`
+   CutoverReceiptVerified bool `json:"cutover_receipt_verified"`
    RecoveryRequired bool `json:"recovery_required"`
    CanStart bool `json:"can_start"`
    CanStop bool `json:"can_stop"`
@@ -297,7 +299,17 @@ func apiV1VelocityManagedStatus(w http.ResponseWriter,r *http.Request){
  states:=map[string]string{}
  if enabled {states=observeVelocityTasks(r.Context())}
  for _,target:=range []string{"wild","playground","other"}{
-  item:=row{Target:target,LegacyTaskDisabled:enabled&&states[target]=="Disabled"&&velocityReceiptAvailable(target)}
+  // Expose only a sanitized Scheduler state and bool receipt verification.
+  // UNKNOWN is not equivalent to a verified running or disabled proxy.
+  state:=states[target]
+  switch state {
+  case "Running","Ready","Disabled","Queued":
+  default: state="UNKNOWN"
+  }
+  receipt:=enabled&&velocityReceiptAvailable(target)
+  item:=row{Target:target,LegacyTaskState:state,
+    CutoverReceiptVerified:receipt,
+    LegacyTaskDisabled:enabled&&state=="Disabled"&&receipt}
   if enabled {
    controller,e:=managedVelocityController(target)
    if e==nil{item.GSCManagedRunning=controller.Running()}
