@@ -302,6 +302,7 @@ jobs:
             throw 'Danger: original Wild task may be stopped before action token is proven'
           }
           # Disposable Windows DPAPI-M roundtrip; use a CI-only random secret.
+          Add-Type -AssemblyName System.Security -ErrorAction Stop
           . $verifier
           $secret='CI-' + [Guid]::NewGuid().ToString('N')
           $raw=[Text.Encoding]::UTF8.GetBytes($secret)
