@@ -252,6 +252,7 @@ jobs:
           foreach($operatorFile in @(
             'tools/velocity/Velocity_Managed_Cutover.ps1',
             'tools/velocity/Run_GSC452_Wild_Attended_Cutover_ADMIN.ps1',
+            'tools/velocity/GSC452_Host_Action_Token_Verifier.ps1',
             'tools/velocity/Run_GSC452_Wild_Attended_Restore_ADMIN.ps1'
           )){
             $tokens=$null; $issues=$null
@@ -277,6 +278,45 @@ jobs:
               throw 'live operator tool contains forbidden wide-impact operation'
             }
           }
+          # Explicit POST token validation must happen before original task stop.
+          # Loopback GET allows no-token authentication, so status alone is unsafe.
+          $verifier='tools/velocity/GSC452_Host_Action_Token_Verifier.ps1'
+          $guard=Get-Content -LiteralPath $verifier -Raw
+          foreach($required in @('ProtectedData]::Unprotect','dpapi-m:',
+              'Test-GSCConstantTimeTokenMatch','Win32_Service','api_token',
+              'Test-GSCActualHostActionToken')){
+            if(-not $guard.Contains($required)){throw ('Missing explicit Host action token guard: '+$required)}
+          }
+          if($guard -match '(?i)(Stop-ScheduledTask|Stop-Process|Start-Process|Set-ItemProperty|Set-Content|Stop-Service|Invoke-CimMethod|taskkill)'){
+            throw 'Explicit Host token verifier must be read-only'
+          }
+          $authCall=$cutoverSource.IndexOf('Test-GSCActualHostActionToken $token')
+          $drainCall=$cutoverSource.IndexOf('& $kit -Mode DrainAndCutover')
+          $consent=$cutoverSource.IndexOf("Read-Host 'Type DISCONNECT WILD PLAYERS")
+          if($authCall -lt 0 -or $drainCall -le $authCall -or
+             $consent -le $authCall -or
+             -not $cutoverSource.Contains('WILD_EXPLICIT_TOKEN_VERIFIED_AND_PRECUTOVER_GATES=PASS_READ_ONLY')){
+            throw 'Danger: original Wild task may be stopped before action token is proven'
+          }
+          # Disposable Windows DPAPI-M roundtrip; use a CI-only random secret.
+          . $verifier
+          $secret='CI-' + [Guid]::NewGuid().ToString('N')
+          $raw=[Text.Encoding]::UTF8.GetBytes($secret)
+          try{
+            $cipher=[Security.Cryptography.ProtectedData]::Protect(
+              $raw,$null,[Security.Cryptography.DataProtectionScope]::LocalMachine)
+            try{
+              $unpad=[Convert]::ToBase64String($cipher).TrimEnd('=')
+              $decoded=Unseal-GSCLocalMachineToken ('dpapi-m:'+$unpad)
+              if($decoded -cne $secret -or
+                 -not (Test-GSCConstantTimeTokenMatch $decoded $secret) -or
+                 (Test-GSCConstantTimeTokenMatch ($decoded+'x') $secret) -or
+                 (Test-GSCConstantTimeTokenMatch $decoded ($secret.ToUpperInvariant()))){
+                throw 'CI-only local-machine DPAPI Host token equality tests failed'
+              }
+            }finally{[Array]::Clear($cipher,0,$cipher.Length)}
+          }finally{[Array]::Clear($raw,0,$raw.Length)}
+          Write-Host 'CI_WILD_ACTION_TOKEN_REQUIRED_BEFORE_STOP_DPAPI_M_PASS'
           Write-Host 'CI_CANARY_WILD_ATTENDED_OPERATOR_STATIC_GATES=PASS'
       - name: Host-only Velocity opt-in operator syntax and isolated REG_MULTI_SZ semantics
         shell: powershell
@@ -426,6 +466,7 @@ jobs:
             tools/velocity/Velocity_Managed_Cutover.ps1
             tools/velocity/Run_GSC452_Wild_Existing_Evidence_READ_ONLY.cmd
             tools/velocity/Run_GSC452_Wild_Attended_Cutover_ADMIN.ps1
+            tools/velocity/GSC452_Host_Action_Token_Verifier.ps1
             tools/velocity/Run_GSC452_Wild_Attended_Cutover_ADMIN.cmd
             tools/velocity/Run_GSC452_Wild_Attended_Restore_ADMIN.ps1
             tools/velocity/Run_GSC452_Wild_Attended_Restore_ADMIN.cmd
