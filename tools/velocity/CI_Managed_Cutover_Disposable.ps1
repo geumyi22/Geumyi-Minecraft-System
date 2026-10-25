@@ -147,8 +147,12 @@ try{
  # against a READY (non-running) task through the running-drain mode.
  $beforeTaskXml=Export-ScheduledTask -TaskName $name -TaskPath '\' -ErrorAction Stop
  $beforeReceipt=(Get-FileHash -LiteralPath $receiptFile -Algorithm SHA256).Hash
- $drainOutput=(& powershell.exe -NoProfile -NonInteractive -File $kit -Mode DrainAndCutover -Target $target -Ticket $ticket -Approved 2>&1|Out-String)
- $drainExit=$LASTEXITCODE
+ $previousPreference=$ErrorActionPreference
+ try{
+  $ErrorActionPreference='Continue'
+  $drainOutput=(& powershell.exe -NoProfile -NonInteractive -File $kit -Mode DrainAndCutover -Target $target -Ticket $ticket -Approved 2>&1|Out-String)
+  $drainExit=$LASTEXITCODE
+ }finally{$ErrorActionPreference=$previousPreference}
  if($drainExit -eq 0 -or -not $drainOutput.Contains('LEGACY_RUNNING_TASK_REQUIRED_FOR_CONTROLLED_DRAIN')){
   throw 'Running-task maintenance bypassed its original-state gate'
  }
