@@ -347,6 +347,20 @@ jobs:
               throw ('Post-failure read-only fixture failed: '+$name)
             }
           }
+          # Runtime enabled status on Windows uses a 5s Task Scheduler probe.
+          # The client must not classify a healthy Canary as offline after 2-3s.
+          $diag=Get-Content -LiteralPath $path -Raw
+          $apply=Get-Content -LiteralPath 'tools/velocity/GSC452_Host_Managed_OptIn.ps1' -Raw
+          $hostProbe=Get-Content -LiteralPath 'GSC/ServerCenter/cmd/host/velocity_tasks_status_windows.go' -Raw
+          if(-not $hostProbe.Contains('context.WithTimeout(parent,5*time.Second)') -or
+             -not $diag.Contains("'/api/v1/velocity/managed/status'") -and
+             -not $diag.Contains('/api/v1/velocity/managed/status')){
+            throw 'Windows scheduled-task API evidence for timeout contract missing'
+          }
+          if(-not $diag.Contains('-TimeoutSec 15') -or -not $apply.Contains('-TimeoutSec 15')){
+            throw 'Host opt-in/diagnostic must tolerate 5s managed-status Scheduler probe'
+          }
+          Write-Host 'CI_HOST_MANAGED_API_5S_PROBE_CLIENT_TIMEOUT_REGRESSION_PASS'
           Write-Host 'CI_HOST_POSTFAIL_SANITIZED_READONLY_FIVE_SCENARIOS_PASS'
       - name: Upload sanitized Host managed-optin failed Apply READ ONLY diagnostic
         uses: actions/upload-artifact@v4
