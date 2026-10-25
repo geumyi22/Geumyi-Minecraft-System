@@ -528,6 +528,15 @@ jobs:
         shell: pwsh
         working-directory: GSC/ServerCenter
         run: ./build.ps1
+      - name: Check actual compiled Windows PE payload and disposable rollback
+        shell: pwsh
+        working-directory: GSC/ServerCenter
+        env:
+          GSC5_REAL_PAYLOAD_TEST: '1'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          go test -count=1 -v ./cmd/setup -run 'TestGSC5RealPackagedPayloadExtractAndRollback|TestGSC5PackagedSetupVersionAndMissingBackupFailClosed'
+          if ($LASTEXITCODE -ne 0) { throw 'Real PE payload or rollback regression failed' }
       - name: Verify and stage GSC binaries
         shell: pwsh
         run: |
