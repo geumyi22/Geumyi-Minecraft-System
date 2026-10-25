@@ -1,0 +1,64 @@
+name: GSC 5 Beta Offline Asset Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/gsc5/**'
+      - '.github/workflows/gsc5-beta-offline-assets-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  beta-offline-assets:
+    name: Windows PowerShell 5.1 verified beta + tamper rejection
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download the immutable published beta assets into a disposable runner directory
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $assets = Join-Path $env:RUNNER_TEMP 'gsc5-beta-assets'
+          New-Item -ItemType Directory -Path $assets -Force | Out-Null
+          gh release download 'gsc-v5.0.0-beta.1' --repo 'geumyi22/Geumyi-Minecraft-System' --dir $assets
+          if ($LASTEXITCODE -ne 0) { throw 'Official beta release download failed' }
+      - name: Verify all seven public asset hashes and immutable safety flags with Windows PowerShell 5.1
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $assets = Join-Path $env:RUNNER_TEMP 'gsc5-beta-assets'
+          $script = Join-Path $env:GITHUB_WORKSPACE 'tools/gsc5/Test-GSC5BetaOfflineAssets.ps1'
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script -AssetDirectory $assets
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned release offline check did not pass' }
+      - name: Confirm fail-closed behavior after a disposable metadata tamper
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $assets = Join-Path $env:RUNNER_TEMP 'gsc5-beta-assets'
+          $script = Join-Path $env:GITHUB_WORKSPACE 'tools/gsc5/Test-GSC5BetaOfflineAssets.ps1'
+          Add-Content -LiteralPath (Join-Path $assets 'RELEASE-CHANNEL.txt') -Value 'tampered=true'
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script -AssetDirectory $assets *> $null
+          if ($LASTEXITCODE -eq 0) { throw 'Tampered release metadata was accepted' }
+          Write-Output 'GSC5_BETA_METADATA_TAMPER_REJECTED'
+      - name: Confirm fail-closed behavior after a disposable executable tamper
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $assets = Join-Path $env:RUNNER_TEMP 'gsc5-beta-assets-clean'
+          New-Item -ItemType Directory -Path $assets -Force | Out-Null
+          gh release download 'gsc-v5.0.0-beta.1' --repo 'geumyi22/Geumyi-Minecraft-System' --dir $assets
+          if ($LASTEXITCODE -ne 0) { throw 'Official beta release re-download failed' }
+          $binary = Join-Path $assets 'GeumyiServerCenter.exe'
+          [System.IO.File]::AppendAllText($binary, 'DISPOSABLE-TAMPER-TEST')
+          $script = Join-Path $env:GITHUB_WORKSPACE 'tools/gsc5/Test-GSC5BetaOfflineAssets.ps1'
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script -AssetDirectory $assets *> $null
+          if ($LASTEXITCODE -eq 0) { throw 'Tampered executable was accepted' }
+          Write-Output 'GSC5_BETA_BINARY_TAMPER_REJECTED'
