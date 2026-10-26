@@ -29,6 +29,17 @@ A `4.5.2*` reported runtime is an explicit **no-automatic-upgrade** risk. Unknow
 
 **CI evidence, not production install evidence:** the `gsc-package` Windows job exercises actual compiled x64 embedded Host/Client payload extraction, isolated backup/rollback and a disposable **Client-only** install-code path using temporary ProgramData/AppData and a fake local host URL. This is still **not** an interactive published Setup.exe install, a real Host service upgrade, a valid 4.5.2 Canary migration, or player/device E2E. It must not be described as production-ready.
 
+## Added source protection: existing Host migration gate
+
+The hardening branch has a new **fail-closed source guard** in Windows Setup **before** `prepareForUpgradeAll()` (the phase that stops the old GSC Host/Agent and may change tasks):
+
+- A genuinely fresh installation or Client-only role has no existing local Host migration to assess and is unchanged by the guard.
+- With an existing Host role, `role.json` and loopback `GET /api/health` are examined **read-only**. A stored or running `4.5.2` Canary is refused, even if the Canary service is down and only the stored role version reveals it.
+- A missing/unreachable/invalid Host service identity, an unsupported older Host version, or an unexpected generation is refused. At source level, only reported `4.5.1` and same-version `5.0.0-beta.1` Host identities pass this gate. Such a pass is **NOT** permission to install on a production machine or evidence of version/binary authenticity.
+- Rejected migration ends before service cleanup, binary extraction, firewall/task changes or world updates. Windows unit/regression tests use synthetic role state and an in-process HTTP test server.
+
+This guard addresses one **detectable** unsafe Canary upgrade case. Since an older service may have stale `role.json` or an inaccessible/spoofed `/api/health`, the gate is **not** a cryptographic identity proof. Operators must compare trusted executable SHA-256, service path, protected rollback backup and live bind/owner security evidence before any approved deployment.
+
 ## Phase B: non-production installation and compatibility
 1. Use an isolated Windows x64 test environment with **disposable** data, not a copy that can reach or mutate live server worlds. Preserve the test system snapshot and clean rollback point.
 2. Test a fresh installer separately from a 4.5.1 stable upgrade. Test Host-only, Client-only, and combined-role installation paths only with disposable config.
