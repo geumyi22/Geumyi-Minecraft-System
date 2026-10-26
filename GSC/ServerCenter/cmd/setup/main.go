@@ -383,6 +383,15 @@ func doInstall(o InstallOptions) {
 	oldRole := detectInstalledRole(dataDir, o.InstallDir)
 	setupLog(fmt.Sprintf("role transition: %s(%d) -> %s(%d)", roleName(oldRole), oldRole, roleName(o.Role), o.Role))
 
+	// Fail closed before upgrade cleanup stops any running Host/Agent or
+	// modifies the scheduler/config. Especially never treat 4.5.2 Canary as
+	// a verified migration from the 4.5.1-based GSC 5 beta.
+	if err := gsc5GuardExistingHostBeforeInstall(oldRole, dataDir); err != nil {
+		setupLog("GSC5 existing Host upgrade blocked before service changes")
+		finishInstall(err)
+		return
+	}
+
 	if o.Role != 2 {
 		setProgress(3, "서버 폴더 확인 중...", "")
 		if !validServerDir(o.WildPath, 25565) {
