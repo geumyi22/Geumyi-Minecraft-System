@@ -370,27 +370,29 @@ func openInstallerWindow(u string) {
 }
 
 func doInstall(o InstallOptions) {
-	setupLog("v" + version + " install start")
 	defer func() {
 		if r := recover(); r != nil {
-			setupLog(fmt.Sprintf("panic: %v", r))
-			finishInstall(fmt.Errorf("%v", r))
+			finishInstall(fmt.Errorf("GSC5 installation stopped after an unexpected error"))
 		}
 	}()
 	pd := envOr("PROGRAMDATA", `C:\ProgramData`)
 	dataDir := filepath.Join(pd, "GeumyiServerCenter")
-	_ = os.MkdirAll(dataDir, 0755)
 	oldRole := detectInstalledRole(dataDir, o.InstallDir)
-	setupLog(fmt.Sprintf("role transition: %s(%d) -> %s(%d)", roleName(oldRole), oldRole, roleName(o.Role), o.Role))
 
-	// Fail closed before upgrade cleanup stops any running Host/Agent or
-	// modifies the scheduler/config. Especially never treat 4.5.2 Canary as
-	// a verified migration from the 4.5.1-based GSC 5 beta.
-	if err := gsc5GuardExistingHostBeforeInstall(oldRole, dataDir); err != nil {
-		setupLog("GSC5 existing Host upgrade blocked before service changes")
+	// Reject mismatched/malformed/canary existing Host state BEFORE creating
+	// directories, writing setup logs, or stopping any GSC processes. The
+	// UI receives a short non-secret reason and the old installation remains.
+	if err := gsc5GuardExistingHostBeforeInstall(oldRole, dataDir, o.InstallDir); err != nil {
 		finishInstall(err)
 		return
 	}
+
+	if err := os.MkdirAll(dataDir, 0755); err != nil {
+		finishInstall(err)
+		return
+	}
+	setupLog("v" + version + " install start")
+	setupLog(fmt.Sprintf("role transition: %s(%d) -> %s(%d)", roleName(oldRole), oldRole, roleName(o.Role), o.Role))
 
 	if o.Role != 2 {
 		setProgress(3, "서버 폴더 확인 중...", "")
