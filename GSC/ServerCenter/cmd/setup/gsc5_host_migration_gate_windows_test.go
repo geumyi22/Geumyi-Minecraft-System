@@ -30,6 +30,8 @@ func TestGSC5HostMigrationDecisionTable(t *testing.T) {
 		{"combined-stable", 3, "", stable, true, true},
 		{"same-beta-reinstall", 1, version, beta, true, true},
 		{"canary-running", 1, "4.5.1", canary, true, false},
+		{"stale-role-version-even-with-stable-health", 3, "4.2.4", stable, true, false},
+		{"stale-role-version-even-with-beta-health", 3, "4.2.4", beta, true, false},
 		{"canary-stored-down", 1, "4.5.2", gsc5ExistingHostHealth{}, false, false},
 		{"canary-stored-conflicts-with-health", 1, "4.5.2-velocity", stable, true, false},
 		{"host-unreachable", 1, "4.5.1", gsc5ExistingHostHealth{}, false, false},
