@@ -40,6 +40,20 @@ The hardening branch has a new **fail-closed source guard** in Windows Setup **b
 
 This guard addresses one **detectable** unsafe Canary upgrade case. Since an older service may have stale `role.json` or an inaccessible/spoofed `/api/health`, the gate is **not** a cryptographic identity proof. Operators must compare trusted executable SHA-256, service path, protected rollback backup and live bind/owner security evidence before any approved deployment.
 
+## 2026-10-29: malformed role.json / stale role protection (PR #61 only)
+
+A read-only operator inspection reported that `role.json` contains invalid JSON syntax in the `role_name` string, while its unparsed raw text shows `role=3` and `version=4.2.4`. The running Host's loopback health reports `4.5.2-canary` with `service=true`; original Velocity scheduled tasks all report Running. **No origin match of the operational Host executable to a known release binary is independently verified.**
+
+The **source changes in this draft branch**, not in the already published `gsc-v5.0.0-beta.1` assets, add three protections:
+
+1. The installer checks the actual Windows Host service, original Host task, and the combination of Host executable + server config. An apparently valid `role.json` claiming Client-only **cannot override Host evidence**. Malformed JSON with an existing Host is fail-closed.
+2. The installer checks this state **before** creating installation data directories, opening setup logs, attempting role transitions, stopping Host/Agent/Client, or writing configuration. It refuses both a 4.5.2 Canary health identity and stale/mismatched stored and running versions.
+3. The privileged full self-update helper independently runs the same migration gate before its binary backup/extraction/replacement and service stop operations. The dedicated Client-only self-update path is unchanged.
+
+Windows regression fixtures represent invalid `role_name` syntax and a valid-but-stale Client-only role with dummy Host marker files. They assert that rejected `doInstall` attempts preserve original bytes and do not create extra installation files. Passing CI does **not** prove a real Canary migration can succeed.
+
+**Important operator decision:** preserve the original `role.json` byte-for-byte and the existing Host 4.5.2 Canary. Do not edit the file into a guessed v5 format, run the published (unhardened) beta Setup, or retry old Canary cutover scripts. To plan a real migration, obtain the immutable provenance of the current Host binary, a separately tested known-good rollback, and trustworthy per-port Java/RCON native socket owner/address evidence. `FINAL-RELEASE-GATES.json` remains blocked.
+
 ## Phase B: non-production installation and compatibility
 1. Use an isolated Windows x64 test environment with **disposable** data, not a copy that can reach or mutate live server worlds. Preserve the test system snapshot and clean rollback point.
 2. Test a fresh installer separately from a 4.5.1 stable upgrade. Test Host-only, Client-only, and combined-role installation paths only with disposable config.
