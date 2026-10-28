@@ -385,6 +385,19 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 		return
 	}
 
+	// The privileged self-update helper does not call doInstall. Apply the
+	// same Canary/malformed-role protection independently before creating
+	// backups, extracting binaries, stopping GSC processes, or replacing Setup.
+	// A client-only update does not modify the Host and keeps its existing path.
+	if !clientOnly {
+		oldRole := detectInstalledRole(dataDir, installDir)
+		if err := gsc5GuardExistingHostBeforeInstall(oldRole, dataDir, installDir); err != nil {
+			report.Status = "failed"
+			report.Error = "GSC5 existing Host migration preflight blocked update"
+			return
+		}
+	}
+
 	clientWasRunning := clientExists && processImageRunning("GeumyiServerCenter.exe")
 	stamp := time.Now().Format("20060102-150405")
 	backupDir := filepath.Join(dataDir, "Backups", "Day11-GSCSelfUpdate-"+stamp)
