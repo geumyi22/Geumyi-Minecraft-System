@@ -44,6 +44,12 @@ func gsc5MigrationDecision(role int, storedVersion string, health gsc5ExistingHo
 	if !healthKnown || !health.OK || !health.Service || health.Generation != 4 {
 		return errors.New("existing Host identity/health unverified; upgrade stopped before service changes")
 	}
+	// A stale role.json is not proof of the currently running binary.
+	// Refuse a disagreement instead of silently treating the version
+	// written months ago as a valid upgrade source.
+	if storedVersion != "" && storedVersion != health.Version {
+		return errors.New("stored and running Host versions disagree; upgrade blocked before service changes")
+	}
 	// Only the published stable-base -> beta path and same-beta reinstall
 	// are covered by this source-level gate; older or unexpected Host
 	// versions need separately evaluated operator-approved migration.
