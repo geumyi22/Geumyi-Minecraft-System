@@ -86,9 +86,31 @@ func gsc5ReadExistingHostHealth(client *http.Client, url string) (gsc5ExistingHo
 	return h, nil
 }
 
-func gsc5GuardExistingHostBeforeInstall(role int, dataDir string) error {
-	if !hasServerRole(role) {
+// Independently inspect Host evidence, even when a valid but stale
+// role.json claims client-only or the original role state is malformed.
+// Never allow a role file to override the presence of a Windows Host.
+func gsc5HostEvidenceRequiresMigration(role int, servicePresent, taskPresent, hostBinaryPresent, serverConfigPresent bool) bool {
+	return hasServerRole(role) || servicePresent || taskPresent ||
+		(hostBinaryPresent && serverConfigPresent)
+}
+
+func gsc5PathExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+func gsc5GuardExistingHostBeforeInstall(role int, dataDir, installDir string) error {
+	hostServicePresent := serviceExists(hostServiceName)
+	hostTaskPresent := taskExists(hostTaskName)
+	hostBinaryPresent := gsc5PathExists(filepath.Join(installDir, "GeumyiServerHost.exe"))
+	serverConfigPresent := gsc5PathExists(filepath.Join(dataDir, "server.json"))
+	if !gsc5HostEvidenceRequiresMigration(role, hostServicePresent, hostTaskPresent, hostBinaryPresent, serverConfigPresent) {
 		return nil
+	}
+	// A stale client-only/no-install role must not permit preparation to
+	// stop a live Host. This check applies BEFORE any installer mutation.
+	if !hasServerRole(role) {
+		return errors.New("Host service/task or files detected but role state disagrees; upgrade blocked before service changes")
 	}
 	stored, err := gsc5ReadStoredRoleVersion(dataDir)
 	if err != nil {
