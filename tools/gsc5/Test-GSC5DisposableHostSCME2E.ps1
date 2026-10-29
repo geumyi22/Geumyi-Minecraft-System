@@ -58,7 +58,11 @@ $token = 'ci-disposable-' + [guid]::NewGuid().ToString('N')
     pairing_ttl_seconds = 300
     servers = @()
     update = @{ enabled = $false; repository = 'offline/ci'; channel = 'stable'; timeout_seconds = 2 }
-} | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $config -Encoding UTF8 -ErrorAction Stop
+} | ConvertTo-Json -Depth 10 | ForEach-Object {
+    # Windows PowerShell 5.1's Set-Content -Encoding UTF8 writes a BOM,
+    # which the Go encoding/json decoder rejects. Use UTF-8 without BOM.
+    [System.IO.File]::WriteAllText($config, $_, (New-Object System.Text.UTF8Encoding($false)))
+}
 
 $registered = $false
 try {
