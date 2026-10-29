@@ -528,6 +528,16 @@ jobs:
         shell: pwsh
         working-directory: GSC/ServerCenter
         run: ./build.ps1
+      - name: Real Windows Host service and authenticated API E2E (disposable runner only)
+        shell: powershell
+        env:
+          GSC5_DISPOSABLE_HOST_SCM_E2E: EXPLICIT_CI_ONLY
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $script = Join-Path $env:GITHUB_WORKSPACE 'tools/gsc5/Test-GSC5DisposableHostSCME2E.ps1'
+          $hostExe = Join-Path $env:GITHUB_WORKSPACE 'GSC/ServerCenter/cmd/setup/payload/GeumyiServerHost.exe'
+          & $script -HostExe $hostExe
+          if ($LASTEXITCODE -ne 0) { throw 'Disposable Host SCM E2E process exit failed' }
       - name: Check actual compiled Windows PE payload and disposable rollback
         shell: pwsh
         working-directory: GSC/ServerCenter
