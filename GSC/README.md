@@ -1,4 +1,8 @@
-# GSC 4.5.1 / StatusAgent 0.5.4
+# GSC 5.0.0-beta.1 / StatusAgent 0.5.4
+
+> GSC Host·Client·Windows Setup 5.0.0-beta.1 후보는 [PR #60](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/60)의 별도 브랜치에서 빌드·검증 중입니다. 이전 GSC 4.5.1 Stable은 그대로 보존됩니다. Velocity 직접 관리 기능은 제외했고, 기존 Scheduler 프록시가 계속 운영합니다. Stable 릴리즈는 운영자 전용입니다.
+
+## 이전 4.5.1 Stable 기록
 
 - [ServerCenter](ServerCenter/): current GSC 4.5.1 Go source, web UI, Host/Client split, installer templates, tests and build scripts.
 - [StatusAgent](StatusAgent/): StatusAgent 0.5.4 source/recovery material.

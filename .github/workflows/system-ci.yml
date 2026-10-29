@@ -3,7 +3,7 @@ name: System CI
 on:
   workflow_call:
   push:
-    branches: [ main ]
+    branches: [ main, release/gsc-5.0.0-beta.1 ]
     paths:
       - 'GSC/ServerCenter/**'
       - 'GSC/StatusAgent/**'
@@ -53,7 +53,7 @@ concurrency:
 
 jobs:
   gsc:
-    name: GSC 4.5.1 / Go test
+    name: GSC 5.0.0-beta.1 / Go test
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
@@ -67,6 +67,44 @@ jobs:
       - name: Run GSC tests
         working-directory: GSC/ServerCenter
         run: go test ./...
+
+  beta-identity:
+    name: GSC 5.0.0 single beta version and exclusion audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Verify Host Client Setup and catalog match the single beta
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          ver="5.0.0-beta.1"
+          paths={
+             "GSC/ServerCenter/cmd/host/main.go":'const appVersion = "'+ver+'"',
+             "GSC/ServerCenter/cmd/client/main.go":'const appVersion = "'+ver+'"',
+             "GSC/ServerCenter/cmd/setup/main.go":'const version = "'+ver+'"',
+             "GSC/ServerCenter/build.ps1":"GeumyiServerCenter-v"+ver+"-Setup.exe",
+          }
+          for path,marker in paths.items():
+              assert marker in Path(path).read_text(encoding="utf-8"), path
+          cfg=json.loads(Path("deploy/components.json").read_text(encoding="utf-8"))
+          assert cfg["components"]["gsc"]["version"]==ver
+          assert cfg["components"]["gsc"]["artifact_glob"]=="GeumyiServerCenter-v"+ver+"-Setup.exe"
+          assert cfg["components"]["gscm_android"]["version"]=="1.5.1+151"
+          assert cfg["components"]["gscm_ios_unsigned"]["version"]=="1.5.1+151"
+          assert not Path("GSC/ServerCenter/cmd/host/velocity_managed_canary.go").exists()
+          assert not Path("GSC/ServerCenter/cmd/host/velocity_owned_marker.go").exists()
+          import re
+          release=Path("GSC/ServerCenter/cmd/host/v5_release.go").read_text()
+          assert "windows_task_scheduler" in release
+          assert '"automatic_stable_promotion":false' in release
+          gate=json.loads(Path("FINAL-RELEASE-GATES.json").read_text(encoding="utf-8"))
+          assert gate["release"]["stable_release_allowed"] is False
+          print("GSC5_BETA_SINGLE_VERSION_NO_DIRECT_VELOCITY_AND_STABLE_LOCK_PASS")
+          PY
 
   statusagent:
     name: StatusAgent 0.5.4 / build
@@ -452,7 +490,7 @@ jobs:
           PY
 
   gsc-package:
-    name: GSC 4.5.1 / assemble CI Setup
+    name: GSC 5.0.0-beta.1 / assemble CI Setup
     needs: [gsc, statusagent, gds, gst]
     runs-on: windows-latest
     timeout-minutes: 20
@@ -490,12 +528,41 @@ jobs:
         shell: pwsh
         working-directory: GSC/ServerCenter
         run: ./build.ps1
+      - name: Real Windows Host service and authenticated API E2E (disposable runner only)
+        shell: powershell
+        env:
+          GSC5_DISPOSABLE_HOST_SCM_E2E: EXPLICIT_CI_ONLY
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $script = Join-Path $env:GITHUB_WORKSPACE 'tools/gsc5/Test-GSC5DisposableHostSCME2E.ps1'
+          $hostExe = Join-Path $env:GITHUB_WORKSPACE 'GSC/ServerCenter/cmd/setup/payload/GeumyiServerHost.exe'
+          & $script -HostExe $hostExe
+          if ($LASTEXITCODE -ne 0) { throw 'Disposable Host SCM E2E process exit failed' }
+      - name: Check actual compiled Windows PE payload and disposable rollback
+        shell: pwsh
+        working-directory: GSC/ServerCenter
+        env:
+          GSC5_REAL_PAYLOAD_TEST: '1'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          go test -count=1 -v ./cmd/setup -run 'TestGSC5RealPackagedPayloadExtractAndRollback|TestGSC5PackagedSetupVersionAndMissingBackupFailClosed'
+          if ($LASTEXITCODE -ne 0) { throw 'Real PE payload or rollback regression failed' }
+      - name: Exercise disposable Windows client-only installation (no Host or live servers)
+        shell: pwsh
+        working-directory: GSC/ServerCenter
+        env:
+          GSC5_DISPOSABLE_WINDOWS_CLIENT_INSTALL: 'EXPLICIT_CI_ONLY'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # This is an ephemeral runner; never enable this fixture on a personal or production PC.
+          go test -count=1 -v ./cmd/setup -run '^TestGSC5DisposableWindowsClientOnlyInstallation$'
+          if ($LASTEXITCODE -ne 0) { throw 'Disposable Windows client installation failed' }
       - name: Verify and stage GSC binaries
         shell: pwsh
         run: |
           $root = 'GSC/ServerCenter'
           $files = @(
-            "$root/dist/GeumyiServerCenter-v4.5.1-Setup.exe",
+            "$root/dist/GeumyiServerCenter-v5.0.0-beta.1-Setup.exe",
             "$root/cmd/setup/payload/GeumyiServerHost.exe",
             "$root/cmd/setup/payload/GeumyiServerCenter.exe"
           )
@@ -523,7 +590,7 @@ jobs:
       - name: Upload GSC CI package
         uses: actions/upload-artifact@v7
         with:
-          name: gsc-4.5.1-ci
+          name: gsc-5.0.0-beta.1-ci
           path: GSC/ServerCenter/dist-ci/*
           if-no-files-found: error
           retention-days: 14
@@ -1145,15 +1212,24 @@ jobs:
             Write-Host "ASCII CMD launcher OK: $path"
           }
 
+  beta-security:
+    name: Beta security and reproducible GSC build
+    uses: ./.github/workflows/day12-security-ci.yml
+
+  beta-safety:
+    name: Beta read-only safety regressions
+    uses: ./.github/workflows/day12-safety-ci.yml
+
   day7-summary:
     name: Component CI + Day 8 foundation summary
     if: always()
-    needs: [gsc, statusagent, gds, gst, technology, chemistry, lobby, network, resourcepacks, gsc-package, bedrock-foundation, release-foundation, release-foundation-windows]
+    needs: [beta-identity, gsc, statusagent, gds, gst, technology, chemistry, lobby, network, resourcepacks, gsc-package, bedrock-foundation, release-foundation, release-foundation-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Require every component job to pass
         shell: bash
         env:
+          BETA_IDENTITY: ${{ needs.beta-identity.result }}
           GSC: ${{ needs.gsc.result }}
           AGENT: ${{ needs.statusagent.result }}
           GDS: ${{ needs.gds.result }}
@@ -1170,9 +1246,88 @@ jobs:
         run: |
           set -euo pipefail
           failed=0
-          for name in GSC AGENT GDS GST TECHNOLOGY CHEMISTRY LOBBY NETWORK RESOURCEPACKS GSC_PACKAGE BEDROCK_FOUNDATION RELEASE_FOUNDATION RELEASE_WINDOWS; do
+          for name in BETA_IDENTITY GSC AGENT GDS GST TECHNOLOGY CHEMISTRY LOBBY NETWORK RESOURCEPACKS GSC_PACKAGE BEDROCK_FOUNDATION RELEASE_FOUNDATION RELEASE_WINDOWS; do
             value="${!name}"
             printf '%-16s %s\n' "$name" "$value"
             if [[ "$value" != "success" ]]; then failed=1; fi
           done
           exit "$failed"
+
+
+  publish-gsc500-beta1:
+    name: Publish exactly one GSC 5.0.0-beta.1 prerelease (never Stable)
+    # Manual Stable 5.0.0 is outside this workflow. Publishing is restricted
+    # to THIS integration branch after all component/security/safety gates.
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/release/gsc-5.0.0-beta.1' }}
+    needs: [day7-summary, beta-security, beta-safety, gsc-package]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: gsc-v5.0.0-beta.1
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Refuse duplicate tag or release and unauthorized stable promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/release/gsc-5.0.0-beta.1"
+          test "$TAG" = "gsc-v5.0.0-beta.1"
+          test -f docs/releases/GSC-5.0.0-beta.1.md
+          python3 - <<'PY'
+          import json
+          j=json.load(open("FINAL-RELEASE-GATES.json",encoding="utf-8"))
+          assert j["release"]["stable_release_allowed"] is False
+          print("STABLE_RELEASE_STAYS_BLOCKED")
+          PY
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Beta already published: immutable, never rewrite or repeat"
+            exit 1
+          fi
+          if [[ -n "$(git ls-remote --tags --refs origin "refs/tags/$TAG")" ]]; then
+            echo "Tag already exists; never re-point"
+            exit 1
+          fi
+      - name: Download exact CI-built Windows Host Client Setup
+        uses: actions/download-artifact@v8
+        with:
+          name: gsc-5.0.0-beta.1-ci
+          path: beta-assets
+      - name: Verify complete hashes and bundled binary sizes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd beta-assets
+          test -s SHA256SUMS.txt
+          sha256sum -c SHA256SUMS.txt
+          for f in GeumyiServerCenter-v5.0.0-beta.1-Setup.exe GeumyiServerHost.exe GeumyiServerCenter.exe; do
+            test -s "$f"
+            test "$(stat -c '%s' "$f")" -gt 100000
+          done
+          test "$(find . -maxdepth 1 -name '*.exe' | wc -l)" -eq 3
+      - name: Include release notes, source revision and safe beta provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp docs/releases/GSC-5.0.0-beta.1.md beta-assets/RELEASE-NOTES-5.0.0-beta.1.md
+          printf '%s\n' "$GITHUB_SHA" > beta-assets/SOURCE-COMMIT.txt
+          cat > beta-assets/RELEASE-CHANNEL.txt <<'EOF'
+          channel=beta
+          version=5.0.0-beta.1
+          stable_release_allowed=false
+          auto_install_production=false
+          velocity_direct_management=false
+          EOF
+      - name: Create one immutable prerelease (not Latest, not Stable)
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" beta-assets/* \
+            --target "$GITHUB_SHA" \
+            --title "GSC 5.0.0-beta.1 — Single Beta" \
+            --notes-file docs/releases/GSC-5.0.0-beta.1.md \
+            --prerelease --latest=false
