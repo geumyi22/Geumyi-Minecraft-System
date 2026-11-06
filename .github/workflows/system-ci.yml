@@ -528,6 +528,20 @@ jobs:
         shell: pwsh
         working-directory: GSC/ServerCenter
         run: ./build.ps1
+      - name: Read-only disposable Windows stage readiness (no existing workloads)
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $script = Join-Path $env:GITHUB_WORKSPACE 'tools/gsc5/Get-GSC5DisposableStageReadiness.ps1'
+          $output = @(& $script)
+          $report = ($output | Select-Object -Last 1) | ConvertFrom-Json
+          if ($report.check -ne 'GSC5_DISPOSABLE_STAGE_READ_ONLY' -or
+              $report.read_only -ne $true -or
+              $report.clean_for_disposable_test_review -ne $true -or
+              $report.installation_authorized -ne $false) {
+            throw ('Disposable Windows stage readiness failed: ' + $report.status + ' ' + ($report.constraints -join ','))
+          }
+          Write-Host 'GSC5_DISPOSABLE_STAGE_READ_ONLY_PASS'
       - name: Real Windows Host service and authenticated API E2E (disposable runner only)
         shell: powershell
         env:

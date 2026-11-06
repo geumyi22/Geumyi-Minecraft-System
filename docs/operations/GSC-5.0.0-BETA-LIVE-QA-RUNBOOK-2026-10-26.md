@@ -9,6 +9,22 @@
 - All three Velocity proxy lifecycles remain owned by the original Windows Task Scheduler jobs. Never migrate, disable, stop, or duplicate them for this beta.
 - `FINAL-RELEASE-GATES.json` retains `stable_release_allowed=false` and a failing canonical native backend listener-ownership/privacy gate. Do not auto-publish or auto-install Stable 5.0.0.
 
+## Phase 0: independent disposable Windows target — **READ-ONLY FIRST**
+
+Before staging any GSC executable, the operator confirms the second Windows PC/VM is disposable, isolated from live Minecraft worlds/network shares and real GSC hosts, and has a reversible snapshot. A GitHub Actions runner is disposable by design; a personal Windows PC is **not** automatically disposable merely because the script returns PASS.
+
+On the **separate test PC / VM only**, download the review-branch script `tools/gsc5/Get-GSC5DisposableStageReadiness.ps1` and run in Windows PowerShell 5.1:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\Get-GSC5DisposableStageReadiness.ps1"
+```
+
+This script is read-only and prints a compact JSON report with no machine name, network address, file paths, credentials or world contents. `CLEAN_FOR_REVIEW` means no known GSC Host service, Day10 Velocity tasks, Java processes, protected GSC data directories or canonical TCP/UDP listener conflicts were observed. It **does not** authorize installing anything or prove VM isolation. Any `BLOCKED_OR_UNKNOWN` means STOP, do not bypass the check. Only share the report, never private backup or config files.
+
+**Latest production evidence (operator-reported, 2026-11-07):** GSC service Running; loopback reports `4.5.2-canary`, preserved role reports `4.2.4`, all three original Day10 Velocity jobs Running. Thus the operational Host is an unsafe/unsupported beta-upgrade source, even though its EXE can be hashed. Keep the server untouched. This staging preflight must **not** be used to attempt a production upgrade or to overwrite its role state.
+
+For a clean disposable test, next review the actual PR #61 HEAD source and CI-built artifacts, verify exact SHA before testing; the immutable published 5.0.0-beta.1 Setup is **older and lacks PR #61 safeguards**. Fresh setup and 4.5.1-base upgrades may be tested only with disposable data after snapshot and explicit operator go-ahead; a 4.5.2 Canary report must be **rejected without changes** pending a separately designed migration. Never import real production configs, secrets, worlds, backups, task XML or user profiles into the test VM.
+
 ## Phase A: offline artifacts — no server contact
 1. On a **separate test PC**, download the **seven** assets from the one official beta release. Do not mix binaries from older releases or branches. Inspect `SOURCE-COMMIT.txt` and `RELEASE-CHANNEL.txt`.
 2. In the repository checkout of this hardening PR, run this strictly read-only **local** verification against the downloaded asset directory:
