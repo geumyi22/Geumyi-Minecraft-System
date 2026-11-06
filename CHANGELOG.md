@@ -1,5 +1,15 @@
 # Changelog
 
+
+## 5.0.0-beta.1 — 2026-10-25 (단일 베타, Stable 아님)
+
+- Host, Desktop Client, Windows Setup 버전 일치 및 신규 CI 재빌드(기존 4.5.1 실행 파일 이름 바꾸기 금지).
+- 읽기 전용·인증 필수 GET /api/v5/release 버전/채널/호환성/안전 정책 조회 추가. GSCM 1.5.1+151과 기존 v4 API 호환성 유지.
+- 자체 업데이트 버전 비교 회귀 테스트: 이전 4.x 다운그레이드 거부, Beta 2/정식 5.0.0 후속 버전 비교.
+- 베타 릴리즈 조건: Windows Go 테스트·Host 자체 테스트·배포 파일 SHA256·보안/SBOM·Day12 안전성 검사 모두 통과, GitHub 사전 릴리즈 1개만 발행.
+- Velocity 직접 관리/컷오버 실험 제외; 기존 예약 작업 3개 운영 유지. Stable 게이트 자동 해제 또는 자동 설치 금지.
+- **실서버 설치·Android/iOS·Java/Bedrock E2E 미확인**. 사용자가 별도로 QA·승인 후 정식 5.0.0 릴리즈.
+
 ## 2026-10-11 — GSC 4.5.1 / GSCM 1.5.1+151 Latest Stable (수동 설치판)
 
 - [최신 Stable 패키지](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) 공개: Windows Setup/Host/Client, Android 영구 릴리즈 서명 APK, iOS 미서명 IPA, SHA-256·provenance 총 10개 파일.

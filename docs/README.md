@@ -1,5 +1,7 @@
 # 금이 마인크래프트 시스템 문서 안내
 
+**신규 베타 인수인계:** [GSC 5.0.0-beta.1 통합 및 검증](operations/GSC-5.0.0-BETA-INTEGRATION-2026-10-25.md) · [5.0.0-beta.1 릴리즈 노트](releases/GSC-5.0.0-beta.1.md) (GSC 직접 Velocity 관리는 폐기, Stable 릴리즈는 운영자 전용).
+
 최상위 폴더의 복잡한 개발 기록을 일차별 및 주제별로 재배치했습니다.
 
 ## 찾아보기

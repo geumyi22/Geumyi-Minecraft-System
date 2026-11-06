@@ -68,9 +68,9 @@
       "requires_restart": true
     },
     "gsc": {
-      "version": "4.5.1",
+      "version": "5.0.0-beta.1",
       "kind": "gsc",
-      "artifact_glob": "GeumyiServerCenter-v4.5.1-Setup.exe",
+      "artifact_glob": "GeumyiServerCenter-v5.0.0-beta.1-Setup.exe",
       "targets": [
         "host"
       ],

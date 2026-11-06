@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-const appVersion = "4.5.1"
+const appVersion = "5.0.0-beta.1"
 
 type Config struct {
 	Bind                string         `json:"bind"`
@@ -256,7 +256,7 @@ func runHostCore() error {
 
 	fmt.Printf("Geumyi Server Host v%s\n", appVersion)
 	fmt.Printf("Config: %s\n", configPath)
-	fmt.Printf("Listening transport: http://0.0.0.0:%d (remote gate: %v)\n", cfg.Port, cfg.MobileEnabled)
+	fmt.Printf("Listening transport: http://%s (remote gate: %v)\n", gsc5HostHTTPListenAddress(cfg), cfg.MobileEnabled)
 	if cfg.MobileEnabled {
 		fmt.Println("Mobile API allowed only from LAN/Tailscale with authentication.")
 	}
@@ -278,6 +278,7 @@ func runHostCore() error {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveDashboard)
+	mux.HandleFunc("/api/v5/release", requireAuth(apiV5ReleaseInfo))
 	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, map[string]any{"ok": true, "version": appVersion, "service": serviceModeRequested(), "generation": 4})
 	})
@@ -298,7 +299,7 @@ func runHostCore() error {
 	startGSCSelfUpdateStartupCheck()
 
 	srv := &http.Server{
-		Addr: fmt.Sprintf("0.0.0.0:%d", cfg.Port), Handler: securityHeaders(mobileNetworkGuard(mux)),
+		Addr: gsc5HostHTTPListenAddress(cfg), Handler: securityHeaders(mobileNetworkGuard(mux)),
 		ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second,
 	}
 	go func() {
@@ -311,6 +312,19 @@ func runHostCore() error {
 		return fmt.Errorf("server error: %w", err)
 	}
 	return nil
+}
+
+// gsc5HostHTTPListenAddress leaves the existing LAN/Tailscale transport
+// unchanged when remote mobile access is enabled. When it is disabled,
+// binding only to loopback avoids exposing an unnecessary TCP listener;
+// the request-level remote/authentication gate remains in force either way.
+// A remote-access setting change requires a Host restart to change the
+// transport binding. Existing GSCM connections are not silently migrated.
+func gsc5HostHTTPListenAddress(c Config) string {
+	if !c.MobileEnabled {
+		return fmt.Sprintf("127.0.0.1:%d", c.Port)
+	}
+	return fmt.Sprintf("0.0.0.0:%d", c.Port)
 }
 
 func flagValue(name string) string {

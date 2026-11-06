@@ -2,6 +2,8 @@
 
 **2026-10-11:** Day 12는 소규모 운영 기준으로 마감됐습니다. 문제 없으면 현재 설치와 백업은 그대로 유지합니다. 이후 진행한 GSC 4.5.2 Canary 개발은 별도의 미완료 Draft PR이며, 운영 Stable에 적용됐다는 의미가 아닙니다.
 
+- [GSC 5.0.0-beta.1 설치 전 검증 및 롤백 점검표](GSC-5.0.0-BETA-LIVE-QA-RUNBOOK-2026-10-26.md) — 실제 서버 적용 전 필수 안전 조건과 미확인 항목
+- [GSC 5.1/5.2 기능 개발 후보](GSC-V5-POST-STABLE-ROADMAP-2026-10-26.md) — AI 진단·관제·자동 복구 제안, 5.0.0에는 미포함
 - [**2026-10-24 운영 상태·PR 정리·인수인계**](GMS-CURRENT-STATUS-2026-10-24.md) — 소규모 운영 마감 이후 Draft Canary 개발과 미승인 게이트 구분
 - [최신 패키지 Stable — GSC 4.5.1 / GSCM 1.5.1+151](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151)
 - [프로젝트 종료·GitHub 정리 기록](../../PROJECT-CLOSEOUT-2026-10-11.md)
