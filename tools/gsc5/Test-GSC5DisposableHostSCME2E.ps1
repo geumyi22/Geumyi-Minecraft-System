@@ -111,6 +111,13 @@ try {
     if (@($listeners | Where-Object { $_.OwningProcess -ne $serviceInfo.ProcessId }).Count -gt 0) {
         throw 'Extra unexpected TCP owner present on disposable Host port'
     }
+    # OwningProcess alone is insufficient: a Host listening on 0.0.0.0
+    # or [::] could pass the API checks while exposing the test port.
+    # This CI config explicitly requests IPv4 loopback only.
+    $unexpectedBindings = @($listeners | Where-Object { $_.LocalAddress -ne '127.0.0.1' })
+    if ($unexpectedBindings.Count -gt 0) {
+        throw 'GSC Host bound test API port outside IPv4 loopback; reject wildcard or public listeners'
+    }
     if (@(Get-CimInstance Win32_Process -Filter "Name='java.exe'" -ErrorAction SilentlyContinue).Count -gt 0) {
         throw 'Unexpected Java process in disposable no-servers Host test'
     }
