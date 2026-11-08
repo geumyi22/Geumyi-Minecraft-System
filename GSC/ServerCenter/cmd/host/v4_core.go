@@ -194,6 +194,10 @@ func apiV4Events(w http.ResponseWriter, r *http.Request) {
 }
 
 func runV4Preflight(s ServerConfig) V4Health {
+	return runV4PreflightWithJavaResolver(s, javaruntime.Resolve)
+}
+
+func runV4PreflightWithJavaResolver(s ServerConfig, resolveJava func(string) (javaruntime.Runtime, error)) V4Health {
 	checks := []V4Check{}
 	add := func(k, l, st, msg string) { checks = append(checks, V4Check{k, l, st, msg}) }
 	configuredDir := configuredServerDir(s)
@@ -248,7 +252,7 @@ func runV4Preflight(s ServerConfig) V4Health {
 			add("start", "시작 명령", "ok", cmd)
 		}
 	}
-	jr, e := javaruntime.Resolve("")
+	jr, e := resolveJava(configSnapshot().Agent.JavaPath)
 	if e != nil {
 		add("java", "Java", "warn", e.Error())
 	} else {

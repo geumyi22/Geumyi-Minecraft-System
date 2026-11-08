@@ -155,6 +155,8 @@ func githubPublicJSONMode(client *http.Client, rawURL string, max int64, forceNe
 	if !json.Valid(body) {
 		return nil, false, fmt.Errorf("GitHub API response is not valid JSON")
 	}
-	writeGitHubPublicCache(rawURL, body)
+	if !migrationObserveRequested() {
+		writeGitHubPublicCache(rawURL, body)
+	}
 	return body, false, nil
 }

@@ -21,6 +21,16 @@ on:
         required: true
         type: boolean
         default: true
+      personal_phase:
+        description: Personal GSC Stable dispatch bridge (legacy keeps the original system release)
+        required: true
+        type: choice
+        options: [legacy, stage, publish]
+        default: legacy
+      expected_sha:
+        description: Exact reviewed 40-character source commit for personal Stable
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -30,11 +40,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  personal-stable:
+    if: ${{ inputs.personal_phase == 'stage' || inputs.personal_phase == 'publish' }}
+    permissions:
+      contents: write
+      actions: read
+    uses: ./.github/workflows/gsc-personal-stable-release.yml
+    with:
+      phase: ${{ inputs.personal_phase }}
+      expected_sha: ${{ inputs.expected_sha }}
+      tag: ${{ inputs.tag }}
+    secrets:
+      DEPLOYMENT_ED25519_PRIVATE_KEY_B64: ${{ secrets.DEPLOYMENT_ED25519_PRIVATE_KEY_B64 }}
+
   system:
+    if: ${{ inputs.personal_phase == 'legacy' }}
     name: Rebuild system artifacts
     uses: ./.github/workflows/system-ci.yml
 
   android:
+    if: ${{ inputs.personal_phase == 'legacy' }}
     name: Build persistently signed Android APK
     uses: ./.github/workflows/android-build.yml
     with:
@@ -46,6 +71,7 @@ jobs:
       ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
 
   ios:
+    if: ${{ inputs.personal_phase == 'legacy' }}
     name: Build unsigned iOS IPA
     uses: ./.github/workflows/ios-build.yml
 

@@ -1,0 +1,178 @@
+name: GSC personal Stable release
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: Stage a verified Draft, or separately publish that Draft
+        type: choice
+        options: [stage, publish]
+        default: stage
+        required: true
+      expected_sha:
+        description: Exact reviewed source commit (40 lowercase hex characters)
+        type: string
+        required: true
+      tag:
+        description: Immutable GSC release tag
+        type: string
+        default: gsc-v5.0.0
+        required: true
+  workflow_call:
+    inputs:
+      phase:
+        type: string
+        required: true
+      expected_sha:
+        type: string
+        required: true
+      tag:
+        type: string
+        required: true
+    secrets:
+      DEPLOYMENT_ED25519_PRIVATE_KEY_B64:
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: gsc-personal-stable-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Validate exact source and honest personal acceptance
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+          PHASE: ${{ inputs.phase }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$GITHUB_SHA" = "$EXPECTED_SHA"
+          test "$GITHUB_REPOSITORY" = geumyi22/Geumyi-Minecraft-System
+          test "$TAG" = gsc-v5.0.0
+          [[ "$PHASE" == stage || "$PHASE" == publish ]]
+          python - <<'PY'
+          import json,sys
+          sys.path.insert(0,"tools/release")
+          from gsc_personal_stable import validate_ledger
+          validate_ledger(json.load(open("deploy/gsc-5.0.0-personal-acceptance.json",encoding="utf-8")))
+          assert json.load(open("FINAL-RELEASE-GATES.json",encoding="utf-8"))["release"]["stable_release_allowed"] is False
+          PY
+      - name: Test release integrity guards
+        run: python -m unittest discover -s tools/release -p 'test_gsc_personal_stable.py' -v
+
+  system:
+    needs: validate
+    if: ${{ inputs.phase == 'stage' }}
+    uses: ./.github/workflows/system-ci.yml
+
+  stage:
+    needs: [validate, system]
+    if: ${{ inputs.phase == 'stage' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag }}
+      EXPECTED_SHA: ${{ inputs.expected_sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.expected_sha }}
+          persist-credentials: false
+      - name: Refuse existing immutable tag or release (including drafts)
+        run: |
+          set -euo pipefail
+          refs="$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/$TAG" --jq '.[] | .ref')"
+          if printf '%s\n' "$refs" | grep -Fxq "refs/tags/$TAG"; then echo 'tag already exists'; exit 1; fi
+          releases="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq '.[].tag_name')"
+          if printf '%s\n' "$releases" | grep -Fxq "$TAG"; then echo 'release already exists'; exit 1; fi
+      - uses: actions/download-artifact@v8
+        with:
+          name: gsc-5.0.0-ci
+          path: release-assets
+      - name: Prepare GSC-only exact-build manifest and scoped evidence
+        run: python tools/release/gsc_personal_stable.py prepare --assets release-assets --tag "$TAG" --commit "$EXPECTED_SHA" --run-id "$GITHUB_RUN_ID"
+      - name: Sign with the existing trusted Ed25519 key
+        env:
+          DEPLOYMENT_PRIVATE_KEY_B64: ${{ secrets.DEPLOYMENT_ED25519_PRIVATE_KEY_B64 }}
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOYMENT_PRIVATE_KEY_B64"
+          private="$RUNNER_TEMP/gsc-personal-deployment-private.pem"
+          trap 'rm -f "$private"' EXIT
+          umask 077
+          printf '%s' "$DEPLOYMENT_PRIVATE_KEY_B64" | base64 --decode > "$private"
+          openssl pkey -in "$private" -pubout -out release-assets/deployment-public.pem
+          echo 'f21e62e87bb9d68ba05a964e0efd2e160ac249ebfbbf5f4a5125bae8f11718e3  release-assets/deployment-public.pem' | sha256sum -c -
+          openssl pkeyutl -sign -rawin -inkey "$private" -in release-assets/deployment-stable.json -out release-assets/deployment-stable.json.sig
+          python tools/release/gsc_personal_stable.py seal --assets release-assets
+          python tools/release/gsc_personal_stable.py verify --assets release-assets --tag "$TAG" --commit "$EXPECTED_SHA"
+      - name: Create Draft only; never automatically publish
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" release-assets/* --draft --target "$EXPECTED_SHA" --title 'GSC 5.0.0 — 개인용 Stable' --notes-file docs/releases/GSC-5.0.0.md
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" > "$RUNNER_TEMP/gsc-releases.json"
+          release_id="$(python tools/release/gsc_personal_stable.py resolve-draft --release-metadata "$RUNNER_TEMP/gsc-releases.json" --tag "$TAG" --commit "$EXPECTED_SHA")"
+          gh api "repos/$GITHUB_REPOSITORY/releases/$release_id" > "$RUNNER_TEMP/gsc-draft.json"
+          gh release download "$TAG" --dir verified-draft
+          python tools/release/gsc_personal_stable.py verify --assets verified-draft --tag "$TAG" --commit "$EXPECTED_SHA" --release-metadata "$RUNNER_TEMP/gsc-draft.json"
+          echo 'Verified Draft only. Publication requires a separate publish dispatch.' >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    needs: validate
+    if: ${{ inputs.phase == 'publish' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ inputs.tag }}
+      EXPECTED_SHA: ${{ inputs.expected_sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.expected_sha }}
+          persist-credentials: false
+      - name: Download and reverify the reviewed Draft
+        run: |
+          set -euo pipefail
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" > "$RUNNER_TEMP/gsc-releases.json"
+          release_id="$(python tools/release/gsc_personal_stable.py resolve-draft --release-metadata "$RUNNER_TEMP/gsc-releases.json" --tag "$TAG" --commit "$EXPECTED_SHA")"
+          gh api "repos/$GITHUB_REPOSITORY/releases/$release_id" > "$RUNNER_TEMP/gsc-draft.json"
+          echo "RELEASE_ID=$release_id" >> "$GITHUB_ENV"
+          gh release download "$TAG" --dir verified-draft
+          python tools/release/gsc_personal_stable.py verify --assets verified-draft --tag "$TAG" --commit "$EXPECTED_SHA" --release-metadata "$RUNNER_TEMP/gsc-draft.json"
+          run_id="$(python -c 'import json; print(json.load(open("verified-draft/GSC-PERSONAL-PROVENANCE.json"))["ci_run_id"])')"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" > "$RUNNER_TEMP/gsc-stage-run.json"
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          run=json.loads((Path(os.environ['RUNNER_TEMP'])/'gsc-stage-run.json').read_text())
+          assert run['head_sha']==os.environ['EXPECTED_SHA']
+          assert run['status']=='completed' and run['conclusion']=='success'
+          assert run['event']=='workflow_dispatch'
+          assert run['path'] in ['.github/workflows/day8-release.yml','.github/workflows/gsc-personal-stable-release.yml']
+          PY
+      - name: Publish only the fully verified Draft
+        run: |
+          set -euo pipefail
+          refs="$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/$TAG" --jq '.[] | .ref')"
+          if printf '%s\n' "$refs" | grep -Fxq "refs/tags/$TAG"; then echo 'immutable tag appeared before publication'; exit 1; fi
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" -F draft=false -F prerelease=false -f make_latest=true --jq '{id,tag_name,draft,prerelease,html_url}'
+          gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq .object.sha > "$RUNNER_TEMP/gsc-published-sha.txt"
+          test "$(cat "$RUNNER_TEMP/gsc-published-sha.txt")" = "$EXPECTED_SHA"
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '{tag_name,draft,prerelease,html_url}'
+          echo 'Published GSC personal Stable; formal Day12 closure remains unclaimed.' >> "$GITHUB_STEP_SUMMARY"

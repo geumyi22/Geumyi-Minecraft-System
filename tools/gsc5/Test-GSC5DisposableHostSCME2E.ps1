@@ -88,13 +88,13 @@ try {
             $r = Invoke-WebRequest -Uri ($url + '/api/health') -Method Get -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
             if ($r.StatusCode -eq 200) {
                 $health = $r.Content | ConvertFrom-Json -ErrorAction Stop
-                if ($health.ok -eq $true -and $health.version -eq '5.0.0-beta.1' -and
+                if ($health.ok -eq $true -and $health.version -eq '5.0.0' -and
                     $health.service -eq $true -and $health.generation -eq 4) { break }
             }
         } catch {}
         Start-Sleep -Milliseconds 500
     }
-    if ($null -eq $health -or $health.version -ne '5.0.0-beta.1' -or
+    if ($null -eq $health -or $health.version -ne '5.0.0' -or
         $health.service -ne $true -or $health.generation -ne 4) {
         throw 'Real SCM Host health version/service contract did not become healthy'
     }
@@ -134,7 +134,7 @@ try {
     $headers = @{ Authorization = 'Bearer ' + $token }
     $res = Invoke-WebRequest -Uri ($url + '/api/v5/release') -UseBasicParsing -Headers $headers -TimeoutSec 3
     $cap = $res.Content | ConvertFrom-Json
-    if ($res.StatusCode -ne 200 -or $cap.version -ne '5.0.0-beta.1' -or
+    if ($res.StatusCode -ne 200 -or $cap.version -ne '5.0.0' -or
         $cap.gsc_owns_velocity_processes -ne $false -or
         $cap.automatic_stable_promotion -ne $false -or
         $cap.velocity_lifecycle_owner -ne 'windows_task_scheduler') {

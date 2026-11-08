@@ -16,21 +16,22 @@ import (
 )
 
 type selfUpdateReport struct {
-	Schema           int    `json:"schema"`
-	TargetVersion    string `json:"target_version"`
-	Status           string `json:"status"`
-	Started          string `json:"started"`
-	Finished         string `json:"finished,omitempty"`
-	InstallDir       string `json:"install_dir"`
-	BackupDir        string `json:"backup_dir,omitempty"`
-	RolledBack       bool   `json:"rolled_back"`
-	HostHealth       bool   `json:"host_health"`
-	ClientRelaunched bool   `json:"client_relaunched"`
-	ClientSessionID  uint32 `json:"client_session_id,omitempty"`
-	ClientPID        uint32 `json:"client_pid,omitempty"`
-	ClientLaunchMethod string `json:"client_launch_method,omitempty"`
+	Schema              int    `json:"schema"`
+	TargetVersion       string `json:"target_version"`
+	Status              string `json:"status"`
+	Started             string `json:"started"`
+	Finished            string `json:"finished,omitempty"`
+	InstallDir          string `json:"install_dir"`
+	BackupDir           string `json:"backup_dir,omitempty"`
+	RolledBack          bool   `json:"rolled_back"`
+	HostHealth          bool   `json:"host_health"`
+	MetadataUpdated     bool   `json:"metadata_updated"`
+	ClientRelaunched    bool   `json:"client_relaunched"`
+	ClientSessionID     uint32 `json:"client_session_id,omitempty"`
+	ClientPID           uint32 `json:"client_pid,omitempty"`
+	ClientLaunchMethod  string `json:"client_launch_method,omitempty"`
 	ClientRelaunchError string `json:"client_relaunch_error,omitempty"`
-	Error            string `json:"error,omitempty"`
+	Error               string `json:"error,omitempty"`
 }
 
 type selfUpdateFile struct {
@@ -339,10 +340,10 @@ func runClientSelfUpdateMode() {
 
 func runSelfUpdateModeScoped(clientOnly bool) {
 	report := selfUpdateReport{
-		Schema: 1,
+		Schema:        1,
 		TargetVersion: version,
-		Status: "running",
-		Started: time.Now().Format(time.RFC3339),
+		Status:        "running",
+		Started:       time.Now().Format(time.RFC3339),
 	}
 	defer func() {
 		if clientOnly {
@@ -427,6 +428,18 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 			_ = os.WriteFile(filepath.Join(backupDir, "server.json"), b, 0600)
 		}
 	}
+	// A Client-only update must not claim that the installed Host changed.
+	// Snapshot both version records before stopping the full Host update.
+	var metadata *selfUpdateMetadata
+	if hostExists && !clientOnly {
+		var err error
+		metadata, err = prepareSelfUpdateMetadata(dataDir, backupDir, version, installedSelfUpdateMetadataStore())
+		if err != nil {
+			report.Status = "failed"
+			report.Error = "GSC metadata backup failed: " + err.Error()
+			return
+		}
+	}
 
 	stageDir := filepath.Join(dataDir, "Staging", "GSC", "helper-"+stamp)
 	if err := os.MkdirAll(stageDir, 0700); err != nil {
@@ -468,7 +481,8 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 		if hostExists {
 			_ = stopHostServiceStrict()
 		}
-		restoreErr := restoreSelfUpdateFiles(files)
+		restoreErr := errors.Join(restoreSelfUpdateFiles(files), metadata.restore())
+		report.MetadataUpdated = false
 		report.RolledBack = restoreErr == nil
 		report.Status = "rolled_back"
 		report.Error = reason.Error()
@@ -482,7 +496,7 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 				report.Status = "rollback_failed"
 				report.Error += "; old Host service restart failed"
 			} else {
-				report.HostHealth = waitGSCHealth(30 * time.Second, "")
+				report.HostHealth = waitGSCHealth(30*time.Second, "")
 				if !report.HostHealth {
 					report.RolledBack = false
 					report.Status = "rollback_failed"
@@ -519,11 +533,16 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 			rollback(err)
 			return
 		}
-		if !waitGSCHealth(35 * time.Second, version) {
-			rollback(errors.New("GSC "+version+" health gate timed out"))
+		if !waitGSCHealth(35*time.Second, version) {
+			rollback(errors.New("GSC " + version + " health gate timed out"))
 			return
 		}
 		report.HostHealth = true
+		if err := metadata.commit(); err != nil {
+			rollback(fmt.Errorf("GSC version metadata update failed: %w", err))
+			return
+		}
+		report.MetadataUpdated = true
 	}
 	if clientWasRunning {
 		relaunchSelfUpdateClient(&report, clientTarget)

@@ -96,7 +96,9 @@ func trustedDeviceForToken(tok string) (TrustedDevice, bool) {
 				d[i].Role = "admin"
 			}
 			out := d[i]
-			_ = saveDevices(d)
+			if !migrationObserveRequested() {
+				_ = saveDevices(d)
+			}
 			return out, true
 		}
 	}

@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-const appVersion = "5.0.0-beta.1"
+const appVersion = "5.0.0"
 
 type Config struct {
 	Bind                string         `json:"bind"`
@@ -261,26 +261,14 @@ func runHostCore() error {
 		fmt.Println("Mobile API allowed only from LAN/Tailscale with authentication.")
 	}
 
-	initRuntimeState()
-	initV4Runtime()
-	initV41Runtime()
-	syncMobileFirewall(cfg.MobileEnabled)
-	restoreLifecycleSchedules()
-	// Reconcile the local Agent/GDS bridge before either side begins sending
-	// heartbeats. This prevents a preserved/migrated config from leaving the
-	// Agent and per-server GDS secrets or IDs out of sync after an upgrade.
-	changedBridges, _ := reconcileLocalCompanionConfigs()
-	startStatusTelemetry()
-	go startupSupervisor()
-	go reloadReconciledGDS(changedBridges)
-	go v4MetricsLoop()
-	go v4AutomationLoop()
+	observe := migrationObserveRequested()
+	initializeHostRuntime(observe)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveDashboard)
 	mux.HandleFunc("/api/v5/release", requireAuth(apiV5ReleaseInfo))
 	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, map[string]any{"ok": true, "version": appVersion, "service": serviceModeRequested(), "generation": 4})
+		writeJSON(w, hostHealthPayload(observe))
 	})
 	mux.HandleFunc("/api/status", requireAuth(apiStatus))
 	mux.HandleFunc("/api/log", requireAuth(apiLog))
@@ -296,10 +284,12 @@ func runHostCore() error {
 	mux.HandleFunc("/api/settings/public", requireAuth(apiPublicSettings))
 	registerV4Routes(mux)
 	registerControlAPIRoutes(mux)
-	startGSCSelfUpdateStartupCheck()
+	if !observe {
+		startGSCSelfUpdateStartupCheck()
+	}
 
 	srv := &http.Server{
-		Addr: gsc5HostHTTPListenAddress(cfg), Handler: securityHeaders(mobileNetworkGuard(mux)),
+		Addr: gsc5HostHTTPListenAddress(cfg), Handler: securityHeaders(migrationObservationGuard(observe, mobileNetworkGuard(mux))),
 		ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 60 * time.Second,
 	}
 	go func() {
@@ -361,6 +351,8 @@ func loadOrCreateConfig(path string) (Config, error) {
 		c.Update = normalizeUpdateConfig(c.Update)
 		c.Servers = normalizeServerCatalog(c.Servers)
 		return c, nil
+	} else if migrationObserveRequested() {
+		return Config{}, fmt.Errorf("migration observation requires an existing readable configuration: %w", err)
 	}
 	c := defaultConfig()
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
@@ -959,8 +951,11 @@ func startServer(s ServerConfig) (string, error) {
 	if h.Overall == "fail" {
 		for _, c := range h.Checks {
 			if c.Status == "fail" {
+				msg, err := "시작 전 검사 실패: "+c.Label, errors.New(c.Message)
+				clearStartupFailure(s.ID)
+				recordResult(s.ID, "start", msg, err)
 				appendV4Event("error", "preflight", s.ID, "시작 전 검사 실패", c.Label+": "+c.Message)
-				return "시작 전 검사 실패: " + c.Label, errors.New(c.Message)
+				return msg, err
 			}
 		}
 	}
@@ -1495,6 +1490,9 @@ func finishRCONBootstrap(id string) {
 // authenticated "list" command is harmless and becomes lifetime-scoped proof
 // that RCON is usable. Ordinary status polling remains passive.
 func bootstrapRCONHealthAsync(s ServerConfig) {
+	if migrationObserveRequested() {
+		return
+	}
 	s = normalizeServerConfig(s)
 	if s.ID == "" || s.JavaPort <= 0 || s.RCONPort <= 0 || rconAuthenticatedForCurrentLifetime(s.RCONPort) {
 		return
