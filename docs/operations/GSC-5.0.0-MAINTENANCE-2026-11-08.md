@@ -24,3 +24,12 @@ An offline byte-for-byte copy of the four server trees plus installed binaries, 
 ## Evidence boundaries
 
 Unit/integration tests do not prove authenticated Minecraft gameplay, remote/mobile E2E, long-duration soak, or production update rollback. Live deployment, staging, proxy/Paper startup, UI observations and protocol checks must be reported separately with observed results. The pre-existing Windows TCP listener enumeration anomaly is not claimed solved. No formal `FINAL-*` gate is changed by this candidate.
+
+## Reviewed continuation after interrupted chat
+
+- The first local candidate was installed with a distinct build revision. Actual Geyser staging subsequently succeeded (one verified artifact, no live modification). A later rolling apply hit the legacy RakNet-only health gate after Geyser migrated to NetherNet; this was not treated as successful apply.
+- Add bounded loopback NetherNet `/v1/join` discovery validation alongside RakNet PONG. Neither establishes an authenticated Bedrock/WebRTC gameplay session.
+- Back up proxy plugin configuration with the JAR, verify rollback bytes, and fail closed if the proxy does not stop or a restore fails. Preserve Floodgate keys and world data.
+- Add browser-origin/host checks for the local Client and Host loopback exemption, preserving valid token-authenticated remote Client proxy requests. Native authentication semantics remain unchanged.
+- Reviewed Windows `go test -count=1 ./...` and `go vet ./...`: PASS. These new source changes still require separate binary deployment and live checks.
+- No feature removal, world reset, public Stable asset replacement, main merge or formal release-gate promotion is part of this local candidate.

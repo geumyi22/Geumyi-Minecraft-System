@@ -244,7 +244,7 @@ func main() {
 	})
 	mux.HandleFunc("/api/", proxyAPI)
 	clientHTTPServer = &http.Server{
-		Handler:           mux,
+		Handler:           guardClientBrowserRequests(mux),
 		ReadHeaderTimeout: 5 * time.Second,
 		IdleTimeout:       30 * time.Second,
 		MaxHeaderBytes:    1 << 20,

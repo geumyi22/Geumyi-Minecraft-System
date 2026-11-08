@@ -75,11 +75,13 @@ const raknetPongID byte = 0x1c
 var raknetMagic = []byte{0, 255, 255, 0, 254, 254, 254, 254, 253, 253, 253, 253, 18, 52, 86, 120}
 
 type networkEndpointStatus struct {
-	ID string `json:"id"`
-	JavaTCP int `json:"java_tcp"`
-	BedrockUDP int `json:"bedrock_udp"`
-	JavaResponding bool `json:"java_responding"`
-	BedrockRaknetPong bool `json:"bedrock_raknet_pong"`
+	ID                string `json:"id"`
+	JavaTCP           int    `json:"java_tcp"`
+	BedrockUDP        int    `json:"bedrock_udp"`
+	JavaResponding    bool   `json:"java_responding"`
+	BedrockRaknetPong bool   `json:"bedrock_raknet_pong"`
+	BedrockNetherNet  bool   `json:"bedrock_nethernet_signaling"`
+	BedrockReady      bool   `json:"bedrock_ready"`
 }
 
 func day10NetworkEndpoints() []networkEndpointStatus {
@@ -97,22 +99,28 @@ func matchesRaknetPong(packet []byte) bool {
 
 func probeJavaTCP(port int) bool {
 	conn, err := net.DialTimeout("tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(port)), 250*time.Millisecond)
-	if err != nil { return false }
+	if err != nil {
+		return false
+	}
 	_ = conn.Close()
 	return true
 }
 
 func probeBedrockRaknet(port int) bool {
 	conn, err := net.DialTimeout("udp", net.JoinHostPort("127.0.0.1", strconv.Itoa(port)), 500*time.Millisecond)
-	if err != nil { return false }
+	if err != nil {
+		return false
+	}
 	defer conn.Close()
 	// RakNet UNCONNECTED_PING: packet ID, time, 16-byte magic, client GUID.
 	ping := make([]byte, 33)
 	ping[0] = 0x01
 	binary.BigEndian.PutUint64(ping[1:9], uint64(time.Now().UnixMilli()))
 	copy(ping[9:25], raknetMagic)
-	_ = conn.SetDeadline(time.Now().Add(550*time.Millisecond))
-	if _, err := conn.Write(ping); err != nil { return false }
+	_ = conn.SetDeadline(time.Now().Add(550 * time.Millisecond))
+	if _, err := conn.Write(ping); err != nil {
+		return false
+	}
 	pong := make([]byte, 1492)
 	n, err := conn.Read(pong)
 	return err == nil && matchesRaknetPong(pong[:n])
@@ -129,11 +137,13 @@ func apiV4NetworkEntryStatus(w http.ResponseWriter, r *http.Request) {
 	for i := range status {
 		status[i].JavaResponding = probeJavaTCP(status[i].JavaTCP)
 		status[i].BedrockRaknetPong = probeBedrockRaknet(status[i].BedrockUDP)
+		status[i].BedrockNetherNet = probeBedrockNetherNet(status[i].BedrockUDP)
+		status[i].BedrockReady = status[i].BedrockRaknetPong || status[i].BedrockNetherNet
 	}
 	writeJSON(w, map[string]any{
-		"schema": 1,
-		"endpoints": status,
-		"note": "Port and RakNet responsiveness only. These results do not verify Velocity ownership or Lobby login.",
+		"schema":            1,
+		"endpoints":         status,
+		"note":              "Port and Bedrock transport discovery only. These results do not verify WebRTC gameplay, Velocity ownership or Lobby login.",
 		"live_e2e_verified": false,
 	})
 }

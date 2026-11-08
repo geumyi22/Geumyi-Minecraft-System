@@ -644,15 +644,15 @@ func waitExternalProxyPorts(javaPort, bedrockPort int, want bool, timeout time.D
 	for time.Now().Before(deadline) {
 		if want {
 			// Startup is healthy only when Java accepts connections and Geyser
-			// answers a real RakNet UNCONNECTED_PING, not merely when UDP is bound.
-			if probeJavaTCP(javaPort) && probeBedrockRaknet(bedrockPort) {
+			// answers validated NetherNet discovery or a real RakNet PONG; this is not a gameplay test.
+			if probeJavaTCP(javaPort) && probeBedrockTransportReady(bedrockPort) {
 				return nil
 			}
 		} else {
 			// For shutdown, verify the public listeners are actually gone before
 			// replacing JARs.
 			javaDown := !tcpOpen("127.0.0.1", javaPort, 250*time.Millisecond)
-			bedrockDown := !udpListening(bedrockPort)
+			bedrockDown := !udpListening(bedrockPort) && !tcpOpen("127.0.0.1", bedrockPort, 250*time.Millisecond)
 			if javaDown && bedrockDown {
 				return nil
 			}
@@ -736,21 +736,37 @@ func applyExternalProxyPlan(plan externalStagePlanFile) (map[string]any, error) 
 			return nil, fmt.Errorf("rolling stopped before %s; already applied proxies remain healthy (%v): %w", target.ID, applied, err)
 		}
 		proxyDir := filepath.Join(externalProxyRoot(), target.ID)
-		type backupRec struct {
-			Live   string
-			Backup string
-			Exists bool
-		}
-		backups := []backupRec{}
+		backups := []externalProxyBackup{}
 		for _, item := range items {
 			live := filepath.Join(proxyDir, "plugins", item.File)
 			backup := filepath.Join(backupRoot, target.ID, "plugins", item.File)
-			rec := backupRec{Live: live, Backup: backup}
+			rec := externalProxyBackup{Live: live, Backup: backup}
 			if _, err := os.Stat(live); err == nil {
 				rec.Exists = true
 				if err := externalAtomicCopy(live, backup); err != nil {
 					return nil, fmt.Errorf("%s backup failed: %w", target.ID, err)
 				}
+			}
+			backups = append(backups, rec)
+		}
+
+		// Geyser may migrate its YAML during startup. Roll back configuration
+		// together with the JAR if a health gate fails; never touch Floodgate keys.
+		for component := range items {
+			folder := "Geyser-Velocity"
+			if component == "floodgate" {
+				folder = "floodgate"
+			}
+			live := filepath.Join(proxyDir, "plugins", folder, "config.yml")
+			backup := filepath.Join(backupRoot, target.ID, "plugins", folder, "config.yml")
+			rec := externalProxyBackup{Live: live, Backup: backup}
+			if _, err := os.Stat(live); err == nil {
+				rec.Exists = true
+				if err := externalAtomicCopy(live, backup); err != nil {
+					return nil, fmt.Errorf("%s config backup failed: %w", target.ID, err)
+				}
+			} else if !os.IsNotExist(err) {
+				return nil, err
 			}
 			backups = append(backups, rec)
 		}
@@ -789,14 +805,13 @@ func applyExternalProxyPlan(plan externalStagePlanFile) (map[string]any, error) 
 		}
 
 		if replaceErr != nil {
-			_ = runScheduledTask("end", target.TaskName)
-			_ = waitExternalProxyPorts(target.PublicJava, target.PublicBedrock, false, 10*time.Second)
-			for _, rec := range backups {
-				if rec.Exists {
-					_ = externalAtomicCopy(rec.Backup, rec.Live)
-				} else {
-					_ = os.Remove(rec.Live)
-				}
+			stopErr := runScheduledTask("end", target.TaskName)
+			if downErr := waitExternalProxyPorts(target.PublicJava, target.PublicBedrock, false, 20*time.Second); downErr != nil {
+				return nil, fmt.Errorf("%s rollback stopped: proxy is not quiescent (stop=%v health=%v); backups preserved", target.ID, stopErr, downErr)
+			}
+			if err := restoreExternalProxyBackups(backups); err != nil {
+				appendV4Event("error", "update", target.ID, "External proxy rollback incomplete", err.Error())
+				return nil, fmt.Errorf("%s rollback failed; proxy left stopped and backups preserved: %w", target.ID, err)
 			}
 			rollbackStartErr := runScheduledTask("run", target.TaskName)
 			rollbackHealthErr := waitExternalProxyPorts(target.PublicJava, target.PublicBedrock, true, 90*time.Second)
@@ -820,7 +835,7 @@ func applyExternalProxyPlan(plan externalStagePlanFile) (map[string]any, error) 
 		"backup_root":           backupRoot,
 		"paper_touched":         false,
 		"floodgate_key_touched": false,
-		"health_gate":           "public Java TCP + Bedrock RakNet PONG",
+		"health_gate":           "public Java TCP + Bedrock discovery (NetherNet or RakNet); gameplay not attested",
 	}, nil
 }
 
