@@ -396,14 +396,16 @@ async function loadExternalUpdates(){
       (rows||'<tr><td colspan="5">확인된 구성요소가 없습니다.</td></tr>')+'</table></div>'+errs;
   }catch(e){root.innerHTML='<div class="badtext">'+esc(koMessage(e.message))+'</div>'}
 }
-let lastExternalStageRoot='';
+let lastExternalStageRoot='', externalStageBusy=false;
 async function stageExternalUpdates(){
+  if(externalStageBusy){toast('Staging이 이미 진행 중입니다. 중복 요청하지 않습니다.');return;}
   if(!confirm('공식 metadata와 SHA-256을 검증한 외부 구성요소만 별도 Staging 폴더에 다운로드합니다. live 서버/프록시 파일은 변경하지 않습니다. 계속할까요?'))return;
+  externalStageBusy=true; lastExternalStageRoot='';
   try{
-    toast('외부 구성요소 검증 / staging 중...');
+    toast('외부 구성요소 다운로드 / SHA-256 검증 중... (파일당 최대 2분)');
     const x=await req('/api/v4/update/external/stage',{method:'POST',body:JSON.stringify({components:[]})});
     const staged=x.staged||[],blocked=x.blocked||[],skipped=x.skipped||[];
-    lastExternalStageRoot=x.root||'';
+    lastExternalStageRoot=staged.length?(x.root||''):'';
     alert('외부 구성요소 Staging 결과\n\n검증 후 staging: '+staged.length+'개\n차단: '+blocked.length+'개\n이미 최신: '+skipped.length+'개\n\nLive 파일 변경: 없음\n'+
       (staged.length?'\nStaged\n'+staged.map(v=>'• '+v.component+' '+v.version).join('\n'):'')+
       (blocked.length?'\n\nBlocked\n'+blocked.map(v=>'• '+v.component+': '+v.reason).join('\n'):'')+
@@ -412,7 +414,7 @@ async function stageExternalUpdates(){
     loadExternalUpdates();
     if(staged.some(v=>v.component==='geyser'||v.component==='floodgate'))setTimeout(()=>applyExternalProxyUpdate(lastExternalStageRoot),250);
 
-  }catch(e){toast(koMessage(e.message),true)}
+  }catch(e){toast(koMessage(e.message),true)}finally{externalStageBusy=false}
 }
 
 async function applyExternalViaOffline(){

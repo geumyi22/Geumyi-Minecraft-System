@@ -63,6 +63,9 @@ func hostHealthPayload(observe bool) map[string]any {
 		"ok": true, "version": appVersion, "service": serviceModeRequested(),
 		"generation": 4,
 	}
+	if buildRevision != "" {
+		health["build_revision"] = buildRevision
+	}
 	if observe {
 		health["migration_observe"] = true
 	}
