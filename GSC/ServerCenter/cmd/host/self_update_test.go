@@ -9,19 +9,19 @@ import (
 
 func TestDay11SelfUpdateComponentValidation(t *testing.T) {
 	good := DeploymentManifest{
-		Schema: 1,
-		Channel: "canary",
-		Release: "test",
+		Schema:     1,
+		Channel:    "canary",
+		Release:    "test",
 		Repository: "geumyi22/Geumyi-Minecraft-System",
 		Components: map[string]DeploymentComponent{
 			"gsc": {
-				Version: "4.3.0",
-				Kind: "gsc",
-				File: "GeumyiServerCenter-v4.3.0-Setup.exe",
-				URL: "https://github.com/example/release/GeumyiServerCenter-v4.3.0-Setup.exe",
-				SHA256: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-				Size: 123456,
-				Targets: []string{"host"},
+				Version:         "4.3.0",
+				Kind:            "gsc",
+				File:            "GeumyiServerCenter-v4.3.0-Setup.exe",
+				URL:             "https://github.com/example/release/GeumyiServerCenter-v4.3.0-Setup.exe",
+				SHA256:          "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+				Size:            123456,
+				Targets:         []string{"host"},
 				RequiresRestart: true,
 			},
 		},
@@ -72,7 +72,6 @@ func TestDay11SelfUpdateStagePathStaysUnderGSCStaging(t *testing.T) {
 	}
 }
 
-
 func TestDay11SelfUpdateLaunchLockRejectsConcurrentAndRecoversStale(t *testing.T) {
 	oldConfigPath := configPath
 	configPath = filepath.Join(t.TempDir(), "server.json")
@@ -94,7 +93,6 @@ func TestDay11SelfUpdateLaunchLockRejectsConcurrentAndRecoversStale(t *testing.T
 		t.Fatalf("stale self-update lock was not recovered: %v", err)
 	}
 }
-
 
 func TestGSCPrereleaseMalformedVersionFailClosed(t *testing.T) {
 	for _, v := range []string{"4.3.9-", "4.3.9-rc..1", "4.3.9-rc/1", "4.3.9-rc.01"} {
@@ -125,7 +123,6 @@ func TestDay11GSCVersionComparisonBlocksDowngrade(t *testing.T) {
 		{"4.3.9-rc.1", "4.3.8", 1},
 		{"4.3.9-rc.2", "4.3.9-rc.2.1", -1},
 		{"4.3.9-1", "4.3.9-beta", -1},
-
 	}
 	for _, tc := range cases {
 		got, err := compareGSCVersions(tc.a, tc.b)
@@ -143,15 +140,18 @@ func TestDay11GSCVersionComparisonBlocksDowngrade(t *testing.T) {
 		t.Fatal("older signed release was accepted as self-update target")
 	}
 	if err := requireNewerGSCVersion("5.0.0-beta.1"); err == nil {
-		t.Fatal("same beta version was accepted as self-update target")
+		t.Fatal("older beta version was accepted as self-update target")
 	}
 	if err := requireNewerGSCVersion("4.5.2"); err == nil {
 		t.Fatal("older release was accepted as self-update target")
 	}
-	if err := requireNewerGSCVersion("5.0.0-beta.2"); err != nil {
-		t.Fatalf("newer beta was rejected: %v", err)
+	if err := requireNewerGSCVersion("5.0.0-beta.2"); err == nil {
+		t.Fatalf("older beta was accepted: %v", err)
 	}
-	if err := requireNewerGSCVersion("5.0.0"); err != nil {
-		t.Fatalf("stable 5.0.0 was rejected: %v", err)
+	if err := requireNewerGSCVersion("5.0.0"); err == nil {
+		t.Fatalf("same Stable version was accepted: %v", err)
+	}
+	if err := requireNewerGSCVersion("5.0.1"); err != nil {
+		t.Fatalf("newer Stable version was rejected: %v", err)
 	}
 }

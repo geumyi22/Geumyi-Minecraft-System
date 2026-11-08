@@ -107,6 +107,9 @@ func recordResult(id, action, msg string, e error) {
 		errText = e.Error()
 	}
 	setLaunchPhase(id, phase, msg, errText)
+	if err := os.MkdirAll(filepath.Dir(launcherLogPath(id)), 0755); err != nil {
+		return
+	}
 	f, err := os.OpenFile(launcherLogPath(id), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err == nil {
 		defer f.Close()

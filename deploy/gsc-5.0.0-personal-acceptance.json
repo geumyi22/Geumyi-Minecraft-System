@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "version": "5.0.0",
+  "channel": "stable",
+  "scope": "personal_operator_accepted",
+  "decision_date": "2026-11-08",
+  "decision_timezone": "Asia/Seoul",
+  "operator_authorized_release_and_install": true,
+  "full_live_qa_pass_claimed": false,
+  "source_baseline": "17a99fb7b8ccb607e3edc15d95c3e712f2617bca",
+  "evidence": [
+    {"id": "baseline_ci", "status": "verified", "scope": "PR61 source baseline only; five GitHub workflows succeeded", "date": "2026-11-08", "runs": [42260607132, 42260607243, 42260607222, 42260607360, 42260607133]},
+    {"id": "isolated_vm_basic_qa", "status": "operator_confirmed", "date": "2026-11-07", "scope": "beta CI install and SHA256, Host/Client, API 401/401/200, Windows reboot, uninstall/data preservation and checkpoint rollback; not evidence for an unbuilt Stable binary"},
+    {"id": "personal_release_risk_acceptance", "status": "operator_accepted", "date": "2026-11-08", "scope": "Personal-use Stable publication and preservation-first PC migration; unexecuted checks remain unexecuted"},
+    {"id": "new_stable_windows_ci", "status": "pending", "scope": "Must be produced for the exact Stable candidate commit before publication"},
+    {"id": "minecraft_gameplay_and_world_restore", "status": "not_run", "scope": "No new end-to-end world restore or multiplayer gameplay claimed"},
+    {"id": "mobile_remote_and_soak", "status": "not_run", "scope": "No new remote/mobile authentication, long-duration soak or all-backend live privacy validation claimed"},
+    {"id": "tcp_listener_enumeration", "status": "unresolved", "scope": "Loopback health works while some Windows TCP views omit a listener; independent control also reproduced invalid state reporting. Root cause not established"},
+    {"id": "stable_signature_and_update_discovery", "status": "pending", "scope": "Must verify signed deployment-stable.json using the existing pinned public key and the installed Host update status API"},
+    {"id": "pc_migration", "status": "pending", "scope": "Existing 4.5.2-canary service and 4.2.4 registration mismatch requires an explicit backed-up migration; generic installer guard remains"}
+  ],
+  "full_project_release_gates": "unchanged; FINAL-RELEASE-GATES.json is not a personal acceptance ledger and unexecuted live checks are not changed to PASS"
+}

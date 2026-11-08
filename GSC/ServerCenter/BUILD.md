@@ -1,4 +1,4 @@
-# Build GSC 5.0.0-beta.1
+# Build GSC 5.0.0
 
 Requires Go 1.23.2 or compatible on Windows. Run `powershell -File build.ps1`.
 
@@ -12,4 +12,6 @@ The build script compiles Host and Client EXEs from this source before embedding
 
 Run `go test ./...` for the recovered unit tests. Building the complete installer still requires the release payloads above.
 
-Version 5.0.0-beta.1 is a prerelease built from the audited 4.5.1 Stable baseline. It retains the existing Host/Client/Setup API compatibility and the external Windows Scheduler Velocity proxies; abandoned direct Velocity ownership is excluded. Only freshly built beta artifacts are eligible; never relabel old binaries. A CI pass does not prove production Java/Bedrock/GSCM E2E or authorize a Stable release.
+Version 5.0.0 is the personal operator-accepted Stable candidate built on the PR61 hardening source. It retains the compatible v4 API and external Windows Scheduler Velocity ownership. Only freshly built artifacts from the exact reviewed commit are eligible; never relabel old binaries. The personal acceptance ledger distinguishes automated checks, operator confirmation, accepted limitations and unexecuted tests. The full Day12 production closure gates remain unchanged.
+
+The personal release workflow first rebuilds and verifies Windows artifacts and stages an Ed25519-signed GSC-only Draft. A separate explicit publication dispatch rechecks that Draft and its completed source CI run. Manifest signing is not Windows Authenticode signing. Installation and live update discovery require their own verification.

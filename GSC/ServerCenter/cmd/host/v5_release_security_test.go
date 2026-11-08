@@ -28,16 +28,16 @@ func TestV5ReleaseCapabilitiesFailClosed(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := map[string]any{
-		"ok": true,
-		"product": "Geumyi Server Center",
-		"version": "5.0.0-beta.1",
-		"channel": "beta",
-		"api_compatible_major": float64(4),
-		"product_major": float64(5),
-		"gscm_version_unchanged": true,
-		"velocity_lifecycle_owner": "windows_task_scheduler",
+		"ok":                          true,
+		"product":                     "Geumyi Server Center",
+		"version":                     "5.0.0",
+		"channel":                     "stable",
+		"api_compatible_major":        float64(4),
+		"product_major":               float64(5),
+		"gscm_version_unchanged":      true,
+		"velocity_lifecycle_owner":    "windows_task_scheduler",
 		"gsc_owns_velocity_processes": false,
-		"automatic_stable_promotion": false,
+		"automatic_stable_promotion":  false,
 		"stable_release_requires_manual_operator": true,
 	}
 	if !reflect.DeepEqual(got, want) {

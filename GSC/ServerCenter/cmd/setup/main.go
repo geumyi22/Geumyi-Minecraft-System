@@ -25,7 +25,7 @@ import (
 	"unsafe"
 )
 
-const version = "5.0.0-beta.1"
+const version = "5.0.0"
 const hostTaskName = "Geumyi Server Center Host"
 const hostServiceName = "Geumyi Server Center Host"
 
@@ -441,9 +441,9 @@ func doInstall(o InstallOptions) {
 	}
 
 	_ = os.MkdirAll(o.InstallDir, 0755)
-	setProgress(18, "Geumyi Server Center v5 베타 설치 중...", "")
+	setProgress(18, "Geumyi Server Center v5 설치 중...", "")
 	mustExtract("payload/GeumyiServerCenter.ico", filepath.Join(o.InstallDir, "GeumyiServerCenter.ico"))
-	mustExtract("payload/README-v5.0.0-beta.1.txt", filepath.Join(o.InstallDir, "README-v5.0.0-beta.1.txt"))
+	mustExtract("payload/README-v5.0.0.txt", filepath.Join(o.InstallDir, "README-v5.0.0.txt"))
 	_ = os.Remove(filepath.Join(o.InstallDir, "README-v4.3.0.txt"))
 	if hasClientRole(o.Role) {
 		mustExtract("payload/GeumyiServerCenter.exe", filepath.Join(o.InstallDir, "GeumyiServerCenter.exe"))
@@ -498,7 +498,7 @@ func doInstall(o InstallOptions) {
 		if data, e := os.ReadFile(cfgFile); e == nil {
 			backupDir := filepath.Join(dataDir, "Backup")
 			_ = os.MkdirAll(backupDir, 0755)
-			if e = os.WriteFile(filepath.Join(backupDir, "server-before-v5.0.0-beta.1-"+time.Now().Format("20060102-150405")+".json"), data, 0600); e != nil {
+			if e = os.WriteFile(filepath.Join(backupDir, "server-before-v5.0.0-"+time.Now().Format("20060102-150405")+".json"), data, 0600); e != nil {
 				finishInstall(e)
 				return
 			}
@@ -974,7 +974,7 @@ func defaultUpdateConfig(dataDir string) UpdateConfig {
 	return UpdateConfig{
 		Enabled:        false,
 		Repository:     "geumyi22/Geumyi-Minecraft-System",
-		Channel:        "canary",
+		Channel:        "stable",
 		PublicKeyPath:  filepath.Join(dataDir, "deployment-public.pem"),
 		TimeoutSeconds: 12,
 	}
@@ -986,7 +986,7 @@ func normalizeUpdateConfig(c UpdateConfig, dataDir string) UpdateConfig {
 	}
 	c.Channel = strings.ToLower(strings.TrimSpace(c.Channel))
 	if c.Channel != "stable" && c.Channel != "beta" && c.Channel != "canary" {
-		c.Channel = "canary"
+		c.Channel = "stable"
 	}
 	if strings.TrimSpace(c.PublicKeyPath) == "" {
 		c.PublicKeyPath = filepath.Join(dataDir, "deployment-public.pem")
