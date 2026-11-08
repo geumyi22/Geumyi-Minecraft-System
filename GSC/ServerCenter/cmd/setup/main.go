@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"geumyi/servercenter/internal/atomicfile"
 	"geumyi/servercenter/internal/javaruntime"
 	"geumyi/servercenter/internal/securestore"
 	"io"
@@ -885,14 +886,11 @@ func mustExtract(name, dst string) {
 	if e = os.MkdirAll(filepath.Dir(dst), 0755); e != nil {
 		panic(e)
 	}
-	tmp := dst + ".new"
-	_ = os.Remove(tmp)
-	if e = os.WriteFile(tmp, b, 0755); e != nil {
-		panic(e)
-	}
+	// Runtime\Agent and server plugin folders may allow unprivileged file
+	// creation: never write through a predictable "<file>.new" and never
+	// delete the current file before its replacement is complete.
 	for i := 0; i < 12; i++ {
-		_ = os.Remove(dst)
-		if e = os.Rename(tmp, dst); e == nil {
+		if e = atomicfile.WriteFile(dst, b, 0755); e == nil {
 			return
 		}
 		time.Sleep(350 * time.Millisecond)

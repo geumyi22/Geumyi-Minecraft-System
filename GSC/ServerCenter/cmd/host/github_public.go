@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 const (
@@ -66,11 +68,7 @@ func writeGitHubPublicCache(rawURL string, body []byte) {
 	if err != nil {
 		return
 	}
-	tmp := p + ".tmp"
-	if os.WriteFile(tmp, b, 0600) == nil {
-		_ = os.Remove(p)
-		_ = os.Rename(tmp, p)
-	}
+	_ = atomicfile.WriteFile(p, b, 0600)
 }
 
 func githubRateLimitError(resp *http.Response) error {
