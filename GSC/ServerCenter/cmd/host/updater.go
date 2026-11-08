@@ -18,6 +18,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 type UpdateConfig struct {
@@ -1212,10 +1214,6 @@ func writeUpdateState(s ServerConfig, st UpdateStatus, manifestHash string) {
 		"updated":         time.Now().Format(time.RFC3339),
 	}
 	b, _ := json.MarshalIndent(payload, "", "  ")
-	tmp := filepath.Join(root, safePathPart(s.ID)+".json.tmp")
 	dst := filepath.Join(root, safePathPart(s.ID)+".json")
-	if os.WriteFile(tmp, b, 0644) == nil {
-		_ = os.Remove(dst)
-		_ = os.Rename(tmp, dst)
-	}
+	_ = atomicfile.WriteFile(dst, b, 0644)
 }

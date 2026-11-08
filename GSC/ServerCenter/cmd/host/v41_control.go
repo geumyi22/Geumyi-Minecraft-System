@@ -33,7 +33,11 @@ type authContextKey struct{}
 
 func authenticateRequest(r *http.Request) (authPrincipal, bool) {
 	c := configSnapshot()
-	if c.AllowLoopbackNoAuth && isLoopbackRemote(r.RemoteAddr) {
+	// The token-free loopback shortcut is only for local programs (StatusAgent,
+	// operator tools). A web page opened in a browser on this PC also reaches us
+	// from 127.0.0.1, so browser-originated cross-site and DNS-rebinding requests
+	// must fall through to normal token/device authentication.
+	if c.AllowLoopbackNoAuth && isLoopbackRemote(r.RemoteAddr) && loopbackNoAuthRequestAllowed(r) {
 		return authPrincipal{Kind: "local", ID: "loopback", Name: "Local GSC"}, true
 	}
 	got := strings.TrimSpace(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer"))

@@ -10,6 +10,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 type backupMeta struct {
@@ -45,16 +47,7 @@ func writeBackupMeta(p string, m backupMeta) error {
 		return err
 	}
 	b = append(b, '\n')
-	tmp := path + ".tmp"
-	if err = os.WriteFile(tmp, b, 0644); err != nil {
-		return err
-	}
-	_ = os.Remove(path)
-	if err = os.Rename(tmp, path); err != nil {
-		_ = os.Remove(tmp)
-		return err
-	}
-	return nil
+	return atomicfile.WriteFile(path, b, 0644)
 }
 
 func backupKindFromPath(s ServerConfig, p string) string {

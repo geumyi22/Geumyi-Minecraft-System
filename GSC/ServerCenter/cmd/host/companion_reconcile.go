@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 // reconcileLocalCompanionConfigs keeps the integrated Agent and the per-server
@@ -320,19 +322,11 @@ func setYAMLScalar(text, section, key, value string) string {
 	return strings.Join(lines, "\n")
 }
 
+// atomicWriteText writes agent.properties and GDS config.yml. These contain
+// secrets and live in directories that may allow unprivileged file creation,
+// so never use a fixed temp name and never delete the destination on failure.
 func atomicWriteText(path, text string) error {
-	tmp := path + ".gsc.tmp"
-	if err := os.WriteFile(tmp, []byte(text), 0600); err != nil {
-		return err
-	}
-	if err := os.Rename(tmp, path); err != nil {
-		_ = os.Remove(path)
-		if err2 := os.Rename(tmp, path); err2 != nil {
-			_ = os.Remove(tmp)
-			return err
-		}
-	}
-	return nil
+	return atomicfile.WriteFile(path, []byte(text), 0600)
 }
 
 func defaultGDSConfig() string {

@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"geumyi/servercenter/internal/atomicfile"
 )
 
 const day9TransactionSchema = 1
@@ -81,16 +83,7 @@ func day9WriteJSONAtomic(path string, v any) error {
 		return err
 	}
 	b = append(b, '\n')
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, b, 0644); err != nil {
-		return err
-	}
-	_ = os.Remove(path)
-	if err := os.Rename(tmp, path); err != nil {
-		_ = os.Remove(tmp)
-		return err
-	}
-	return nil
+	return atomicfile.WriteFile(path, b, 0644)
 }
 
 func day9AppendJournal(s ServerConfig, tx *updateTransaction, event, detail string) {
