@@ -33,7 +33,7 @@ type authContextKey struct{}
 
 func authenticateRequest(r *http.Request) (authPrincipal, bool) {
 	c := configSnapshot()
-	if c.AllowLoopbackNoAuth && isLoopbackRemote(r.RemoteAddr) {
+	if c.AllowLoopbackNoAuth && isLoopbackRemote(r.RemoteAddr) && loopbackNoAuthRequestAllowed(r) {
 		return authPrincipal{Kind: "local", ID: "loopback", Name: "Local GSC"}, true
 	}
 	got := strings.TrimSpace(strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer"))

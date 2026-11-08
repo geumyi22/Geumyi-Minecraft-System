@@ -61,13 +61,37 @@ func clientSelfUpdateLockPath() string {
 
 func writeSelfUpdateReportAt(p string, r selfUpdateReport) {
 	r.Finished = time.Now().Format(time.RFC3339)
-	b, _ := json.MarshalIndent(r, "", "  ")
-	_ = os.MkdirAll(filepath.Dir(p), 0755)
-	tmp := p + ".tmp"
-	if os.WriteFile(tmp, append(b, '\n'), 0600) == nil {
-		_ = os.Remove(p)
-		_ = os.Rename(tmp, p)
+	b, err := json.MarshalIndent(r, "", "  ")
+	if err != nil {
+		return
 	}
+	dir := filepath.Dir(p)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return
+	}
+	f, err := os.CreateTemp(dir, ".gsc-update-report-*.tmp")
+	if err != nil {
+		return
+	}
+	tmp := f.Name()
+	defer os.Remove(tmp)
+	if err := f.Chmod(0600); err != nil {
+		_ = f.Close()
+		return
+	}
+	if _, err := f.Write(append(b, '\n')); err != nil {
+		_ = f.Close()
+		return
+	}
+	if err := f.Sync(); err != nil {
+		_ = f.Close()
+		return
+	}
+	if err := f.Close(); err != nil {
+		return
+	}
+	// Do not delete a valid previous status report if replacement fails.
+	_ = os.Rename(tmp, p)
 }
 
 func writeSelfUpdateReport(r selfUpdateReport) {
