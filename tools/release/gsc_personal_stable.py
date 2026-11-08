@@ -57,6 +57,26 @@ def check_inputs(tag, commit):
     require(re.fullmatch(r"[0-9a-f]{40}", commit) is not None, "exact source commit required")
 
 
+def resolve_draft_id(pages, tag, commit):
+    """Resolve an unpublished draft from authenticated paginated release lists.
+
+    GitHub's releases/tags endpoint need not resolve a draft before its Git
+    tag exists. Never treat that 404 as evidence that the draft is absent.
+    """
+    check_inputs(tag, commit)
+    require(isinstance(pages, list) and all(isinstance(page, list) for page in pages), "invalid paginated release list")
+    releases = [item for page in pages for item in page]
+    require(all(isinstance(item, dict) for item in releases), "invalid release list item")
+    matches = [item for item in releases if item.get("tag_name") == tag]
+    require(len(matches) == 1, "expected exactly one release for immutable tag")
+    draft = matches[0]
+    require(draft.get("draft") is True and draft.get("prerelease") is False and draft.get("target_commitish") == commit,
+        "not the reviewed exact-commit Stable draft")
+    release_id = draft.get("id")
+    require(type(release_id) is int and release_id > 0, "invalid draft release ID")
+    return release_id
+
+
 def verify_checksums(assets, expected):
     entries = {}
     for line in (assets / "SHA256SUMS.txt").read_text(encoding="ascii").splitlines():
@@ -155,14 +175,19 @@ def verify(assets, root, tag, commit, release_metadata=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("prepare", "seal", "verify"))
-    parser.add_argument("--assets", required=True, type=Path)
+    parser.add_argument("mode", choices=("prepare", "seal", "verify", "resolve-draft"))
+    parser.add_argument("--assets", type=Path)
     parser.add_argument("--root", type=Path, default=Path("."))
     parser.add_argument("--tag", default=TAG)
     parser.add_argument("--commit")
     parser.add_argument("--run-id", type=int)
     parser.add_argument("--release-metadata", type=Path)
     args = parser.parse_args()
+    if args.mode == "resolve-draft":
+        require(args.release_metadata is not None, "paginated release metadata required")
+        print(resolve_draft_id(load(args.release_metadata), args.tag, args.commit))
+        return
+    require(args.assets is not None, "release assets directory required")
     if args.mode == "prepare":
         prepare(args.assets, args.root, args.tag, args.commit, args.run_id)
     elif args.mode == "seal":

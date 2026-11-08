@@ -123,7 +123,9 @@ jobs:
         run: |
           set -euo pipefail
           gh release create "$TAG" release-assets/* --draft --target "$EXPECTED_SHA" --title 'GSC 5.0.0 — 개인용 Stable' --notes-file docs/releases/GSC-5.0.0.md
-          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" > "$RUNNER_TEMP/gsc-draft.json"
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" > "$RUNNER_TEMP/gsc-releases.json"
+          release_id="$(python tools/release/gsc_personal_stable.py resolve-draft --release-metadata "$RUNNER_TEMP/gsc-releases.json" --tag "$TAG" --commit "$EXPECTED_SHA")"
+          gh api "repos/$GITHUB_REPOSITORY/releases/$release_id" > "$RUNNER_TEMP/gsc-draft.json"
           gh release download "$TAG" --dir verified-draft
           python tools/release/gsc_personal_stable.py verify --assets verified-draft --tag "$TAG" --commit "$EXPECTED_SHA" --release-metadata "$RUNNER_TEMP/gsc-draft.json"
           echo 'Verified Draft only. Publication requires a separate publish dispatch.' >> "$GITHUB_STEP_SUMMARY"
@@ -147,7 +149,10 @@ jobs:
       - name: Download and reverify the reviewed Draft
         run: |
           set -euo pipefail
-          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" > "$RUNNER_TEMP/gsc-draft.json"
+          gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/releases?per_page=100" > "$RUNNER_TEMP/gsc-releases.json"
+          release_id="$(python tools/release/gsc_personal_stable.py resolve-draft --release-metadata "$RUNNER_TEMP/gsc-releases.json" --tag "$TAG" --commit "$EXPECTED_SHA")"
+          gh api "repos/$GITHUB_REPOSITORY/releases/$release_id" > "$RUNNER_TEMP/gsc-draft.json"
+          echo "RELEASE_ID=$release_id" >> "$GITHUB_ENV"
           gh release download "$TAG" --dir verified-draft
           python tools/release/gsc_personal_stable.py verify --assets verified-draft --tag "$TAG" --commit "$EXPECTED_SHA" --release-metadata "$RUNNER_TEMP/gsc-draft.json"
           run_id="$(python -c 'import json; print(json.load(open("verified-draft/GSC-PERSONAL-PROVENANCE.json"))["ci_run_id"])')"
@@ -166,7 +171,7 @@ jobs:
           set -euo pipefail
           refs="$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/$TAG" --jq '.[] | .ref')"
           if printf '%s\n' "$refs" | grep -Fxq "refs/tags/$TAG"; then echo 'immutable tag appeared before publication'; exit 1; fi
-          gh release edit "$TAG" --draft=false --prerelease=false --latest --verify-tag=false
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" -F draft=false -F prerelease=false -f make_latest=true --jq '{id,tag_name,draft,prerelease,html_url}'
           gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq .object.sha > "$RUNNER_TEMP/gsc-published-sha.txt"
           test "$(cat "$RUNNER_TEMP/gsc-published-sha.txt")" = "$EXPECTED_SHA"
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '{tag_name,draft,prerelease,html_url}'

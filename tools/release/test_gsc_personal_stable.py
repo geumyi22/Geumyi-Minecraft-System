@@ -10,6 +10,37 @@ from unittest.mock import patch
 import gsc_personal_stable as release
 
 
+class DraftResolutionTests(unittest.TestCase):
+    def setUp(self):
+        self.commit = "a" * 40
+        self.draft = {"id": 123, "tag_name": release.TAG, "draft": True,
+            "prerelease": False, "target_commitish": self.commit,
+            "html_url": "https://github.com/example/releases/untagged-draft-id"}
+
+    def test_untagged_draft_resolves_by_paginated_list_id(self):
+        pages = [[{"id": 1, "tag_name": "older-release"}], [self.draft]]
+        self.assertEqual(release.resolve_draft_id(pages, release.TAG, self.commit), 123)
+
+    def test_duplicate_matching_drafts_fail_closed(self):
+        duplicate = dict(self.draft, id=456)
+        with self.assertRaisesRegex(ValueError, "exactly one"):
+            release.resolve_draft_id([[self.draft], [duplicate]], release.TAG, self.commit)
+
+    def test_missing_draft_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "exactly one"):
+            release.resolve_draft_id([[]], release.TAG, self.commit)
+
+    def test_wrong_commit_or_published_release_rejected(self):
+        for changes in ({"target_commitish": "b" * 40}, {"draft": False}, {"prerelease": True}):
+            with self.subTest(changes=changes), self.assertRaisesRegex(ValueError, "exact-commit"):
+                release.resolve_draft_id([[dict(self.draft, **changes)]], release.TAG, self.commit)
+
+    def test_invalid_release_id_rejected(self):
+        for invalid in (True, 0, "123"):
+            with self.subTest(value=invalid), self.assertRaisesRegex(ValueError, "release ID"):
+                release.resolve_draft_id([[dict(self.draft, id=invalid)]], release.TAG, self.commit)
+
+
 class PersonalStableIntegrityTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
