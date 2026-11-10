@@ -4,9 +4,10 @@
 
 ## 찾아보기
 
+- [**GSC 5.0.0 현재 릴리스·유지보수·실플레이 상태 (2026-11-10)**](operations/GSC-500-STATUS-2026-11-10.md) — 공개 Stable / 로컬 유지보수 빌드 / main 구분, 사용자 플레이 확인과 남은 E2E
 - [현재 프로젝트 안내](../README.md)
-- [**2026-10-24 최신 운영 상태·GitHub/PR 인수인계**](operations/GMS-CURRENT-STATUS-2026-10-24.md) — Stable/Canary/실서버 구분, Velocity 0/3, Day12 이후 유지보수, 민감정보 보존 원칙
-- [최신 4.5.1/1.5.1+151 수동 설치 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151)
+- [2026-10-24 과거 운영 상태·GitHub/PR 인수인계](operations/GMS-CURRENT-STATUS-2026-10-24.md) — Stable/Canary/실서버 구분, Velocity 0/3, Day12 이후 유지보수, 민감정보 보존 원칙
+- [이전 4.5.1/1.5.1+151 통합 수동 설치 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151)
 - [실운영 기준 및 관리 자료](operations/INDEX.md)
 - [4.5.1/1.5.1 실기기 검증 체크리스트](operations/RELEASE-4.5.1-1.5.1-SMOKE-CHECKLIST.md)
 - [프로젝트 종료 보고서](../PROJECT-CLOSEOUT-2026-10-11.md)
