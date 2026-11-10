@@ -30,6 +30,9 @@ import (
 
 const appVersion = "5.0.0"
 
+// Empty in the published Stable; injected for traceable local maintenance builds.
+var buildRevision = ""
+
 type Config struct {
 	Bind                string         `json:"bind"`
 	GitHubToken         string         `json:"github_token,omitempty"`
@@ -373,6 +376,10 @@ func loadOrCreateConfig(path string) (Config, error) {
 
 func securityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !hostBrowserRequestAllowed(r) {
+			http.Error(w, "Untrusted browser origin", http.StatusForbidden)
+			return
+		}
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("Referrer-Policy", "no-referrer")

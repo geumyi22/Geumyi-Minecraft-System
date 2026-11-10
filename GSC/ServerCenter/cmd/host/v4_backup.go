@@ -180,6 +180,12 @@ func addPathToZip(zw *zip.Writer, base, rel string) error {
 		if info.Mode()&os.ModeSymlink != 0 {
 			return nil
 		}
+		// Minecraft exclusively locks this runtime marker on Windows. It is
+		// regenerated on startup and is not world data; trying to read it makes
+		// online backups fail. Do not suppress errors for any other data file.
+		if !info.IsDir() && strings.EqualFold(info.Name(), "session.lock") {
+			return nil
+		}
 		r, e := filepath.Rel(base, path)
 		if e != nil {
 			return e
@@ -566,18 +572,18 @@ func extractBackup(p, dst string, m BackupManifest) error {
 }
 
 type RestorePreflight struct {
-	ServerID          string   `json:"server_id"`
-	File              string   `json:"file"`
-	Scope             string   `json:"scope,omitempty"`
-	SourceReason      string   `json:"source_reason,omitempty"`
-	ServerOffline     bool     `json:"server_offline"`
-	BackupVerified    bool     `json:"backup_verified"`
-	ServerMatch       bool     `json:"server_match"`
-	CheckpointReady   bool     `json:"checkpoint_ready"`
-	PendingUpdate     bool     `json:"pending_update"`
-	Ready             bool     `json:"ready"`
-	Checks            []string `json:"checks"`
-	BlockedReason     string   `json:"blocked_reason,omitempty"`
+	ServerID        string   `json:"server_id"`
+	File            string   `json:"file"`
+	Scope           string   `json:"scope,omitempty"`
+	SourceReason    string   `json:"source_reason,omitempty"`
+	ServerOffline   bool     `json:"server_offline"`
+	BackupVerified  bool     `json:"backup_verified"`
+	ServerMatch     bool     `json:"server_match"`
+	CheckpointReady bool     `json:"checkpoint_ready"`
+	PendingUpdate   bool     `json:"pending_update"`
+	Ready           bool     `json:"ready"`
+	Checks          []string `json:"checks"`
+	BlockedReason   string   `json:"blocked_reason,omitempty"`
 }
 
 type RestoreHealth struct {

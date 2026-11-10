@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -12,10 +13,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -219,7 +221,7 @@ func fetchGitHubExternalArtifact(owner, repo, prefix string) (ExternalArtifact, 
 			Component: strings.ToLower(prefix), Source: "GitHub official release",
 			Version: m[2], File: a.Name, URL: a.BrowserDownloadURL,
 			SHA256: sha, SHA256Verified: sha != "", StageSupported: sha != "",
-			Status: "unknown",
+			Status:  "unknown",
 			Message: msg,
 		}, nil
 	}
@@ -286,13 +288,13 @@ func apiV4ExternalUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	items, errs := buildExternalStatus()
 	writeJSON(w, map[string]any{
-		"schema": 1,
-		"mode": "read-only",
+		"schema":              1,
+		"mode":                "read-only",
 		"live_files_modified": false,
-		"proxy_root": externalProxyRoot(),
-		"components": items,
-		"errors": errs,
-		"paper_policy": "notify/manual-approve",
+		"proxy_root":          externalProxyRoot(),
+		"components":          items,
+		"errors":              errs,
+		"paper_policy":        "notify/manual-approve",
 	})
 }
 
@@ -304,7 +306,24 @@ func safeExternalStageName(name string) (string, error) {
 	return base, nil
 }
 
+// Metadata is small; downloads need their own bounded transfer budget.
+func externalDownloadHTTPClient() *http.Client {
+	return &http.Client{Timeout: 2 * time.Minute, CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 10 {
+			return errors.New("too many download redirects")
+		}
+		if req.URL.Scheme != "https" {
+			return errors.New("HTTPS download redirects required")
+		}
+		return nil
+	}}
+}
+
 func downloadExternalVerified(a ExternalArtifact, dst string) error {
+	return downloadExternalVerifiedWithClient(context.Background(), a, dst, externalDownloadHTTPClient())
+}
+
+func downloadExternalVerifiedWithClient(ctx context.Context, a ExternalArtifact, dst string, client *http.Client) error {
 	if !a.SHA256Verified || parseSHA256Digest(a.SHA256) == "" {
 		return errors.New("verified SHA-256 is required")
 	}
@@ -315,8 +334,10 @@ func downloadExternalVerified(a ExternalArtifact, dst string) error {
 	if u.Host != "download.geysermc.org" && u.Host != "github.com" {
 		return fmt.Errorf("untrusted artifact host: %s", u.Host)
 	}
-	client := externalHTTPClient()
-	req, _ := http.NewRequest(http.MethodGet, a.URL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, a.URL, nil)
+	if err != nil {
+		return err
+	}
 	req.Header.Set("User-Agent", "GeumyiServerCenter/"+appVersion)
 	resp, err := client.Do(req)
 	if err != nil {
@@ -330,7 +351,7 @@ func downloadExternalVerified(a ExternalArtifact, dst string) error {
 		return err
 	}
 	tmp := dst + ".tmp"
-	f, err := os.Create(tmp)
+	f, err := os.OpenFile(tmp, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
 		return err
 	}
@@ -354,12 +375,43 @@ func downloadExternalVerified(a ExternalArtifact, dst string) error {
 		_ = os.Remove(tmp)
 		return fmt.Errorf("SHA-256 mismatch: expected %s got %s", a.SHA256, got)
 	}
-	_ = os.Remove(dst)
+	if _, err := os.Lstat(dst); !os.IsNotExist(err) {
+		_ = os.Remove(tmp)
+		return errors.New("staged destination already exists or cannot be inspected")
+	}
 	if err := os.Rename(tmp, dst); err != nil {
 		_ = os.Remove(tmp)
 		return err
 	}
 	return nil
+}
+
+var externalStageMu sync.Mutex
+
+// Save blocked attempts too: absence of a successful JAR is not absence of a request.
+func persistExternalStagePlan(root string, plan map[string]any) error {
+	if err := os.MkdirAll(root, 0755); err != nil {
+		return err
+	}
+	b, err := json.MarshalIndent(plan, "", "  ")
+	if err != nil {
+		return err
+	}
+	tmp := filepath.Join(root, "external-stage-plan.json.tmp")
+	f, err := os.OpenFile(tmp, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmp)
+	_, writeErr := f.Write(append(b, '\n'))
+	closeErr := f.Close()
+	if writeErr != nil {
+		return writeErr
+	}
+	if closeErr != nil {
+		return closeErr
+	}
+	return os.Rename(tmp, filepath.Join(root, "external-stage-plan.json"))
 }
 
 func apiV4ExternalUpdateStage(w http.ResponseWriter, r *http.Request) {
@@ -374,12 +426,24 @@ func apiV4ExternalUpdateStage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad json", http.StatusBadRequest)
 		return
 	}
+	if !externalStageMu.TryLock() {
+		http.Error(w, "External staging already in progress; do not retry until it finishes", http.StatusConflict)
+		return
+	}
+	defer externalStageMu.Unlock()
 	want := map[string]bool{}
 	for _, v := range q.Components {
-		want[strings.ToLower(strings.TrimSpace(v))] = true
+		key := strings.ToLower(strings.TrimSpace(v))
+		switch key {
+		case "geyser", "floodgate", "viaversion", "viabackwards":
+			want[key] = true
+		default:
+			http.Error(w, "unknown external component", http.StatusBadRequest)
+			return
+		}
 	}
 	all, metaErrs := buildExternalStatus()
-	stamp := time.Now().Format("20060102-150405")
+	stamp := time.Now().Format("20060102-150405.000000000")
 	root := filepath.Join(v4Root(), "Staging", "External", stamp)
 	staged := []map[string]any{}
 	blocked := []map[string]any{}
@@ -402,7 +466,7 @@ func apiV4ExternalUpdateStage(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		dst := filepath.Join(root, name)
-		if err := downloadExternalVerified(a, dst); err != nil {
+		if err := downloadExternalVerifiedWithClient(r.Context(), a, dst, externalDownloadHTTPClient()); err != nil {
 			blocked = append(blocked, map[string]any{"component": a.Component, "reason": err.Error()})
 			continue
 		}
@@ -415,25 +479,25 @@ func apiV4ExternalUpdateStage(w http.ResponseWriter, r *http.Request) {
 		"schema": 1, "created": time.Now().Format(time.RFC3339), "root": root,
 		"staged": staged, "blocked": blocked, "skipped": skipped, "metadata_errors": metaErrs,
 		"live_files_modified": false,
-		"next_step": "Staging only; Geyser/Floodgate use rolling apply. ViaVersion/ViaBackwards require all backend servers offline + explicit apply; restart and verify afterwards.",
+		"next_step":           "Staging only; Geyser/Floodgate use rolling apply. ViaVersion/ViaBackwards require all backend servers offline + explicit apply; restart and verify afterwards.",
 	}
-	if len(staged) > 0 {
-		if err := os.MkdirAll(root, 0755); err == nil {
-			if b, err := json.MarshalIndent(plan, "", "  "); err == nil {
-				_ = os.WriteFile(filepath.Join(root, "external-stage-plan.json"), append(b, '\n'), 0644)
-			}
-		}
+	if err := persistExternalStagePlan(root, plan); err != nil {
+		appendV4Event("error", "update", "", "Staging result persistence failed", err.Error())
+		http.Error(w, "staging result could not be saved; no live files applied", http.StatusInternalServerError)
+		return
+	}
+	for _, item := range blocked {
+		appendV4Event("warn", "update", "", "External staging blocked", fmt.Sprintf("component=%v reason=%v", item["component"], item["reason"]))
 	}
 	appendV4Event("info", "update", "", "외부 구성요소 staging 완료",
 		fmt.Sprintf("staged=%d blocked=%d skipped=%d live_modified=false", len(staged), len(blocked), len(skipped)))
 	writeJSON(w, plan)
 }
 
-
 type externalStagePlanFile struct {
-	Schema  int    `json:"schema"`
-	Root    string `json:"root"`
-	Staged  []struct {
+	Schema int    `json:"schema"`
+	Root   string `json:"root"`
+	Staged []struct {
 		Component string `json:"component"`
 		Version   string `json:"version"`
 		File      string `json:"file"`
@@ -443,9 +507,9 @@ type externalStagePlanFile struct {
 }
 
 type externalProxyTarget struct {
-	ID          string
-	TaskName    string
-	PublicJava  int
+	ID            string
+	TaskName      string
+	PublicJava    int
 	PublicBedrock int
 }
 
@@ -506,6 +570,9 @@ func readExternalStagePlan(root string) (externalStagePlanFile, error) {
 	}
 	if plan.Schema != 1 {
 		return plan, fmt.Errorf("unsupported external stage schema: %d", plan.Schema)
+	}
+	if len(plan.Staged) == 0 {
+		return plan, errors.New("staging contains no verified artifacts; live apply is blocked")
 	}
 	if filepath.Clean(plan.Root) != root {
 		return plan, errors.New("external stage plan root mismatch")
@@ -577,15 +644,15 @@ func waitExternalProxyPorts(javaPort, bedrockPort int, want bool, timeout time.D
 	for time.Now().Before(deadline) {
 		if want {
 			// Startup is healthy only when Java accepts connections and Geyser
-			// answers a real RakNet UNCONNECTED_PING, not merely when UDP is bound.
-			if probeJavaTCP(javaPort) && probeBedrockRaknet(bedrockPort) {
+			// answers validated NetherNet discovery or a real RakNet PONG; this is not a gameplay test.
+			if probeJavaTCP(javaPort) && probeBedrockTransportReady(bedrockPort) {
 				return nil
 			}
 		} else {
 			// For shutdown, verify the public listeners are actually gone before
 			// replacing JARs.
 			javaDown := !tcpOpen("127.0.0.1", javaPort, 250*time.Millisecond)
-			bedrockDown := !udpListening(bedrockPort)
+			bedrockDown := !udpListening(bedrockPort) && !tcpOpen("127.0.0.1", bedrockPort, 250*time.Millisecond)
 			if javaDown && bedrockDown {
 				return nil
 			}
@@ -669,21 +736,37 @@ func applyExternalProxyPlan(plan externalStagePlanFile) (map[string]any, error) 
 			return nil, fmt.Errorf("rolling stopped before %s; already applied proxies remain healthy (%v): %w", target.ID, applied, err)
 		}
 		proxyDir := filepath.Join(externalProxyRoot(), target.ID)
-		type backupRec struct {
-			Live   string
-			Backup string
-			Exists bool
-		}
-		backups := []backupRec{}
+		backups := []externalProxyBackup{}
 		for _, item := range items {
 			live := filepath.Join(proxyDir, "plugins", item.File)
 			backup := filepath.Join(backupRoot, target.ID, "plugins", item.File)
-			rec := backupRec{Live: live, Backup: backup}
+			rec := externalProxyBackup{Live: live, Backup: backup}
 			if _, err := os.Stat(live); err == nil {
 				rec.Exists = true
 				if err := externalAtomicCopy(live, backup); err != nil {
 					return nil, fmt.Errorf("%s backup failed: %w", target.ID, err)
 				}
+			}
+			backups = append(backups, rec)
+		}
+
+		// Geyser may migrate its YAML during startup. Roll back configuration
+		// together with the JAR if a health gate fails; never touch Floodgate keys.
+		for component := range items {
+			folder := "Geyser-Velocity"
+			if component == "floodgate" {
+				folder = "floodgate"
+			}
+			live := filepath.Join(proxyDir, "plugins", folder, "config.yml")
+			backup := filepath.Join(backupRoot, target.ID, "plugins", folder, "config.yml")
+			rec := externalProxyBackup{Live: live, Backup: backup}
+			if _, err := os.Stat(live); err == nil {
+				rec.Exists = true
+				if err := externalAtomicCopy(live, backup); err != nil {
+					return nil, fmt.Errorf("%s config backup failed: %w", target.ID, err)
+				}
+			} else if !os.IsNotExist(err) {
+				return nil, err
 			}
 			backups = append(backups, rec)
 		}
@@ -722,14 +805,13 @@ func applyExternalProxyPlan(plan externalStagePlanFile) (map[string]any, error) 
 		}
 
 		if replaceErr != nil {
-			_ = runScheduledTask("end", target.TaskName)
-			_ = waitExternalProxyPorts(target.PublicJava, target.PublicBedrock, false, 10*time.Second)
-			for _, rec := range backups {
-				if rec.Exists {
-					_ = externalAtomicCopy(rec.Backup, rec.Live)
-				} else {
-					_ = os.Remove(rec.Live)
-				}
+			stopErr := runScheduledTask("end", target.TaskName)
+			if downErr := waitExternalProxyPorts(target.PublicJava, target.PublicBedrock, false, 20*time.Second); downErr != nil {
+				return nil, fmt.Errorf("%s rollback stopped: proxy is not quiescent (stop=%v health=%v); backups preserved", target.ID, stopErr, downErr)
+			}
+			if err := restoreExternalProxyBackups(backups); err != nil {
+				appendV4Event("error", "update", target.ID, "External proxy rollback incomplete", err.Error())
+				return nil, fmt.Errorf("%s rollback failed; proxy left stopped and backups preserved: %w", target.ID, err)
 			}
 			rollbackStartErr := runScheduledTask("run", target.TaskName)
 			rollbackHealthErr := waitExternalProxyPorts(target.PublicJava, target.PublicBedrock, true, 90*time.Second)
@@ -746,14 +828,14 @@ func applyExternalProxyPlan(plan externalStagePlanFile) (map[string]any, error) 
 	}
 
 	return map[string]any{
-		"ok": true,
-		"mode": "rolling-proxy",
-		"applied_proxies": applied,
-		"components": len(items),
-		"backup_root": backupRoot,
-		"paper_touched": false,
+		"ok":                    true,
+		"mode":                  "rolling-proxy",
+		"applied_proxies":       applied,
+		"components":            len(items),
+		"backup_root":           backupRoot,
+		"paper_touched":         false,
 		"floodgate_key_touched": false,
-		"health_gate": "public Java TCP + Bedrock RakNet PONG",
+		"health_gate":           "public Java TCP + Bedrock discovery (NetherNet or RakNet); gameplay not attested",
 	}, nil
 }
 

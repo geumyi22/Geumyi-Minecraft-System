@@ -1,5 +1,7 @@
 # Geumyi Minecraft System
 
+> **GSC 5.0.0 최신 상태 (2026-11-10):** [2026-11-08 공개 개인용 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.0.0)과 실제 Windows PC에서 검증된 [별도 5.0 로컬 유지보수 소스](docs/operations/GSC-5.0.0-MAINTENANCE-2026-11-08.md)([PR #63](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/63))를 구별합니다. 사용자 실제 Minecraft 플레이 정상 확인, Geyser/Staging·백업 오류 보완, AutoSaveWorld 로딩 제거, 백업 빈도 1일 2회/서버 조정을 기록했습니다. **공개 Stable 파일·서명은 변경하지 않았으며 이 브랜치는 공식 새 릴리스가 아닙니다.** 상세 저장소 상태는 [main의 2026-11-10 상태 보고서](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/main/docs/operations/GSC-500-STATUS-2026-11-10.md)를 참고하세요.
+
 > **GSC 5.0.0-beta.1 통합 후보 (2026-10-25):** [PR #60](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/60)에서 기존 4.5.1 검증 기반의 Host·Client·Windows Setup을 하나의 5.0.0 베타로 통합했습니다. [변경·검증·실서버 미확인 항목](docs/operations/GSC-5.0.0-BETA-INTEGRATION-2026-10-25.md) · [단 하나의 베타 릴리즈 노트](docs/releases/GSC-5.0.0-beta.1.md). 베타 패키지 게시 여부는 GitHub Actions 결과로 판단해야 하며, **Stable 5.0.0은 운영자가 직접 릴리즈합니다.** 기존 Windows 예약 작업 Velocity 3개는 유지하고 GSC 직접 관리 실험은 포기했습니다. 이전 PR #57 등의 실험 기록은 아카이브 참고용이며 5.0.0에 병합되지 않습니다. 자동 Stable 게이트는 여전히 차단 상태입니다.
 
 
@@ -8,7 +10,7 @@
 
 > **2026-10-24 유지보수 현황:** Day 12의 소규모 운영 마감은 역사적 기준이며, 이후 GSC **4.5.2 Canary/Velocity 직접 관리**는 [Draft PR #57](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/57)에서 별도 개발 중입니다. 2026-10-21 GSC Canary **Host 설치 성공은 운영자 보고**이고, 기존 Velocity 세 프록시의 GSC 직접 관리 전환은 **0/3**입니다. 이 작업은 `main`/Stable에 병합·배포되지 않았습니다. 최신 점검·인수인계: [2026-10-24 프로젝트 상태](docs/operations/GMS-CURRENT-STATUS-2026-10-24.md).
 
-**최신 수동 설치 패키지:** [GSC 4.5.1 / GSCM 1.5.1+151 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) (2026-10-11 공개, GitHub Latest). 마지막 실제 운영 기기 확인은 GSC 4.3.8 / GSCM 1.1.5+117이며, 자동 Stable 배포용 서명 manifest는 별도입니다.
+**2026-10-11 당시의 통합 수동 설치 패키지:** [GSC 4.5.1 / GSCM 1.5.1+151 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) (2026-10-11 공개, 당시 최신 통합 패키지). 마지막 실제 운영 기기 확인은 GSC 4.3.8 / GSCM 1.1.5+117이며, 자동 Stable 배포용 서명 manifest는 별도입니다.
 
 GSC 4.5.1 및 GSCM 1.5.1+151 Stable 수동 설치 빌드 대상의 소스·복구 근거·CI·리소스팩을 모은 저장소입니다. **원본 그대로 회수한 소스와 바이너리 기준으로 재구성한 소스를 구분해서 기록합니다.**
 
@@ -74,11 +76,11 @@ Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/
 저장소는 Public 상태이므로 현재 트리와 Git 히스토리의 개인정보/시크릿 점검 결과는 [SECURITY-NOTES.md](docs/reference/SECURITY-NOTES.md)에 별도로 기록합니다. 자세한 복구 근거는 [RECOVERY-REPORT.md](docs/reference/RECOVERY-REPORT.md), [VERSION-MATRIX.md](VERSION-MATRIX.md), [SOURCE-MANIFEST.json](SOURCE-MANIFEST.json)을 확인하세요.
 
 
-## 최신 Stable 빌드
+## 2026-10-11 통합 Stable 빌드 (이력)
 
-- [**GSC 4.5.1 / GSCM 1.5.1+151 — 최신 수동 설치 Stable**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151): Windows GSC Setup/Host/Client, Android 서명 APK, iOS **미서명** IPA 및 SHA-256·출처 증빙 총 10개 파일. GitHub Latest 지정.
+- [**GSC 4.5.1 / GSCM 1.5.1+151 — 이전 통합 수동 설치 Stable**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151): Windows GSC Setup/Host/Client, Android 서명 APK, iOS **미서명** IPA 및 SHA-256·출처 증빙 총 10개 파일. 당시 최신 통합 릴리스로 게시.
 - GSC 4.5.1은 ViaVersion/ViaBackwards 다운로드용 Staging과 **서버 종료 후 명시적 오프라인 적용**을 분리했습니다. GSCM 1.5.1은 실행 시 새로운 버전 **확인** 및 설정의 수동 확인을 추가했습니다. Android 자동 설치나 iOS 미서명 IPA 설치를 지원하지 않습니다.
 - [원본 CI #38084637534](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38084637534)의 빌드·서명·체크섬은 통과, 초안 태그 조회 404로 마지막 게시 단계 실패. [후속 공개 #38085210886](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38085210886)은 SUCCESS.
-- 최신 GitHub 수동 설치 Stable은 **서명된 `deployment-stable.json`이 아닙니다.** 엄격한 자동 Stable 업데이트/보안 게이트는 계속 차단되며 실제 서버·휴대폰 설치/E2E 완료로 간주하지 않습니다.
+- 이 2026-10-11 통합 수동 설치 Stable은 **GSC 5.0.0의 서명된 `deployment-stable.json`과 별도입니다.** 엄격한 자동 Stable 업데이트/보안 게이트는 계속 차단되며 실제 서버·휴대폰 설치/E2E 완료로 간주하지 않습니다.
 - [이전 4.5.0/1.5.0+150 릴리즈(이력 보존)](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150) · [4.5.1/1.5.1 실기기 검증 체크리스트](docs/operations/RELEASE-4.5.1-1.5.1-SMOKE-CHECKLIST.md)
 

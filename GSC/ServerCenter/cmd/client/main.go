@@ -27,6 +27,10 @@ import (
 )
 
 const appVersion = "5.0.0"
+
+// Injected only for traceable local maintenance builds; public release stays unchanged.
+var buildRevision = ""
+
 const localPort = 8790
 
 //go:embed dashboard.html
@@ -240,7 +244,7 @@ func main() {
 	})
 	mux.HandleFunc("/api/", proxyAPI)
 	clientHTTPServer = &http.Server{
-		Handler:           mux,
+		Handler:           guardClientBrowserRequests(mux),
 		ReadHeaderTimeout: 5 * time.Second,
 		IdleTimeout:       30 * time.Second,
 		MaxHeaderBytes:    1 << 20,
@@ -304,7 +308,11 @@ func clientConfigAPI(w http.ResponseWriter, r *http.Request) {
 	cfg := clientConfigSnapshot()
 	if r.Method == "GET" {
 		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{"host_url": cfg.HostURL, "token": cfg.Token, "token_set": cfg.Token != "", "version": appVersion})
+		reply := map[string]any{"host_url": cfg.HostURL, "token": cfg.Token, "token_set": cfg.Token != "", "version": appVersion}
+		if buildRevision != "" {
+			reply["build_revision"] = buildRevision
+		}
+		_ = json.NewEncoder(w).Encode(reply)
 		return
 	}
 	if r.Method != "POST" {
@@ -336,7 +344,6 @@ func clientConfigAPI(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(204)
 }
-
 
 const defaultUpdateRepository = "geumyi22/Geumyi-Minecraft-System"
 
@@ -819,6 +826,17 @@ func clientUpdateApplyAPI(w http.ResponseWriter, r *http.Request) {
 		f.Flush()
 	}
 }
+func clientProxyTransportForPath(path string) *http.Transport {
+	switch path {
+	case "/api/v4/backup", "/api/v4/backup/verify", "/api/v4/restore",
+		"/api/v4/update/external/apply-proxy", "/api/v4/update/canary-rollout",
+		"/api/v4/update/external/stage", "/api/v4/update/external/status":
+		return clientLongProxyTransport
+	default:
+		return clientProxyTransport
+	}
+}
+
 func proxyAPI(w http.ResponseWriter, r *http.Request) {
 	cfg := clientConfigSnapshot()
 	base := strings.TrimRight(strings.TrimSpace(cfg.HostURL), "/")
@@ -832,17 +850,7 @@ func proxyAPI(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p := httputil.NewSingleHostReverseProxy(target)
-	transport := clientProxyTransport
-	switch r.URL.Path {
-	case "/api/v4/backup", "/api/v4/backup/verify", "/api/v4/restore",
-		"/api/v4/update/external/apply-proxy", "/api/v4/update/canary-rollout":
-		// These operations can legitimately spend minutes before the Host writes
-		// response headers. External proxy apply performs rolling stop -> verified
-		// JAR replace -> restart -> Java/Bedrock health gates for up to 3 proxies.
-		// Keep the short timeout for ordinary UI/status calls, but never convert a
-		// still-running safe transaction into a false "server PC connection failed".
-		transport = clientLongProxyTransport
-	}
+	transport := clientProxyTransportForPath(r.URL.Path)
 	p.Transport = transport
 	orig := p.Director
 	p.Director = func(req *http.Request) {
