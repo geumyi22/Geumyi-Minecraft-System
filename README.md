@@ -1,10 +1,14 @@
 # Geumyi Minecraft System
 
+> **현재 릴리스/운영 상태 (2026-11-10):** GSC의 최신 공개 개인용 Stable은 [**GSC 5.0.0**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.0.0)입니다. 실제 Windows PC에 설치한 별도 5.0.0 **유지보수 빌드**([PR #63](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/63), `c39ecd67...`)에서는 2026-11-08 사용자가 Minecraft 실제 플레이 정상 작동을 보고했습니다. [**현재 상태 및 검증 범위**](docs/operations/GSC-500-STATUS-2026-11-10.md)를 먼저 확인하세요.
+>
+> **소스/배포 구분:** 이 `main`은 아직 GSC 5.0 소스를 병합하지 않은 과거 4.x 기반입니다. 공개 5.0.0 서명 릴리스와 로컬 유지보수 실행 파일은 **다른 바이너리**이며, 아래 2026-10-11~10-24의 4.x 정보는 당시의 이력입니다. GSCM 1.5.1+151은 별도 앱으로 기존 통합 릴리스에 남아 있습니다.
+
 > **프로젝트 종료 정리 (2026-10-11):** 일반 기능 개발과 반복 테스트는 소규모 서버 운영 기준으로 마감했습니다. GitHub/PC 정리 기록과 유지할 복구 자산은 [PROJECT-CLOSEOUT-2026-10-11.md](PROJECT-CLOSEOUT-2026-10-11.md)에 있습니다. 정식 Stable 릴리즈의 엄격한 보안 게이트는 아직 통과하지 않았습니다.
 
 > **2026-10-24 유지보수 현황:** Day 12의 소규모 운영 마감은 역사적 기준이며, 이후 GSC **4.5.2 Canary/Velocity 직접 관리**는 [Draft PR #57](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/57)에서 별도 개발 중입니다. 2026-10-21 GSC Canary **Host 설치 성공은 운영자 보고**이고, 기존 Velocity 세 프록시의 GSC 직접 관리 전환은 **0/3**입니다. 이 작업은 `main`/Stable에 병합·배포되지 않았습니다. 최신 점검·인수인계: [2026-10-24 프로젝트 상태](docs/operations/GMS-CURRENT-STATUS-2026-10-24.md).
 
-**최신 수동 설치 패키지:** [GSC 4.5.1 / GSCM 1.5.1+151 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) (2026-10-11 공개, GitHub Latest). 마지막 실제 운영 기기 확인은 GSC 4.3.8 / GSCM 1.1.5+117이며, 자동 Stable 배포용 서명 manifest는 별도입니다.
+**2026-10-11 당시의 통합 수동 설치 패키지:** [GSC 4.5.1 / GSCM 1.5.1+151 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) (2026-10-11 공개, 당시 최신 통합 패키지). 마지막 실제 운영 기기 확인은 GSC 4.3.8 / GSCM 1.1.5+117이며, 자동 Stable 배포용 서명 manifest는 별도입니다.
 
 GSC 4.5.1 및 GSCM 1.5.1+151 Stable 수동 설치 빌드 대상의 소스·복구 근거·CI·리소스팩을 모은 저장소입니다. **원본 그대로 회수한 소스와 바이너리 기준으로 재구성한 소스를 구분해서 기록합니다.**
 
@@ -70,11 +74,11 @@ Day 4는 누락된 번호가 아니라 **새 구현 없이 실서버 E2E 검증/
 저장소는 Public 상태이므로 현재 트리와 Git 히스토리의 개인정보/시크릿 점검 결과는 [SECURITY-NOTES.md](docs/reference/SECURITY-NOTES.md)에 별도로 기록합니다. 자세한 복구 근거는 [RECOVERY-REPORT.md](docs/reference/RECOVERY-REPORT.md), [VERSION-MATRIX.md](VERSION-MATRIX.md), [SOURCE-MANIFEST.json](SOURCE-MANIFEST.json)을 확인하세요.
 
 
-## 최신 Stable 빌드
+## 2026-10-11 통합 Stable 빌드 (이력)
 
-- [**GSC 4.5.1 / GSCM 1.5.1+151 — 최신 수동 설치 Stable**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151): Windows GSC Setup/Host/Client, Android 서명 APK, iOS **미서명** IPA 및 SHA-256·출처 증빙 총 10개 파일. GitHub Latest 지정.
+- [**GSC 4.5.1 / GSCM 1.5.1+151 — 이전 통합 수동 설치 Stable**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151): Windows GSC Setup/Host/Client, Android 서명 APK, iOS **미서명** IPA 및 SHA-256·출처 증빙 총 10개 파일. 당시 최신 통합 릴리스로 게시.
 - GSC 4.5.1은 ViaVersion/ViaBackwards 다운로드용 Staging과 **서버 종료 후 명시적 오프라인 적용**을 분리했습니다. GSCM 1.5.1은 실행 시 새로운 버전 **확인** 및 설정의 수동 확인을 추가했습니다. Android 자동 설치나 iOS 미서명 IPA 설치를 지원하지 않습니다.
 - [원본 CI #38084637534](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38084637534)의 빌드·서명·체크섬은 통과, 초안 태그 조회 404로 마지막 게시 단계 실패. [후속 공개 #38085210886](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/38085210886)은 SUCCESS.
-- 최신 GitHub 수동 설치 Stable은 **서명된 `deployment-stable.json`이 아닙니다.** 엄격한 자동 Stable 업데이트/보안 게이트는 계속 차단되며 실제 서버·휴대폰 설치/E2E 완료로 간주하지 않습니다.
+- 이 2026-10-11 통합 수동 설치 Stable은 **GSC 5.0.0의 서명된 `deployment-stable.json`과 별도입니다.** 엄격한 자동 Stable 업데이트/보안 게이트는 계속 차단되며 실제 서버·휴대폰 설치/E2E 완료로 간주하지 않습니다.
 - [이전 4.5.0/1.5.0+150 릴리즈(이력 보존)](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc450-gscm150) · [4.5.1/1.5.1 실기기 검증 체크리스트](docs/operations/RELEASE-4.5.1-1.5.1-SMOKE-CHECKLIST.md)
 
