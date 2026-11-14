@@ -58,6 +58,14 @@ func instanceFixture(t *testing.T, root, id string, port int) ManagedInstance {
 	if err := os.Mkdir(dir, 0700); err != nil {
 		t.Fatal(err)
 	}
+	// Windows CI TempDir may use an 8.3 alias (RUNNER~1), while the
+	// production catalog stores the fully resolved directory. Feed runtime
+	// tests the same canonical path; do not loosen the path-escape guards.
+	resolved, err := canonicalInstanceDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir = resolved
 	if err := os.WriteFile(filepath.Join(dir, "server.jar"), []byte("unchanged jar"), 0600); err != nil {
 		t.Fatal(err)
 	}
