@@ -2,6 +2,12 @@
 
 서버 7종과 Velocity를 새로 만들고, 같은 화면에서 시작·정상 종료·재시작할 수 있는 개인용 개발본입니다. 기존 Paper 서버 4개, 월드·플레이어 데이터, 기존 Velocity 예약 작업 3개는 이번 개발과 확인 작업에서 변경하지 않았습니다. 운영 설치본을 교체하거나 배포한 상태는 아닙니다.
 
+## 2026-11-15 GitHub 검증 상태
+
+**이 버전은 현재 개발용 초안입니다.** [PR #64](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/64)의 최초 5.1 기능 커밋 `d119d1ea70f11894e45fb1ec808dbc7b1256db1d`에 대한 GitHub Windows CI와 Day 11 Host 테스트는 **실패**했습니다. 개발 PC의 로컬 기능 QA 기록은 있으나 모든 환경에서 성공했다고 보장할 수 없으며 **아직 운영 서버에 설치하거나 공개 Stable로 배포하지 않았습니다.**
+
+[정확한 CI 실패 목록·검증 경계](GSC-5.1.0-QA.md#github-windows-ci-별도-검증-결과--2026-11-15) · [저장소 상태 및 이후 조치](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/main/docs/operations/GSC-510-DEVELOPMENT-STATUS-2026-11-15.md)
+
 ## 가장 빠르게 시작하기
 
 1. 패키지를 새 폴더에 풀고 `Start-Personal.cmd`를 실행합니다. 처음에는 별도 `data` 폴더와 빈 서버 목록을 사용합니다.
@@ -63,4 +69,4 @@ Spigot에 필요한 Git 환경이 없으면 공식 PortableGit을 GSC 데이터 
 
 먼저 새 서버 하나에서 시작 → 접속 → 콘솔 확인 → 정상 종료 → 재시작을 확인하면 됩니다. 7종 게임 서버의 실제 기동·자동 클라이언트 월드 진입·재시작과 새 Velocity의 백엔드 경유 접속을 확인했습니다. 실제 계정 인증과 외부 접속 등 남은 확인 범위는 [검증기록](GSC-5.1.0-QA.md)에 구분했습니다.
 
-소스 기준은 `77647c6`, 개발 브랜치는 `feature/personal-server-manager`입니다. 소스는 해당 개발 브랜치로 관리하며, GitHub 반영과 운영 배포는 별도입니다. 운영 설치본은 교체하지 않았습니다. 소스 빌드는 [BUILD.md](../../GSC/ServerCenter/BUILD.md), 개인용 실행 스크립트는 [tools/gsc5/personal](../../tools/gsc5/personal/)을 참고하세요. 실행 패키지에는 전체 변경 패치와 별도 빌드 안내도 포함합니다.
+`77647c6`은 출발한 5.0 유지보수 **기반 커밋**이며, 5.1 기능을 처음 커밋한 GitHub 버전은 `d119d1ea70f11894e45fb1ec808dbc7b1256db1d`입니다. 개발 브랜치는 `feature/personal-server-manager`입니다. 소스는 해당 개발 브랜치로 관리하며, GitHub 반영과 운영 배포는 별도입니다. 운영 설치본은 교체하지 않았습니다. 소스 빌드는 [BUILD.md](../../GSC/ServerCenter/BUILD.md), 개인용 실행 스크립트는 [tools/gsc5/personal](../../tools/gsc5/personal/)을 참고하세요. 실행 패키지에는 전체 변경 패치와 별도 빌드 안내도 포함합니다.
