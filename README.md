@@ -1,6 +1,10 @@
 # Geumyi Minecraft System
 
-> **최신 공개 릴리스 (2026-11-15):** [**GSC 5.1.0 — 개인용 Stable**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.0) 출시 완료. 정확한 소스 `a3f24700049ac99b5fb2b66e5fe8bc441f389a1d`, [Windows CI 및 서명 릴리스 검증 21/21 SUCCESS](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43619416741), 공개 자산 11개. [**5.1 Stable 릴리스 보고서**](docs/operations/GSC-510-STABLE-2026-11-15.md)를 먼저 확인하세요.
+> **최신 공개 개인용 Stable (2026-11-15):** [**GSC 5.1.1**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.1) — 기존 5.0.0 Host에서 5.1.0 설치가 막히던 버전 검증 오류를 안전하게 수정한 릴리스. [**설치 이전 오류·검증·주의사항**](docs/operations/GSC-511-MIGRATION-HOTFIX-2026-11-15.md) · [정확한 Windows CI 21/21 SUCCESS](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43623012808). 기존 5.0.0과 5.1.0 배포 자산은 그대로 보존합니다.
+>
+> **운영 설치 주의:** GitHub 릴리스 완료와 실제 Windows 운영 PC 업데이트는 다릅니다. 5.1.1을 기존 5.0.0에 아직 실설치/실플레이 검증하지 않았으므로 월드·설정·백업·기존 서비스를 별도 보존하고 점검 시간에만 검증합니다. Host가 중지돼 있으면 신원 확인은 계속 차단됩니다.
+
+> **이전 공개 릴리스 (2026-11-15):** [**GSC 5.1.0 — 개인용 Stable**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.0) 출시 완료. 정확한 소스 `a3f24700049ac99b5fb2b66e5fe8bc441f389a1d`, [Windows CI 및 서명 릴리스 검증 21/21 SUCCESS](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43619416741), 공개 자산 11개. [**5.1 Stable 릴리스 보고서**](docs/operations/GSC-510-STABLE-2026-11-15.md)를 먼저 확인하세요.
 >
 > **운영 PC와 소스는 별개:** 공개 릴리스는 서명된 개인용 Stable이지만 **실제 Windows 운영 PC에 5.1.0 설치·실플레이까지 수행한 것은 아닙니다**. `main`에는 GSC 5.1 실행 코드가 아직 병합되지 않았고, 이전 5.0.0은 별도 태그로 보존됩니다. 기존 월드/플레이어 데이터·Velocity 예약 작업 전환은 자동으로 진행되지 않습니다.
 
