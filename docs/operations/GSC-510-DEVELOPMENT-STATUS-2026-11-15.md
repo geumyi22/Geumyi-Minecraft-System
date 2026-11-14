@@ -1,5 +1,7 @@
 # GSC 5.1.0 개발 상태 및 GitHub 인수인계 — 2026-11-15
 
+> **후속 조치 — 개인용 Stable 게시 완료 (2026-11-15 02:11:58 KST):** 아래의 “GitHub CI 실패·Draft”는 **개발 당시의 이력**입니다. Windows 테스트가 사용하던 `RUNNER~1` 경로 별칭 문제를 테스트 fixture에서 정규화해 수정했으며, 이후 [System CI #43618596986](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43618596986)와 [정확한 릴리스 CI #43619416741](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43619416741)(21/21 SUCCESS)이 통과했습니다. [**GSC 5.1.0 — 개인용 Stable**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.0)을 11개 서명/무결성 자산과 함께 게시했습니다. 정확한 SHA는 `a3f24700049ac99b5fb2b66e5fe8bc441f389a1d`. 최신 상태는 [5.1 Stable 릴리스 검증 보고서](GSC-510-STABLE-2026-11-15.md)를 우선하세요. **운영 PC 5.1 설치·사용자 실플레이는 아직 별도 미검증**입니다.
+
 > **현재 판정: 5.1.0 개발 기능 구현 및 로컬 QA 기록 있음 / GitHub Windows CI 실패 / Draft·미병합·미배포.** 이 문서는 기존 운영 GSC 5.0.0을 자동으로 교체하거나 5.1.0을 Stable로 승격하는 승인·증빙이 아닙니다.
 
 ## 버전·브랜치 구분
