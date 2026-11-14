@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-const appVersion = "5.1.0"
+const appVersion = "5.1.1"
 
 // Empty in the published Stable; injected for traceable local maintenance builds.
 var buildRevision = ""
