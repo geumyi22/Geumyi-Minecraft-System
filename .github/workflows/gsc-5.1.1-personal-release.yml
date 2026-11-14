@@ -5,6 +5,7 @@ on:
     branches: [release/gsc-5.1.1-personal-20261115]
     paths:
       - 'GSC/ServerCenter/**'
+      - 'tools/gsc5/**'
       - '.github/workflows/gsc-5.1.1-personal-release.yml'
       - 'tools/release/gsc_personal_stable_511.py'
       - 'tools/release/test_gsc_personal_stable_511.py'
