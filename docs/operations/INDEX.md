@@ -2,6 +2,7 @@
 
 **현재 기준 (2026-11-10):** GSC 최신 공개 개인용 Stable은 [GSC 5.0.0](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.0.0)입니다. 2026-11-08 실제 Windows PC에 적용된 별도 유지보수 빌드에서 사용자 Minecraft 실플레이 정상 확인이 있었으며, 이는 **공개 Stable 파일과 다른 실행 파일**입니다. 기본 `main`은 아직 4.x 코드 기준입니다. 아래 10월 자료는 이력으로 보존합니다.
 
+- [**GSC 5.1.1 개인용 Stable: 5.0→5.1 설치 이전 오류 수정 (2026-11-15)**](GSC-511-MIGRATION-HOTFIX-2026-11-15.md) — 정식 게시/서명 CI 성공, 기존 PC 업그레이드는 별도
 - [**GSC 5.1.0 개인용 Stable 릴리스 검증 (2026-11-15)**](GSC-510-STABLE-2026-11-15.md) — 21/21 CI 성공·서명된 공개 릴리스, 운영 PC 설치는 별도
 - [**GSC 5.1.0 최신 개발 상태·CI 오류 (2026-11-15)**](GSC-510-DEVELOPMENT-STATUS-2026-11-15.md) — PR #64 Draft, 새 Velocity 기능, 미완료 QA/배포 조건
 - [**GSC 5.0 최신 운영·유지보수·QA 구분 (2026-11-10)**](GSC-500-STATUS-2026-11-10.md)
