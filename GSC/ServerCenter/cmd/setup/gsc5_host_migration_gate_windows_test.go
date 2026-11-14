@@ -14,6 +14,8 @@ import (
 
 func TestGSC5HostMigrationDecisionTable(t *testing.T) {
 	stable := gsc5ExistingHostHealth{OK: true, Service: true, Version: "4.5.1", Generation: 4}
+	stableFive := gsc5ExistingHostHealth{OK: true, Service: true, Version: "5.0.0", Generation: 4}
+	stableFiveOne := gsc5ExistingHostHealth{OK: true, Service: true, Version: "5.1.0", Generation: 4}
 	beta := gsc5ExistingHostHealth{OK: true, Service: true, Version: version, Generation: 4}
 	canary := gsc5ExistingHostHealth{OK: true, Service: true, Version: "4.5.2", Generation: 4}
 	cases := []struct {
@@ -28,6 +30,14 @@ func TestGSC5HostMigrationDecisionTable(t *testing.T) {
 		{"client-only", 2, "4.5.2", canary, true, true},
 		{"stable-base-existing-host", 1, "4.5.1", stable, true, true},
 		{"combined-stable", 3, "", stable, true, true},
+		{"existing-five-stable-combined", 3, "5.0.0", stableFive, true, true},
+		{"existing-five-stable-server", 1, "5.0.0", stableFive, true, true},
+		{"existing-five-one-stable-combined", 3, "5.1.0", stableFiveOne, true, true},
+		{"existing-five-stable-down", 3, "5.0.0", gsc5ExistingHostHealth{}, false, false},
+		{"existing-five-stable-not-service", 3, "5.0.0", gsc5ExistingHostHealth{OK: true, Service: false, Version: "5.0.0", Generation: 4}, true, false},
+		{"existing-five-stable-bad-generation", 3, "5.0.0", gsc5ExistingHostHealth{OK: true, Service: true, Version: "5.0.0", Generation: 3}, true, false},
+		{"existing-five-stable-unknown-role", 3, "4.2.4", stableFive, true, false},
+		{"existing-five-stable-health-new-version-mismatch", 3, "5.0.0", beta, true, false},
 		{"same-beta-reinstall", 1, version, beta, true, true},
 		{"canary-running", 1, "4.5.1", canary, true, false},
 		{"stale-role-version-even-with-stable-health", 3, "4.2.4", stable, true, false},
