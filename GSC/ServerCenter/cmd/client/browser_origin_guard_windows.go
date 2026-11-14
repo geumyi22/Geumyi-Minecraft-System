@@ -16,7 +16,7 @@ func localClientAuthority(raw string) bool {
 		return false
 	}
 	ip := net.ParseIP(u.Hostname())
-	return (strings.EqualFold(u.Hostname(), "localhost") || (ip != nil && ip.IsLoopback())) && u.Port() == strconv.Itoa(localPort)
+	return (strings.EqualFold(u.Hostname(), "localhost") || (ip != nil && ip.IsLoopback())) && u.Port() == strconv.Itoa(personalClientPort())
 }
 func guardClientBrowserRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

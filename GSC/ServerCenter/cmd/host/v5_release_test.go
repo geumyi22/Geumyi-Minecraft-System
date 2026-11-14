@@ -8,7 +8,7 @@ import (
 )
 
 func TestV5ReleaseReadOnlyContract(t *testing.T) {
-	if appVersion != "5.0.0" {
+	if appVersion != "5.1.0" {
 		t.Fatalf("Host version %q", appVersion)
 	}
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete} {
@@ -35,7 +35,7 @@ func TestV5ReleaseReadOnlyContract(t *testing.T) {
 	if err := json.Unmarshal(rec.Body.Bytes(), &v); err != nil {
 		t.Fatal(err)
 	}
-	if !v.OK || v.Version != "5.0.0" || v.Channel != "stable" || v.APICompatibleMajor != 4 ||
+	if !v.OK || v.Version != appVersion || v.Channel != "stable" || v.APICompatibleMajor != 4 ||
 		v.VelocityLifecycleOwner != "windows_task_scheduler" || v.Owns || v.AutoStable {
 		t.Fatalf("unsafe release API contract: %+v", v)
 	}

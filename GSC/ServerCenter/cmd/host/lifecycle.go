@@ -519,6 +519,16 @@ func apiShutdown(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if shuttingDown.CompareAndSwap(false, true) {
+		if err := instanceInstallShutdownError(); err != nil {
+			shuttingDown.Store(false)
+			http.Error(w, err.Error(), http.StatusConflict)
+			return
+		}
+		if err := managedInstanceShutdownBlock(); err != nil {
+			shuttingDown.Store(false)
+			http.Error(w, err.Error(), http.StatusConflict)
+			return
+		}
 		supervisionPaused.Store(true)
 		setAgentDesired(false)
 		for _, s := range configSnapshot().Servers {

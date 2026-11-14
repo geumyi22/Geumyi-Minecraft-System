@@ -26,7 +26,7 @@ import (
 	"unsafe"
 )
 
-const appVersion = "5.0.0"
+const appVersion = "5.1.0"
 
 // Injected only for traceable local maintenance builds; public release stays unchanged.
 var buildRevision = ""
@@ -35,6 +35,9 @@ const localPort = 8790
 
 //go:embed dashboard.html
 var dashboardHTML string
+
+//go:embed instances-ui.js
+var instancesUI string
 
 //go:embed app.ico
 var appIcon []byte
@@ -207,6 +210,11 @@ var (
 		t.ResponseHeaderTimeout = 30 * time.Minute
 		return t
 	}()
+	clientInstanceProxyTransport = func() *http.Transport {
+		t := clientProxyTransport.Clone()
+		t.ResponseHeaderTimeout = 45 * time.Second
+		return t
+	}()
 )
 
 func wptr(s string) *uint16 { p, _ := syscall.UTF16PtrFromString(s); return p }
@@ -226,14 +234,20 @@ func main() {
 	}
 	cfgPath = clientConfigPath()
 	cfg = loadClientConfig(cfgPath)
-	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", localPort))
+	port := personalClientPort()
+	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
 	if err != nil {
-		openAppWindow(fmt.Sprintf("http://127.0.0.1:%d/", localPort))
+		openAppWindow(fmt.Sprintf("http://127.0.0.1:%d/", port))
 		return
 	}
-	localURL = fmt.Sprintf("http://127.0.0.1:%d", localPort)
+	localURL = fmt.Sprintf("http://127.0.0.1:%d", port)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveDashboard)
+	mux.HandleFunc("/instances-ui.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+		w.Header().Set("Cache-Control", "no-store")
+		_, _ = io.WriteString(w, instancesUI)
+	})
 	mux.HandleFunc("/client/config", clientConfigAPI)
 	mux.HandleFunc("/client/update/status", clientUpdateStatusAPI)
 	mux.HandleFunc("/client/update/stage", clientUpdateStageAPI)
@@ -254,12 +268,17 @@ func main() {
 			showBalloon("관리 UI 오류", e.Error(), true)
 		}
 	}()
-	go ensureLocalHost()
+	if !personalClientFlag("--no-start-host") {
+		go ensureLocalHost()
+	}
 	runTray()
 	shutdownClientRuntime()
 }
 
 func clientConfigPath() string {
+	if path := personalClientValue("--config"); path != "" {
+		return path
+	}
 	b := os.Getenv("APPDATA")
 	if b == "" {
 		b = os.Getenv("LOCALAPPDATA")
@@ -301,7 +320,7 @@ func serveDashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	html := strings.Replace(dashboardHTML, "</head>", `<link rel="icon" href="/app.ico"></head>`, 1)
+	html := strings.Replace(dashboardHTML, "</head>", `<link rel="icon" href="/app.ico"><script defer src="/instances-ui.js"></script></head>`, 1)
 	_, _ = io.WriteString(w, html)
 }
 func clientConfigAPI(w http.ResponseWriter, r *http.Request) {
@@ -828,6 +847,8 @@ func clientUpdateApplyAPI(w http.ResponseWriter, r *http.Request) {
 }
 func clientProxyTransportForPath(path string) *http.Transport {
 	switch path {
+	case "/api/v5/instances", "/api/v5/instances/versions", "/api/v5/instances/proxy-candidates":
+		return clientInstanceProxyTransport
 	case "/api/v4/backup", "/api/v4/backup/verify", "/api/v4/restore",
 		"/api/v4/update/external/apply-proxy", "/api/v4/update/canary-rollout",
 		"/api/v4/update/external/stage", "/api/v4/update/external/status":
@@ -855,6 +876,12 @@ func proxyAPI(w http.ResponseWriter, r *http.Request) {
 	orig := p.Director
 	p.Director = func(req *http.Request) {
 		orig(req)
+		if personalClientPort() != localPort {
+			// guardClientBrowserRequests already validated this local origin.
+			// Forward as an authenticated native request from the optional port.
+			req.Header.Del("Origin")
+			req.Header.Del("Sec-Fetch-Site")
+		}
 		if cfg.Token != "" {
 			req.Header.Set("Authorization", "Bearer "+cfg.Token)
 		}

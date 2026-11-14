@@ -1,5 +1,7 @@
 # Geumyi Minecraft System
 
+> **현재 개발본: GSC 5.1.0 (2026-11-15).** 서버 7종 자동 설치·관리와 별도 Velocity 프록시 메뉴를 추가했습니다. [기능·사용 안내](docs/releases/GSC-5.1.0.md) · [검증 결과와 미검증 범위](docs/releases/GSC-5.1.0-QA.md). Host·Client는 5.1.0으로 재빌드하여 실제 버전 표시까지 확인했습니다. 기존 서버·월드·플레이어 데이터와 운영 예약 작업은 보존했으며, **5.1.0 공개 릴리스·운영 설치 교체는 수행하지 않았습니다.** 아래 5.0.0 및 4.x 기록은 이전 버전의 이력입니다.
+
 > **GSC 5.0.0 최신 상태 (2026-11-10):** [2026-11-08 공개 개인용 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.0.0)과 실제 Windows PC에서 검증된 [별도 5.0 로컬 유지보수 소스](docs/operations/GSC-5.0.0-MAINTENANCE-2026-11-08.md)([PR #63](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/63))를 구별합니다. 사용자 실제 Minecraft 플레이 정상 확인, Geyser/Staging·백업 오류 보완, AutoSaveWorld 로딩 제거, 백업 빈도 1일 2회/서버 조정을 기록했습니다. **공개 Stable 파일·서명은 변경하지 않았으며 이 브랜치는 공식 새 릴리스가 아닙니다.** 상세 저장소 상태는 [main의 2026-11-10 상태 보고서](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/main/docs/operations/GSC-500-STATUS-2026-11-10.md)를 참고하세요.
 
 > **GSC 5.0.0-beta.1 통합 후보 (2026-10-25):** [PR #60](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/60)에서 기존 4.5.1 검증 기반의 Host·Client·Windows Setup을 하나의 5.0.0 베타로 통합했습니다. [변경·검증·실서버 미확인 항목](docs/operations/GSC-5.0.0-BETA-INTEGRATION-2026-10-25.md) · [단 하나의 베타 릴리즈 노트](docs/releases/GSC-5.0.0-beta.1.md). 베타 패키지 게시 여부는 GitHub Actions 결과로 판단해야 하며, **Stable 5.0.0은 운영자가 직접 릴리즈합니다.** 기존 Windows 예약 작업 Velocity 3개는 유지하고 GSC 직접 관리 실험은 포기했습니다. 이전 PR #57 등의 실험 기록은 아카이브 참고용이며 5.0.0에 병합되지 않습니다. 자동 Stable 게이트는 여전히 차단 상태입니다.

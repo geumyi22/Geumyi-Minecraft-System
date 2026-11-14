@@ -76,6 +76,9 @@ func runHostTask() error {
 	return c.Run()
 }
 func ensureLocalHost() {
+	if personalClientFlag("--no-start-host") {
+		return
+	}
 	c := clientConfigSnapshot()
 	u, e := url.Parse(c.HostURL)
 	if e != nil {
@@ -191,7 +194,7 @@ $targets=@(Get-GSCTargets);
 foreach($p in $targets){& taskkill.exe /PID $p.ProcessId /T /F 1>$null 2>$null}
 $until=(Get-Date).AddSeconds(5);
 do { if(@(Get-GSCTargets).Count -eq 0){exit 0}; Start-Sleep -Milliseconds 120 } while((Get-Date) -lt $until);
-exit 17`, profile, pidText, localPort)
+exit 17`, profile, pidText, personalClientPort())
 	ctx, cancel := context.WithTimeout(context.Background(), 9*time.Second)
 	defer cancel()
 	c := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-NonInteractive", "-Command", ps)
@@ -238,5 +241,8 @@ func shutdownClientRuntime() {
 	}
 	if clientProxyTransport != nil {
 		clientProxyTransport.CloseIdleConnections()
+	}
+	if clientInstanceProxyTransport != nil {
+		clientInstanceProxyTransport.CloseIdleConnections()
 	}
 }

@@ -21,7 +21,15 @@ func migrationObserveRequested() bool {
 // interrupted jobs, so it must not run in observation mode either.
 func initializeHostRuntime(observe bool) {
 	initRuntimeState()
+	// Observation remains read-only even when another launch mode is present.
 	if observe {
+		startStatusTelemetry()
+		return
+	}
+	if personalModeRequested() {
+		// A portable personal session exposes manual controls without replaying
+		// installed-server schedules, starting companions or changing the firewall.
+		initV4Runtime()
 		startStatusTelemetry()
 		return
 	}
@@ -35,6 +43,15 @@ func initializeHostRuntime(observe bool) {
 	go reloadReconciledGDS(changedBridges)
 	go v4MetricsLoop()
 	go v4AutomationLoop()
+}
+
+func personalModeRequested() bool {
+	for _, arg := range os.Args[1:] {
+		if arg == "--personal-mode" {
+			return true
+		}
+	}
+	return false
 }
 
 // This outer gate also covers unauthenticated/loopback and future API routes.

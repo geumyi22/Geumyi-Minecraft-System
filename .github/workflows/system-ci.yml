@@ -23,7 +23,7 @@ on:
       - '.github/workflows/day8-release.yml'
       - '.github/workflows/system-ci.yml'
   pull_request:
-    branches: [ main ]
+    branches: [ main, maintenance/gsc5-play-readiness-20261108 ]
     paths:
       - 'GSC/ServerCenter/**'
       - 'GSC/StatusAgent/**'
@@ -53,7 +53,7 @@ concurrency:
 
 jobs:
   gsc:
-    name: GSC 5.0.0 / Go test
+    name: GSC 5.1.0 / Go test
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
@@ -69,7 +69,7 @@ jobs:
         run: go test ./...
 
   beta-identity:
-    name: GSC 5.0.0 Stable identity and exclusion audit
+    name: GSC 5.1.0 Stable identity and exclusion audit
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -81,7 +81,7 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-          ver="5.0.0"
+          ver="5.1.0"
           paths={
              "GSC/ServerCenter/cmd/host/main.go":'const appVersion = "'+ver+'"',
              "GSC/ServerCenter/cmd/client/main.go":'const appVersion = "'+ver+'"',
@@ -491,7 +491,7 @@ jobs:
           PY
 
   gsc-package:
-    name: GSC 5.0.0 / assemble CI Setup
+    name: GSC 5.1.0 / assemble CI Setup
     needs: [gsc, statusagent, gds, gst]
     runs-on: windows-latest
     timeout-minutes: 20
@@ -577,7 +577,7 @@ jobs:
         run: |
           $root = 'GSC/ServerCenter'
           $files = @(
-            "$root/dist/GeumyiServerCenter-v5.0.0-Setup.exe",
+            "$root/dist/GeumyiServerCenter-v5.1.0-Setup.exe",
             "$root/cmd/setup/payload/GeumyiServerHost.exe",
             "$root/cmd/setup/payload/GeumyiServerCenter.exe"
           )
@@ -605,7 +605,7 @@ jobs:
       - name: Upload GSC CI package
         uses: actions/upload-artifact@v7
         with:
-          name: gsc-5.0.0-ci
+          name: gsc-5.1.0-ci
           path: GSC/ServerCenter/dist-ci/*
           if-no-files-found: error
           retention-days: 14
