@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "version": "5.1.0",
+  "channel": "stable",
+  "scope": "personal_operator_accepted",
+  "decision_date": "2026-11-15",
+  "decision_timezone": "Asia/Seoul",
+  "operator_authorized_release": true,
+  "operator_authorized_install": false,
+  "production_install_completed": false,
+  "full_live_qa_pass_claimed": false,
+  "base_public_stable": "gsc-v5.0.0",
+  "evidence": [
+    {
+      "id": "operator_release_request",
+      "status": "operator_accepted",
+      "date": "2026-11-15",
+      "scope": "User explicitly requested development through GSC 5.1.0 Stable readiness and publication; this is not authorization to overwrite a running production installation"
+    },
+    {
+      "id": "dev_functional_qa",
+      "status": "verified",
+      "date": "2026-11-15",
+      "scope": "Disposable Windows personal Host and automated loopback protocol tests: seven server kinds and new Velocity creation/start/stop/restart, file and player-data persistence. QA record is not real account gameplay"
+    },
+    {
+      "id": "velocity_scheduler_bridge",
+      "status": "verified",
+      "date": "2026-11-15",
+      "scope": "Independent Velocity plugin fixture authentication/identity/graceful shutdown/restart; original Scheduler-owned production proxies were not converted or stopped"
+    },
+    {
+      "id": "windows_previous_source_ci",
+      "status": "verified",
+      "date": "2026-11-15",
+      "scope": "Earlier source commit 701aeb0: Windows System CI 43618596986 and Day11 Host Test 43618593595 succeeded; release must rerun exact new source CI"
+    },
+    {
+      "id": "exact_release_sha_ci",
+      "status": "pending",
+      "date": "2026-11-15",
+      "scope": "Release workflow must call full Windows System CI and verify exact GITHUB_SHA before signing/publishing"
+    },
+    {
+      "id": "setup_real_executable_disposable_qa",
+      "status": "pending",
+      "scope": "Release CI must execute packaged payload and disposable Windows service/client installer QA; live personal PC install still unexecuted"
+    },
+    {
+      "id": "production_pc_install_and_rollback",
+      "status": "not_run",
+      "scope": "No installation over live GSC 5.0.0 or production server, no world migration"
+    },
+    {
+      "id": "minecraft_authenticated_multiplayer_and_wan",
+      "status": "not_run",
+      "scope": "No real Microsoft account Java/Bedrock, WAN/mobile, long-duration multiplayer or real-world restore E2E"
+    },
+    {
+      "id": "signed_release_manifest",
+      "status": "pending",
+      "scope": "Release workflow must produce and verify Ed25519 deployment-stable.json using pinned existing public key; Windows Authenticode is not claimed"
+    }
+  ],
+  "full_project_release_gates": "Formal FINAL-RELEASE-GATES.json remains unchanged and does not become PASS from personal Stable publication"
+}
