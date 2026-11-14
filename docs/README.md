@@ -4,6 +4,7 @@
 
 - [**GSC 5.1.0 개발 PR·GitHub CI 차단 상태 (2026-11-15)**](operations/GSC-510-DEVELOPMENT-STATUS-2026-11-15.md) — 서버 7종 자동 설치·Velocity 제어 개발, 현재 Draft/CI 실패·미배포
 - [**GSC 5.1.0 개인용 Stable 공개 및 정확한 Windows CI·서명 검증 (2026-11-15)**](operations/GSC-510-STABLE-2026-11-15.md) — 11개 배포 자산, 21/21 CI PASS, 운영 PC 실설치·실플레이는 별도
+- [**GSC 5.1.1 최신 Stable: 5.0 Host 이전 오류 수정 및 검증**](operations/GSC-511-MIGRATION-HOTFIX-2026-11-15.md) — CI 21/21 PASS, 기존 5.0 운영 데이터 보존·실설치 미검증
 ## 찾아보기
 
 - [**GSC 5.0.0 현재 릴리스·유지보수·실플레이 상태 (2026-11-10)**](operations/GSC-500-STATUS-2026-11-10.md) — 공개 Stable / 로컬 유지보수 빌드 / main 구분, 사용자 플레이 확인과 남은 E2E
