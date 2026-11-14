@@ -1,8 +1,19 @@
 # GSC 5.1.0 개인용 개발본 검증 기록
 
-작성 기준: 2026-11-15. 소스 기준 `77647c6`, 개발 브랜치 `feature/personal-server-manager`.
+작성 기준: 2026-11-15. 개발 출발 기반 `77647c6`, GSC 5.1 기능 최초 GitHub 커밋 `d119d1ea70f11894e45fb1ec808dbc7b1256db1d`, 개발 브랜치 `feature/personal-server-manager`. 아래 로컬 QA와 GitHub CI는 서로 별도 검증입니다.
 
 **자동 설치 구현은 8종입니다. 설치 성공, 실제 기동, 게임 접속, 운영 배포는 서로 다른 상태로 기록합니다.** 8종 API 자동 설치와 아래 실제 실행 검사를 통과했고, 최종 패키지의 재검사도 마쳤습니다.
+
+## GitHub Windows CI 별도 검증 결과 — 2026-11-15
+
+**현재 CI 미통과.** 이 문서의 개발 PC 로컬 `go test`·`go vet` PASS와 별개로, 최초 5.1 커밋 `d119d1ea...`에서 GitHub Actions가 **실패**했습니다. 성공한 테스트를 취소하는 것은 아니지만, 공개 Stable이나 병합 가능한 상태를 뜻하지도 않습니다.
+
+- [System CI #43612896534](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43612896534): Windows `GSC 5.1.0 / Go test` 및 `gsc-reproducibility / Go tests` **실패**. 종합 요약 작업도 실패, Setup 조립 작업은 건너뜀.
+- [Day 11 Host Test Package #43612856597](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43612856597): `build-host-test` Go 테스트 **실패**.
+- 공통 실패 테스트: `TestInstancesImportAdditionalJavaServerKinds` (Spigot 실행 명령의 예상값 불일치), `TestInstancesDirectJavaUsesUTF8AndLeavesCustomScriptsUntouched` (Forge·NeoForge 인수 파일 경로가 서버 폴더 밖으로 판단), `TestInstancesRealSubprocessStopRestart`, `TestInstancesGSCVelocityConsoleShutdownAndReceipt` (서버 폴더의 실제 경로가 변경된 것으로 판단). GitHub Runner의 경로 처리와 테스트 전제를 포함해 원인을 검증해야 하며, 현재는 정확한 근본 원인을 단정하지 않습니다.
+- **출처 정정:** 이 문서의 기존 `77647c6` 표기는 5.1 기능이 커밋되기 전 **기반 커밋**입니다. 5.1 기능은 `d119d1ea...`에서 추가됐고, GitHub CI가 실패했으므로 로컬 QA만으로 이 GitHub 커밋 전체의 Windows 재현성을 PASS라고 표시하지 않습니다.
+
+**배포 조건:** 실제 실패 원인을 수정하고 정확한 최종 커밋에서 전체 CI 및 Setup 설치·운영 마이그레이션 안전 검증을 다시 마칠 때까지 Draft/미병합/미배포를 유지합니다. 테스트를 삭제·우회해 형식적으로 성공 상태로 만들지 않습니다.
 
 ## 구현 범위
 
@@ -84,7 +95,7 @@ NeoForge 초기 접속 검사의 ping/pong 응답 누락은 자동 검사 클라
 
 기존 Paper 서버 4개와 월드·플레이어 데이터, 기존 Velocity 작업 3개, 운영 GSC 설정은 변경하지 않았습니다. 실제 운영 프로세스 종료·운영 배포는 수행하지 않았습니다. 새 테스트 서버만 별도 폴더에서 실행했습니다.
 
-검사별 요약은 [GSC-5.1.0-verification.json](GSC-5.1.0-verification.json)을 참고하세요. 소스 기준은 `77647c6`이며, 변경 패치는 최종 패키지에 함께 제공합니다.
+검사별 요약은 [GSC-5.1.0-verification.json](GSC-5.1.0-verification.json)을 참고하세요. 작업 출발 기반은 `77647c6`, 5.1 기능 최초 GitHub 커밋은 `d119d1ea...`입니다. 변경 패치는 개발 검증 패키지에 포함된 것으로 기록돼 있으나, 해당 패키지의 공개 배포·Setup 실설치는 검증되지 않았습니다.
 
 ## 5.1.0 버전 확정 후 확인
 
