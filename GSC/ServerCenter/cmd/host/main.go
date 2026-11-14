@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-const appVersion = "5.0.0"
+const appVersion = "5.1.0"
 
 // Empty in the published Stable; injected for traceable local maintenance builds.
 var buildRevision = ""
@@ -270,6 +270,9 @@ func runHostCore() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", serveDashboard)
 	mux.HandleFunc("/api/v5/release", requireAuth(apiV5ReleaseInfo))
+	registerInstanceRoutes(mux)
+	registerInstanceInstallerRoutes(mux)
+	registerInstanceProxyRoutes(mux)
 	mux.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, hostHealthPayload(observe))
 	})
@@ -287,7 +290,7 @@ func runHostCore() error {
 	mux.HandleFunc("/api/settings/public", requireAuth(apiPublicSettings))
 	registerV4Routes(mux)
 	registerControlAPIRoutes(mux)
-	if !observe {
+	if !observe && !personalModeRequested() {
 		startGSCSelfUpdateStartupCheck()
 	}
 

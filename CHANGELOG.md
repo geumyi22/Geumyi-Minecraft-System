@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.1.0 — 2026-11-15 (개인용 개발본, 미공개)
+
+- 일반 서버와 Velocity 프록시 메뉴 분리. Paper·Spigot·Purpur·Vanilla·Fabric·Forge·NeoForge·Velocity 공식 자동 설치와 Java 자동 준비.
+- 새 관리 서버의 시작·정상 종료·재시작, 콘솔·로그, 설정 편집과 데이터 삭제 없는 등록 해제.
+- 기존 예약 작업 소유 Velocity와 신규 GSC 소유 Velocity의 관리 방식 분리. 기존 서버·월드·플레이어 데이터·작업 정의 유지.
+- Host·Client·Setup 소스와 앱 화면 버전 5.1.0으로 통일. 개인용 Host/Client 패키지 재빌드 대상이며 Setup 설치·운영 전환·GitHub 공개와는 별개.
+- 8종 자동 설치, 게임 서버 7종의 자동 클라이언트 월드 접속·재시작·저장, 새 Velocity 경유 접속 검증. 실제 계정 인증·외부 접속·모드팩·운영 예약 작업 전환은 미검증.
+
 
 ## 5.0.0-beta.1 — 2026-10-25 (단일 베타, Stable 아님)
 

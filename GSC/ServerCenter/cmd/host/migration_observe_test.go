@@ -111,6 +111,15 @@ func TestMigrationObservationHostSubprocess(t *testing.T) {
 		}
 		os.Exit(0)
 	}
+	runMigrationObservationHostFixture(t, false)
+}
+
+func TestMigrationObservationOverridesPersonalMode(t *testing.T) {
+	runMigrationObservationHostFixture(t, true)
+}
+
+func runMigrationObservationHostFixture(t *testing.T, personal bool) {
+	t.Helper()
 	root := t.TempDir()
 	ln, err := net.Listen("tcp4", "127.0.0.1:0")
 	if err != nil {
@@ -146,7 +155,11 @@ func TestMigrationObservationHostSubprocess(t *testing.T) {
 		}
 	}
 	before := migrationFixtureSnapshot(t, root)
-	cmd := exec.Command(os.Args[0], "-test.run=^TestMigrationObservationHostSubprocess$", "--", "--migration-observe", "--config", filepath.Join(root, "server.json"))
+	args := []string{"-test.run=^TestMigrationObservationHostSubprocess$", "--", "--migration-observe", "--config", filepath.Join(root, "server.json")}
+	if personal {
+		args = append(args, "--personal-mode")
+	}
+	cmd := exec.Command(os.Args[0], args...)
 	cmd.Env = append(os.Environ(), "GSC_TEST_MIGRATION_OBSERVE=1")
 	cmd.Dir = root
 	var output bytes.Buffer

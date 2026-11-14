@@ -1,0 +1,1 @@
+{"id":"gscvelocitycontrol","name":"GSC Velocity Control","version":"1.0.0","description":"Authenticated local status and graceful shutdown for GSC","authors":["geumyi22"],"main":"kr.geumyi.velocitycontrol.GSCVelocityControl"}
