@@ -1,5 +1,7 @@
 # Geumyi Minecraft System
 
+> **정식 개인용 Stable 게시 — 2026-11-15:** [GSC 5.1.0](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.0)이 정확한 커밋 `a3f24700049ac99b5fb2b66e5fe8bc441f389a1d`에서 서명·검증 후 공개됐습니다. [릴리스 검증 CI #43619416741](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43619416741)은 **21/21 SUCCESS**. 이 개발 PR #64 자체는 여전히 `main`에 미병합 상태이며, 실제 운영 PC의 새 버전 설치·사용자 실플레이는 별도 미검증입니다. [운영/검증 경계](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/main/docs/operations/GSC-510-STABLE-2026-11-15.md).
+
 > **GSC 5.1.0 검증 보류 (2026-11-15):** [개발 PR #64](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/64)는 **Draft/미병합/미배포**입니다. 개발 PC에서 7종 서버+새 Velocity의 로컬 QA가 기록됐지만 **GitHub Windows CI 두 실행은 실패**했습니다. [실패 테스트와 출처 보완](docs/releases/GSC-5.1.0-QA.md#github-windows-ci-별도-검증-결과--2026-11-15) 및 [운영/배포 구분](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/main/docs/operations/GSC-510-DEVELOPMENT-STATUS-2026-11-15.md)을 먼저 확인하세요. 기존 3개 Velocity는 Scheduler 소유를 유지하며 GSC 정상 종료 연결에는 별도 초기 오프라인 준비가 필요합니다.
 
 > **현재 개발본: GSC 5.1.0 (2026-11-15).** 서버 7종 자동 설치·관리와 별도 Velocity 프록시 메뉴를 추가했습니다. [기능·사용 안내](docs/releases/GSC-5.1.0.md) · [검증 결과와 미검증 범위](docs/releases/GSC-5.1.0-QA.md). Host·Client는 5.1.0으로 재빌드하여 실제 버전 표시까지 확인했습니다. 기존 서버·월드·플레이어 데이터와 운영 예약 작업은 보존했으며, **5.1.0 공개 릴리스·운영 설치 교체는 수행하지 않았습니다.** 아래 5.0.0 및 4.x 기록은 이전 버전의 이력입니다.
