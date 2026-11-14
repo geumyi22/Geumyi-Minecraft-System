@@ -1,5 +1,7 @@
 # GSC 5.1.0 개인용 개발본 검증 기록
 
+> **이후 확인 (2026-11-15):** 아래의 이전 GitHub CI 실패는 Windows 테스트 fixture의 8.3 경로 별칭 정규화로 해결됐습니다. [수정 CI #43618596986](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43618596986)와 [정확한 개인용 Stable 릴리스 CI #43619416741](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43619416741)(**21/21 SUCCESS**)가 통과했고 [GSC 5.1.0 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.0)이 공개됐습니다. 원래 실패 기록은 개발 이력으로 아래에 보존합니다. **실제 운영 PC에 5.1을 설치하거나 사람의 Microsoft 계정 실플레이를 검증한 것은 아닙니다.** [최신 릴리스 상태](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/main/docs/operations/GSC-510-STABLE-2026-11-15.md).
+
 작성 기준: 2026-11-15. 개발 출발 기반 `77647c6`, GSC 5.1 기능 최초 GitHub 커밋 `d119d1ea70f11894e45fb1ec808dbc7b1256db1d`, 개발 브랜치 `feature/personal-server-manager`. 아래 로컬 QA와 GitHub CI는 서로 별도 검증입니다.
 
 **자동 설치 구현은 8종입니다. 설치 성공, 실제 기동, 게임 접속, 운영 배포는 서로 다른 상태로 기록합니다.** 8종 API 자동 설치와 아래 실제 실행 검사를 통과했고, 최종 패키지의 재검사도 마쳤습니다.
