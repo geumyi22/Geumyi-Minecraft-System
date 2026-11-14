@@ -1,10 +1,14 @@
 # Geumyi Minecraft System
 
-> **최신 개발 상태 (2026-11-15):** [GSC 5.1.0 개발 PR #64](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/64)에 게임 서버 7종 자동 설치 및 새/기존 Velocity 관리 기능이 추가됐습니다. **Draft·미병합·미배포이며 현재 GitHub Windows CI는 실패**했습니다. 배포 전에는 [GSC 5.1 개발 현황·CI 차단 요약](docs/operations/GSC-510-DEVELOPMENT-STATUS-2026-11-15.md)을 확인하세요. 기존 세 Velocity를 제어하려면 별도 종료 연결 준비가 필요하며 실제 운영 프록시 전환을 완료한 상태는 아닙니다.
+> **최신 공개 릴리스 (2026-11-15):** [**GSC 5.1.0 — 개인용 Stable**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.0) 출시 완료. 정확한 소스 `a3f24700049ac99b5fb2b66e5fe8bc441f389a1d`, [Windows CI 및 서명 릴리스 검증 21/21 SUCCESS](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43619416741), 공개 자산 11개. [**5.1 Stable 릴리스 보고서**](docs/operations/GSC-510-STABLE-2026-11-15.md)를 먼저 확인하세요.
 >
-> **현재 공개 Stable은 여전히 GSC 5.0.0**입니다. 아래 2026-11-10 5.0 운영·실플레이 보고와 최신 5.1 개발 상태를 구분합니다. `main`에는 5.0/5.1의 실행 코드가 아직 병합되지 않았습니다.
+> **운영 PC와 소스는 별개:** 공개 릴리스는 서명된 개인용 Stable이지만 **실제 Windows 운영 PC에 5.1.0 설치·실플레이까지 수행한 것은 아닙니다**. `main`에는 GSC 5.1 실행 코드가 아직 병합되지 않았고, 이전 5.0.0은 별도 태그로 보존됩니다. 기존 월드/플레이어 데이터·Velocity 예약 작업 전환은 자동으로 진행되지 않습니다.
 
-> **현재 릴리스/운영 상태 (2026-11-10):** GSC의 최신 공개 개인용 Stable은 [**GSC 5.0.0**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.0.0)입니다. 실제 Windows PC에 설치한 별도 5.0.0 **유지보수 빌드**([PR #63](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/63), `c39ecd67...`)에서는 2026-11-08 사용자가 Minecraft 실제 플레이 정상 작동을 보고했습니다. [**현재 상태 및 검증 범위**](docs/operations/GSC-500-STATUS-2026-11-10.md)를 먼저 확인하세요.
+> **5.1.0 개발 중 과거 상태(현재 해소):** [GSC 5.1.0 개발 PR #64](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/64)에 게임 서버 7종 자동 설치 및 새/기존 Velocity 관리 기능이 추가됐습니다. 개발 당시 Draft 브랜치의 GitHub Windows CI는 실패했지만, 이후 릴리스 전용 브랜치에서 해당 원인을 수정하고 정확한 소스 CI를 전부 통과해 5.1.0 개인용 Stable을 별도로 게시했습니다. 배포 전에는 [GSC 5.1 개발 현황·CI 차단 요약](docs/operations/GSC-510-DEVELOPMENT-STATUS-2026-11-15.md)을 확인하세요. 기존 세 Velocity를 제어하려면 별도 종료 연결 준비가 필요하며 실제 운영 프록시 전환을 완료한 상태는 아닙니다.
+>
+> **기록 시점:** 이 문단은 5.1.0 릴리스 전 상태이며 현재 최신 개인용 Stable은 5.1.0입니다. 아래 2026-11-10 5.0 운영·실플레이 보고와 최신 5.1 개발 상태를 구분합니다. `main`에는 5.0/5.1의 실행 코드가 아직 병합되지 않았습니다.
+
+> **현재 릴리스/운영 상태 (2026-11-10):** 2026-11-10 당시 GSC의 최신 공개 개인용 Stable은 [**GSC 5.0.0**](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.0.0)입니다. 실제 Windows PC에 설치한 별도 5.0.0 **유지보수 빌드**([PR #63](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/63), `c39ecd67...`)에서는 2026-11-08 사용자가 Minecraft 실제 플레이 정상 작동을 보고했습니다. [**현재 상태 및 검증 범위**](docs/operations/GSC-500-STATUS-2026-11-10.md)를 먼저 확인하세요.
 >
 > **소스/배포 구분:** 이 `main`은 아직 GSC 5.0 소스를 병합하지 않은 과거 4.x 기반입니다. 공개 5.0.0 서명 릴리스와 로컬 유지보수 실행 파일은 **다른 바이너리**이며, 아래 2026-10-11~10-24의 4.x 정보는 당시의 이력입니다. GSCM 1.5.1+151은 별도 앱으로 기존 통합 릴리스에 남아 있습니다.
 
