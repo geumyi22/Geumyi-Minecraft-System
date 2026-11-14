@@ -1,5 +1,7 @@
 # GSC 5.1.0 개인용 개발본 사용 안내
 
+> **이후 업데이트 (2026-11-15):** [GSC 5.1.0 — 개인용 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.0) 정식 게시. 정확한 릴리스 커밋 `a3f24700049ac99b5fb2b66e5fe8bc441f389a1d`의 Windows CI 및 서명 검증은 [21/21 SUCCESS](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43619416741). 아래 초기 개발본 경고/이전 CI 실패는 **게시 전의 역사적 상태**이며, 운영 PC 5.1 설치·실제 계정 플레이·기존 Scheduler 프록시 전환은 여전히 미검증입니다. [릴리스 QA·설치 주의사항](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/main/docs/operations/GSC-510-STABLE-2026-11-15.md).
+
 서버 7종과 Velocity를 새로 만들고, 같은 화면에서 시작·정상 종료·재시작할 수 있는 개인용 개발본입니다. 기존 Paper 서버 4개, 월드·플레이어 데이터, 기존 Velocity 예약 작업 3개는 이번 개발과 확인 작업에서 변경하지 않았습니다. 운영 설치본을 교체하거나 배포한 상태는 아닙니다.
 
 ## 2026-11-15 GitHub 검증 상태
