@@ -26,7 +26,7 @@ import (
 	"unsafe"
 )
 
-const appVersion = "5.1.0"
+const appVersion = "5.1.1"
 
 // Injected only for traceable local maintenance builds; public release stays unchanged.
 var buildRevision = ""
