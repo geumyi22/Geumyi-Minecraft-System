@@ -41,7 +41,10 @@ func gsc5MigrationDecision(role int, storedVersion string, health gsc5ExistingHo
 	if isGSC452CanaryVersion(storedVersion) || isGSC452CanaryVersion(health.Version) {
 		return errors.New("existing GSC 4.5.2 Canary Host migration is not verified; upgrade stopped before service changes")
 	}
-	if !healthKnown || !health.OK || !health.Service || health.Generation != 4 {
+	if !healthKnown {
+		return errors.New("existing Host health unreachable; start the existing Host service and retry, upgrade stopped before service changes")
+	}
+	if !health.OK || !health.Service || health.Generation != 4 {
 		return errors.New("existing Host identity/health unverified; upgrade stopped before service changes")
 	}
 	// A stale role.json is not proof of the currently running binary.
@@ -50,11 +53,13 @@ func gsc5MigrationDecision(role int, storedVersion string, health gsc5ExistingHo
 	if storedVersion != "" && storedVersion != health.Version {
 		return errors.New("stored and running Host versions disagree; upgrade blocked before service changes")
 	}
-	// Only the published stable-base -> beta path and same-beta reinstall
-	// are covered by this source-level gate; older or unexpected Host
-	// versions need separately evaluated operator-approved migration.
-	if health.Version != "4.5.1" && health.Version != version {
-		return fmt.Errorf("existing Host version %q has no approved GSC 5 beta migration path", health.Version)
+	// Published GSC 5.0.0 (including distinct maintenance build revisions)
+	// is an approved source for GSC 5.1.x. The Host and stored role must
+	// independently agree before this gate permits any service changes.
+	// Keep the historical 4.5.2 Canary rejection and fail closed for unknown
+	// source versions; a build_revision does not override version mismatch.
+	if health.Version != "4.5.1" && health.Version != "5.0.0" && health.Version != "5.1.0" && health.Version != version {
+		return fmt.Errorf("existing Host version %q has no approved GSC upgrade path", health.Version)
 	}
 	return nil
 }
@@ -125,7 +130,7 @@ func gsc5GuardExistingHostBeforeInstall(role int, dataDir, installDir string) er
 	if isGSC452CanaryVersion(stored) {
 		return gsc5MigrationDecision(role, stored, gsc5ExistingHostHealth{}, false)
 	}
-	client := &http.Client{Timeout: 1800 * time.Millisecond}
+	client := &http.Client{Timeout: 5 * time.Second}
 	health, err := gsc5ReadExistingHostHealth(client, gsc5MigrationHealthURL)
 	return gsc5MigrationDecision(role, stored, health, err == nil)
 }

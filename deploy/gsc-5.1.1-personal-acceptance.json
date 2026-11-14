@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "version": "5.1.1",
+  "channel": "stable",
+  "scope": "personal_operator_accepted",
+  "decision_date": "2026-11-15",
+  "decision_timezone": "Asia/Seoul",
+  "operator_authorized_release": true,
+  "production_install_completed": false,
+  "full_live_qa_pass_claimed": false,
+  "predecessor_public_release": "gsc-v5.1.0",
+  "purpose": "Fix the published 5.1.0 installer preflight rejecting a healthy existing 5.0.0 Host; preserve data and fail-closed migration checks",
+  "evidence": [
+    {
+      "id": "user_host_recovery",
+      "status": "operator_confirmed",
+      "date": "2026-11-15",
+      "scope": "User reported existing 5.0.0 Host service Running with health ok=true, service=true, generation=4, build_revision maintenance-c39ecd67; role.json role=3, version=5.0.0"
+    },
+    {
+      "id": "published_5_1_0_qa",
+      "status": "verified",
+      "date": "2026-11-15",
+      "scope": "Previous GSC 5.1.0 exact-commit GitHub System CI 43619416741 passed 21/21, including Windows disposable service and rollback; did NOT test upgrading an existing 5.0.0 Host"
+    },
+    {
+      "id": "5_0_to_5_1_1_source_guard",
+      "status": "pending",
+      "date": "2026-11-15",
+      "scope": "Windows regression tests explicitly allow matching healthy 5.0.0 Role 1 or 3; reject stopped/unknown/canary/version mismatch before changes; requires passing exact release source CI"
+    },
+    {
+      "id": "exact_release_windows_ci",
+      "status": "pending",
+      "date": "2026-11-15",
+      "scope": "Separate immutable release source must pass entire Windows System CI, including real packaged Setup binaries, disposable Host service/client, rollback tests"
+    },
+    {
+      "id": "signed_manifest_and_draft",
+      "status": "pending",
+      "date": "2026-11-15",
+      "scope": "Existing pinned Ed25519 deployment public key and exact source/binary checksums; verify downloaded Draft before publish"
+    },
+    {
+      "id": "real_production_5_0_upgrade",
+      "status": "not_run",
+      "date": "2026-11-15",
+      "scope": "NO 5.1.1 actual install over user's live GSC 5.0.0 service; no server restart, world data conversion, scheduled tasks, or real-Host rollback tested"
+    },
+    {
+      "id": "authenticated_user_gameplay",
+      "status": "not_run",
+      "scope": "5.1.1 actual Microsoft account Java/Bedrock login, WAN/mobile, multiplayer, live world restore, and long-duration load are not claimed"
+    },
+    {
+      "id": "formal_day12",
+      "status": "unresolved",
+      "scope": "FINAL-RELEASE-GATES.json formal comprehensive production gate is unchanged; limited personal acceptance is not full project certification"
+    }
+  ],
+  "full_project_release_gates": "unchanged; formal FINAL-RELEASE-GATES.json has stable_release_allowed=false and is not bypassed"
+}

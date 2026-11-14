@@ -151,10 +151,13 @@ func TestDay11GSCVersionComparisonBlocksDowngrade(t *testing.T) {
 	if err := requireNewerGSCVersion("5.0.0"); err == nil {
 		t.Fatalf("older Stable version was accepted: %v", err)
 	}
+	if err := requireNewerGSCVersion("5.1.0"); err == nil {
+		t.Fatalf("previous Stable version was accepted: %v", err)
+	}
 	if err := requireNewerGSCVersion(appVersion); err == nil {
 		t.Fatalf("same Stable version was accepted: %v", err)
 	}
-	if err := requireNewerGSCVersion("5.1.1"); err != nil {
+	if err := requireNewerGSCVersion("5.1.2"); err != nil {
 		t.Fatalf("newer Stable version was rejected: %v", err)
 	}
 }

@@ -1,4 +1,10 @@
-# GSC 5.1.0 빌드
+# GSC 5.1.1 빌드 및 설치 이전 경로 수정
+
+**5.1.1은 5.1.0 개인용 Stable의 후속 수정본입니다.** 기존 GSC 5.0.0 Host가 정상 실행 중이고 `role.json`의 저장 버전과 실제 Health 버전이 모두 5.0.0이면 설치 사전 검사를 통과하도록 개선했습니다. Host 연결 실패, Canary 4.5.2, 실행/저장 버전 불일치, 잘못된 API 세대·서비스 정보는 계속 차단합니다. 실제 라이브 월드·프록시와 Windows 서비스의 업그레이드 전후 확인은 별도의 단계입니다.
+
+**주의:** Setup 실행은 기존 Windows 서비스를 정리하고 Host·Client 실행 파일을 교체할 수 있습니다. 가동 중 서버에 바로 적용하지 말고 백업 및 안전한 유지보수 시간을 확보해야 합니다.
+
+## 5.1.0 개발 기록에서 유지된 빌드 정보
 
 GSC 5.1.0은 개인용 서버 관리 기능을 추가한 개발본입니다. Host·Client·Setup 제품 버전은 함께 맞추되, 공개된 5.0.0 릴리스 파일·서명·승인 기록은 유지합니다. 기존 v4 관리 API와 GSC 연동 기능도 유지합니다.
 
@@ -14,7 +20,7 @@ Setup은 기존 연동 파일을 포함하므로 `cmd/setup/payload/`에 다음 
 - `GeumyiServerTools-1.1.1-SpigotPaper26.3-GSCv4.1-HOTFIX.jar`
 - `GeumyiDiscordStatus-1.1.1-SpigotPaper26.3.jar`
 
-이 연동 구성 요소의 버전은 GSC 제품 버전과 별개입니다. 5.1.0으로 이름을 바꾸지 마세요. Setup이 읽는 기존 템플릿 경로와 과거 버전 README도 유지합니다. 현행 설치 설명서는 `cmd/setup/payload/README-v5.1.0.txt`입니다.
+이 연동 구성 요소의 버전은 GSC 제품 버전과 별개입니다. 5.1.1으로 이름을 바꾸지 마세요. Setup이 읽는 기존 템플릿 경로와 과거 버전 README도 유지합니다. 현행 설치 설명서는 `cmd/setup/payload/README-v5.1.1.txt`입니다.
 
 Host에는 `cmd/host/assets/gsc-velocity-control.jar`가 임베드됩니다. 소스 패키지의 해당 자산을 포함해야 합니다. 플러그인을 수정하여 재빌드할 경우 저장소의 `Plugins/GSCVelocityControl/build.ps1`과 그 폴더의 README를 따르세요. 플러그인 빌드에는 JDK 25 이상이 필요하며 Java 17 바이트코드를 생성합니다.
 
@@ -26,7 +32,7 @@ Host에는 `cmd/host/assets/gsc-velocity-control.jar`가 임베드됩니다. 소
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
-`build.ps1`은 현재 소스로 Host·Client를 먼저 빌드하여 Setup payload에 넣고, 그다음 `dist/GeumyiServerCenter-v5.1.0-Setup.exe`를 생성합니다. 기존 EXE를 파일명만 바꾸어 새 버전으로 사용하지 마세요. Go 실행 파일을 직접 지정하려면 `-Go 'C:\경로\go.exe'`를 전달합니다.
+`build.ps1`은 현재 소스로 Host·Client를 먼저 빌드하여 Setup payload에 넣고, 그다음 `dist/GeumyiServerCenter-v5.1.1-Setup.exe`를 생성합니다. 기존 EXE를 파일명만 바꾸어 새 버전으로 사용하지 마세요. Go 실행 파일을 직접 지정하려면 `-Go 'C:\경로\go.exe'`를 전달합니다.
 
 ```powershell
 go test ./...
@@ -39,6 +45,6 @@ go vet ./...
 
 새 게임 서버 7종과 새 Velocity는 별도 프로필로 관리합니다. 기존 Velocity 3개는 Windows 작업 스케줄러 소유를 유지하고, 정상 종료 연결은 별도 제어 플러그인을 통해 준비합니다. 예전 직접 관리 실험을 운영 소유권 이관으로 복구한 것이 아닙니다.
 
-기존 5.0.0 전용 배포 workflow·릴리스 노트·승인 ledger는 과거 공개 릴리스를 위한 기록입니다. 이 버전 번호 변경만으로 5.1.0 게시·자동 업데이트·서명을 수행하지 않습니다. 개인용 실행 패키지와 Setup 설치 방식도 구분해서 검증해야 합니다.
+기존 5.0.0 전용 배포 workflow·릴리스 노트·승인 ledger는 과거 공개 릴리스를 위한 기록입니다. 버전 번호 변경만으로 5.1.1 게시·자동 업데이트·서명을 수행하지 않습니다. 개인용 실행 패키지와 Setup 설치 방식도 구분해서 검증해야 합니다.
 
 Setup의 생성된 payload EXE/JAR 및 설정·인증정보는 임의로 저장소에 추가하지 마세요. 소스에서 명시적으로 관리하는 Velocity 제어 플러그인 임베드 자산은 예외입니다.
