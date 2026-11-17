@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-11-18 — GitHub 문서 정리 및 5.1.2 후보 상태 구분
+
+- [저장소 전체 점검](docs/operations/GMS-GITHUB-AUDIT-2026-11-18.md)에서 `main` Git 트리의 파일 1,731개와 브랜치 29개, 열린 개발 PR 13개를 확인하고, 명백한 임시/캐시 추적 파일이 없음을 기록했습니다. 복구/릴리스 근거를 임의로 삭제하지 않았습니다.
+- README·문서 목차·GSC 구성 안내에서 서로 모순되던 “최신” 표기를 현재 **GSC 5.1.1 개인용 Stable**로 통일하고, 4.x/5.0/5.1.0 기록은 날짜별 이력으로 남겼습니다.
+- [5.1.2 콘솔 개선 추적 Issue #66](https://github.com/geumyi22/Geumyi-Minecraft-System/issues/66) 생성. [후보 브랜치](https://github.com/geumyi22/Geumyi-Minecraft-System/tree/feature/velocity-console-20261115)의 [CI 성공 #43672360070](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43672360070)은 **소스 검토용 ZIP 내보내기**만 확인했으며 콘솔 제어 코드·실제 플레이 E2E 성공이 아님.
+- 이번 작업은 **GitHub 문서·개발 추적·Git 무시 규칙 정리**이며 Stable 태그·바이너리·서명/월드·실운영 PC는 변경하지 않았습니다.
+
+## 2026-11-15 — GSC 5.1.1 개인용 Stable (설치 업그레이드 오류 수정)
+
+- [GSC 5.1.1 공개 릴리스](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.1) — 5.0.0 Host 정상 Health인데 5.1.0 설치기가 버전 이전을 허용하지 않던 오류 수정.
+- Host 중지·불일치·알 수 없는 버전은 계속 차단하며, [Windows CI·서명 릴리스 게이트 21/21 성공](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43623012808) 확인. [상세 QA 및 운영 주의사항](docs/operations/GSC-511-MIGRATION-HOTFIX-2026-11-15.md).
+- 새 공개 릴리스의 게시와 **실제 운영 PC에 설치·플레이 완료**는 구분. 공개 5.0.0/5.1.0 자산 보존.
+
+## 2026-11-15 — GSC 5.1.0 개인용 Stable (서버 7종 및 새 Velocity)
+
+- [GSC 5.1.0 공개 릴리스](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.0) — 새 Paper/Spigot/Purpur/Vanilla/Fabric/Forge/NeoForge 관리와 신규 GSC 소유 Velocity 제어.
+- [정확한 CI 21/21 성공](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43619416741). 기존 Windows Scheduled Tasks 소유 Velocity 세 프록시를 강제로 전환하거나 운영 PC에서 새 버전을 검증한 것은 아님.
+
+## 2026-11-08 — GSC 5.0.0 개인용 Stable 및 로컬 유지보수
+
+- [GSC 5.0.0 공개 릴리스](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.0.0), 정확한 소스·서명 기록 보존.
+- 별도 로컬 유지보수 빌드에서 실제 사용자 Minecraft 플레이 정상 확인, Geyser Staging·백업·NetherNet 검증. `main` 소스와 공개 파일을 혼동하지 않음. [운영 검증 범위](docs/operations/GSC-500-STATUS-2026-11-10.md).
+
 ## 2026-10-11 — GSC 4.5.1 / GSCM 1.5.1+151 Latest Stable (수동 설치판)
 
 - [최신 Stable 패키지](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) 공개: Windows Setup/Host/Client, Android 영구 릴리즈 서명 APK, iOS 미서명 IPA, SHA-256·provenance 총 10개 파일.
