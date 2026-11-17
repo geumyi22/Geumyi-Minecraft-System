@@ -1,12 +1,14 @@
-# 금이 마인크래프트 시스템 — 최종 운영 안내
+# GMS / GSC 운영 자료 및 과거 기록
 
-**현재 기준 (2026-11-10):** GSC 최신 공개 개인용 Stable은 [GSC 5.0.0](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.0.0)입니다. 2026-11-08 실제 Windows PC에 적용된 별도 유지보수 빌드에서 사용자 Minecraft 실플레이 정상 확인이 있었으며, 이는 **공개 Stable 파일과 다른 실행 파일**입니다. 기본 `main`은 아직 4.x 코드 기준입니다. 아래 10월 자료는 이력으로 보존합니다.
+**최신 공개 개인용 Stable (2026-11-18 확인): [GSC 5.1.1](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.1).** 공개 CI/서명·실제 PC 설치·실플레이는 서로 구분합니다. `main`은 4.x 복구 기반 코드이며 최신 5.1.1 실행 코드는 공개 릴리스 태그에 있습니다.
 
-- [**GSC 5.1.1 개인용 Stable: 5.0→5.1 설치 이전 오류 수정 (2026-11-15)**](GSC-511-MIGRATION-HOTFIX-2026-11-15.md) — 정식 게시/서명 CI 성공, 기존 PC 업그레이드는 별도
-- [**GSC 5.1.0 개인용 Stable 릴리스 검증 (2026-11-15)**](GSC-510-STABLE-2026-11-15.md) — 21/21 CI 성공·서명된 공개 릴리스, 운영 PC 설치는 별도
-- [**GSC 5.1.0 최신 개발 상태·CI 오류 (2026-11-15)**](GSC-510-DEVELOPMENT-STATUS-2026-11-15.md) — PR #64 Draft, 새 Velocity 기능, 미완료 QA/배포 조건
-- [**GSC 5.0 최신 운영·유지보수·QA 구분 (2026-11-10)**](GSC-500-STATUS-2026-11-10.md)
-- [GSC 5.0 유지보수 Draft PR #63](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/63) — PC 로컬 적용 코드와 후속 검사 기록, 미병합
+- [**GitHub 전체 점검·파일/브랜치/PR 정리 (2026-11-18)**](GMS-GITHUB-AUDIT-2026-11-18.md)
+- [**GSC 5.1.1 개인용 Stable 설치 이전 오류 수정·최종 CI**](GSC-511-MIGRATION-HOTFIX-2026-11-15.md)
+- [5.1.2 개발 후보: 기존 Scheduler Velocity 인증 콘솔·정상 종료/재시작](https://github.com/geumyi22/Geumyi-Minecraft-System/issues/66) — 아직 실행 코드·E2E 미완료
+- [GSC 5.1.0 릴리스 검증 (과거)](GSC-510-STABLE-2026-11-15.md) · [개발 당시 CI 오류·수정 전 현황](GSC-510-DEVELOPMENT-STATUS-2026-11-15.md)
+- [GSC 5.0.0 사용자 실플레이·로컬 유지보수 기록](GSC-500-STATUS-2026-11-10.md) · [5.0 유지보수 Draft PR #63](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/63)
+
+## 2026-10-11 이전 운영 자료 (보존)
 
 **2026-10-11:** Day 12는 소규모 운영 기준으로 마감됐습니다. 문제 없으면 현재 설치와 백업은 그대로 유지합니다. 이후 진행한 GSC 4.5.2 Canary 개발은 별도의 미완료 Draft PR이며, 운영 Stable에 적용됐다는 의미가 아닙니다.
 
