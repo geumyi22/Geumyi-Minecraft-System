@@ -54,7 +54,6 @@ local.properties
 release-source.txt
 dist/
 build-repro/
-.gradle/
 Pods/
 DerivedData/
 agent-state.properties
@@ -62,3 +61,20 @@ config.json
 client-config.json
 pairing.txt
 devices.json
+
+# Disposable tooling/editor outputs (never tracked source or recovery reports)
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.tmp
+*.bak
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+.cache/
+node_modules/
+coverage/
+test-results/
