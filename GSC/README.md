@@ -1,5 +1,9 @@
 # GSC 4.5.1 / StatusAgent 0.5.4
 
+> **현재 GSC 릴리스와 이 폴더의 소스 구분 (2026-11-18):** 최신 공개 개인용 Stable은 [GSC 5.1.1](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.1)입니다. 그러나 **이 `main/GSC` 폴더는 2026-10-11 무렵의 GSC 4.x 복구 기반**입니다. 5.x 실행 파일을 빌드하려면 해당 서명 릴리스에 연결된 **정확한 태그·커밋**을 사용해야 합니다. 기존 5.0 사용자 플레이 확인은 5.1.1 실운영 설치/플레이 QA를 대신하지 않습니다.
+>
+> [GitHub 전체 점검](../docs/operations/GMS-GITHUB-AUDIT-2026-11-18.md) · [5.1.1 릴리스 기록](../docs/operations/GSC-511-MIGRATION-HOTFIX-2026-11-15.md) · [5.1.2 Velocity 콘솔 개선 이슈 #66](https://github.com/geumyi22/Geumyi-Minecraft-System/issues/66)
+
 - [ServerCenter](ServerCenter/): current GSC 4.5.1 Go source, web UI, Host/Client split, installer templates, tests and build scripts.
 - [StatusAgent](StatusAgent/): StatusAgent 0.5.4 source/recovery material.
 
