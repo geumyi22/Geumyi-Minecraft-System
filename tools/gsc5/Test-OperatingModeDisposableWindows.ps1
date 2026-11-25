@@ -34,6 +34,7 @@ try {
         throw "Both fixture registrations must be recognized. Found $($selected.Count). $reason"
     }
     foreach ($entry in $selected) {
+        Write-Host "Applying fixture $($entry.Kind)"
         if ($system.Read($entry) -cne $entry.Before) { throw 'Incorrect before-image' }
         $system.Write($entry,$entry.After)
         if ($system.Read($entry) -cne $entry.After) { throw 'Change readback failed' }
@@ -45,6 +46,7 @@ try {
         throw 'Manual task start or trigger state was lost'
     }
     foreach ($entry in $selected) {
+        Write-Host "Restoring fixture $($entry.Kind)"
         $system.Write($entry,$entry.Before)
         if ($system.Read($entry) -cne $entry.Before) { throw 'Restore readback failed' }
     }
@@ -53,6 +55,16 @@ try {
     if ($svc.Start -ne 2 -or $svc.DelayedAutoStart -ne 1 -or !$task.Definition.Triggers.Item(1).Enabled -or
         $task.GetSecurityDescriptor(7) -cne $sddl) { throw 'Restore changed the original startup policy or task ACL' }
     Write-Output 'OPERATING_MODE_REAL_SCM_AND_TASK_ROUNDTRIP_PASS'
+}
+catch {
+    Write-Host $_.ScriptStackTrace
+    Write-Host ($_.Exception.ToString())
+    if ($taskMade -and $entry.Kind -eq 'Task') {
+        Write-Host ("Original synthetic task: " + $entry.Before)
+        Write-Host ("Requested synthetic task: " + $entry.After)
+        Write-Host ("Registered synthetic task: " + $folder.GetTask($id).Xml)
+    }
+    throw
 }
 finally {
     if ($taskMade) { Unregister-ScheduledTask -TaskName $id -Confirm:$false }
