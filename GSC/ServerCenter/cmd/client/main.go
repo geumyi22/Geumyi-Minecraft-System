@@ -26,7 +26,7 @@ import (
 	"unsafe"
 )
 
-const appVersion = "5.1.1"
+const appVersion = "5.2.0"
 
 // Injected only for traceable local maintenance builds; public release stays unchanged.
 var buildRevision = ""
@@ -228,6 +228,10 @@ func copyUTF16(dst []uint16, s string) {
 func loword(v uintptr) uint16 { return uint16(v & 0xffff) }
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "--start-host-if-automatic" {
+		_ = startHostTarget(activeHostTarget())
+		return
+	}
 	if len(os.Args) > 1 && os.Args[1] == "--start-host" {
 		_ = runHostTask()
 		return
@@ -249,6 +253,8 @@ func main() {
 		_, _ = io.WriteString(w, instancesUI)
 	})
 	mux.HandleFunc("/client/config", clientConfigAPI)
+	mux.HandleFunc("/client/operating-mode/status", operatingModeStatusAPI)
+	mux.HandleFunc("/client/operating-mode/open", operatingModeOpenHandler(openOperatingMode))
 	mux.HandleFunc("/client/update/status", clientUpdateStatusAPI)
 	mux.HandleFunc("/client/update/stage", clientUpdateStageAPI)
 	mux.HandleFunc("/client/update/apply", clientUpdateApplyAPI)

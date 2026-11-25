@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "version": "5.2.0",
+  "channel": "stable",
+  "scope": "personal_operator_accepted",
+  "decision_date": "2026-11-26",
+  "decision_timezone": "Asia/Seoul",
+  "operator_authorized_release": true,
+  "production_install_completed": false,
+  "full_live_qa_pass_claimed": false,
+  "predecessor_public_release": "gsc-v5.1.1",
+  "purpose": "Integrate local Windows operating-mode controls with the GSC Client while retaining the standalone GMS Operating Mode manager.",
+  "evidence": [
+    {
+      "id": "predecessor_5_1_1",
+      "status": "verified",
+      "scope": "Published personal Stable gsc-v5.1.1 points to bf422a1d6225a748a1387f95baa09e1515e1d558; predecessor exact-source release run 43623012808 succeeded."
+    },
+    {
+      "id": "operator_release_request",
+      "status": "operator_accepted",
+      "scope": "Operator requested a GSC 5.2.0 Stable release with a dedicated bottom navigation item and continued standalone access."
+    },
+    {
+      "id": "exact_release_ci",
+      "status": "pending",
+      "scope": "The release workflow must build and test the exact commit, stage its matching Windows binaries, and validate the local management integration."
+    },
+    {
+      "id": "signed_draft_and_publication",
+      "status": "pending",
+      "scope": "The publisher must verify the pinned deployment key, signed manifest, checksums and re-downloaded draft before promotion; consult the CI run identified in the release provenance."
+    },
+    {
+      "id": "production_windows_operations",
+      "status": "not_run",
+      "scope": "No modification of the operator's installed GSC service, startup settings, live world or player data; no live reboot, restore or actual server gameplay is claimed."
+    },
+    {
+      "id": "formal_day12",
+      "status": "unresolved",
+      "scope": "The existing comprehensive Day 12 release gate remains outside this GSC personal Stable scope."
+    }
+  ]
+}

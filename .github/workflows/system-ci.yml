@@ -6,6 +6,8 @@ on:
     branches: [ main, release/gsc-5.0.0-beta.1 ]
     paths:
       - 'GSC/ServerCenter/**'
+      - 'GSC/OperatingMode/**'
+      - 'tools/gsc5/**'
       - 'GSC/StatusAgent/**'
       - 'Plugins/GeumyiServerTools/**'
       - 'Plugins/GeumyiDiscordStatus/**'
@@ -26,6 +28,8 @@ on:
     branches: [ main, maintenance/gsc5-play-readiness-20261108 ]
     paths:
       - 'GSC/ServerCenter/**'
+      - 'GSC/OperatingMode/**'
+      - 'tools/gsc5/**'
       - 'GSC/StatusAgent/**'
       - 'Plugins/GeumyiServerTools/**'
       - 'Plugins/GeumyiDiscordStatus/**'
@@ -53,7 +57,7 @@ concurrency:
 
 jobs:
   gsc:
-    name: GSC 5.1.1 / Go test
+    name: GSC 5.2.0 / Go test
     runs-on: windows-latest
     timeout-minutes: 15
     steps:
@@ -67,9 +71,35 @@ jobs:
       - name: Run GSC tests
         working-directory: GSC/ServerCenter
         run: go test ./...
+      - name: Go static analysis
+        working-directory: GSC/ServerCenter
+        run: go vet ./...
+      - name: Test risk workspace navigation, console input and connection settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/gsc5/test_operating_mode_dashboard.js
+          node tools/gsc5/test_client_settings.js
+          node tools/day12/test_console_live_refresh.js
+
+  operating-mode:
+    name: Operating Mode / Windows transactions and startup registration
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - name: Compile and exercise the standalone manager
+        shell: powershell
+        run: .\GSC\OperatingMode\build.ps1 -Test
+      - name: Inspect production PE and exercise real disposable SCM and Task Scheduler entries
+        shell: powershell
+        run: |
+          $manager = 'GSC/OperatingMode/bin/GMS_OperatingMode_v3.0.1.exe'
+          .\GSC\OperatingMode\qa-pe.ps1 -Executable $manager -EvidenceFolder $env:RUNNER_TEMP
+          .\tools\gsc5\Test-OperatingModeDisposableWindows.ps1 -Manager $manager
 
   beta-identity:
-    name: GSC 5.1.1 Stable identity and exclusion audit
+    name: GSC 5.2.0 Stable identity and exclusion audit
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -81,7 +111,7 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-          ver="5.1.1"
+          ver="5.2.0"
           paths={
              "GSC/ServerCenter/cmd/host/main.go":'const appVersion = "'+ver+'"',
              "GSC/ServerCenter/cmd/client/main.go":'const appVersion = "'+ver+'"',
@@ -491,7 +521,7 @@ jobs:
           PY
 
   gsc-package:
-    name: GSC 5.1.1 / assemble CI Setup
+    name: GSC 5.2.0 / assemble CI Setup
     needs: [gsc, statusagent, gds, gst]
     runs-on: windows-latest
     timeout-minutes: 20
@@ -577,9 +607,10 @@ jobs:
         run: |
           $root = 'GSC/ServerCenter'
           $files = @(
-            "$root/dist/GeumyiServerCenter-v5.1.1-Setup.exe",
+            "$root/dist/GeumyiServerCenter-v5.2.0-Setup.exe",
             "$root/cmd/setup/payload/GeumyiServerHost.exe",
-            "$root/cmd/setup/payload/GeumyiServerCenter.exe"
+            "$root/cmd/setup/payload/GeumyiServerCenter.exe",
+            "$root/cmd/setup/payload/GMS_OperatingMode_v3.0.1.exe"
           )
           foreach ($f in $files) {
             if (-not (Test-Path $f)) { throw "Missing GSC artifact: $f" }
@@ -605,7 +636,7 @@ jobs:
       - name: Upload GSC CI package
         uses: actions/upload-artifact@v7
         with:
-          name: gsc-5.1.1-ci
+          name: gsc-5.2.0-ci
           path: GSC/ServerCenter/dist-ci/*
           if-no-files-found: error
           retention-days: 14

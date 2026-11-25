@@ -1,6 +1,7 @@
 package main
 
 import (
+	"geumyi/servercenter/internal/fileutil"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -663,47 +664,12 @@ func waitExternalProxyPorts(javaPort, bedrockPort int, want bool, timeout time.D
 }
 
 func externalAtomicCopy(src, dst string) error {
-	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
-		return err
-	}
 	in, err := os.Open(src)
 	if err != nil {
 		return err
 	}
 	defer in.Close()
-	tmp := dst + ".day11-new"
-	_ = os.Remove(tmp)
-	out, err := os.OpenFile(tmp, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
-	if err != nil {
-		return err
-	}
-	_, cpErr := io.Copy(out, in)
-	closeErr := out.Close()
-	if cpErr != nil {
-		_ = os.Remove(tmp)
-		return cpErr
-	}
-	if closeErr != nil {
-		_ = os.Remove(tmp)
-		return closeErr
-	}
-	old := dst + ".day11-old"
-	_ = os.Remove(old)
-	if _, err := os.Stat(dst); err == nil {
-		if err := os.Rename(dst, old); err != nil {
-			_ = os.Remove(tmp)
-			return err
-		}
-	}
-	if err := os.Rename(tmp, dst); err != nil {
-		_ = os.Remove(tmp)
-		if _, statErr := os.Stat(old); statErr == nil {
-			_ = os.Rename(old, dst)
-		}
-		return err
-	}
-	_ = os.Remove(old)
-	return nil
+	return fileutil.Replace(dst, in, 0644)
 }
 
 func applyExternalProxyPlan(plan externalStagePlanFile) (map[string]any, error) {

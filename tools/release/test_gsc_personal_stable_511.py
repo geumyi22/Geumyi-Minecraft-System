@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import gsc_personal_stable_511 as release
+import gsc_signed_personal_release as release
 
 
 class DraftResolutionTests(unittest.TestCase):
@@ -42,27 +42,30 @@ class DraftResolutionTests(unittest.TestCase):
 
 
 class PersonalStableIntegrityTests(unittest.TestCase):
+    tag = release.TAG
+
     def setUp(self):
+        self.profile = release.ReleaseProfile(self.tag)
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
         self.assets = self.root / "assets"
         self.assets.mkdir()
         self.commit = "a" * 40
-        for name in release.BINARIES:
+        for name in self.profile.binaries:
             (self.assets / name).write_bytes(b"MZ" + b"test fixture, never executed" * 5000)
         (self.assets / "SHA256SUMS.txt").write_text("".join(
-            release.digest(self.assets / name) + "  " + name + "\n" for name in release.BINARIES), encoding="ascii")
+            release.digest(self.assets / name) + "  " + name + "\n" for name in self.profile.binaries), encoding="ascii")
         (self.root / "deploy").mkdir()
         (self.root / "docs/releases").mkdir(parents=True)
-        release.write_json(self.root / "deploy" / release.LEDGER, {"schema": 1,
+        release.write_json(self.root / "deploy" / self.profile.ledger, {"schema": 1,
             "scope": "personal_operator_accepted", "full_live_qa_pass_claimed": False,
-            "version": release.VERSION, "channel": "stable",
+            "version": self.profile.version, "channel": "stable",
             "operator_authorized_release": True, "production_install_completed": False,
             "evidence": [{"status": "operator_accepted"}, {"status": "not_run"}]})
         release.write_json(self.root / "FINAL-RELEASE-GATES.json", {"release": {"stable_release_allowed": False}})
-        (self.root / "docs/releases/GSC-5.1.1-STABLE.md").write_text("Personal scope; live QA not claimed.\n", encoding="utf-8")
-        release.prepare(self.assets, self.root, release.TAG, self.commit, 123)
+        (self.root / self.profile.notes_path).write_text("Personal scope; live QA not claimed.\n", encoding="utf-8")
+        release.prepare(self.assets, self.root, self.tag, self.commit, 123)
         openssl_dir = Path(os.environ.get("ProgramFiles", "C:/Program Files")) / "Git/usr/bin"
         if not shutil.which("openssl") and (openssl_dir / "openssl.exe").is_file():
             self.env = patch.dict(os.environ, {"PATH": str(openssl_dir) + os.pathsep + os.environ["PATH"]})
@@ -82,10 +85,10 @@ class PersonalStableIntegrityTests(unittest.TestCase):
     def sign_and_seal(self):
         self.openssl("pkeyutl", "-sign", "-rawin", "-inkey", str(self.private), "-in",
             str(self.assets / release.MANIFEST), "-out", str(self.assets / (release.MANIFEST + ".sig")))
-        release.seal(self.assets)
+        release.seal(self.assets,self.tag)
 
     def verify(self, metadata=None):
-        return release.verify(self.assets, self.root, release.TAG, self.commit, metadata)
+        return release.verify(self.assets, self.root, self.tag, self.commit, metadata)
 
     def test_gsc_only_manifest_and_real_ed25519_verification(self):
         self.assertEqual(self.verify(), 123)
@@ -96,16 +99,16 @@ class PersonalStableIntegrityTests(unittest.TestCase):
                 self.verify()
 
     def test_tampered_binary_rejected_even_after_checksums_rewritten(self):
-        with (self.assets / release.BINARIES[0]).open("ab") as stream:
+        with (self.assets / self.profile.binaries[0]).open("ab") as stream:
             stream.write(b"tamper")
-        release.seal(self.assets)
+        release.seal(self.assets,self.tag)
         with self.assertRaisesRegex(ValueError, "signed Windows binary mismatch"):
             self.verify()
 
     def test_standalone_host_tampering_rejected(self):
         with (self.assets / "GeumyiServerHost.exe").open("ab") as stream:
             stream.write(b"tamper")
-        release.seal(self.assets)
+        release.seal(self.assets,self.tag)
         with self.assertRaisesRegex(ValueError, "signed Windows binary mismatch"):
             self.verify()
 
@@ -113,7 +116,7 @@ class PersonalStableIntegrityTests(unittest.TestCase):
         manifest = release.load(self.assets / release.MANIFEST)
         manifest["source_commit"] = "b" * 40
         release.write_json(self.assets / release.MANIFEST, manifest)
-        release.seal(self.assets)
+        release.seal(self.assets,self.tag)
         with self.assertRaises(subprocess.CalledProcessError):
             self.verify()
 
@@ -126,18 +129,18 @@ class PersonalStableIntegrityTests(unittest.TestCase):
             self.verify()
 
     def test_full_live_qa_claim_rejected(self):
-        ledger = release.load(self.root / "deploy" / release.LEDGER)
+        ledger = release.load(self.root / "deploy" / self.profile.ledger)
         ledger["full_live_qa_pass_claimed"] = True
         with self.assertRaisesRegex(ValueError, "must not be claimed"):
-            release.validate_ledger(ledger)
+            release.validate_ledger(ledger,self.tag)
 
     def test_draft_requires_exact_commit_and_complete_remote_digests(self):
         metadata = self.root / "draft.json"
-        value = {"draft": True, "prerelease": False, "tag_name": release.TAG,
-            "body": (self.assets / release.NOTES).read_text(encoding="utf-8"),
+        value = {"draft": True, "prerelease": False, "tag_name": self.tag,
+            "body": (self.assets / self.profile.notes).read_text(encoding="utf-8"),
             "target_commitish": self.commit, "assets": [{"name": name,
                 "size": (self.assets / name).stat().st_size,
-                "digest": "sha256:" + release.digest(self.assets / name)} for name in release.EXPECTED_FILES]}
+                "digest": "sha256:" + release.digest(self.assets / name)} for name in self.profile.files]}
         release.write_json(metadata, value)
         self.assertEqual(self.verify(metadata), 123)
         value["target_commitish"] = "main"
@@ -150,6 +153,19 @@ class PersonalStableIntegrityTests(unittest.TestCase):
         with path.open("a", encoding="ascii") as stream:
             stream.write(path.read_text(encoding="ascii").splitlines()[0] + "\n")
         with self.assertRaisesRegex(ValueError, "duplicate checksum"):
+            self.verify()
+
+
+class OperatingModeStableIntegrityTests(PersonalStableIntegrityTests):
+    tag = release.OPERATING_MODE_TAG
+
+    def test_standalone_manager_is_covered_by_deployment_signature(self):
+        manager = self.assets / "GMS_OperatingMode_v3.0.1.exe"
+        self.assertIn(manager.name, release.load(self.assets / release.MANIFEST)["windows_binaries"])
+        with manager.open("ab") as stream:
+            stream.write(b"changed")
+        release.seal(self.assets, self.tag)
+        with self.assertRaisesRegex(ValueError, "signed Windows binary mismatch"):
             self.verify()
 
 

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"geumyi/servercenter/internal/fileutil"
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -73,24 +75,11 @@ func day9MaybeFault(point string) error {
 }
 
 func day9WriteJSONAtomic(path string, v any) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		return err
-	}
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		return err
 	}
-	b = append(b, '\n')
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, b, 0644); err != nil {
-		return err
-	}
-	_ = os.Remove(path)
-	if err := os.Rename(tmp, path); err != nil {
-		_ = os.Remove(tmp)
-		return err
-	}
-	return nil
+	return fileutil.Replace(path, bytes.NewReader(append(b, '\n')), 0644)
 }
 
 func day9AppendJournal(s ServerConfig, tx *updateTransaction, event, detail string) {

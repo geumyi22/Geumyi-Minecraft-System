@@ -3,6 +3,8 @@
 package main
 
 import (
+	"geumyi/servercenter/internal/fileutil"
+	"bytes"
 	"crypto/rand"
 	"embed"
 	"encoding/base64"
@@ -25,7 +27,7 @@ import (
 	"unsafe"
 )
 
-const version = "5.1.1"
+const version = "5.2.0"
 const hostTaskName = "Geumyi Server Center Host"
 const hostServiceName = "Geumyi Server Center Host"
 
@@ -386,6 +388,12 @@ func doInstall(o InstallOptions) {
 		finishInstall(err)
 		return
 	}
+	releaseMode, modeErr := guardOperatingMode(true, hasServerRole(o.Role))
+	if modeErr != nil {
+		finishInstall(modeErr)
+		return
+	}
+	defer releaseMode()
 
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		finishInstall(err)
@@ -408,6 +416,11 @@ func doInstall(o InstallOptions) {
 
 	// Server -> client-only is destructive to the running role, so drain the
 	// Minecraft servers first. Never force-kill Java during a role transition.
+	// Install the local companion for every role, before stopping existing workloads.
+	if err := installOperatingMode(o.InstallDir, dataDir); err != nil {
+		finishInstall(fmt.Errorf("운영 모드 관리자를 설치하지 못했습니다: %w", err))
+		return
+	}
 	if hasServerRole(oldRole) && o.Role == 2 {
 		backupLegacyTasks(dataDir)
 		if data, e := os.ReadFile(filepath.Join(dataDir, "server.json")); e == nil {
@@ -443,7 +456,7 @@ func doInstall(o InstallOptions) {
 	_ = os.MkdirAll(o.InstallDir, 0755)
 	setProgress(18, "Geumyi Server Center v5 설치 중...", "")
 	mustExtract("payload/GeumyiServerCenter.ico", filepath.Join(o.InstallDir, "GeumyiServerCenter.ico"))
-	mustExtract("payload/README-v5.1.1.txt", filepath.Join(o.InstallDir, "README-v5.1.1.txt"))
+	mustExtract("payload/README-v5.2.0.txt", filepath.Join(o.InstallDir, "README-v5.2.0.txt"))
 	_ = os.Remove(filepath.Join(o.InstallDir, "README-v4.3.0.txt"))
 	if hasClientRole(o.Role) {
 		mustExtract("payload/GeumyiServerCenter.exe", filepath.Join(o.InstallDir, "GeumyiServerCenter.exe"))
@@ -498,7 +511,7 @@ func doInstall(o InstallOptions) {
 		if data, e := os.ReadFile(cfgFile); e == nil {
 			backupDir := filepath.Join(dataDir, "Backup")
 			_ = os.MkdirAll(backupDir, 0755)
-			if e = os.WriteFile(filepath.Join(backupDir, "server-before-v5.1.1-"+time.Now().Format("20060102-150405")+".json"), data, 0600); e != nil {
+			if e = os.WriteFile(filepath.Join(backupDir, "server-before-v5.2.0-"+time.Now().Format("20060102-150405")+".json"), data, 0600); e != nil {
 				finishInstall(e)
 				return
 			}
@@ -893,17 +906,8 @@ func mustExtract(name, dst string) {
 	if e != nil {
 		panic(e)
 	}
-	if e = os.MkdirAll(filepath.Dir(dst), 0755); e != nil {
-		panic(e)
-	}
-	tmp := dst + ".new"
-	_ = os.Remove(tmp)
-	if e = os.WriteFile(tmp, b, 0755); e != nil {
-		panic(e)
-	}
 	for i := 0; i < 12; i++ {
-		_ = os.Remove(dst)
-		if e = os.Rename(tmp, dst); e == nil {
+		if e = fileutil.Replace(dst, bytes.NewReader(b), 0755); e == nil {
 			return
 		}
 		time.Sleep(350 * time.Millisecond)
@@ -911,8 +915,15 @@ func mustExtract(name, dst string) {
 	panic(e)
 }
 func copyFile(src, dst string) {
-	if b, e := os.ReadFile(src); e == nil {
-		_ = os.WriteFile(dst, b, 0755)
+	original, err := os.Stat(src)
+	if err != nil {
+		panic(err)
+	}
+	if installed, err := os.Stat(dst); err == nil && os.SameFile(original, installed) {
+		return
+	}
+	if err := copyFileStrict(src, dst, 0755); err != nil {
+		panic(err)
 	}
 }
 func writeJSON(path string, v any) {

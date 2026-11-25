@@ -6,11 +6,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"geumyi/servercenter/internal/fileutil"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 )
@@ -57,7 +58,11 @@ func backupRoots(dir, scope string) ([]string, error) {
 		seen := map[string]bool{}
 		level := readServerPropertyDefault(dir, "level-name", "world")
 		for _, n := range []string{level, level + "_nether", level + "_the_end"} {
-			if st, e := os.Stat(filepath.Join(dir, n)); e == nil && st.IsDir() {
+			path, err := confinedBackupPath(dir, n)
+			if err != nil {
+				return nil, err
+			}
+			if st, e := os.Stat(path); e == nil && st.IsDir() {
 				roots = append(roots, n)
 				seen[strings.ToLower(n)] = true
 			}
@@ -76,10 +81,13 @@ func backupRoots(dir, scope string) ([]string, error) {
 		}
 		return roots, nil
 	case "config":
-		candidates := []string{"server.properties", "bukkit.yml", "spigot.yml", "permissions.yml", "ops.json", "whitelist.json", "config", "plugins/GeumyiDiscordStatus", "plugins/GeumyiServerTools"}
 		out := []string{}
-		for _, x := range candidates {
-			if _, e := os.Stat(filepath.Join(dir, filepath.FromSlash(x))); e == nil {
+		for _, x := range backupConfigRoots {
+			path, err := confinedBackupPath(dir, x)
+			if err != nil {
+				return nil, err
+			}
+			if _, e := os.Stat(path); e == nil {
 				out = append(out, x)
 			}
 		}
@@ -267,16 +275,18 @@ func createBackupWithReason(s ServerConfig, scope string, checkpoints bool, reas
 	if checkpoints {
 		kind = "checkpoint"
 	}
-	name := fmt.Sprintf("%s-%s-%s-%s.zip", s.ID, scope, kind, stamp)
-	out := filepath.Join(root, name)
-	tmp := out + ".tmp"
+	pattern := fmt.Sprintf("%s-%s-%s-%s-*.zip.tmp", s.ID, scope, kind, stamp)
+	var out string
 	reason = normalizeBackupReason(reason, checkpoints)
-	manifest := BackupManifest{Format: 1, GSCVersion: appVersion, ServerID: s.ID, ServerName: s.Name, Scope: scope, Created: time.Now().Format(time.RFC3339), Roots: roots, SourcePath: dir, SourceReason: reason, OnlineSnapshot: tcpOpen("127.0.0.1", s.JavaPort, 200*time.Millisecond)}
+	manifest := BackupManifest{Format: 1, GSCVersion: appVersion, ServerID: s.ID, ServerName: s.Name, Scope: scope, Created: time.Now().Format(time.RFC3339Nano), Roots: roots, SourcePath: dir, SourceReason: reason, OnlineSnapshot: tcpOpen("127.0.0.1", s.JavaPort, 200*time.Millisecond)}
 	do := func() error {
-		f, e := os.Create(tmp)
+		f, e := os.CreateTemp(root, pattern)
 		if e != nil {
 			return e
 		}
+		tmp := f.Name()
+		defer os.Remove(tmp)
+		out = strings.TrimSuffix(tmp, ".tmp")
 		zw := zip.NewWriter(f)
 		mb, _ := json.MarshalIndent(manifest, "", "  ")
 		mw, e := zw.Create("GSC_BACKUP_MANIFEST.json")
@@ -299,11 +309,23 @@ func createBackupWithReason(s ServerConfig, scope string, checkpoints bool, reas
 			e = fe
 		}
 		if e != nil {
-			_ = os.Remove(tmp)
 			return e
 		}
-		_ = os.Remove(out)
-		return os.Rename(tmp, out)
+		if e = checkBackupDestination(out); e != nil {
+			return e
+		}
+		// Reserve the final filename before publishing the completed archive.
+		reservation, e := os.OpenFile(out, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+		if e != nil {
+			return e
+		}
+		if e = reservation.Close(); e == nil {
+			e = os.Rename(tmp, out)
+		}
+		if e != nil {
+			_ = os.Remove(out)
+		}
+		return e
 	}
 	if scope == "world" {
 		e = withOnlineWorldFreeze(s, do)
@@ -317,7 +339,9 @@ func createBackupWithReason(s ServerConfig, scope string, checkpoints bool, reas
 	if e != nil {
 		return BackupInfo{}, e
 	}
-	_ = os.WriteFile(out+".sha256", []byte(sha+"  "+filepath.Base(out)+"\r\n"), 0644)
+	if e = os.WriteFile(out+".sha256", []byte(sha+"  "+filepath.Base(out)+"\r\n"), 0644); e != nil {
+		return BackupInfo{}, fmt.Errorf("write checksum for %s: %w", filepath.Base(out), e)
+	}
 	protected := false
 	if checkpoints {
 		meta := readBackupMeta(out)
@@ -328,7 +352,10 @@ func createBackupWithReason(s ServerConfig, scope string, checkpoints bool, reas
 		}
 		protected = true
 	}
-	st, _ := os.Stat(out)
+	st, e := os.Stat(out)
+	if e != nil {
+		return BackupInfo{}, e
+	}
 	bi := BackupInfo{File: filepath.Base(out), Path: out, Scope: scope, Created: manifest.Created, Size: st.Size(), Verified: true, SHA256: sha, Kind: map[bool]string{true: "checkpoint", false: "backup"}[checkpoints], Protected: protected, SourceReason: manifest.SourceReason}
 	appendV4Event("info", "backup", s.ID, "백업 완료: "+bi.File, fmt.Sprintf("scope=%s size=%d protected=%v reason=%s", scope, bi.Size, protected, manifest.SourceReason))
 	return bi, nil
@@ -362,7 +389,10 @@ func readBackupManifest(p string) (BackupManifest, error) {
 			defer rc.Close()
 			var m BackupManifest
 			e = json.NewDecoder(io.LimitReader(rc, 1<<20)).Decode(&m)
-			return m, e
+			if e != nil {
+				return BackupManifest{}, e
+			}
+			return m, m.validateRoots()
 		}
 	}
 	return BackupManifest{}, fmt.Errorf("backup manifest missing")
@@ -378,6 +408,12 @@ func verifyBackup(p string) (BackupInfo, error) {
 		return BackupInfo{}, e
 	}
 	for _, f := range z.File {
+		if f.Name != "GSC_BACKUP_MANIFEST.json" {
+			if _, err := m.entryName(f.Name); err != nil {
+				z.Close()
+				return BackupInfo{}, err
+			}
+		}
 		rc, e := f.Open()
 		if e != nil {
 			z.Close()
@@ -397,11 +433,16 @@ func verifyBackup(p string) (BackupInfo, error) {
 	}
 	if b, e2 := os.ReadFile(p + ".sha256"); e2 == nil {
 		want := strings.Fields(string(b))
-		if len(want) > 0 && !strings.EqualFold(want[0], sha) {
+		if len(want) == 0 || !strings.EqualFold(want[0], sha) {
 			return BackupInfo{}, fmt.Errorf("SHA-256 불일치")
 		}
+	} else if !os.IsNotExist(e2) {
+		return BackupInfo{}, e2
 	}
-	st, _ := os.Stat(p)
+	st, e := os.Stat(p)
+	if e != nil {
+		return BackupInfo{}, e
+	}
 	return BackupInfo{File: filepath.Base(p), Path: p, Scope: m.Scope, Created: m.Created, Size: st.Size(), Verified: true, SHA256: sha, SourceReason: m.SourceReason}, nil
 }
 
@@ -419,7 +460,10 @@ func listBackups(s ServerConfig) []BackupInfo {
 			if er != nil {
 				continue
 			}
-			st, _ := e.Info()
+			st, statErr := e.Info()
+			if statErr != nil {
+				continue
+			}
 			sha := ""
 			if b, er := os.ReadFile(p + ".sha256"); er == nil {
 				f := strings.Fields(string(b))
@@ -431,7 +475,7 @@ func listBackups(s ServerConfig) []BackupInfo {
 			out = append(out, BackupInfo{File: e.Name(), Path: p, Scope: m.Scope, Created: m.Created, Size: st.Size(), Verified: sha != "", SHA256: sha, Kind: map[bool]string{true: "checkpoint", false: "backup"}[checkpoint], Protected: meta.Protected, SourceReason: m.SourceReason})
 		}
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i].Created > out[j].Created })
+	sortBackupInfos(out)
 	return out
 }
 
@@ -523,16 +567,17 @@ func extractBackup(p, dst string, m BackupManifest) error {
 		return e
 	}
 	defer z.Close()
-	baseClean := filepath.Clean(dst) + string(os.PathSeparator)
 	for _, f := range z.File {
 		if f.Name == "GSC_BACKUP_MANIFEST.json" {
 			continue
 		}
-		name := filepath.Clean(filepath.FromSlash(f.Name))
-		target := filepath.Join(dst, name)
-		tc := filepath.Clean(target)
-		if tc != filepath.Clean(dst) && !strings.HasPrefix(tc, baseClean) {
-			return fmt.Errorf("unsafe zip path: %s", f.Name)
+		name, err := m.entryName(f.Name)
+		if err != nil {
+			return err
+		}
+		target, err := confinedBackupPath(dst, name)
+		if err != nil {
+			return err
 		}
 		if f.FileInfo().IsDir() {
 			if e = os.MkdirAll(target, 0755); e != nil {
@@ -540,32 +585,17 @@ func extractBackup(p, dst string, m BackupManifest) error {
 			}
 			continue
 		}
-		if e = os.MkdirAll(filepath.Dir(target), 0755); e != nil {
-			return e
-		}
 		rc, e := f.Open()
 		if e != nil {
 			return e
 		}
-		tmp := target + ".gsc-restore"
-		out, e := os.Create(tmp)
+		e = fileutil.Replace(target, rc, 0644)
+		closeErr := rc.Close()
 		if e != nil {
-			rc.Close()
 			return e
 		}
-		_, e = io.Copy(out, rc)
-		ce := out.Close()
-		_ = rc.Close()
-		if e == nil {
-			e = ce
-		}
-		if e != nil {
-			_ = os.Remove(tmp)
-			return e
-		}
-		_ = os.Remove(target)
-		if e = os.Rename(tmp, target); e != nil {
-			return e
+		if closeErr != nil {
+			return closeErr
 		}
 	}
 	return nil
@@ -631,6 +661,29 @@ func buildRestorePreflight(s ServerConfig, p string) RestorePreflight {
 		out.BlockedReason = "복원 전 체크포인트 범위 확인 실패: " + err.Error()
 		return out
 	}
+	for _, name := range m.Roots {
+		if m.Scope == "full" {
+			break
+		}
+		target, err := confinedBackupPath(dir, name)
+		if err != nil {
+			out.BlockedReason = err.Error()
+			return out
+		}
+		if m.Scope == "world" {
+			_, err := os.Stat(target)
+			if err != nil && !os.IsNotExist(err) {
+				out.BlockedReason = err.Error()
+				return out
+			}
+			if err == nil && !slices.ContainsFunc(roots, func(root string) bool {
+				return strings.EqualFold(filepath.Clean(root), filepath.Clean(name))
+			}) {
+				out.BlockedReason = "월드 복원 대상이 현재 월드 체크포인트 범위에 포함되지 않습니다"
+				return out
+			}
+		}
+	}
 	sourceBytes, err := estimateBackupSourceBytes(dir, roots)
 	if err != nil {
 		out.BlockedReason = "복원 전 체크포인트 크기 계산 실패: " + err.Error()
@@ -694,10 +747,11 @@ func rollbackNonFullRestoreFromCheckpoint(s ServerConfig, checkpointFile string,
 	}
 	dir := resolveServerDir(s)
 	for _, root := range target.Roots {
-		if root == "." {
-			return fmt.Errorf("non-full rollback received full root")
+		path, err := confinedBackupPath(dir, root)
+		if err != nil {
+			return err
 		}
-		if err = os.RemoveAll(filepath.Join(dir, filepath.FromSlash(root))); err != nil {
+		if err = os.RemoveAll(path); err != nil {
 			return fmt.Errorf("rollback cleanup %s: %w", root, err)
 		}
 	}
@@ -752,7 +806,11 @@ func restoreBackup(s ServerConfig, p string) (string, RestoreHealth, error) {
 	}
 	if m.Scope == "world" {
 		for _, root := range m.Roots {
-			if e = os.RemoveAll(filepath.Join(dir, filepath.FromSlash(root))); e != nil {
+			path, err := confinedBackupPath(dir, root)
+			if err != nil {
+				return cp.File, RestoreHealth{}, err
+			}
+			if e = os.RemoveAll(path); e != nil {
 				if rb := rollbackNonFullRestoreFromCheckpoint(s, cp.File, m); rb != nil {
 					return cp.File, RestoreHealth{}, fmt.Errorf("복원 대상 정리 실패: %v; checkpoint rollback 실패: %v", e, rb)
 				}

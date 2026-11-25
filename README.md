@@ -1,5 +1,11 @@
 # Geumyi Minecraft System
 
+## GSC 5.2.0 · 운영 모드
+
+GSC Client 왼쪽 메뉴 맨 아래 **위험 작업**에서 이 PC의 Host·Client 자동 시작 상태를 확인합니다. **운영 모드 관리자 열기**를 누르면 상세 검사와 수동 운영 전환·복원을 진행할 수 있습니다. GSC를 열지 않고 사용하려면 같은 릴리스에서 `GMS_OperatingMode_v3.0.1.exe`를 내려받으세요. [5.2.0 릴리스](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.2.0) · [설치와 검증 범위](docs/releases/GSC-5.2.0-STABLE.md)
+
+### 이전 버전 개발 기록
+
 > **GSC 5.1.0 검증 보류 (2026-11-15):** [개발 PR #64](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/64)는 **Draft/미병합/미배포**입니다. 개발 PC에서 7종 서버+새 Velocity의 로컬 QA가 기록됐지만 **GitHub Windows CI 두 실행은 실패**했습니다. [실패 테스트와 출처 보완](docs/releases/GSC-5.1.0-QA.md#github-windows-ci-별도-검증-결과--2026-11-15) 및 [운영/배포 구분](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/main/docs/operations/GSC-510-DEVELOPMENT-STATUS-2026-11-15.md)을 먼저 확인하세요. 기존 3개 Velocity는 Scheduler 소유를 유지하며 GSC 정상 종료 연결에는 별도 초기 오프라인 준비가 필요합니다.
 
 > **현재 개발본: GSC 5.1.0 (2026-11-15).** 서버 7종 자동 설치·관리와 별도 Velocity 프록시 메뉴를 추가했습니다. [기능·사용 안내](docs/releases/GSC-5.1.0.md) · [검증 결과와 미검증 범위](docs/releases/GSC-5.1.0-QA.md). Host·Client는 5.1.0으로 재빌드하여 실제 버전 표시까지 확인했습니다. 기존 서버·월드·플레이어 데이터와 운영 예약 작업은 보존했으며, **5.1.0 공개 릴리스·운영 설치 교체는 수행하지 않았습니다.** 아래 5.0.0 및 4.x 기록은 이전 버전의 이력입니다.

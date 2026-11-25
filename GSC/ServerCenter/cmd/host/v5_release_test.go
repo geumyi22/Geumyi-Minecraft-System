@@ -8,7 +8,7 @@ import (
 )
 
 func TestV5ReleaseReadOnlyContract(t *testing.T) {
-	if appVersion != "5.1.1" {
+	if appVersion != "5.2.0" {
 		t.Fatalf("Host version %q", appVersion)
 	}
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete} {

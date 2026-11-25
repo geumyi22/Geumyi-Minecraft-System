@@ -1,6 +1,9 @@
 package main
 
 import (
+	"geumyi/servercenter/internal/fileutil"
+	"bytes"
+	"errors"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -21,40 +24,44 @@ type backupMeta struct {
 
 func backupMetaPath(p string) string { return p + ".gscmeta.json" }
 
+// An unreadable protection record keeps a backup out of automatic retention.
 func readBackupMeta(p string) backupMeta {
-	var m backupMeta
-	b, err := os.ReadFile(backupMetaPath(p))
+	m, err := loadBackupMeta(p)
 	if err != nil {
-		return m
+		return backupMeta{Protected: true}
 	}
-	_ = json.Unmarshal(b, &m)
 	return m
+}
+
+func loadBackupMeta(p string) (backupMeta, error) {
+	var m *backupMeta
+	b, err := os.ReadFile(backupMetaPath(p))
+	if os.IsNotExist(err) {
+		return backupMeta{}, nil
+	}
+	if err != nil {
+		return backupMeta{}, err
+	}
+	if err := json.Unmarshal(b, &m); err != nil || m == nil {
+		return backupMeta{}, fmt.Errorf("invalid backup protection metadata for %s", filepath.Base(p))
+	}
+	return *m, nil
 }
 
 func writeBackupMeta(p string, m backupMeta) error {
 	path := backupMetaPath(p)
 	if !m.Protected && m.ProtectedAt == "" && m.OriginalKind == "" && m.DeletedAt == "" {
-		_ = os.Remove(path)
-		return nil
-	}
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		err := os.Remove(path)
+		if os.IsNotExist(err) {
+			return nil
+		}
 		return err
 	}
 	b, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
 		return err
 	}
-	b = append(b, '\n')
-	tmp := path + ".tmp"
-	if err = os.WriteFile(tmp, b, 0644); err != nil {
-		return err
-	}
-	_ = os.Remove(path)
-	if err = os.Rename(tmp, path); err != nil {
-		_ = os.Remove(tmp)
-		return err
-	}
-	return nil
+	return fileutil.Replace(path, bytes.NewReader(append(b, '\n')), 0644)
 }
 
 func backupKindFromPath(s ServerConfig, p string) string {
@@ -86,11 +93,27 @@ func safeTrashBackupPath(s ServerConfig, file string) (string, string, error) {
 	return "", "", fmt.Errorf("trashed backup not found")
 }
 
+func checkBackupDestination(dst string) error {
+	for _, path := range []string{dst, dst + ".sha256", backupMetaPath(dst)} {
+		if _, err := os.Lstat(path); err == nil {
+			return fmt.Errorf("destination already exists: %s", filepath.Base(path))
+		} else if !os.IsNotExist(err) {
+			return err
+		}
+	}
+	return nil
+}
+
 func moveBackupBundle(src, dst string) error {
-	if _, err := os.Stat(dst); err == nil {
-		return fmt.Errorf("destination already exists")
-	} else if !os.IsNotExist(err) {
+	if err := checkBackupDestination(dst); err != nil {
 		return err
+	}
+	checksum, err := os.Lstat(src + ".sha256")
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if checksum != nil && !checksum.Mode().IsRegular() {
+		return fmt.Errorf("backup checksum must be a regular file")
 	}
 	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 		return err
@@ -98,14 +121,9 @@ func moveBackupBundle(src, dst string) error {
 	if err := os.Rename(src, dst); err != nil {
 		return err
 	}
-	rollback := func() {
-		_ = os.Rename(dst+".sha256", src+".sha256")
-		_ = os.Rename(dst, src)
-	}
-	if _, err := os.Stat(src + ".sha256"); err == nil {
-		if err = os.Rename(src+".sha256", dst+".sha256"); err != nil {
-			rollback()
-			return err
+	if checksum != nil {
+		if err := os.Rename(src+".sha256", dst+".sha256"); err != nil {
+			return errors.Join(err, os.Rename(dst, src))
 		}
 	}
 	return nil
@@ -154,7 +172,11 @@ func listTrashedBackups(s ServerConfig) []BackupInfo {
 }
 
 func sortBackupInfos(out []BackupInfo) {
-	sort.Slice(out, func(i, j int) bool { return out[i].Created > out[j].Created })
+	sort.SliceStable(out, func(i, j int) bool {
+		left, _ := time.Parse(time.RFC3339Nano, out[i].Created)
+		right, _ := time.Parse(time.RFC3339Nano, out[j].Created)
+		return left.After(right)
+	})
 }
 
 type BackupRetentionDryRun struct {
@@ -243,7 +265,10 @@ func trashBackupFile(s ServerConfig, file string) (BackupInfo, error) {
 	if err != nil {
 		return BackupInfo{}, err
 	}
-	meta := readBackupMeta(p)
+	meta, err := loadBackupMeta(p)
+	if err != nil {
+		return BackupInfo{}, err
+	}
 	if meta.Protected {
 		return BackupInfo{}, fmt.Errorf("protected backup: unprotect before moving to trash")
 	}
@@ -268,7 +293,10 @@ func restoreTrashedBackupFile(s ServerConfig, file string) (BackupInfo, error) {
 	if err != nil {
 		return BackupInfo{}, err
 	}
-	meta := readBackupMeta(p)
+	meta, err := loadBackupMeta(p)
+	if err != nil {
+		return BackupInfo{}, err
+	}
 	if meta.OriginalKind == "backup" || meta.OriginalKind == "checkpoint" {
 		kind = meta.OriginalKind
 	}
@@ -430,7 +458,11 @@ func apiV4BackupAction(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		meta := readBackupMeta(p)
+		meta, err := loadBackupMeta(p)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusConflict)
+			return
+		}
 		meta.Protected = q.Action == "protect"
 		if meta.Protected {
 			meta.ProtectedAt = time.Now().Format(time.RFC3339)
@@ -474,7 +506,11 @@ func apiV4BackupAction(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		meta := readBackupMeta(p)
+		meta, err := loadBackupMeta(p)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusConflict)
+			return
+		}
 		if meta.Protected {
 			http.Error(w, "protected backup cannot be permanently deleted", http.StatusConflict)
 			return

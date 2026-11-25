@@ -18,14 +18,14 @@ func TestGSC5RealPackagedPayloadExtractAndRollback(t *testing.T) {
 	if os.Getenv("GSC5_REAL_PAYLOAD_TEST") != "1" {
 		t.Skip("actual compiled payload fixtures are staged only after build.ps1")
 	}
-	if version != "5.1.1" {
+	if version != "5.2.0" {
 		t.Fatalf("unexpected setup version %q", version)
 	}
 
 	root := t.TempDir()
 	installed := filepath.Join(root, "disposable-installed")
 	backups := filepath.Join(root, "disposable-backup")
-	for _, name := range []string{"GeumyiServerHost.exe", "GeumyiServerCenter.exe"} {
+	for _, name := range []string{"GeumyiServerHost.exe", "GeumyiServerCenter.exe", operatingModeName} {
 		t.Run(name, func(t *testing.T) {
 			embedded, err := payload.ReadFile("payload/" + name)
 			if err != nil {
@@ -79,8 +79,8 @@ func TestGSC5RealPackagedPayloadExtractAndRollback(t *testing.T) {
 }
 
 func TestGSC5PackagedSetupVersionAndMissingBackupFailClosed(t *testing.T) {
-	versionReadme, err := payload.ReadFile("payload/README-v5.1.1.txt")
-	if err != nil || !bytes.Contains(versionReadme, []byte("5.1.1")) {
+	versionReadme, err := payload.ReadFile("payload/README-v5.2.0.txt")
+	if err != nil || !bytes.Contains(versionReadme, []byte("5.2.0")) {
 		t.Fatalf("v5 Stable payload documentation absent/mismatched: %v", err)
 	}
 	root := t.TempDir()

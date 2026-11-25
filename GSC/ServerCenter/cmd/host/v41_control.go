@@ -277,11 +277,13 @@ type ControlJob struct {
 }
 
 var (
-	controlJobSeq    atomic.Uint64
-	controlJobMu     sync.RWMutex
-	controlJobs      = map[string]*ControlJob{}
-	controlJobOrder  []string
-	controlJobQueues = map[string]chan string{}
+	controlJobSeq      atomic.Uint64
+	controlJobMu       sync.RWMutex
+	controlJobSubmitMu sync.Mutex
+	controlJobFileMu   sync.Mutex
+	controlJobs        = map[string]*ControlJob{}
+	controlJobOrder    []string
+	controlJobQueues   = map[string]chan string{}
 )
 
 func controlJobsPath() string { return filepath.Join(v4Root(), "jobs", "control-jobs.jsonl") }
@@ -302,6 +304,8 @@ func cloneJob(j *ControlJob) *ControlJob {
 
 func persistControlJob(j *ControlJob) {
 	b, _ := json.Marshal(j)
+	controlJobFileMu.Lock()
+	defer controlJobFileMu.Unlock()
 	p := controlJobsPath()
 	_ = os.MkdirAll(filepath.Dir(p), 0755)
 	if st, err := os.Stat(p); err == nil && st.Size() > 16<<20 {
@@ -349,10 +353,27 @@ func loadControlJobs() {
 			persistControlJob(j)
 		}
 	}
-	if len(controlJobOrder) > 500 {
-		controlJobOrder = append([]string(nil), controlJobOrder[len(controlJobOrder)-500:]...)
-	}
+	pruneControlHistory()
 	controlJobMu.Unlock()
+}
+
+// Caller holds controlJobMu. A long-running job must remain visible to activeControlJob.
+func pruneControlHistory() {
+	drop := len(controlJobOrder) - 500
+	if drop <= 0 {
+		return
+	}
+	keep := controlJobOrder[:0]
+	for _, id := range controlJobOrder {
+		j := controlJobs[id]
+		if drop > 0 && (j == nil || (j.Status != "queued" && j.Status != "running")) {
+			delete(controlJobs, id)
+			drop--
+			continue
+		}
+		keep = append(keep, id)
+	}
+	controlJobOrder = keep
 }
 
 func initControlJobs() {
@@ -452,6 +473,10 @@ func setControlJob(id string, fn func(*ControlJob)) {
 }
 
 func enqueueControlJob(serverID, action string, countdown int, p authPrincipal, source, requestID string) (*ControlJob, error) {
+	// Capacity check and publication are one submission. Parallel callers must
+	// not both reserve the last slot and leave an HTTP request blocked on send.
+	controlJobSubmitMu.Lock()
+	defer controlJobSubmitMu.Unlock()
 	action = strings.ToLower(strings.TrimSpace(action))
 	if action != "start" && action != "stop" && action != "restart" {
 		return nil, errors.New("unsupported action")
@@ -476,21 +501,15 @@ func enqueueControlJob(serverID, action string, countdown int, p authPrincipal, 
 		Message: "작업 대기 중",
 	}
 	controlJobMu.Lock()
-	controlJobs[j.ID] = j
+	controlJobs[j.ID] = cloneJob(j)
 	controlJobOrder = append(controlJobOrder, j.ID)
-	if len(controlJobOrder) > 500 {
-		old := controlJobOrder[0]
-		controlJobOrder = controlJobOrder[1:]
-		if x := controlJobs[old]; x != nil && x.Status != "queued" && x.Status != "running" {
-			delete(controlJobs, old)
-		}
-	}
+	pruneControlHistory()
 	controlJobMu.Unlock()
 	persistControlJob(j)
 	appendV4Event("info", "job", serverID, "제어 작업 대기", j.ID+" · "+action)
 	wsPublish("job.created", *j)
 	q <- j.ID
-	return cloneJob(j), nil
+	return j, nil
 }
 
 func controlJobWorker(serverID string, q <-chan string) {
@@ -557,7 +576,6 @@ func runControlJob(id string) {
 				select {
 				case <-hostQuit:
 					err = errors.New("host stopped")
-					break
 				case <-time.After(500 * time.Millisecond):
 				}
 				if err != nil {

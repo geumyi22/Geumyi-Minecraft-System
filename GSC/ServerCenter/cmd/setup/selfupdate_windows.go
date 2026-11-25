@@ -3,6 +3,8 @@
 package main
 
 import (
+	"geumyi/servercenter/internal/fileutil"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -63,11 +65,8 @@ func clientSelfUpdateLockPath() string {
 func writeSelfUpdateReportAt(p string, r selfUpdateReport) {
 	r.Finished = time.Now().Format(time.RFC3339)
 	b, _ := json.MarshalIndent(r, "", "  ")
-	_ = os.MkdirAll(filepath.Dir(p), 0755)
-	tmp := p + ".tmp"
-	if os.WriteFile(tmp, append(b, '\n'), 0600) == nil {
-		_ = os.Remove(p)
-		_ = os.Rename(tmp, p)
+	if b != nil {
+		_ = fileutil.Replace(p, bytes.NewReader(append(b, '\n')), 0600)
 	}
 }
 
@@ -104,31 +103,7 @@ func copyFileStrict(src, dst string, mode os.FileMode) error {
 		return err
 	}
 	defer in.Close()
-	if err = os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
-		return err
-	}
-	tmp := dst + ".gsc-new"
-	_ = os.Remove(tmp)
-	out, err := os.OpenFile(tmp, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, mode)
-	if err != nil {
-		return err
-	}
-	_, cpErr := io.Copy(out, in)
-	closeErr := out.Close()
-	if cpErr != nil {
-		_ = os.Remove(tmp)
-		return cpErr
-	}
-	if closeErr != nil {
-		_ = os.Remove(tmp)
-		return closeErr
-	}
-	_ = os.Remove(dst)
-	if err = os.Rename(tmp, dst); err != nil {
-		_ = os.Remove(tmp)
-		return err
-	}
-	return nil
+	return fileutil.Replace(dst, in, mode)
 }
 
 func writeEmbeddedStrict(name, dst string) error {
@@ -139,19 +114,7 @@ func writeEmbeddedStrict(name, dst string) error {
 	if len(b) < 100000 && strings.HasSuffix(strings.ToLower(name), ".exe") {
 		return fmt.Errorf("embedded %s is suspiciously small", name)
 	}
-	if err = os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
-		return err
-	}
-	tmp := dst + ".tmp"
-	if err = os.WriteFile(tmp, b, 0755); err != nil {
-		return err
-	}
-	_ = os.Remove(dst)
-	if err = os.Rename(tmp, dst); err != nil {
-		_ = os.Remove(tmp)
-		return err
-	}
-	return nil
+	return fileutil.Replace(dst, bytes.NewReader(b), 0755)
 }
 
 func processImageRunning(name string) bool {
@@ -398,6 +361,21 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 			return
 		}
 	}
+	if hostExists {
+		releaseMode, err := guardOperatingMode(false, false)
+		if err != nil {
+			report.Status, report.Error = "failed", err.Error()
+			return
+		}
+		defer releaseMode()
+	}
+	modeTarget := filepath.Join(installDir, operatingModeName)
+	modeCandidate, oldMode, modeErr := modePayloadFor(modeTarget)
+	if modeErr != nil {
+		report.Status, report.Error = "failed", "운영 모드 설치 파일을 확인하지 못했습니다."
+		return
+	}
+	replaceMode := !bytes.Equal(modeCandidate, oldMode)
 
 	clientWasRunning := clientExists && processImageRunning("GeumyiServerCenter.exe")
 	stamp := time.Now().Format("20060102-150405")
@@ -413,6 +391,7 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 	// GeumyiServerCenter-Setup.exe during replacement; a failed update must
 	// remove that newly introduced binary, not leave an untracked RC behind.
 	targets := selfUpdateTargetPaths(hostExists, clientExists, hostTarget, clientTarget, setupTarget)
+	if replaceMode { targets = append(targets, modeTarget) }
 	files := make([]selfUpdateFile, 0, len(targets))
 	for _, p := range targets {
 		f, err := backupSelfUpdateFile(p, backupDir)
@@ -509,6 +488,15 @@ func runSelfUpdateModeScoped(clientOnly bool) {
 		}
 	}
 
+	if replaceMode {
+		if err := writeModeAtomically(modeTarget, modeCandidate); err != nil {
+			// Atomic replacement did not change the companion; do not try to
+			// overwrite an in-use EXE while rolling the other files back.
+			files = files[:len(files)-1]
+			rollback(fmt.Errorf("운영 모드 관리자 교체 실패: %w", err))
+			return
+		}
+	}
 	if hostExists {
 		if err := copyFileStrict(newHost, hostTarget, 0755); err != nil {
 			rollback(fmt.Errorf("Host replacement failed: %w", err))

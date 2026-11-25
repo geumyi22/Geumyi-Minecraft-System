@@ -68,6 +68,11 @@ func TestGSC5DisposableWindowsClientOnlyInstallation(t *testing.T) {
 		t.Fatalf("client install failed: status=%q done=%v error_present=%v", first.Status, first.Done, first.Error != "")
 	}
 	clientPath := filepath.Join(installDir, "GeumyiServerCenter.exe")
+	mode, err := os.ReadFile(filepath.Join(installDir, operatingModeName))
+	packedMode, payloadErr := payload.ReadFile("payload/"+operatingModeName)
+	if err != nil || payloadErr != nil || !bytes.Equal(mode, packedMode) {
+		t.Fatal("installed operating mode companion differs from the embedded payload")
+	}
 	installed, err := os.ReadFile(clientPath)
 	if err != nil {
 		t.Fatalf("client exe absent: %v", err)

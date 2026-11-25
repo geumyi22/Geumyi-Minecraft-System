@@ -53,15 +53,13 @@ func gsc5MigrationDecision(role int, storedVersion string, health gsc5ExistingHo
 	if storedVersion != "" && storedVersion != health.Version {
 		return errors.New("stored and running Host versions disagree; upgrade blocked before service changes")
 	}
-	// Published GSC 5.0.0 (including distinct maintenance build revisions)
-	// is an approved source for GSC 5.1.x. The Host and stored role must
-	// independently agree before this gate permits any service changes.
-	// Keep the historical 4.5.2 Canary rejection and fail closed for unknown
-	// source versions; a build_revision does not override version mismatch.
-	if health.Version != "4.5.1" && health.Version != "5.0.0" && health.Version != "5.1.0" && health.Version != version {
+	// Keep the migration path for each released Stable and allow same-version repair.
+	switch health.Version {
+	case "4.5.1", "5.0.0", "5.1.0", "5.1.1", version:
+		return nil
+	default:
 		return fmt.Errorf("existing Host version %q has no approved GSC upgrade path", health.Version)
 	}
-	return nil
 }
 
 func gsc5ReadStoredRoleVersion(dataDir string) (string, error) {

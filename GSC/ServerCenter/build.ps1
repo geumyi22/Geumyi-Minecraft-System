@@ -11,11 +11,17 @@ try {
     $env:GOARCH = "amd64"
     $env:CGO_ENABLED = "0"
     New-Item -ItemType Directory -Force -Path dist | Out-Null
+    $modeRoot = Join-Path $PSScriptRoot '../OperatingMode'
+    $modeName = 'GMS_OperatingMode_v3.0.1.exe'
+    & (Join-Path $modeRoot 'build.ps1')
+    $modePayload = Join-Path 'cmd/setup/payload' $modeName
+    Copy-Item -LiteralPath (Join-Path $modeRoot "bin/$modeName") -Destination $modePayload -Force
+    $modeHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $modePayload).Hash.ToLowerInvariant()
     & $Go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui" -o cmd/setup/payload/GeumyiServerHost.exe ./cmd/host
     if ($LASTEXITCODE -ne 0) { throw "Host build failed" }
-    & $Go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui" -o cmd/setup/payload/GeumyiServerCenter.exe ./cmd/client
+    & $Go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui -X main.operatingModeSHA256=$modeHash" -o cmd/setup/payload/GeumyiServerCenter.exe ./cmd/client
     if ($LASTEXITCODE -ne 0) { throw "Client build failed" }
-    & $Go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui" -o dist/GeumyiServerCenter-v5.1.1-Setup.exe ./cmd/setup
+    & $Go build -buildvcs=false -trimpath -ldflags="-s -w -H=windowsgui" -o dist/GeumyiServerCenter-v5.2.0-Setup.exe ./cmd/setup
     if ($LASTEXITCODE -ne 0) { throw "Setup build failed" }
-    Write-Host "Created dist/GeumyiServerCenter-v5.1.1-Setup.exe"
+    Write-Host "Created dist/GeumyiServerCenter-v5.2.0-Setup.exe"
 } finally { Pop-Location }

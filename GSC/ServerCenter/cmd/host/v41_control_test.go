@@ -7,8 +7,78 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
+	"time"
 )
+
+func TestControlHistoryRetainsRunningJob(t *testing.T) {
+	controlJobMu.Lock()
+	defer controlJobMu.Unlock()
+	savedJobs, savedOrder := controlJobs, controlJobOrder
+	defer func() { controlJobs, controlJobOrder = savedJobs, savedOrder }()
+	controlJobs = map[string]*ControlJob{"busy": {ID: "busy", Status: "running"}}
+	controlJobOrder = []string{"busy"}
+	for n := 0; n < 500; n++ {
+		id := strconv.Itoa(n)
+		controlJobs[id] = &ControlJob{ID: id, Status: "completed"}
+		controlJobOrder = append(controlJobOrder, id)
+	}
+	pruneControlHistory()
+	if len(controlJobs) != 500 || len(controlJobOrder) != 500 || controlJobOrder[0] != "busy" || controlJobs["0"] != nil {
+		t.Fatal("active job or history cap lost during retention")
+	}
+}
+
+func TestControlQueueConcurrentLastSlot(t *testing.T) {
+	const server = "fixture-queue"
+	configMu.Lock()
+	oldCfg, oldPath := cfg, configPath
+	configPath = filepath.Join(t.TempDir(), "server.json")
+	cfg = Config{Servers: []ServerConfig{{ID: server}}}
+	configMu.Unlock()
+	defer func() { configMu.Lock(); cfg, configPath = oldCfg, oldPath; configMu.Unlock() }()
+	controlJobMu.Lock()
+	oldJobs, oldOrder, oldQueues := controlJobs, controlJobOrder, controlJobQueues
+	q := make(chan string, 1)
+	controlJobs = map[string]*ControlJob{}
+	controlJobOrder = nil
+	controlJobQueues = map[string]chan string{server: q} // no worker; no server action can execute
+	controlJobMu.Unlock()
+	defer func() {
+		controlJobMu.Lock()
+		controlJobs, controlJobOrder, controlJobQueues = oldJobs, oldOrder, oldQueues
+		controlJobMu.Unlock()
+	}()
+	const callers = 12
+	start := make(chan struct{})
+	done := make(chan error, callers)
+	for i := 0; i < callers; i++ {
+		go func() {
+			<-start
+			_, err := enqueueControlJob(server, "stop", 0, authPrincipal{}, "test", "")
+			done <- err
+		}()
+	}
+	close(start)
+	accepted := 0
+	timeout := time.After(4 * time.Second)
+	for i := 0; i < callers; i++ {
+		select {
+		case err := <-done:
+			if err == nil {
+				accepted++
+			} else if err.Error() != "server job queue is full" {
+				t.Fatal(err)
+			}
+		case <-timeout:
+			t.Fatal("queue submit blocked after the last slot was reserved")
+		}
+	}
+	if accepted != 1 || len(q) != 1 || len(controlJobOrder) != 1 {
+		t.Fatal("unexpected queue admission")
+	}
+}
 
 func TestParseV1ServerPath(t *testing.T) {
 	cases := []struct {

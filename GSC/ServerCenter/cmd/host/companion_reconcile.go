@@ -1,6 +1,7 @@
 package main
 
 import (
+	"geumyi/servercenter/internal/fileutil"
 	"bufio"
 	"crypto/rand"
 	"encoding/base64"
@@ -321,18 +322,7 @@ func setYAMLScalar(text, section, key, value string) string {
 }
 
 func atomicWriteText(path, text string) error {
-	tmp := path + ".gsc.tmp"
-	if err := os.WriteFile(tmp, []byte(text), 0600); err != nil {
-		return err
-	}
-	if err := os.Rename(tmp, path); err != nil {
-		_ = os.Remove(path)
-		if err2 := os.Rename(tmp, path); err2 != nil {
-			_ = os.Remove(tmp)
-			return err
-		}
-	}
-	return nil
+	return fileutil.Replace(path, strings.NewReader(text), 0600)
 }
 
 func defaultGDSConfig() string {

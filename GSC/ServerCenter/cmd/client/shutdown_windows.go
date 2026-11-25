@@ -63,17 +63,13 @@ func dashboardBrowserPIDs() []int {
 }
 
 func runHostTask() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
-	defer cancel()
-	c := exec.CommandContext(ctx, "sc.exe", "start", "Geumyi Server Center Host")
-	hiddenClientCommand(c)
-	if err := c.Run(); err == nil {
-		return nil
+	switch hostStartType() {
+	case "automatic","delayed-automatic","manual":
+		return startHostTarget("service")
+	case "missing":
+		if installedHostTask(false) { return startHostTarget("task") }
 	}
-	// v3 migration fallback until the v4 installer converts the Host task to a service.
-	c = exec.CommandContext(ctx, "schtasks.exe", "/Run", "/TN", "Geumyi Server Center Host")
-	hiddenClientCommand(c)
-	return c.Run()
+	return fmt.Errorf("시작할 수 있는 GSC Host 서비스 또는 예약 작업이 없습니다.")
 }
 func ensureLocalHost() {
 	if personalClientFlag("--no-start-host") {
@@ -98,13 +94,15 @@ func ensureLocalHost() {
 	if clientExiting.Load() {
 		return
 	}
-	if runHostTask() != nil {
+	target := activeHostTarget()
+	if target == "" { return }
+	if startHostTarget(target) != nil {
 		exe, e := os.Executable()
 		if e != nil {
 			return
 		}
 		// Only the task-start helper elevates; the dashboard keeps the user's profile.
-		pShellExecute.Call(0, uintptr(unsafe.Pointer(wptr("runas"))), uintptr(unsafe.Pointer(wptr(exe))), uintptr(unsafe.Pointer(wptr("--start-host"))), 0, 0)
+		pShellExecute.Call(0, uintptr(unsafe.Pointer(wptr("runas"))), uintptr(unsafe.Pointer(wptr(exe))), uintptr(unsafe.Pointer(wptr("--start-host-if-automatic"))), 0, 0)
 	}
 }
 
