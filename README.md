@@ -1,13 +1,16 @@
 # Geumyi Minecraft System
 
-> **현재 기준 — 2026-11-18:** Windows GSC의 최신 공개 **개인용 Stable은 [5.1.1](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.1)**입니다. 정확한 소스에 대해 [21/21 Windows CI·서명 검증](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/43623012808)을 통과했습니다. 5.0.0·5.1.0 공개 릴리스도 별도 태그로 보존합니다.
+> **현재 기준 — 2026-11-26 (KST):** 최신 공개 Windows **개인용 Stable은 [GSC 5.2.0](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.2.0)**입니다. 정확한 릴리스 소스 `d35de2fe0cd6e8e635fdc6425a823e8b287c305e`에서 [Windows CI 및 서명·게시 게이트 22/22](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/45654771656) 성공을 확인했습니다. GMS Operating Mode 3.0.1을 별도로 제공하며, Client의 **위험 작업 → GMS 운영 모드**에서 열 수 있습니다.
 >
-> **검증 구분:** 개인용 공개 릴리스와 **사용자 PC 실제 설치·실플레이**는 다릅니다. 마지막으로 사용자가 실제 플레이를 확인한 것은 **GSC 5.0.0 로컬 유지보수 빌드**이며, 5.1.1 운영 설치·장시간 E2E는 별도 미확인입니다. 현재 `main`은 4.x 기반 복구 소스·운영 문서를 유지하며, **5.x 실행 코드는 각 공개 릴리스 태그/전용 브랜치**에 있습니다. 무심코 `main`에서 설치 파일을 빌드하지 마세요.
+> **운영 안전:** 기존 상시 운영 대신 필요한 경우 수동 실행하는 운영 방침입니다. 새 설치·업그레이드는 Host 자동(지연 시작) 및 Client 시작 옵션을 다시 설정할 수 있습니다. 설치 전 백업과 [운영 설명서](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/gsc-v5.2.0/docs/releases/gsc-5.2.0/OPERATORS.md)를 확인하고, 수동 운영을 유지하려면 다음 재부팅 전 다시 검사·적용하십시오.
 >
-> **다음 개발 후보:** [Velocity 콘솔 입력·안전한 명령/종료 제어 #66](https://github.com/geumyi22/Geumyi-Minecraft-System/issues/66) — **5.1.2 미완료**. [후보 브랜치](https://github.com/geumyi22/Geumyi-Minecraft-System/tree/feature/velocity-console-20261115)의 QA 성공은 소스 ZIP 내보내기만 검증했으며, 실제 Velocity 명령 기능 코드는 추가되지 않았습니다.
+> **검증 구분:** 5.2.0은 개인용 공개 릴리스이며 사용자 PC 실제 설치·UAC·자동 시작 차단/복원·재부팅·실게임 QA는 미확인입니다. 마지막 문서상 사용자 실플레이 확인은 GSC 5.0.0 로컬 유지보수 빌드입니다. `main`은 4.x 복구 소스와 운영 기록을 유지합니다. 5.x 빌드는 해당 공개 태그/정확한 커밋에서만 수행하십시오.
+>
+> **미완료 후속 후보:** [기존 Scheduler Velocity 인증 콘솔 제어 #66](https://github.com/geumyi22/Geumyi-Minecraft-System/issues/66) — 5.1.2 명칭은 당시 후보이며 5.2.0에서 해당 기능이 완료됐다는 근거는 없습니다. 기존 프록시 소유권과 데이터 보존을 전제로 별도 구현·검증해야 합니다.
 
 ## 최신 운영·개발 자료
 
+- [5.2.0 최신 릴리스·점검 상태](docs/operations/GSC-520-STATUS-2026-11-26.md) · [공식 릴리스](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.2.0) · [실제 PC 체크리스트](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/gsc-v5.2.0/docs/releases/gsc-5.2.0/PC-CHECKLIST.md)
 - [5.1.1 이전 오류 수정·SHA/CI·설치 주의사항](docs/operations/GSC-511-MIGRATION-HOTFIX-2026-11-15.md) · [공식 릴리스](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.1)
 - [5.1.0 공식 릴리스 및 검증](docs/operations/GSC-510-STABLE-2026-11-15.md) · [5.1.0 개발 전 CI 오류 이력](docs/operations/GSC-510-DEVELOPMENT-STATUS-2026-11-15.md)
 - [5.0.0 사용·플레이 확인 기록](docs/operations/GSC-500-STATUS-2026-11-10.md) · [공식 5.0.0](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.0.0)
@@ -16,7 +19,7 @@
 
 ## 아래의 2026-10-11 소스 복구 기준 (역사적 자료)
 
-아래 구성요소 표와 검증 이력은 **2026-10-11 당시의 복구·통합 배포 기준**입니다. 현재 5.1.1 릴리스나 운영 PC의 설치 상태를 뜻하지 않습니다.
+아래 구성요소 표와 검증 이력은 **2026-10-11 당시의 복구·통합 배포 기준**입니다. 현재 5.2.0 릴리스나 운영 PC의 설치 상태를 뜻하지 않습니다.
 
 **2026-10-11 당시의 통합 수동 설치 패키지:** [GSC 4.5.1 / GSCM 1.5.1+151 Stable](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/system-2026.10.11-stable-gsc451-gscm151) (2026-10-11 공개, 당시 최신 통합 패키지). 마지막 실제 운영 기기 확인은 GSC 4.3.8 / GSCM 1.1.5+117이며, 자동 Stable 배포용 서명 manifest는 별도입니다.
 

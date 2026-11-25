@@ -1,12 +1,13 @@
 # 금이 마인크래프트 시스템 문서 안내
 
-> **기준: 2026-11-18** · 최신 공개 **개인용 GSC Stable 5.1.1**. `main`에는 4.x 복구 기반 소스가 있으며, 5.x 실행 코드는 각 공개 릴리스 태그로 구분합니다. PC 설치·실게임 QA와 GitHub CI 결과도 서로 구분합니다.
+> **기준: 2026-11-26 (KST)** · 최신 공개 **개인용 GSC Stable 5.2.0** / 동반 GMS Operating Mode 3.0.1. `main`의 4.x 복구 기반 소스와 각 공개 릴리스 태그를 구분합니다. PC 설치·자동 시작 차단·실게임 QA와 GitHub CI 결과도 서로 구분합니다.
 
 ## 최신 릴리스와 현재 개발
 
+- [**GSC 5.2.0 최신 릴리스·운영 전환·저장소 점검**](operations/GSC-520-STATUS-2026-11-26.md) · [공식 릴리스](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.2.0) · [운영 설명서](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/gsc-v5.2.0/docs/releases/gsc-5.2.0/OPERATORS.md)
 - [**GMS / GSC 전체 GitHub 점검·정리 보고서 (2026-11-18)**](operations/GMS-GITHUB-AUDIT-2026-11-18.md) — 파일·PR·브랜치·릴리스 보존/삭제 판정
-- [**GSC 5.1.1 최신 개인용 Stable: 기존 5.0 Host 이전 오류 수정**](operations/GSC-511-MIGRATION-HOTFIX-2026-11-15.md) — CI 21/21 성공, 실제 운영 PC 설치는 별도
-- [GSC 5.1.2 개발 후보: Velocity 인증 콘솔·정상 종료/재시작 Issue #66](https://github.com/geumyi22/Geumyi-Minecraft-System/issues/66) — 아직 구현·E2E·Stable 미완료
+- [**GSC 5.1.1 이전 개인용 Stable: 기존 5.0 Host 이전 오류 수정**](operations/GSC-511-MIGRATION-HOTFIX-2026-11-15.md) — CI 21/21 성공, 실제 운영 PC 설치는 별도
+- [후속 개발 후보 (당시 5.1.2): Velocity 인증 콘솔·정상 종료/재시작 Issue #66](https://github.com/geumyi22/Geumyi-Minecraft-System/issues/66) — 아직 구현·E2E·Stable 미완료
 - [GSC 5.1.0 릴리스 검증 (역사적)](operations/GSC-510-STABLE-2026-11-15.md) · [5.1 개발 전 CI 차단 기록](operations/GSC-510-DEVELOPMENT-STATUS-2026-11-15.md)
 - [GSC 5.0.0 실플레이·유지보수 기록 (역사적)](operations/GSC-500-STATUS-2026-11-10.md)
 

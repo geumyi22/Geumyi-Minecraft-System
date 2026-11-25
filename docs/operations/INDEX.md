@@ -1,10 +1,11 @@
 # GMS / GSC 운영 자료 및 과거 기록
 
-**최신 공개 개인용 Stable (2026-11-18 확인): [GSC 5.1.1](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.1.1).** 공개 CI/서명·실제 PC 설치·실플레이는 서로 구분합니다. `main`은 4.x 복구 기반 코드이며 최신 5.1.1 실행 코드는 공개 릴리스 태그에 있습니다.
+**최신 공개 개인용 Stable (2026-11-26 KST): [GSC 5.2.0](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.2.0) / GMS Operating Mode 3.0.1.** [Windows CI 22/22 성공](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/45654771656)과 실제 PC 설치·자동 시작 차단·재부팅·실플레이를 구분합니다. `main`은 4.x 복구 기반 코드이며 최신 실행 코드는 공개 릴리스 태그에 있습니다.
 
+- [**GSC 5.2.0 최신 상태·운영 전환·저장소 점검**](GSC-520-STATUS-2026-11-26.md) · [실제 PC 체크리스트](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/gsc-v5.2.0/docs/releases/gsc-5.2.0/PC-CHECKLIST.md)
 - [**GitHub 전체 점검·파일/브랜치/PR 정리 (2026-11-18)**](GMS-GITHUB-AUDIT-2026-11-18.md)
 - [**GSC 5.1.1 개인용 Stable 설치 이전 오류 수정·최종 CI**](GSC-511-MIGRATION-HOTFIX-2026-11-15.md)
-- [5.1.2 개발 후보: 기존 Scheduler Velocity 인증 콘솔·정상 종료/재시작](https://github.com/geumyi22/Geumyi-Minecraft-System/issues/66) — 아직 실행 코드·E2E 미완료
+- [후속 개발 후보 (당시 5.1.2): 기존 Scheduler Velocity 인증 콘솔·정상 종료/재시작](https://github.com/geumyi22/Geumyi-Minecraft-System/issues/66) — 아직 실행 코드·E2E 미완료
 - [GSC 5.1.0 릴리스 검증 (과거)](GSC-510-STABLE-2026-11-15.md) · [개발 당시 CI 오류·수정 전 현황](GSC-510-DEVELOPMENT-STATUS-2026-11-15.md)
 - [GSC 5.0.0 사용자 실플레이·로컬 유지보수 기록](GSC-500-STATUS-2026-11-10.md) · [5.0 유지보수 Draft PR #63](https://github.com/geumyi22/Geumyi-Minecraft-System/pull/63)
 
@@ -22,4 +23,4 @@
 - [PC 임시 파일 안전 청소](../../DAY1-12-PC-CLEANUP-GUIDE.md)
 - [4.5.1/1.5.1 실기기 설치·회귀 테스트](RELEASE-4.5.1-1.5.1-SMOKE-CHECKLIST.md)
 
-**유지보수 원칙:** 백업 확인 → 설치 파일 출처와 SHA-256 검증 → 한 대씩 설치 → Java·Bedrock·GSCM 확인 → 이상 시 롤백. 2026-10-11 이전 통합 패키지는 수동 설치용이었습니다. 당시 문서에서의 실기기 확인 버전 GSC 4.3.8/GSCM 1.1.5+117은 역사적 기준이며, 최신 GSC 5.0 사용자 실플레이 확인과 구분합니다. iOS IPA는 미서명입니다.
+**유지보수 원칙:** 백업 확인 → 설치 파일 출처와 SHA-256 검증 → 한 대씩 설치 → Java·Bedrock·GSCM 확인 → 이상 시 롤백. 2026-10-11 이전 통합 패키지는 수동 설치용이었습니다. 당시 문서에서의 실기기 확인 버전 GSC 4.3.8/GSCM 1.1.5+117은 역사적 기준이며, 문서상 마지막 GSC 5.0 사용자 실플레이 확인 및 최신 5.2.0 공개 릴리스와 구분합니다. iOS IPA는 미서명입니다.

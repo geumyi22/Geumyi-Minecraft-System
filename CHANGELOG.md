@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-11-26 — GSC 5.2.0 개인용 Stable 및 저장소 문서 동기화
+
+- [GSC 5.2.0 공개 릴리스](https://github.com/geumyi22/Geumyi-Minecraft-System/releases/tag/gsc-v5.2.0) / 동반 GMS Operating Mode 3.0.1. 위험 작업 메뉴, 되돌릴 수 있는 로컬 자동 시작 전환, 백업·복원·파일 교체·대기열·콘솔 안정성 수정.
+- 정확한 소스 `d35de2fe0cd6e8e635fdc6425a823e8b287c305e`의 [Windows CI·서명 및 게시 22/22 성공](https://github.com/geumyi22/Geumyi-Minecraft-System/actions/runs/45654771656) 확인. 운영 PC 설치·실제 부팅·데이터 및 실게임 검증은 미확인.
+- [최신 상태 및 저장소 점검](docs/operations/GSC-520-STATUS-2026-11-26.md): main의 주요 문서에서 최신 릴리스 안내를 동기화하고 역사적 복구 코드, 기존 배포 자산 및 미완료 보안/Velocity 작업을 보존. 이번 문서 변경으로 새 EXE를 빌드하거나 운영 설정을 변경하지 않음.
+- 수동 운영 방침을 유지하려면 Setup 또는 복원 후 다음 재부팅 전에 [운영 모드 재검사·적용](https://github.com/geumyi22/Geumyi-Minecraft-System/blob/gsc-v5.2.0/docs/releases/gsc-5.2.0/OPERATORS.md)이 필요함.
+
 ## 2026-11-18 — GitHub 문서 정리 및 5.1.2 후보 상태 구분
 
 - [저장소 전체 점검](docs/operations/GMS-GITHUB-AUDIT-2026-11-18.md)에서 `main` Git 트리의 파일 1,731개와 브랜치 29개, 열린 개발 PR 13개를 확인하고, 명백한 임시/캐시 추적 파일이 없음을 기록했습니다. 복구/릴리스 근거를 임의로 삭제하지 않았습니다.
