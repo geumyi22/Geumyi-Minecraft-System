@@ -52,9 +52,61 @@ namespace GmsMode
             }
             return String.Join(" + ",proofs);
         }
-        // Enabled-only changes are applied to a detached COM definition. Scheduler then
-        // serializes elements in the schema order required by each trigger subtype.
-        static string DisabledTriggers(dynamic service,string before)
+        // Keep the registered XML, including omitted defaults and security metadata.
+        // ITaskDefinition.XmlText expands default settings even for an unchanged copy.
+        internal static string DisabledTriggers(string before)
+        {
+            var doc=Xml(before);
+            bool changed=false;
+            foreach (var trigger in Children(Child(doc.DocumentElement,"Triggers")))
+            {
+                if (trigger.NamespaceURI!=doc.DocumentElement.NamespaceURI) throw Invalid();
+                var enabled=Child(trigger,"Enabled");
+                if (enabled!=null && !XmlConvert.ToBoolean(enabled.InnerText.Trim())) continue;
+                if (enabled==null)
+                {
+                    enabled=doc.CreateElement(trigger.Prefix,"Enabled",trigger.NamespaceURI);
+                    // Enabled is the first element of triggerBaseType in the task schema.
+                    trigger.PrependChild(enabled);
+                }
+                enabled.InnerText="false";
+                changed=true;
+            }
+            return changed ? doc.OuterXml : null;
+        }
+        // The service can move Enabled among a trigger's other fields on registration.
+        // Normalize just this boolean; every other field, including order, must still match.
+        static string TaskTriggerImage(string xml)
+        {
+            var doc=Xml(xml);
+            foreach (var trigger in Children(Child(doc.DocumentElement,"Triggers")))
+            {
+                var flags=Children(trigger).Where(n=>n.NamespaceURI==trigger.NamespaceURI && n.LocalName=="Enabled").ToArray();
+                if (flags.Length>1) throw Invalid();
+                var flag=flags.FirstOrDefault();
+                bool enabled=flag==null || XmlConvert.ToBoolean(flag.InnerText.Trim());
+                if (flag==null) flag=doc.CreateElement(trigger.Prefix,"Enabled",trigger.NamespaceURI);
+                else
+                {
+                    if (flag.Attributes.Count!=0 || Children(flag).Length!=0) throw Invalid();
+                    trigger.RemoveChild(flag);
+                }
+                flag.InnerText=XmlConvert.ToString(enabled);
+                trigger.PrependChild(flag);
+            }
+            return doc.OuterXml;
+        }
+        internal static string RecognizedTaskState(string live,string before,string after,string exactAfter)
+        {
+            if (live==before) return before;
+            if (live==after || live==exactAfter) return after;
+            string current=TaskTriggerImage(live);
+            if (current==TaskTriggerImage(exactAfter)) return after;
+            if (current==TaskTriggerImage(before)) return before;
+            throw Invalid();
+        }
+        // Schema-3 journals from 3.0.0 contain the detached serializer's expanded XML.
+        static string LegacyDisabledTriggers(dynamic service,string before)
         {
             dynamic def=null, triggers=null;
             try
@@ -114,7 +166,7 @@ namespace GmsMode
                         }
                         if (!(bool)t.Enabled) { notes.Add("이미 사용 안 함 · 예약 작업 "+path); continue; }
                         if (!SupportedLogon(LogonType(t))) { notes.Add("자격 증명 보존을 위해 수동 확인 · "+path); continue; }
-                        string before=doc.OuterXml, after=DisabledTriggers(service,before);
+                        string before=doc.OuterXml, after=DisabledTriggers(before);
                         if (after==null) { notes.Add("활성 트리거 없음 · "+path); continue; }
                         rows.Add(Item("Task",path,"예약 작업 · "+path,proof,before,after,"활성 트리거 해제 · 수동 실행 설정 보존"));
                     }
@@ -144,6 +196,8 @@ namespace GmsMode
             if (!e.Id.StartsWith(@"\") || e.Id.EndsWith(@"\") || e.Id.Split('\\').Any(s=>s==".." || s==".")) throw Invalid();
             string proof=TaskProof(Xml(e.Before));
             if (proof==null || !CI.Equals(proof,e.Proof)) throw Invalid();
+            string exactAfter=DisabledTriggers(e.Before);
+            if (exactAfter==null) throw Invalid();
             dynamic service=null,folder=null,t=null,definition=null,principal=null,registered=null;
             try
             {
@@ -152,17 +206,19 @@ namespace GmsMode
                 folder=service.GetFolder(at==0?@"\":e.Id.Substring(0,at));
                 t=folder.GetTask(e.Id.Substring(at+1));
                 string now=Xml((string)t.Xml).OuterXml;
-                if (!CI.Equals((string)t.Path,e.Id) || !(bool)t.Enabled || (now!=e.Before && now!=e.After) ||
-                     !SupportedLogon(LogonType(t)) || DisabledTriggers(service,e.Before)!=e.After) throw Invalid();
+                if (exactAfter!=e.After && LegacyDisabledTriggers(service,e.Before)!=e.After) throw Invalid();
+                now=RecognizedTaskState(now,e.Before,e.After,exactAfter);
+                if (!CI.Equals((string)t.Path,e.Id) || !(bool)t.Enabled || !SupportedLogon(LogonType(t))) throw Invalid();
                 if (next==null || next==now) return now;
-                definition=service.NewTask(0); definition.XmlText=next;
+                definition=t.Definition;
                 principal=definition.Principal;
                 int logon=(int)principal.LogonType;
-                string account=logon==4?(string)principal.GroupId:(string)principal.UserId;
+                XmlNode principalXml=Children(Child(Xml(e.Before).DocumentElement,"Principals")).Single();
+                string account=Val(principalXml,logon==4?"GroupId":"UserId");
                 if (!SupportedLogon(logon) || String.IsNullOrEmpty(account)) throw Invalid();
                 // TASK_UPDATE only; preserve DACL and suppress registration-trigger launches.
                 // No password is read or needed for these accepted logon types.
-                registered=folder.RegisterTaskDefinition(e.Id.Substring(at+1),definition,4|16|32,account,null,logon,null);
+                registered=folder.RegisterTask(e.Id.Substring(at+1),next==e.After?exactAfter:e.Before,4|16|32,account,null,logon,null);
                 return next;
             }
             finally { Release(registered); Release(principal); Release(definition); Release(t); Release(folder); Release(service); }

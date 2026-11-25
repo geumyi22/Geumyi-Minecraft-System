@@ -144,15 +144,50 @@ namespace GmsMode
                 var doc=new XmlDocument(); doc.LoadXml((string)d.XmlText);
                 Check(a.TaskProof(doc)==host,"detached Windows Task Scheduler definition matches Host action");
                 string before=doc.OuterXml;
-                var method=typeof(WindowsEntries).GetMethod("DisabledTriggers",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic);
-                string after=(string)method.Invoke(null,new object[]{svc,before});
+                string after=WindowsEntries.DisabledTriggers(before);
                 dynamic afterDef=svc.NewTask(0); afterDef.XmlText=after;
                 Check(after!=before && !(bool)afterDef.Triggers.Item(1).Enabled && !(bool)afterDef.Triggers.Item(2).Enabled && (bool)afterDef.Settings.Enabled,"disables active trigger, preserves disabled trigger and task-wide enabled state");
                 var reread=new XmlDocument(); reread.LoadXml((string)afterDef.XmlText);
-                Check(reread.OuterXml==after,"disabled XML matches Windows COM reparse and serialization byte-for-byte");
+                Check(WindowsEntries.DisabledTriggers(after)==null,"already-disabled triggers need no registration");
                 afterDef.XmlText=before;
                 reread.LoadXml((string)afterDef.XmlText);
                 Check(reread.OuterXml==before && (bool)afterDef.Triggers.Item(1).Enabled && !(bool)afterDef.Triggers.Item(2).Enabled,"restore COM XML matches exact original definition and mixed trigger states");
+                // A registered definition can omit defaults that detached COM writes back.
+                // Exercise the case using only in-memory definitions, without registering a task.
+                var compact=new XmlDocument(); compact.LoadXml(before);
+                var settings=compact.GetElementsByTagName("Settings")[0];
+                settings.RemoveChild(compact.GetElementsByTagName("Priority")[0]);
+                var boot=compact.GetElementsByTagName("BootTrigger")[0];
+                boot.RemoveChild(boot["Enabled"]);
+                var original=compact.OuterXml;
+                afterDef.XmlText=original;
+                reread.LoadXml((string)afterDef.XmlText);
+                Check(reread.OuterXml!=original,"detached COM expands defaults from a compact registered XML fixture");
+                var updated=new XmlDocument(); updated.LoadXml(WindowsEntries.DisabledTriggers(original));
+                var newBoot=updated.GetElementsByTagName("BootTrigger")[0];
+                afterDef.XmlText=updated.OuterXml;
+                Check(!(bool)afterDef.Triggers.Item(1).Enabled && (bool)afterDef.Settings.AllowDemandStart,"compact timing definition permits demand start after disabling triggers");
+                newBoot.RemoveChild(newBoot["Enabled"]);
+                Check(updated.OuterXml==original,"only the previously omitted Enabled element changed in compact XML");
+                var triggerParent=boot.ParentNode;
+                var timed=compact.CreateElement("TimeTrigger",boot.NamespaceURI);
+                var boundary=compact.CreateElement("StartBoundary",boot.NamespaceURI);
+                boundary.InnerText="2036-11-25T12:30:00+00:00"; timed.AppendChild(boundary);
+                triggerParent.ReplaceChild(timed,boot);
+                original=compact.OuterXml;
+                string precise=WindowsEntries.DisabledTriggers(original);
+                var legacy=typeof(WindowsEntries).GetMethod("LegacyDisabledTriggers",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic);
+                string expanded=(string)legacy.Invoke(null,new object[]{svc,original});
+                updated.LoadXml(precise);
+                var live=updated.GetElementsByTagName("TimeTrigger")[0];
+                live.AppendChild(live.RemoveChild(live["Enabled"]));
+                Check(updated.OuterXml!=precise && WindowsEntries.RecognizedTaskState(updated.OuterXml,original,precise,precise)==precise,"registered trigger order maps to the precise 3.0.1 journal state");
+                Check(expanded!=precise && WindowsEntries.RecognizedTaskState(updated.OuterXml,original,expanded,precise)==expanded,"3.0.0 expanded journal still recognizes Windows registered compact state");
+                live["StartBoundary"].InnerText="2036-11-26T12:30:00+00:00";
+                bool rejected=false;
+                try { WindowsEntries.RecognizedTaskState(updated.OuterXml,original,expanded,precise); }
+                catch (InvalidDataException) { rejected=true; }
+                Check(rejected,"a changed task schedule is rejected for legacy recovery");
                 dynamic extra=d.Actions.Create(0); extra.Path="notepad.exe"; doc.LoadXml((string)d.XmlText);
                 Check(a.TaskProof(doc)==null,"mixed task with unrelated second action excluded");
                 Marshal.ReleaseComObject(extra); Marshal.ReleaseComObject(afterDef);

@@ -23,6 +23,7 @@ try {
     $scheduler.Connect()
     $folder = $scheduler.GetFolder('\')
     $sddl = $folder.GetTask($id).GetSecurityDescriptor(7)
+    $originalDefinition = ([xml]$folder.GetTask($id).Xml).OuterXml
     $system = New-Object GmsMode.WindowsEntries(,[string[]]@($root))
     $notes = New-Object 'System.Collections.Generic.List[string]'
     $selected = @($system.Scan($notes) | Where-Object {
@@ -42,7 +43,7 @@ try {
     $reg = "HKLM:\SYSTEM\CurrentControlSet\Services\$id"
     if ((Get-ItemProperty $reg).Start -ne 3 -or (Get-Service $id).Status -ne 'Stopped') { throw 'Service not in manual mode' }
     $task = $folder.GetTask($id)
-    if (!$task.Enabled -or !$task.Definition.Settings.AllowDemandStart -or $task.Definition.Triggers.Item(1).Enabled) {
+    if (!$task.Enabled -or !$task.Definition.Settings.AllowDemandStart -or $task.Definition.Triggers.Item(1).Enabled -or $task.GetSecurityDescriptor(7) -cne $sddl) {
         throw 'Manual task start or trigger state was lost'
     }
     foreach ($entry in $selected) {
@@ -53,7 +54,18 @@ try {
     $svc = Get-ItemProperty $reg
     $task = $folder.GetTask($id)
     if ($svc.Start -ne 2 -or $svc.DelayedAutoStart -ne 1 -or !$task.Definition.Triggers.Item(1).Enabled -or
-        $task.GetSecurityDescriptor(7) -cne $sddl) { throw 'Restore changed the original startup policy or task ACL' }
+        $task.GetSecurityDescriptor(7) -cne $sddl -or ([xml]$task.Xml).OuterXml -cne $originalDefinition) { throw 'Restore changed the original startup policy, task XML or task ACL' }
+    # 3.0.0 kept detached COM XML in After; Windows persisted the compact image.
+    $entry = $selected | Where-Object Kind -eq 'Task'
+    $legacy = $scheduler.NewTask(0)
+    $legacy.XmlText = $entry.Before
+    $legacy.Triggers.Item(1).Enabled = $false
+    $system.Write($entry,$entry.After)
+    $entry.After = ([xml]$legacy.XmlText).OuterXml
+    if ($system.Read($entry) -cne $entry.After) { throw 'Could not read a schema-3 legacy task backup' }
+    $system.Write($entry,$entry.Before)
+    $task = $folder.GetTask($id)
+    if (([xml]$task.Xml).OuterXml -cne $originalDefinition -or $task.GetSecurityDescriptor(7) -cne $sddl) { throw 'Legacy task restoration did not preserve original XML and ACL' }
     Write-Output 'OPERATING_MODE_REAL_SCM_AND_TASK_ROUNDTRIP_PASS'
 }
 catch {
